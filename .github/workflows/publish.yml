@@ -3,7 +3,7 @@ name: Publish Extension
 on:
   push:
     tags:
-      - 'git-identity-switcher-v*'
+      - 'git-id-switcher-v*'
 
 permissions:
   contents: write
@@ -35,12 +35,12 @@ jobs:
 
       - name: Get version from tag
         id: version
-        run: echo "version=${GITHUB_REF#refs/tags/git-identity-switcher-v}" >> $GITHUB_OUTPUT
+        run: echo "version=${GITHUB_REF#refs/tags/git-id-switcher-v}" >> $GITHUB_OUTPUT
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: git-identity-switcher-${{ steps.version.outputs.version }}.vsix
+          name: git-id-switcher-${{ steps.version.outputs.version }}.vsix
           path: extensions/git-identity-switcher/*.vsix
 
       - name: Create GitHub Release

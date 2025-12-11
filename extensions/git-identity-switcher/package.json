@@ -1,5 +1,5 @@
 {
-  "name": "git-identity-switcher",
+  "name": "git-id-switcher",
   "displayName": "Git Identity Switcher",
   "description": "Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.",
   "version": "0.1.0",
