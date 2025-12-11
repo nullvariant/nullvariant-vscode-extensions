@@ -18,17 +18,23 @@ jobs:
         with:
           node-version: '20'
 
+      # Copy extension to isolated directory to avoid workspace issues
+      - name: Isolate extension from workspace
+        run: |
+          mkdir -p /tmp/git-identity-switcher
+          cp -r extensions/git-identity-switcher/* /tmp/git-identity-switcher/
+
       - name: Install dependencies
         run: npm ci
-        working-directory: extensions/git-identity-switcher
+        working-directory: /tmp/git-identity-switcher
 
       - name: Compile
         run: npm run compile
-        working-directory: extensions/git-identity-switcher
+        working-directory: /tmp/git-identity-switcher
 
       - name: Package extension
         run: npm run package
-        working-directory: extensions/git-identity-switcher
+        working-directory: /tmp/git-identity-switcher
 
       - name: Get version from tag
         id: version
@@ -38,12 +44,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: git-identity-switcher-${{ steps.version.outputs.version }}.vsix
-          path: extensions/git-identity-switcher/*.vsix
+          path: /tmp/git-identity-switcher/*.vsix
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: extensions/git-identity-switcher/*.vsix
+          files: /tmp/git-identity-switcher/*.vsix
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,9 +57,9 @@ jobs:
       - name: Publish to VS Code Marketplace
         if: ${{ vars.PUBLISH_TO_MARKETPLACE == 'true' }}
         run: npx vsce publish -p ${{ secrets.VSCE_PAT }}
-        working-directory: extensions/git-identity-switcher
+        working-directory: /tmp/git-identity-switcher
 
       - name: Publish to Open VSX
         if: ${{ vars.PUBLISH_TO_OPENVSX == 'true' }}
         run: npx ovsx publish -p ${{ secrets.OVSX_PAT }}
-        working-directory: extensions/git-identity-switcher
+        working-directory: /tmp/git-identity-switcher
