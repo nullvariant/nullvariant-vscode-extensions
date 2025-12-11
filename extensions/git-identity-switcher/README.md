@@ -12,7 +12,9 @@ Switch between multiple Git identities with one click. Automatically configures 
 - **One-Click Identity Switch**: Change Git user.name and user.email instantly
 - **SSH Key Management**: Automatically switch SSH keys in ssh-agent
 - **GPG Signing Support**: Configure GPG key for commit signing
+- **Submodule Support**: Automatically propagate identity to Git submodules
 - **Status Bar Integration**: Always see your current identity at a glance
+- **Rich Tooltips**: Detailed identity info with description and SSH host
 - **Cross-Platform**: Works on macOS, Linux, and Windows
 
 ## Why Use This?
@@ -53,6 +55,7 @@ Add your identities to VS Code settings (`settings.json`):
       "icon": "🏠",
       "name": "Your Name",
       "email": "personal@example.com",
+      "description": "Personal projects",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
@@ -60,7 +63,9 @@ Add your identities to VS Code settings (`settings.json`):
       "icon": "💼",
       "name": "Your Name",
       "email": "yourname@company.com",
+      "description": "Work account",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
       "gpgKeyId": "ABCD1234"
     }
   ]
@@ -75,7 +80,9 @@ Add your identities to VS Code settings (`settings.json`):
 | `name` | ✅ | Git user.name |
 | `email` | ✅ | Git user.email |
 | `icon` | | Emoji/icon shown in status bar |
+| `description` | | Short description (shown in picker and tooltip) |
 | `sshKeyPath` | | Path to SSH private key |
+| `sshHost` | | SSH config host alias (for multi-account setups) |
 | `gpgKeyId` | | GPG key ID for commit signing |
 
 ### Settings
@@ -85,6 +92,8 @@ Add your identities to VS Code settings (`settings.json`):
 | `gitIdSwitcher.autoSwitchSshKey` | `true` | Auto-switch SSH key when changing identities |
 | `gitIdSwitcher.showNotifications` | `true` | Show notifications on identity switch |
 | `gitIdSwitcher.defaultIdentity` | `""` | Default identity ID to use |
+| `gitIdSwitcher.applyToSubmodules` | `true` | Auto-apply identity to Git submodules |
+| `gitIdSwitcher.submoduleDepth` | `1` | Max depth for nested submodule config (1-5) |
 
 ## Usage
 

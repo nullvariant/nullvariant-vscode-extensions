@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "Git ID Switcher",
   "description": "Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "nullvariant",
   "engines": {
     "vscode": "^1.85.0"
@@ -59,9 +59,17 @@
                 "type": "string",
                 "description": "Git user.email"
               },
+              "description": {
+                "type": "string",
+                "description": "Short description of this identity (shown in quick pick and tooltip)"
+              },
               "sshKeyPath": {
                 "type": "string",
                 "description": "Path to SSH private key (optional)"
+              },
+              "sshHost": {
+                "type": "string",
+                "description": "SSH config host alias for multi-account setups (optional)"
               },
               "gpgKeyId": {
                 "type": "string",
@@ -73,7 +81,8 @@
               "name",
               "email"
             ]
-          }
+          },
+          "markdownDescription": "List of Git identities. Each identity can have:\n- `id`: Unique identifier (required)\n- `name`: Git user.name (required)\n- `email`: Git user.email (required)\n- `icon`: Emoji to display in status bar\n- `description`: Short description of this identity\n- `sshKeyPath`: Path to SSH private key\n- `sshHost`: SSH config host alias (for multi-account setups)\n- `gpgKeyId`: GPG key ID for commit signing"
         },
         "gitIdSwitcher.defaultIdentity": {
           "type": "string",
@@ -89,6 +98,18 @@
           "type": "boolean",
           "default": true,
           "description": "Show notifications when switching identities"
+        },
+        "gitIdSwitcher.applyToSubmodules": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically apply identity to Git submodules when switching"
+        },
+        "gitIdSwitcher.submoduleDepth": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Maximum depth for nested submodule configuration (1 = direct submodules only)"
         }
       }
     }

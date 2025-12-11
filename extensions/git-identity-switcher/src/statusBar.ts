@@ -86,21 +86,34 @@ export class IdentityStatusBar implements vscode.Disposable {
   }
 
   /**
-   * Build tooltip content
+   * Build tooltip content with detailed identity information
    */
   private buildTooltip(identity: Identity): string {
     const lines = [
       `### ${getIdentityLabel(identity)}`,
       '',
-      `**Email:** ${identity.email}`,
     ];
 
+    // Add description if available
+    if (identity.description) {
+      lines.push(`**${identity.description}**`, '');
+    }
+
+    lines.push('---', '');
+
+    // Identity details
+    lines.push(`- **Email:** ${identity.email}`);
+
+    if (identity.sshHost) {
+      lines.push(`- **SSH Host:** ${identity.sshHost}`);
+    }
+
     if (identity.sshKeyPath) {
-      lines.push(`**SSH Key:** ${identity.sshKeyPath}`);
+      lines.push(`- **SSH Key:** ${identity.sshKeyPath}`);
     }
 
     if (identity.gpgKeyId) {
-      lines.push(`**GPG Key:** ${identity.gpgKeyId}`);
+      lines.push(`- **GPG Key:** ${identity.gpgKeyId}`);
     }
 
     lines.push('', '---', '', '*Click to switch identity*');
