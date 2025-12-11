@@ -1,8 +1,8 @@
 {
   "name": "git-id-switcher",
   "displayName": "Git ID Switcher",
-  "description": "Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.",
-  "version": "0.4.0",
+  "description": "Switch between multiple Git identities (profiles) with one click. Manage multiple GitHub/GitLab accounts, SSH keys, and GPG signing per project.",
+  "version": "0.4.1",
   "publisher": "nullvariant",
   "engines": {
     "vscode": "^1.85.0"
@@ -16,7 +16,26 @@
     "author",
     "ssh",
     "gpg",
-    "multi-account"
+    "multi-account",
+    "profile",
+    "switch",
+    "change",
+    "toggle",
+    "manage",
+    "account",
+    "user",
+    "email",
+    "config",
+    "github",
+    "gitlab",
+    "signing",
+    "commit",
+    "workspace",
+    "keygen",
+    "ssh-agent",
+    "ssh-key",
+    "gpg-key",
+    "credential"
   ],
   "activationEvents": [
     "onStartupFinished"

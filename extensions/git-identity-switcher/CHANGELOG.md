@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 - Remote URL auto-switching based on identity
 
+## [0.4.1] - 2025-12-11
+
+### Changed
+
+- **Improved Discoverability**: Expanded keywords for better Marketplace search
+  - Added action verbs: switch, change, toggle, manage
+  - Added common terms: profile, account, workspace, github, gitlab
+  - Added technical terms: keygen, ssh-agent, ssh-key, gpg-key, credential
+- **Updated Description**: More descriptive text mentioning GitHub/GitLab accounts
+
 ## [0.4.0] - 2025-12-11
 
 ### Added
