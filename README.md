@@ -4,15 +4,11 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
 ## Extensions
 
-### Git ID Switcher
-
-Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.
+| | |
+|:---:|:---|
+| <img src="extensions/git-identity-switcher/images/icon.png" width="128" alt="Git ID Switcher"> | **Git ID Switcher**<br><br>Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.<br><br>[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher)<br><br>[📖 Documentation](extensions/git-identity-switcher/) \| [📦 Install from Marketplace](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher) |
 
 ![Git ID Switcher Demo](extensions/git-identity-switcher/docs/demo.png)
-
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher)
-
-[📖 Documentation](extensions/git-identity-switcher/) | [📦 Install from Marketplace](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher)
 
 ## Development
 

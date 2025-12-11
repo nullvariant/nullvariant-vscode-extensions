@@ -1,9 +1,8 @@
 # Git ID Switcher
 
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.
+| | |
+|:---:|:---|
+| <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-identity-switcher/images/icon.png" width="128" alt="Git ID Switcher"> | Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.<br><br>[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) |
 
 ![Demo](https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-identity-switcher/docs/demo.png)
 
