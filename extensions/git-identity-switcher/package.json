@@ -2,14 +2,14 @@
   "name": "git-id-switcher",
   "displayName": "Git ID Switcher",
   "description": "Switch between multiple Git identities (profiles) with one click. Manage multiple GitHub/GitLab accounts, SSH keys, and GPG signing per project.",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Other"
+    "SCM Providers"
   ],
   "keywords": [
     "git",
