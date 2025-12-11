@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 - Remote URL auto-switching based on identity
 
+## [0.4.0] - 2025-12-11
+
+### Added
+
+- **Demo Screenshot**: Added identity picker screenshot to README and repository
+
+### Changed
+
+- Repository README now showcases Git ID Switcher with visual preview
+
 ## [0.3.1] - 2025-12-11
 
 ### Changed

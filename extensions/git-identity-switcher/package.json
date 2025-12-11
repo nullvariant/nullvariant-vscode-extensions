@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "Git ID Switcher",
   "description": "Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "publisher": "nullvariant",
   "engines": {
     "vscode": "^1.85.0"
