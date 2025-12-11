@@ -20,8 +20,14 @@ export interface Identity {
   /** Git user.email */
   email: string;
 
+  /** Short description of this identity - optional */
+  description?: string;
+
   /** Path to SSH private key - optional */
   sshKeyPath?: string;
+
+  /** SSH config host alias (for multi-account setups) - optional */
+  sshHost?: string;
 
   /** GPG key ID for commit signing - optional */
   gpgKeyId?: string;
@@ -77,8 +83,12 @@ export function getIdentityLabel(identity: Identity): string {
 
 /**
  * Get identity display detail for quick pick
+ * Shows description if available, otherwise email
  */
 export function getIdentityDetail(identity: Identity): string {
+  if (identity.description) {
+    return `${identity.description} (${identity.email})`;
+  }
   return identity.email;
 }
 

@@ -8,8 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Submodule support (auto-apply identity to submodules)
 - Remote URL auto-switching based on identity
+
+## [0.3.0] - 2025-12-11
+
+### Added
+
+- **Submodule Support**: Identity config automatically propagates to Git submodules
+  - New setting: `gitIdSwitcher.applyToSubmodules` (default: true)
+  - New setting: `gitIdSwitcher.submoduleDepth` (default: 1, max: 5)
+- **Identity Description**: New `description` property for identities
+  - Displayed in quick pick and status bar tooltip
+- **SSH Host Alias**: New `sshHost` property for multi-account SSH setups
+  - Displayed in status bar tooltip
+- **Enhanced Tooltips**: Rich Markdown tooltips with all identity details
+
+### Changed
+
+- Quick pick now shows description alongside email
+- Status bar tooltip shows description, SSH host, and all configured details
 
 ## [0.2.0] - 2025-12-11
 
@@ -71,7 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.2.0...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.3.0...HEAD
+[0.3.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.3.0
 [0.2.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.2.0
 [0.1.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.1.1
 [0.1.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.1.0
