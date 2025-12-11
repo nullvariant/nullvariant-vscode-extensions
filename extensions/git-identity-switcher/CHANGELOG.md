@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 - Remote URL auto-switching based on identity
 
+## [0.3.1] - 2025-12-11
+
+### Changed
+
+- **README Improvements**: Complete rewrite for first-time users
+  - Added "Quick Start (Minimal Setup)" section (id/name/email only)
+  - SSH and GPG are now clearly documented as optional features
+  - Progressive disclosure: minimal setup to advanced configuration
+  - Added "Full Example: 7 Accounts" with mixed SSH/GPG configurations
+  - Expanded "Configuration Reference" with complete property table
+  - Improved "Troubleshooting" section
+
 ## [0.3.0] - 2025-12-11
 
 ### Added
@@ -88,7 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.3.0...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.3.1...HEAD
+[0.3.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.3.1
 [0.3.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.3.0
 [0.2.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.2.0
 [0.1.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.1.1
