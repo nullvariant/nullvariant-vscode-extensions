@@ -18,23 +18,23 @@ jobs:
         with:
           node-version: '20'
 
-      # Copy extension to isolated directory to avoid workspace issues
+      # Copy extension to isolated directory to avoid npm workspace issues with vsce
       - name: Isolate extension from workspace
         run: |
-          mkdir -p /tmp/git-identity-switcher
-          cp -r extensions/git-identity-switcher/* /tmp/git-identity-switcher/
+          mkdir -p ${{ runner.temp }}/git-identity-switcher
+          cp -r extensions/git-identity-switcher/* ${{ runner.temp }}/git-identity-switcher/
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: /tmp/git-identity-switcher
+        run: npm install
+        working-directory: ${{ runner.temp }}/git-identity-switcher
 
       - name: Compile
         run: npm run compile
-        working-directory: /tmp/git-identity-switcher
+        working-directory: ${{ runner.temp }}/git-identity-switcher
 
       - name: Package extension
         run: npm run package
-        working-directory: /tmp/git-identity-switcher
+        working-directory: ${{ runner.temp }}/git-identity-switcher
 
       - name: Get version from tag
         id: version
@@ -44,12 +44,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: git-identity-switcher-${{ steps.version.outputs.version }}.vsix
-          path: /tmp/git-identity-switcher/*.vsix
+          path: ${{ runner.temp }}/git-identity-switcher/*.vsix
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: /tmp/git-identity-switcher/*.vsix
+          files: ${{ runner.temp }}/git-identity-switcher/*.vsix
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,9 +57,9 @@ jobs:
       - name: Publish to VS Code Marketplace
         if: ${{ vars.PUBLISH_TO_MARKETPLACE == 'true' }}
         run: npx vsce publish -p ${{ secrets.VSCE_PAT }}
-        working-directory: /tmp/git-identity-switcher
+        working-directory: ${{ runner.temp }}/git-identity-switcher
 
       - name: Publish to Open VSX
         if: ${{ vars.PUBLISH_TO_OPENVSX == 'true' }}
         run: npx ovsx publish -p ${{ secrets.OVSX_PAT }}
-        working-directory: /tmp/git-identity-switcher
+        working-directory: ${{ runner.temp }}/git-identity-switcher
