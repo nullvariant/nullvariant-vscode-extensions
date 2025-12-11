@@ -1,9 +1,26 @@
+# Source files
 .vscode/**
 .vscode-test/**
 src/**
 **/*.ts
+!**/*.d.ts
+
+# Build artifacts
 **/*.map
+*.vsix
+
+# Config files
 .gitignore
 tsconfig.json
+.eslintrc*
+.prettierrc*
+
+# Dependencies
 node_modules/**
-*.vsix
+
+# Parent directories (critical for monorepo)
+../**
+
+# Other
+**/.git/**
+**/.github/**
