@@ -1,6 +1,6 @@
 # nullvariant-vscode-extensions
 
-VS Code extensions monorepo by [Null;Variant](https://github.com/nullvariant).
+VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
 ## Extensions
 
@@ -12,22 +12,7 @@ VS Code extensions monorepo by [Null;Variant](https://github.com/nullvariant).
 
 ### Prerequisites
 
-- Node.js 18+
-- npm 9+
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/nullvariant/nullvariant-vscode-extensions.git
-cd nullvariant-vscode-extensions
-
-# Install dependencies
-npm install
-
-# Build all extensions
-npm run build
-```
+- Node.js 20+
 
 ### Working on an extension
 
@@ -58,16 +43,12 @@ npm run package
 ```
 nullvariant-vscode-extensions/
 ├── extensions/
-│   └── git-identity-switcher/     # Git identity switching extension
-├── packages/                       # Shared packages (future)
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                 # CI for PRs and main branch
-│       └── publish.yml            # Auto-publish on tag
-├── package.json                   # Workspace root
-├── tsconfig.base.json             # Shared TypeScript config
-├── LICENSE                        # MIT License
-└── README.md                      # This file
+│   └── git-identity-switcher/
+├── .github/workflows/
+│   ├── ci.yml
+│   └── publish.yml
+├── LICENSE
+└── README.md
 ```
 
 ## Publishing
@@ -75,17 +56,10 @@ nullvariant-vscode-extensions/
 Extensions are automatically published when a tag is pushed:
 
 ```bash
-# Tag format: {extension-name}-v{version}
 git tag git-identity-switcher-v0.1.0
 git push origin git-identity-switcher-v0.1.0
 ```
 
-This triggers:
-1. Build and package the extension
-2. Create a GitHub Release with VSIX
-3. Optionally publish to VS Code Marketplace (requires `VSCE_PAT` secret)
-4. Optionally publish to Open VSX (requires `OVSX_PAT` secret)
-
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT
