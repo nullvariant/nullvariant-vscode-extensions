@@ -23,7 +23,7 @@ export class IdentityStatusBar implements vscode.Disposable {
     );
 
     // Set command to trigger when clicked
-    this.statusBarItem.command = 'git-identity-switcher.selectIdentity';
+    this.statusBarItem.command = 'git-id-switcher.selectIdentity';
 
     // Set initial state
     this.setNoIdentity();
@@ -34,10 +34,13 @@ export class IdentityStatusBar implements vscode.Disposable {
 
   /**
    * Update status bar with current identity
+   * Shows emoji icon if configured, otherwise uses default 👤
    */
   setIdentity(identity: Identity): void {
     this.currentIdentity = identity;
-    this.statusBarItem.text = `$(person) ${getIdentityLabel(identity)}`;
+    // Use identity's icon if available, otherwise default emoji
+    const icon = identity.icon || '👤';
+    this.statusBarItem.text = `${icon} ${identity.name}`;
     this.statusBarItem.tooltip = new vscode.MarkdownString(
       this.buildTooltip(identity)
     );
@@ -49,7 +52,7 @@ export class IdentityStatusBar implements vscode.Disposable {
    */
   setNoIdentity(): void {
     this.currentIdentity = undefined;
-    this.statusBarItem.text = '$(question) Select Identity';
+    this.statusBarItem.text = '❓ Select Identity';
     this.statusBarItem.tooltip = 'Click to select a Git identity';
     this.statusBarItem.backgroundColor = new vscode.ThemeColor(
       'statusBarItem.warningBackground'
@@ -60,7 +63,7 @@ export class IdentityStatusBar implements vscode.Disposable {
    * Set status bar to loading state
    */
   setLoading(): void {
-    this.statusBarItem.text = '$(loading~spin) Switching...';
+    this.statusBarItem.text = '⏳ Switching...';
     this.statusBarItem.tooltip = 'Switching identity...';
   }
 
@@ -68,7 +71,7 @@ export class IdentityStatusBar implements vscode.Disposable {
    * Set status bar to error state
    */
   setError(message: string): void {
-    this.statusBarItem.text = '$(error) Identity Error';
+    this.statusBarItem.text = '❌ Identity Error';
     this.statusBarItem.tooltip = message;
     this.statusBarItem.backgroundColor = new vscode.ThemeColor(
       'statusBarItem.errorBackground'

@@ -11,9 +11,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Submodule support (auto-apply identity to submodules)
 - Remote URL auto-switching based on identity
 
+## [0.2.0] - 2025-12-11
+
+### ⚠️ Breaking Changes
+
+- **Settings keys renamed**: `gitIdentitySwitcher.*` → `gitIdSwitcher.*`
+  - Users must update their `settings.json` to use the new keys
+- **Command IDs renamed**: `git-identity-switcher.*` → `git-id-switcher.*`
+  - Keyboard shortcuts need to be updated
+
+### Added
+
+- Emoji icon display in status bar (uses `icon` property from identity config)
+- Default emoji icons for status states:
+  - `👤` - Default user icon
+  - `❓` - No identity selected
+  - `⏳` - Switching in progress
+  - `❌` - Error state
+
+### Changed
+
+- Command titles shortened: `Git Identity:` → `Git ID:`
+
+### Migration Guide
+
+1. In `settings.json`, rename:
+   - `gitIdentitySwitcher.identities` → `gitIdSwitcher.identities`
+   - `gitIdentitySwitcher.defaultIdentity` → `gitIdSwitcher.defaultIdentity`
+   - `gitIdentitySwitcher.autoSwitchSshKey` → `gitIdSwitcher.autoSwitchSshKey`
+   - `gitIdentitySwitcher.showNotifications` → `gitIdSwitcher.showNotifications`
+2. Update any keyboard shortcuts referencing `git-identity-switcher.*`
+
+## [0.1.1] - 2025-12-11
+
+### Changed
+
+- Display name changed from "Git Identity Switcher" to "Git ID Switcher" for consistency
+
 ## [0.1.0] - 2025-12-11
 
 ### Added
+
 - Initial release
 - Identity switching via status bar quick pick
 - Git config (user.name, user.email) auto-configuration
@@ -27,10 +65,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic identity detection from ssh-agent
 
 ### Configuration Options
+
 - `gitIdentitySwitcher.identities`: List of identities
 - `gitIdentitySwitcher.defaultIdentity`: Default identity ID
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-identity-switcher-v0.1.0...HEAD
-[0.1.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-identity-switcher-v0.1.0
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.2.0...HEAD
+[0.2.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.2.0
+[0.1.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.1.1
+[0.1.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.1.0

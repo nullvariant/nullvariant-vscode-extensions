@@ -52,7 +52,7 @@ export async function showIdentityQuickPick(
 
   if (items.length === 0) {
     vscode.window.showWarningMessage(
-      'No identities configured. Add identities in settings: gitIdentitySwitcher.identities'
+      'No identities configured. Add identities in settings: gitIdSwitcher.identities'
     );
     return undefined;
   }
@@ -94,7 +94,7 @@ export async function showIdentityQuickPick(
  * Show identity switched notification
  */
 export function showIdentitySwitchedNotification(identity: Identity): void {
-  const config = vscode.workspace.getConfiguration('gitIdentitySwitcher');
+  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
   const showNotifications = config.get<boolean>('showNotifications', true);
 
   if (showNotifications) {

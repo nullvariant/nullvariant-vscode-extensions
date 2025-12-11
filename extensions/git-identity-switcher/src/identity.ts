@@ -31,7 +31,7 @@ export interface Identity {
  * Load identities from VS Code settings
  */
 export function getIdentities(): Identity[] {
-  const config = vscode.workspace.getConfiguration('gitIdentitySwitcher');
+  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
   const identities = config.get<Identity[]>('identities', []);
   return identities;
 }
@@ -47,7 +47,7 @@ export function getIdentityById(id: string): Identity | undefined {
  * Get the default identity (first one, or specified in settings)
  */
 export function getDefaultIdentity(): Identity | undefined {
-  const config = vscode.workspace.getConfiguration('gitIdentitySwitcher');
+  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
   const defaultId = config.get<string>('defaultIdentity', '');
 
   const identities = getIdentities();

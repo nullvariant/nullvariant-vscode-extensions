@@ -46,12 +46,12 @@ export async function activate(
 
   // Register commands
   const selectCommand = vscode.commands.registerCommand(
-    'git-identity-switcher.selectIdentity',
+    'git-id-switcher.selectIdentity',
     () => selectIdentityCommand(context)
   );
 
   const showCurrentCommand = vscode.commands.registerCommand(
-    'git-identity-switcher.showCurrentIdentity',
+    'git-id-switcher.showCurrentIdentity',
     showCurrentIdentityCommand
   );
 
@@ -70,7 +70,7 @@ export async function activate(
   // Watch for configuration changes
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
-      if (e.affectsConfiguration('gitIdentitySwitcher')) {
+      if (e.affectsConfiguration('gitIdSwitcher')) {
         initializeState(context);
       }
     })
@@ -195,7 +195,7 @@ async function switchToIdentity(
   statusBar.setLoading();
 
   try {
-    const config = vscode.workspace.getConfiguration('gitIdentitySwitcher');
+    const config = vscode.workspace.getConfiguration('gitIdSwitcher');
     const autoSwitchSshKey = config.get<boolean>('autoSwitchSshKey', true);
 
     // Update Git config if in a repository

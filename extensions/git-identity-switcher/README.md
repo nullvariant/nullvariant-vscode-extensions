@@ -47,7 +47,7 @@ Add your identities to VS Code settings (`settings.json`):
 
 ```json
 {
-  "gitIdentitySwitcher.identities": [
+  "gitIdSwitcher.identities": [
     {
       "id": "personal",
       "icon": "🏠",
@@ -82,9 +82,9 @@ Add your identities to VS Code settings (`settings.json`):
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `gitIdentitySwitcher.autoSwitchSshKey` | `true` | Auto-switch SSH key when changing identities |
-| `gitIdentitySwitcher.showNotifications` | `true` | Show notifications on identity switch |
-| `gitIdentitySwitcher.defaultIdentity` | `""` | Default identity ID to use |
+| `gitIdSwitcher.autoSwitchSshKey` | `true` | Auto-switch SSH key when changing identities |
+| `gitIdSwitcher.showNotifications` | `true` | Show notifications on identity switch |
+| `gitIdSwitcher.defaultIdentity` | `""` | Default identity ID to use |
 
 ## Usage
 
@@ -96,8 +96,8 @@ Add your identities to VS Code settings (`settings.json`):
 
 ### Commands
 
-- `Git Identity: Select Identity` - Open the identity picker
-- `Git Identity: Show Current Identity` - Display current identity info
+- `Git ID: Select Identity` - Open the identity picker
+- `Git ID: Show Current Identity` - Display current identity info
 
 ## How It Works
 

@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "Git ID Switcher",
   "description": "Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "nullvariant",
   "engines": {
     "vscode": "^1.85.0"
@@ -25,18 +25,18 @@
   "contributes": {
     "commands": [
       {
-        "command": "git-identity-switcher.selectIdentity",
-        "title": "Git Identity: Select Identity"
+        "command": "git-id-switcher.selectIdentity",
+        "title": "Git ID: Select Identity"
       },
       {
-        "command": "git-identity-switcher.showCurrentIdentity",
-        "title": "Git Identity: Show Current Identity"
+        "command": "git-id-switcher.showCurrentIdentity",
+        "title": "Git ID: Show Current Identity"
       }
     ],
     "configuration": {
       "title": "Git ID Switcher",
       "properties": {
-        "gitIdentitySwitcher.identities": {
+        "gitIdSwitcher.identities": {
           "type": "array",
           "default": [],
           "description": "List of Git identities to switch between",
@@ -75,17 +75,17 @@
             ]
           }
         },
-        "gitIdentitySwitcher.defaultIdentity": {
+        "gitIdSwitcher.defaultIdentity": {
           "type": "string",
           "default": "",
           "description": "Default identity ID to use when no identity is selected"
         },
-        "gitIdentitySwitcher.autoSwitchSshKey": {
+        "gitIdSwitcher.autoSwitchSshKey": {
           "type": "boolean",
           "default": true,
           "description": "Automatically switch SSH key when changing identities"
         },
-        "gitIdentitySwitcher.showNotifications": {
+        "gitIdSwitcher.showNotifications": {
           "type": "boolean",
           "default": true,
           "description": "Show notifications when switching identities"
