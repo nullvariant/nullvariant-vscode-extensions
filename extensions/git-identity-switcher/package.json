@@ -1,0 +1,113 @@
+{
+  "name": "git-identity-switcher",
+  "displayName": "Git Identity Switcher",
+  "description": "Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.",
+  "version": "0.1.0",
+  "publisher": "nullvariant",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "git",
+    "identity",
+    "author",
+    "ssh",
+    "gpg",
+    "multi-account"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "git-identity-switcher.selectIdentity",
+        "title": "Git Identity: Select Identity"
+      },
+      {
+        "command": "git-identity-switcher.showCurrentIdentity",
+        "title": "Git Identity: Show Current Identity"
+      }
+    ],
+    "configuration": {
+      "title": "Git Identity Switcher",
+      "properties": {
+        "gitIdentitySwitcher.identities": {
+          "type": "array",
+          "default": [],
+          "description": "List of Git identities to switch between",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique identifier for this identity"
+              },
+              "icon": {
+                "type": "string",
+                "description": "Icon/emoji to display in status bar"
+              },
+              "name": {
+                "type": "string",
+                "description": "Git user.name"
+              },
+              "email": {
+                "type": "string",
+                "description": "Git user.email"
+              },
+              "sshKeyPath": {
+                "type": "string",
+                "description": "Path to SSH private key (optional)"
+              },
+              "gpgKeyId": {
+                "type": "string",
+                "description": "GPG key ID for commit signing (optional)"
+              }
+            },
+            "required": ["id", "name", "email"]
+          }
+        },
+        "gitIdentitySwitcher.defaultIdentity": {
+          "type": "string",
+          "default": "",
+          "description": "Default identity ID to use when no identity is selected"
+        },
+        "gitIdentitySwitcher.autoSwitchSshKey": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically switch SSH key when changing identities"
+        },
+        "gitIdentitySwitcher.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications when switching identities"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nullvariant/nullvariant-vscode-extensions"
+  },
+  "license": "MIT"
+}
