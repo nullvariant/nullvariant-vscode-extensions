@@ -5,7 +5,7 @@
 
 Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.
 
-![Demo](https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-identity-switcher/docs/demo.gif)
+![Demo](https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-identity-switcher/docs/demo.png)
 
 ## Features
 
