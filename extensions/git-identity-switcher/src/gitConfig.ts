@@ -3,12 +3,19 @@
  *
  * Handles reading and writing Git config for user identity switching.
  * Uses workspace-level config when in a Git repository.
+ * Supports propagating config to submodules.
  */
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { Identity, formatGitAuthor, getIdentities } from './identity';
+import {
+  listSubmodulesRecursive,
+  setIdentityForSubmodules,
+  isSubmoduleSupportEnabled,
+  getSubmoduleDepth,
+} from './submodule';
 
 const execAsync = promisify(exec);
 
@@ -58,7 +65,8 @@ export async function getCurrentGitConfig(): Promise<GitConfig> {
 /**
  * Set Git user configuration for an identity
  *
- * Uses --local to set workspace-level config
+ * Uses --local to set workspace-level config.
+ * Optionally propagates to submodules if enabled.
  */
 export async function setGitConfigForIdentity(identity: Identity): Promise<void> {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -85,6 +93,49 @@ export async function setGitConfigForIdentity(identity: Identity): Promise<void>
   if (identity.gpgKeyId) {
     await execGit(`config --local user.signingkey "${identity.gpgKeyId}"`);
     await execGit('config --local commit.gpgsign true');
+  }
+
+  // Propagate to submodules if enabled
+  if (isSubmoduleSupportEnabled()) {
+    await propagateToSubmodules(workspaceFolder.uri.fsPath, identity);
+  }
+}
+
+/**
+ * Propagate identity config to all submodules
+ */
+async function propagateToSubmodules(
+  workspacePath: string,
+  identity: Identity
+): Promise<void> {
+  const depth = getSubmoduleDepth();
+  const submodules = await listSubmodulesRecursive(workspacePath, depth);
+
+  if (submodules.length === 0) {
+    return;
+  }
+
+  const userName = identity.icon
+    ? `${identity.icon} ${identity.name}`
+    : identity.name;
+
+  const result = await setIdentityForSubmodules(
+    submodules,
+    userName,
+    identity.email,
+    identity.gpgKeyId
+  );
+
+  if (result.failed > 0) {
+    console.warn(
+      `Git ID Switcher: Failed to configure ${result.failed} submodule(s)`
+    );
+  }
+
+  if (result.success > 0) {
+    console.log(
+      `Git ID Switcher: Configured ${result.success} submodule(s)`
+    );
   }
 }
 
