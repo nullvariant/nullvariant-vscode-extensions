@@ -6,7 +6,7 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
 | Extension | Description | Version |
 |-----------|-------------|---------|
-| [git-identity-switcher](extensions/git-identity-switcher/) | Switch between multiple Git identities with one click | [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-identity-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-identity-switcher) |
+| [git-id-switcher](extensions/git-identity-switcher/) | Switch between multiple Git identities with one click | [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher) |
 
 ## Development
 

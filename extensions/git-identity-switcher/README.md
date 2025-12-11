@@ -1,6 +1,6 @@
-# Git Identity Switcher
+# Git ID Switcher
 
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-identity-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-identity-switcher)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.
@@ -31,7 +31,7 @@ This extension solves all of that with a single click.
 
 1. Open VS Code
 2. Press `Ctrl+P` / `Cmd+P`
-3. Type `ext install nullvariant.git-identity-switcher`
+3. Type `ext install nullvariant.git-id-switcher`
 4. Press Enter
 
 ### From VSIX File
