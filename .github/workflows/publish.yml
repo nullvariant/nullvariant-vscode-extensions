@@ -5,6 +5,9 @@ on:
     tags:
       - 'git-identity-switcher-v*'
 
+permissions:
+  contents: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
