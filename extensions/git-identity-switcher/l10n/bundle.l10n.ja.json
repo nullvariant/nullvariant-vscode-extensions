@@ -1,0 +1,23 @@
+{
+  "Select Identity": "IDを選択",
+  "Current": "現在",
+  "Switching...": "切り替え中...",
+  "Switching identity...": "IDを切り替えています...",
+  "Identity Error": "IDエラー",
+  "Click to select a Git identity": "クリックしてGit IDを選択",
+  "*Click to switch identity*": "*クリックしてIDを切り替え*",
+  "Already using {0}": "すでに {0} を使用しています",
+  "Current identity: {0} ({1})": "現在のID: {0} ({1})",
+  "No identity selected. Click the status bar to select one.": "IDが選択されていません。ステータスバーをクリックして選択してください。",
+  "Failed to select identity: {0}": "IDの選択に失敗しました: {0}",
+  "Failed to switch identity: {0}": "IDの切り替えに失敗しました: {0}",
+  "No identities configured. Add identities in settings: {0}": "IDが設定されていません。設定に追加してください: {0}",
+  "Select Git Identity": "Git IDを選択",
+  "Search identities...": "IDを検索...",
+  "Switched to {0}": "{0} に切り替えました",
+  "Git Identity Switcher: {0}": "Git Identity Switcher: {0}",
+  "**Email:** {0}": "**メール:** {0}",
+  "**SSH Host:** {0}": "**SSHホスト:** {0}",
+  "**SSH Key:** {0}": "**SSHキー:** {0}",
+  "**GPG Key:** {0}": "**GPGキー:** {0}"
+}

@@ -1,8 +1,8 @@
 {
   "name": "git-id-switcher",
-  "displayName": "Git ID Switcher",
-  "description": "Switch between multiple Git identities (profiles) with one click. Manage multiple GitHub/GitLab accounts, SSH keys, and GPG signing per project.",
-  "version": "0.4.3",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
+  "version": "0.4.4",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -46,54 +46,54 @@
     "commands": [
       {
         "command": "git-id-switcher.selectIdentity",
-        "title": "Git ID: Select Identity"
+        "title": "%command.selectIdentity%"
       },
       {
         "command": "git-id-switcher.showCurrentIdentity",
-        "title": "Git ID: Show Current Identity"
+        "title": "%command.showCurrentIdentity%"
       }
     ],
     "configuration": {
-      "title": "Git ID Switcher",
+      "title": "%config.title%",
       "properties": {
         "gitIdSwitcher.identities": {
           "type": "array",
           "default": [],
-          "description": "List of Git identities to switch between",
+          "description": "%config.identities%",
           "items": {
             "type": "object",
             "properties": {
               "id": {
                 "type": "string",
-                "description": "Unique identifier for this identity"
+                "description": "%config.identities.id%"
               },
               "icon": {
                 "type": "string",
-                "description": "Icon/emoji to display in status bar"
+                "description": "%config.identities.icon%"
               },
               "name": {
                 "type": "string",
-                "description": "Git user.name"
+                "description": "%config.identities.name%"
               },
               "email": {
                 "type": "string",
-                "description": "Git user.email"
+                "description": "%config.identities.email%"
               },
               "description": {
                 "type": "string",
-                "description": "Short description of this identity (shown in quick pick and tooltip)"
+                "description": "%config.identities.description%"
               },
               "sshKeyPath": {
                 "type": "string",
-                "description": "Path to SSH private key (optional)"
+                "description": "%config.identities.sshKeyPath%"
               },
               "sshHost": {
                 "type": "string",
-                "description": "SSH config host alias for multi-account setups (optional)"
+                "description": "%config.identities.sshHost%"
               },
               "gpgKeyId": {
                 "type": "string",
-                "description": "GPG key ID for commit signing (optional)"
+                "description": "%config.identities.gpgKeyId%"
               }
             },
             "required": [
@@ -102,34 +102,34 @@
               "email"
             ]
           },
-          "markdownDescription": "List of Git identities. Each identity can have:\n- `id`: Unique identifier (required)\n- `name`: Git user.name (required)\n- `email`: Git user.email (required)\n- `icon`: Emoji to display in status bar\n- `description`: Short description of this identity\n- `sshKeyPath`: Path to SSH private key\n- `sshHost`: SSH config host alias (for multi-account setups)\n- `gpgKeyId`: GPG key ID for commit signing"
+          "markdownDescription": "%config.identities.markdown%"
         },
         "gitIdSwitcher.defaultIdentity": {
           "type": "string",
           "default": "",
-          "description": "Default identity ID to use when no identity is selected"
+          "description": "%config.defaultIdentity%"
         },
         "gitIdSwitcher.autoSwitchSshKey": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically switch SSH key when changing identities"
+          "description": "%config.autoSwitchSshKey%"
         },
         "gitIdSwitcher.showNotifications": {
           "type": "boolean",
           "default": true,
-          "description": "Show notifications when switching identities"
+          "description": "%config.showNotifications%"
         },
         "gitIdSwitcher.applyToSubmodules": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically apply identity to Git submodules when switching"
+          "description": "%config.applyToSubmodules%"
         },
         "gitIdSwitcher.submoduleDepth": {
           "type": "number",
           "default": 1,
           "minimum": 1,
           "maximum": 5,
-          "description": "Maximum depth for nested submodule configuration (1 = direct submodules only)"
+          "description": "%config.submoduleDepth%"
         }
       }
     }

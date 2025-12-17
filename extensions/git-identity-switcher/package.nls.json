@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Switch between multiple Git identities. Manage multiple GitHub accounts, SSH keys, GPG signing, and automatically apply identity to Git Submodules.",
+  "command.selectIdentity": "Git ID: Select Identity",
+  "command.showCurrentIdentity": "Git ID: Show Current Identity",
+  "config.title": "Git ID Switcher",
+  "config.identities": "List of Git identities to switch between",
+  "config.identities.markdown": "List of Git identities. Each identity can have:\n- `id`: Unique identifier (required)\n- `name`: Git user.name (required)\n- `email`: Git user.email (required)\n- `icon`: Emoji to display in status bar\n- `description`: Short description of this identity\n- `sshKeyPath`: Path to SSH private key\n- `sshHost`: SSH config host alias (for multi-account setups)\n- `gpgKeyId`: GPG key ID for commit signing",
+  "config.identities.id": "Unique identifier for this identity",
+  "config.identities.icon": "Icon/emoji to display in status bar",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Short description of this identity (shown in quick pick and tooltip)",
+  "config.identities.sshKeyPath": "Path to SSH private key (optional)",
+  "config.identities.sshHost": "SSH config host alias for multi-account setups (optional)",
+  "config.identities.gpgKeyId": "GPG key ID for commit signing (optional)",
+  "config.defaultIdentity": "Default identity ID to use when no identity is selected",
+  "config.autoSwitchSshKey": "Automatically switch SSH key when changing identities",
+  "config.showNotifications": "Show notifications when switching identities",
+  "config.applyToSubmodules": "Automatically apply identity to Git submodules when switching",
+  "config.submoduleDepth": "Maximum depth for nested submodule configuration (1 = direct submodules only)"
+}

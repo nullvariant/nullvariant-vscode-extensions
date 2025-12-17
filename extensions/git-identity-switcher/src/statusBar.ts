@@ -52,8 +52,8 @@ export class IdentityStatusBar implements vscode.Disposable {
    */
   setNoIdentity(): void {
     this.currentIdentity = undefined;
-    this.statusBarItem.text = '❓ Select Identity';
-    this.statusBarItem.tooltip = 'Click to select a Git identity';
+    this.statusBarItem.text = '❓ ' + vscode.l10n.t('Select Identity');
+    this.statusBarItem.tooltip = vscode.l10n.t('Click to select a Git identity');
     this.statusBarItem.backgroundColor = new vscode.ThemeColor(
       'statusBarItem.warningBackground'
     );
@@ -63,15 +63,15 @@ export class IdentityStatusBar implements vscode.Disposable {
    * Set status bar to loading state
    */
   setLoading(): void {
-    this.statusBarItem.text = '⏳ Switching...';
-    this.statusBarItem.tooltip = 'Switching identity...';
+    this.statusBarItem.text = '⏳ ' + vscode.l10n.t('Switching...');
+    this.statusBarItem.tooltip = vscode.l10n.t('Switching identity...');
   }
 
   /**
    * Set status bar to error state
    */
   setError(message: string): void {
-    this.statusBarItem.text = '❌ Identity Error';
+    this.statusBarItem.text = '❌ ' + vscode.l10n.t('Identity Error');
     this.statusBarItem.tooltip = message;
     this.statusBarItem.backgroundColor = new vscode.ThemeColor(
       'statusBarItem.errorBackground'
@@ -102,21 +102,21 @@ export class IdentityStatusBar implements vscode.Disposable {
     lines.push('---', '');
 
     // Identity details
-    lines.push(`- **Email:** ${identity.email}`);
+    lines.push('- ' + vscode.l10n.t('**Email:** {0}', identity.email));
 
     if (identity.sshHost) {
-      lines.push(`- **SSH Host:** ${identity.sshHost}`);
+      lines.push('- ' + vscode.l10n.t('**SSH Host:** {0}', identity.sshHost));
     }
 
     if (identity.sshKeyPath) {
-      lines.push(`- **SSH Key:** ${identity.sshKeyPath}`);
+      lines.push('- ' + vscode.l10n.t('**SSH Key:** {0}', identity.sshKeyPath));
     }
 
     if (identity.gpgKeyId) {
-      lines.push(`- **GPG Key:** ${identity.gpgKeyId}`);
+      lines.push('- ' + vscode.l10n.t('**GPG Key:** {0}', identity.gpgKeyId));
     }
 
-    lines.push('', '---', '', '*Click to switch identity*');
+    lines.push('', '---', '', vscode.l10n.t('*Click to switch identity*'));
 
     return lines.join('\n');
   }

@@ -156,7 +156,7 @@ async function selectIdentityCommand(
     if (selectedIdentity.id === currentIdentity?.id) {
       // Same identity selected, no change needed
       vscode.window.showInformationMessage(
-        `Already using ${getIdentityLabel(selectedIdentity)}`
+        vscode.l10n.t('Already using {0}', getIdentityLabel(selectedIdentity))
       );
       return;
     }
@@ -165,7 +165,7 @@ async function selectIdentityCommand(
     await switchToIdentity(selectedIdentity, context);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    showErrorNotification(`Failed to select identity: ${message}`);
+    showErrorNotification(vscode.l10n.t('Failed to select identity: {0}', message));
     statusBar.setError(message);
   }
 }
@@ -176,11 +176,11 @@ async function selectIdentityCommand(
 function showCurrentIdentityCommand(): void {
   if (currentIdentity) {
     vscode.window.showInformationMessage(
-      `Current identity: ${getIdentityLabel(currentIdentity)} (${currentIdentity.email})`
+      vscode.l10n.t('Current identity: {0} ({1})', getIdentityLabel(currentIdentity), currentIdentity.email)
     );
   } else {
     vscode.window.showInformationMessage(
-      'No identity selected. Click the status bar to select one.'
+      vscode.l10n.t('No identity selected. Click the status bar to select one.')
     );
   }
 }

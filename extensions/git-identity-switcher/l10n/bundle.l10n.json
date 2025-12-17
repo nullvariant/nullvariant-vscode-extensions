@@ -1,0 +1,23 @@
+{
+  "Select Identity": "Select Identity",
+  "Current": "Current",
+  "Switching...": "Switching...",
+  "Switching identity...": "Switching identity...",
+  "Identity Error": "Identity Error",
+  "Click to select a Git identity": "Click to select a Git identity",
+  "*Click to switch identity*": "*Click to switch identity*",
+  "Already using {0}": "Already using {0}",
+  "Current identity: {0} ({1})": "Current identity: {0} ({1})",
+  "No identity selected. Click the status bar to select one.": "No identity selected. Click the status bar to select one.",
+  "Failed to select identity: {0}": "Failed to select identity: {0}",
+  "Failed to switch identity: {0}": "Failed to switch identity: {0}",
+  "No identities configured. Add identities in settings: {0}": "No identities configured. Add identities in settings: {0}",
+  "Select Git Identity": "Select Git Identity",
+  "Search identities...": "Search identities...",
+  "Switched to {0}": "Switched to {0}",
+  "Git Identity Switcher: {0}": "Git Identity Switcher: {0}",
+  "**Email:** {0}": "**Email:** {0}",
+  "**SSH Host:** {0}": "**SSH Host:** {0}",
+  "**SSH Key:** {0}": "**SSH Key:** {0}",
+  "**GPG Key:** {0}": "**GPG Key:** {0}"
+}

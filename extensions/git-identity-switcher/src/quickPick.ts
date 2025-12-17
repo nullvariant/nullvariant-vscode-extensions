@@ -33,7 +33,7 @@ function createQuickPickItems(
     return {
       identity,
       label: getIdentityLabel(identity),
-      description: isCurrent ? '$(check) Current' : undefined,
+      description: isCurrent ? '$(check) ' + vscode.l10n.t('Current') : undefined,
       detail: getIdentityDetail(identity),
       picked: isCurrent,
     };
@@ -52,15 +52,15 @@ export async function showIdentityQuickPick(
 
   if (items.length === 0) {
     vscode.window.showWarningMessage(
-      'No identities configured. Add identities in settings: gitIdSwitcher.identities'
+      vscode.l10n.t('No identities configured. Add identities in settings: {0}', 'gitIdSwitcher.identities')
     );
     return undefined;
   }
 
   const quickPick = vscode.window.createQuickPick<IdentityQuickPickItem>();
   quickPick.items = items;
-  quickPick.title = 'Select Git Identity';
-  quickPick.placeholder = 'Search identities...';
+  quickPick.title = vscode.l10n.t('Select Git Identity');
+  quickPick.placeholder = vscode.l10n.t('Search identities...');
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
 
@@ -99,7 +99,7 @@ export function showIdentitySwitchedNotification(identity: Identity): void {
 
   if (showNotifications) {
     vscode.window.showInformationMessage(
-      `Switched to ${getIdentityLabel(identity)}`
+      vscode.l10n.t('Switched to {0}', getIdentityLabel(identity))
     );
   }
 }
@@ -108,5 +108,5 @@ export function showIdentitySwitchedNotification(identity: Identity): void {
  * Show error notification
  */
 export function showErrorNotification(message: string): void {
-  vscode.window.showErrorMessage(`Git Identity Switcher: ${message}`);
+  vscode.window.showErrorMessage(vscode.l10n.t('Git Identity Switcher: {0}', message));
 }

@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "複数のGit IDを切り替え。GitHub複数アカウント、SSHキー、GPG署名を管理し、ID設定をGitサブモジュールにも自動反映します。",
+  "command.selectIdentity": "Git ID: IDを選択",
+  "command.showCurrentIdentity": "Git ID: 現在のIDを表示",
+  "config.title": "Git ID Switcher",
+  "config.identities": "切り替えるGit IDのリスト",
+  "config.identities.markdown": "Git ID（プロフィール）のリスト。各IDには以下設定可能です：\n- `id`: 一意の識別子（必須）\n- `name`: Git user.name（必須）\n- `email`: Git user.email（必須）\n- `icon`: ステータスバーに表示する絵文字\n- `description`: このIDの短い説明\n- `sshKeyPath`: SSH秘密鍵へのパス\n- `sshHost`: SSH設定のホストエイリアス（マルチアカウント設定用）\n- `gpgKeyId`: コミット署名用のGPGキーID",
+  "config.identities.id": "このIDの一意の識別子",
+  "config.identities.icon": "ステータスバーに表示するアイコン/絵文字",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "このIDの短い説明（クイックピックやツールチップに表示）",
+  "config.identities.sshKeyPath": "SSH秘密鍵へのパス（オプション）",
+  "config.identities.sshHost": "マルチアカウント設定用のSSH設定ホストエイリアス（オプション）",
+  "config.identities.gpgKeyId": "コミット署名用のGPGキーID（オプション）",
+  "config.defaultIdentity": "IDが選択されていない場合に使用するデフォルトのID",
+  "config.autoSwitchSshKey": "ID変更時にSSHキーも自動的に切り替える",
+  "config.showNotifications": "ID切り替え時に通知を表示する",
+  "config.applyToSubmodules": "切り替え時にGitサブモジュールにもIDを自動適用する",
+  "config.submoduleDepth": "ネストされたサブモジュール設定の最大深度（1 = 直接のサブモジュールのみ）"
+}

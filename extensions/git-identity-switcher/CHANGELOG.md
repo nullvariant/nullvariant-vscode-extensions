@@ -10,7 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 - Remote URL auto-switching based on identity
 
-## [0.4.1] - 2025-12-11
+## [0.4.4] - 2025-12-17
+
+### Added
+
+- **Localization Support**: Extension is now fully localized
+  - Added Japanese (日本語) translation
+  - Supports localized commands, settings, notifications, and status bar messages
+- **Documentation**: Added "Why this extension?" section to clarify unique value proposition
+- **Documentation**: Added "Advanced: Submodule Support" section to explain how identity propagation works
+
+## [0.4.3] - 2025-12-11
+
+### Changed
+
+- **Submodule Fixes**: Improved reliability of recursive submodule identity application
 
 ### Changed
 
