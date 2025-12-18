@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-12-18
+
+### Added
+
+- **Tier 2 Documentation i18n**: Full README translations for all 17 VSCode languages
+  - Asian languages: 简体中文 (zh-CN), 繁體中文 (zh-TW), 한국어 (ko)
+  - European languages: Deutsch (de), Français (fr), Español (es), Português Brasil (pt-BR), Italiano (it), Русский (ru)
+  - Additional languages: Polski (pl), Türkçe (tr), Čeština (cs), Magyar (hu), Български (bg), Українська (uk)
+- **LANGUAGES.md**: Added comprehensive language support overview document
+  - Documents Tier 1 (VSCode UI) and Tier 2 (README) language support
+  - Includes planned minority languages (Hawaiian, Māori, Welsh, etc.)
+  - Contribution guidelines for translators
+
+### Changed
+
+- **Localized Example Names**: All README translations use culturally appropriate gender-neutral names
+  - Chinese: 陳雨 (zh-TW), 张雨 (zh-CN)
+  - Korean: 김민
+  - European languages: Alex + locale-specific surname
+
 ## [0.5.6] - 2025-12-18
 
 ### Changed
@@ -225,7 +245,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.6...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.6.0...HEAD
+[0.6.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.6...git-id-switcher-v0.6.0
 [0.5.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.5...git-id-switcher-v0.5.6
 [0.5.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.4...git-id-switcher-v0.5.5
 [0.5.4]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.3...git-id-switcher-v0.5.4
