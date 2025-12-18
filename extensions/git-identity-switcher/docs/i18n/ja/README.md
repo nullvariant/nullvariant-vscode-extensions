@@ -284,8 +284,8 @@ Host github-oss
 
 | 設定                              | デフォルト | 説明                                         |
 | --------------------------------- | ---------- | -------------------------------------------- |
-| `gitIdSwitcher.identities`        | `[]`       | プロフィール設定のリスト                     |
-| `gitIdSwitcher.defaultIdentity`   | `""`       | 使用するデフォルトプロフィールのID           |
+| `gitIdSwitcher.identities`        | サンプル参照 | プロフィール設定のリスト                     |
+| `gitIdSwitcher.defaultIdentity`   | サンプル参照 | 使用するデフォルトプロフィールのID           |
 | `gitIdSwitcher.autoSwitchSshKey`  | `true`     | プロフィール変更時にSSHキーを自動切り替え     |
 | `gitIdSwitcher.showNotifications` | `true`     | プロフィール切り替え時に通知を表示           |
 | `gitIdSwitcher.applyToSubmodules` | `true`     | Gitサブモジュールにプロフィールを伝播        |
