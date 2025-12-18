@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -58,7 +58,18 @@
       "properties": {
         "gitIdSwitcher.identities": {
           "type": "array",
-          "default": [],
+          "default": [
+            {
+              "id": "example",
+              "icon": "👤",
+              "name": "Your Name",
+              "email": "you@example.com",
+              "description": "Edit this or add your own identity",
+              "sshKeyPath": "",
+              "sshHost": "",
+              "gpgKeyId": ""
+            }
+          ],
           "description": "%config.identities%",
           "items": {
             "type": "object",
