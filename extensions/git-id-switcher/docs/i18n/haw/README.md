@@ -40,7 +40,7 @@
 
 <br>
 
-<img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/docs/demo.png" width="600" alt="Demo">
+<img src="demo.png" width="600" alt="Demo">
 
 ## Nā Hiʻohiʻona (Features)
 

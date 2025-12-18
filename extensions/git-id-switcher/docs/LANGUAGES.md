@@ -88,19 +88,19 @@ Full README documentation translated.
 
 ### Joke Languages 🎭
 
-| Emoji | Code | Language | Description | Status |
+| Emoji | Code | Language | Description | README |
 |-------|------|----------|-------------|--------|
-| 🏴‍☠️ | x-pirate | Pirate | Arrr! Sailor slang | 📝 Planned |
-| 🐱 | x-lolcat | LOLcat | I CAN HAZ CHEEZBURGER? | 📝 Planned |
-| 🎭 | x-shakespeare | Shakespearean | Wherefore art thou? | 📝 Planned |
-| 🖖 | tlh | Klingon | tlhIngan Hol | 📝 Planned |
-| ✨ | tok | Toki Pona | 120-word language | 📝 Planned |
+| 🏴‍☠️ | x-pirate | Pirate | Arrr! Sailor slang | [README.md](i18n/x-pirate/README.md) |
+| 🐱 | x-lolcat | LOLcat | I CAN HAZ CHEEZBURGER? | [README.md](i18n/x-lolcat/README.md) |
+| 🎭 | x-shakespeare | Shakespearean | Wherefore art thou? | [README.md](i18n/x-shakespeare/README.md) |
+| 🖖 | tlh | Klingon | tlhIngan Hol | [README.md](i18n/tlh/README.md) |
+| ✨ | tok | Toki Pona | 120-word language | [README.md](i18n/tok/README.md) |
 
 ### Special 🌍
 
-| Emoji | Code | Language | Native Name | Status |
+| Emoji | Code | Language | Native Name | README |
 |-------|------|----------|-------------|--------|
-| 🌍 | eo | Esperanto | Esperanto | 📝 Planned |
+| 🌍 | eo | Esperanto | Esperanto | [README.md](i18n/eo/README.md) |
 
 ---
 
