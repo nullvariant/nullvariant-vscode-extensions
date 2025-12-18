@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5] - 2025-12-18
+
 ### Security
 
 - **CRITICAL: Fixed Command Injection Vulnerability** (CVE pending)
@@ -161,7 +163,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.3.1...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.4.5...HEAD
+[0.4.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.4.4...git-id-switcher-v0.4.5
+[0.4.4]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.4.3...git-id-switcher-v0.4.4
+[0.4.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.4.0...git-id-switcher-v0.4.3
+[0.4.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.3.1...git-id-switcher-v0.4.0
 [0.3.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.3.1
 [0.3.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.3.0
 [0.2.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/releases/tag/git-id-switcher-v0.2.0
