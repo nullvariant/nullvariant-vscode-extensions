@@ -22,7 +22,7 @@
 ## 機能
 
 - **ワンクリックでプロフィール切り替え**: Git user.nameとuser.emailを瞬時に変更
-- **SSHキー管理**: ssh-agentのSSHキーを自動的に切り替え（オプション）
+- **SSHキー管理**: ssh-agentのSSHキーを自動的に切り替え
 - **GPG署名対応**: コミット署名用のGPGキーを設定（オプション）
 - **サブモジュール対応**: Gitサブモジュールにも自動的にプロフィールを伝播
 - **ステータスバー統合**: 現在のプロフィールを常に一目で確認
@@ -49,99 +49,27 @@ Gitプロフィール切り替えツールは数多く存在しますが、**Git
 
 ---
 
-## クイックスタート（最小構成）
+## クイックスタート
 
-最もシンプルな設定は`id`、`name`、`email`のみ必要です。SSHやGPGの設定は不要です。
+複数のGitHubアカウントを使い分ける典型的なセットアップです。
 
-### ステップ 1: settings.jsonに追加
+### ステップ 1: SSHキーを準備
 
-VS Code設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 →「settings.jsonで編集」をクリック。
+まず、アカウントごとにSSHキーを作成します（すでにある場合はスキップ）：
 
-インストール直後は以下のようなサンプルプロフィールが設定されています：
+```bash
+# 個人用
+ssh-keygen -t ed25519 -C "taro@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "example",
-      "icon": "👤",
-      "name": "Your Name",
-      "email": "you@example.com",
-      "description": "Edit this or add your own identity",
-      "sshKeyPath": "",
-      "sshHost": "",
-      "gpgKeyId": ""
-    }
-  ]
-}
+# 仕事用
+ssh-keygen -t ed25519 -C "taro.yamada@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
-これを編集して、あなた自身のプロフィールを設定しましょう。例えば個人用と職場用を追加：
+各キーの公開鍵（`.pub`）をそれぞれのGitHubアカウントに登録してください。
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "山田太郎",
-      "email": "taro@personal.example.com"
-    },
-    {
-      "id": "work",
-      "name": "山田太郎",
-      "email": "taro.yamada@company.example.com"
-    }
-  ]
-}
-```
+### ステップ 2: SSH configを設定
 
-### ステップ 2: 使ってみる
-
-1. ステータスバー（右下）のプロフィールアイコンをクリック
-2. プロフィールを選択
-3. 完了！Git configが切り替わりました。
-
-この基本設定では`git config user.name`と`user.email`を変更するだけです。
-
----
-
-## オプション: ビジュアルプロフィールを追加
-
-アイコンと説明でプロフィールを認識しやすくしましょう。デフォルトのサンプル設定にはすでに絵文字が含まれています：
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "icon": "🏠",
-      "name": "山田太郎",
-      "email": "taro@personal.example.com",
-      "description": "個人プロジェクト"
-    },
-    {
-      "id": "work",
-      "icon": "💼",
-      "name": "山田太郎",
-      "email": "taro.yamada@company.example.com",
-      "description": "会社の開発用"
-    }
-  ]
-}
-```
-
-- `icon`: ステータスバーに表示される絵文字
-- `description`: ピッカーとツールチップに表示
-
----
-
-## オプション: SSHキー切り替え
-
-異なるSSHキーを持つ複数のGitHub/GitLabアカウントがある場合：
-
-### ステップ 1: SSHホストエイリアスを設定
-
-`~/.ssh/config`を編集：
+`~/.ssh/config` を編集：
 
 ```ssh-config
 # 個人用GitHubアカウント（デフォルト）
@@ -159,34 +87,46 @@ Host github-work
     IdentitiesOnly yes
 ```
 
-### ステップ 2: プロフィールにSSH設定を追加
+### ステップ 3: 拡張機能を設定
+
+VS Code設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 →「settings.jsonで編集」をクリック：
 
 ```json
 {
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
+      "icon": "🏠",
       "name": "山田太郎",
       "email": "taro@personal.example.com",
+      "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
+      "icon": "💼",
       "name": "山田太郎",
       "email": "taro.yamada@company.example.com",
+      "description": "会社の開発用",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
     }
-  ]
+  ],
+  "gitIdSwitcher.defaultIdentity": "personal",
+  "gitIdSwitcher.autoSwitchSshKey": true,
+  "gitIdSwitcher.applyToSubmodules": true
 }
 ```
 
-- `sshKeyPath`: SSHプライベートキーへのパス（切り替え時にssh-agentに追加）
-- `sshHost`: SSH configのHostエイリアス（ツールチップに表示、どのホストを使うか思い出すのに便利）
+### ステップ 4: 使ってみる
+
+1. ステータスバー（右下）のプロフィールアイコンをクリック
+2. プロフィールを選択
+3. 完了！Git configとSSHキーが切り替わりました。
 
 ### SSHホストエイリアスの使い方
 
-`sshHost`を持つプロフィールのリポジトリをクローンする場合：
+リポジトリをクローンする際、プロフィールに対応したホストを使用します：
 
 ```bash
 # 仕事用プロフィール（github-workエイリアスを使用）
@@ -225,8 +165,11 @@ uid         [ultimate] 山田太郎 <taro@personal.example.com>
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
+      "icon": "🏠",
       "name": "山田太郎",
       "email": "taro@personal.example.com",
+      "description": "個人プロジェクト",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
     }
   ]
@@ -240,7 +183,7 @@ uid         [ultimate] 山田太郎 <taro@personal.example.com>
 
 ---
 
-## フル設定例: 複数アカウントとSSH + GPG
+## フル設定例: 4アカウントとSSH + GPG
 
 すべてを組み合わせた完全な例：
 
@@ -316,7 +259,7 @@ Host github-oss
 }
 ```
 
-注意：最後のプロフィール（`freelance`）にはSSHやGPGがありません。Git configのみを切り替えます。
+注意：最後のプロフィール（`freelance`）にはSSHがありません。同じGitHubアカウントで異なるコミット者情報を使い分ける場合など、Git configのみの切り替えも可能です。
 
 ---
 
@@ -374,8 +317,8 @@ Gitサブモジュールを使用する複雑なリポジトリでは、プロ�
 
 - `applyToSubmodules`: この機能の有効/無効を切り替え
 - `submoduleDepth`: どの深さまで適用するか？
-    - `1`: 直接のサブモジュールのみ（最も一般的）
-    - `2+`: ネストされたサブモジュール（サブモジュール内のサブモジュール）
+  - `1`: 直接のサブモジュールのみ（最も一般的）
+  - `2+`: ネストされたサブモジュール（サブモジュール内のサブモジュール）
 
 これにより、メインリポジトリでコミットしても、ベンダーライブラリでコミットしても、プロフィールは常に正しく設定されます。
 
@@ -462,3 +405,32 @@ MITライセンス - [LICENSE](../../LICENSE)をご覧ください。
 ## クレジット
 
 [Null;Variant](https://github.com/nullvariant) によって作成
+
+---
+
+## 補足: 基本設定のみ（SSHなし）
+
+SSHキー切り替えが不要な場合（単一のGitHubアカウントで異なるコミット者情報を使い分けるなど）、最小構成で利用できます：
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "personal",
+      "icon": "🏠",
+      "name": "山田太郎",
+      "email": "taro@personal.example.com",
+      "description": "個人プロジェクト"
+    },
+    {
+      "id": "work",
+      "icon": "💼",
+      "name": "山田太郎",
+      "email": "taro.yamada@company.example.com",
+      "description": "会社の開発用"
+    }
+  ]
+}
+```
+
+この設定では`git config user.name`と`user.email`のみを切り替えます。
