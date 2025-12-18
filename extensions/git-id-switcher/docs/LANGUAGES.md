@@ -62,18 +62,27 @@ Full README documentation translated.
 
 ### Minority Languages 🌏
 
+> **Why only three languages?**
+>
+> There are approximately 7,000 languages in the world, and nearly half of them face the risk of extinction within a few generations.
+> I cannot translate into all of them.
+>
+> So I started with languages I have a personal connection to—places I've visited, cultures I've touched.
+> Starting from small, personal connections is, I believe, the first step toward understanding minorities.
+>
+> - 🌺 **Hawaiian**: I was guided through sacred sites on Maui by a Native Hawaiian. At Honolulu Airport, I learned that Hawaiian is announced before English—a sign of respect for the local people.
+> - 🐻 **Ainu**: I recently visited Hokkaido and saw the Ainu exhibitions at the Former Government Office.
+> - 🌴 **Ryukyuan**: I visit Okinawa frequently as a tourist.
+>
+> If you have a connection to an endangered language, please consider contributing a translation.
+> Your small connection matters too.
+>
 > ⚠️ These translations are experimental and may contain errors.
 > Native speakers are warmly invited to submit corrections via PR.
 
 | Emoji | Code | Language | Native Name | Status |
 |-------|------|----------|-------------|--------|
 | 🌺 | haw | Hawaiian | ʻŌlelo Hawaiʻi | 📝 Planned |
-| 🇳🇿 | mi | Māori | Te Reo Māori | 📝 Planned |
-| 🏴󠁧󠁢󠁷󠁬󠁳󠁿 | cy | Welsh | Cymraeg | 📝 Planned |
-| 🇮🇪 | ga | Irish | Gaeilge | 📝 Planned |
-| 🇵🇾 | gn | Guarani | Avañe'ẽ | 📝 Planned |
-| 🇺🇸 | nv | Navajo | Diné bizaad | 📝 Planned |
-| 🇺🇸 | chr | Cherokee | ᏣᎳᎩ | 📝 Planned |
 | 🐻 | ain | Ainu | アイヌ イタㇰ | 📝 Planned |
 | 🌴 | ryu | Ryukyuan | 島言葉 | 📝 Planned |
 
