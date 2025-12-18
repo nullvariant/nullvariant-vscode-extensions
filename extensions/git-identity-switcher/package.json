@@ -168,5 +168,6 @@
     "url": "https://github.com/nullvariant/nullvariant-vscode-extensions",
     "directory": "extensions/git-identity-switcher"
   },
+  "homepage": "https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-identity-switcher",
   "license": "MIT"
 }
