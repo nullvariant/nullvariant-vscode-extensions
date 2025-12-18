@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5] - 2025-12-18
+
+### Changed
+
+- **README Improvements**: Use gender-neutral example names
+  - English: Alex Smith (Alex = Alexander/Alexandra)
+  - Japanese: Kaoru Takahashi (Kaoru is unisex)
+  - Shows consideration for gender diversity
+
 ## [0.5.4] - 2025-12-18
 
 ### Fixed
@@ -208,7 +217,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.4...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.5...HEAD
+[0.5.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.4...git-id-switcher-v0.5.5
 [0.5.4]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.3...git-id-switcher-v0.5.4
 [0.5.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.2...git-id-switcher-v0.5.3
 [0.5.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.1...git-id-switcher-v0.5.2
