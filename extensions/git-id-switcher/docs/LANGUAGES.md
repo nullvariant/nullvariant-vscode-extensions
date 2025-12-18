@@ -1,4 +1,4 @@
-# Supported Languages / 対応言語
+# Supported Languages
 
 This extension values linguistic diversity. We support not only major languages but also minority languages and even joke languages.
 
