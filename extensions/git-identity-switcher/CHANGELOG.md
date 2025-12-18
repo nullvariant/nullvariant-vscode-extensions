@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **CRITICAL: Fixed Command Injection Vulnerability** (CVE pending)
+  - Migrated all `exec()` calls to `execFile()` to prevent shell interpretation
+  - User-provided values (name, email, SSH paths, GPG keys) are now safely passed as array arguments
+  - Added input validation layer with dangerous character pattern detection
+  - Added command allowlist for defense-in-depth security
+
+### Added
+
+- **Security Audit Logging**: New Output Channel "Git ID Switcher Security"
+  - Logs identity switches, SSH key operations, validation failures, and blocked commands
+  - Accessible via VS Code Output panel
+- **Input Validation**: Comprehensive validation for all identity fields
+  - Rejects shell metacharacters, newlines, and escape sequences
+  - Validates email format, SSH paths, GPG key IDs
+- **Command Allowlist**: Only permitted git/ssh commands can be executed
+- **CI/CD Security Checks**: Added GitHub Actions workflow for security scanning
+  - npm audit on every push
+  - CodeQL static analysis
+  - Dangerous pattern detection
+
+### Changed
+
+- All command execution now uses `secureExec()` wrapper with timeout and buffer limits
+- Identity validation is enforced before any git config changes
+
 ### Planned
 - Remote URL auto-switching based on identity
 

@@ -139,6 +139,8 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
+    "test": "npm run compile && node out/test/runTests.js",
+    "test:security": "npm run compile && node out/test/runTests.js",
     "package": "vsce package"
   },
   "devDependencies": {

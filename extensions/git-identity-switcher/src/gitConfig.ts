@@ -4,20 +4,21 @@
  * Handles reading and writing Git config for user identity switching.
  * Uses workspace-level config when in a Git repository.
  * Supports propagating config to submodules.
+ *
+ * SECURITY: Uses execFile() via secureExec to prevent command injection.
+ * @see https://owasp.org/www-community/attacks/Command_Injection
  */
 
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { Identity, formatGitAuthor, getIdentities } from './identity';
+import { gitExec, secureExec } from './secureExec';
+import { validateIdentity } from './validation';
 import {
   listSubmodulesRecursive,
   setIdentityForSubmodules,
   isSubmoduleSupportEnabled,
   getSubmoduleDepth,
 } from './submodule';
-
-const execAsync = promisify(exec);
 
 export interface GitConfig {
   userName?: string;
@@ -27,22 +28,17 @@ export interface GitConfig {
 
 /**
  * Execute a git command in the current workspace
+ *
+ * @param args - Git arguments as array (NOT a string command)
  */
-async function execGit(command: string): Promise<string> {
+async function execGitInWorkspace(args: string[]): Promise<string> {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
   if (!workspaceFolder) {
     throw new Error('No workspace folder open');
   }
 
   const cwd = workspaceFolder.uri.fsPath;
-
-  try {
-    const { stdout } = await execAsync(`git ${command}`, { cwd });
-    return stdout.trim();
-  } catch (error) {
-    // Git command failed (e.g., config not set)
-    return '';
-  }
+  return gitExec(args, cwd);
 }
 
 /**
@@ -50,9 +46,9 @@ async function execGit(command: string): Promise<string> {
  */
 export async function getCurrentGitConfig(): Promise<GitConfig> {
   const [userName, userEmail, signingKey] = await Promise.all([
-    execGit('config user.name'),
-    execGit('config user.email'),
-    execGit('config user.signingkey'),
+    execGitInWorkspace(['config', 'user.name']),
+    execGitInWorkspace(['config', 'user.email']),
+    execGitInWorkspace(['config', 'user.signingkey']),
   ]);
 
   return {
@@ -67,6 +63,8 @@ export async function getCurrentGitConfig(): Promise<GitConfig> {
  *
  * Uses --local to set workspace-level config.
  * Optionally propagates to submodules if enabled.
+ *
+ * SECURITY: Validates identity before applying config
  */
 export async function setGitConfigForIdentity(identity: Identity): Promise<void> {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -74,25 +72,35 @@ export async function setGitConfigForIdentity(identity: Identity): Promise<void>
     throw new Error('No workspace folder open');
   }
 
+  // SECURITY: Validate identity before use
+  const validation = validateIdentity(identity);
+  if (!validation.valid) {
+    throw new Error(`Invalid identity configuration: ${validation.errors.join(', ')}`);
+  }
+
   // Check if we're in a git repository
-  const isGitRepo = await execGit('rev-parse --is-inside-work-tree');
+  const isGitRepo = await execGitInWorkspace(['rev-parse', '--is-inside-work-tree']);
   if (isGitRepo !== 'true') {
     throw new Error('Not in a Git repository');
   }
+
+  const cwd = workspaceFolder.uri.fsPath;
 
   // Set user.name (with emoji prefix if provided)
   const userName = identity.icon
     ? `${identity.icon} ${identity.name}`
     : identity.name;
-  await execGit(`config --local user.name "${userName}"`);
+
+  // SECURITY: Using gitExec with array args prevents command injection
+  await gitExec(['config', '--local', 'user.name', userName], cwd);
 
   // Set user.email
-  await execGit(`config --local user.email "${identity.email}"`);
+  await gitExec(['config', '--local', 'user.email', identity.email], cwd);
 
   // Set GPG signing key if available
   if (identity.gpgKeyId) {
-    await execGit(`config --local user.signingkey "${identity.gpgKeyId}"`);
-    await execGit('config --local commit.gpgsign true');
+    await gitExec(['config', '--local', 'user.signingkey', identity.gpgKeyId], cwd);
+    await gitExec(['config', '--local', 'commit.gpgsign', 'true'], cwd);
   }
 
   // Propagate to submodules if enabled
@@ -166,7 +174,8 @@ export function getGitAuthorFlag(identity: Identity): string {
  */
 export async function isGitAvailable(): Promise<boolean> {
   try {
-    await execAsync('git --version');
+    // SECURITY: Using secureExec instead of exec
+    await secureExec('git', ['--version']);
     return true;
   } catch {
     return false;
@@ -177,6 +186,6 @@ export async function isGitAvailable(): Promise<boolean> {
  * Check if current directory is a Git repository
  */
 export async function isGitRepository(): Promise<boolean> {
-  const result = await execGit('rev-parse --is-inside-work-tree');
+  const result = await execGitInWorkspace(['rev-parse', '--is-inside-work-tree']);
   return result === 'true';
 }

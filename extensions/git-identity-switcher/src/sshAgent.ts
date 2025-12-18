@@ -3,15 +3,16 @@
  *
  * Handles adding/removing SSH keys from ssh-agent.
  * Cross-platform support for macOS, Linux, and Windows.
+ *
+ * SECURITY: Uses execFile() via secureExec to prevent command injection.
+ * @see https://owasp.org/www-community/attacks/Command_Injection
  */
 
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import * as os from 'os';
 import * as path from 'path';
 import { Identity, getIdentities } from './identity';
-
-const execAsync = promisify(exec);
+import { sshAgentExec, sshKeygenExec } from './secureExec';
+import { isPathSafe } from './validation';
 
 export interface SshKeyInfo {
   fingerprint: string;
@@ -30,11 +31,23 @@ function expandPath(keyPath: string): string {
 }
 
 /**
+ * Validate SSH key path for security
+ *
+ * @throws Error if path is potentially dangerous
+ */
+function validateKeyPath(keyPath: string): void {
+  if (!isPathSafe(keyPath)) {
+    throw new Error(`Invalid SSH key path: ${keyPath}`);
+  }
+}
+
+/**
  * List all keys currently in ssh-agent
  */
 export async function listSshKeys(): Promise<SshKeyInfo[]> {
   try {
-    const { stdout } = await execAsync('ssh-add -l');
+    // SECURITY: Using sshAgentExec with array args
+    const { stdout } = await sshAgentExec(['-l']);
     const lines = stdout.trim().split('\n').filter(line => line.length > 0);
 
     return lines.map(line => {
@@ -63,8 +76,13 @@ export async function listSshKeys(): Promise<SshKeyInfo[]> {
  * Add SSH key to agent
  *
  * Uses --apple-use-keychain for macOS Keychain integration
+ *
+ * SECURITY: Path is validated before use
  */
 export async function addSshKey(keyPath: string): Promise<void> {
+  // SECURITY: Validate path before use
+  validateKeyPath(keyPath);
+
   const expandedPath = expandPath(keyPath);
 
   // Check platform for appropriate ssh-add flags
@@ -73,13 +91,12 @@ export async function addSshKey(keyPath: string): Promise<void> {
   try {
     if (platform === 'darwin') {
       // macOS: Use Keychain integration
-      await execAsync(`ssh-add --apple-use-keychain "${expandedPath}"`);
-    } else if (platform === 'win32') {
-      // Windows: Standard ssh-add (assumes OpenSSH is installed)
-      await execAsync(`ssh-add "${expandedPath}"`);
+      // SECURITY: Using sshAgentExec with array args prevents injection
+      await sshAgentExec(['--apple-use-keychain', expandedPath]);
     } else {
-      // Linux and others
-      await execAsync(`ssh-add "${expandedPath}"`);
+      // Windows, Linux and others
+      // SECURITY: Path is passed as a single array element, not interpolated
+      await sshAgentExec([expandedPath]);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -89,12 +106,18 @@ export async function addSshKey(keyPath: string): Promise<void> {
 
 /**
  * Remove SSH key from agent
+ *
+ * SECURITY: Path is validated before use
  */
 export async function removeSshKey(keyPath: string): Promise<void> {
+  // SECURITY: Validate path before use
+  validateKeyPath(keyPath);
+
   const expandedPath = expandPath(keyPath);
 
   try {
-    await execAsync(`ssh-add -d "${expandedPath}"`);
+    // SECURITY: Using sshAgentExec with array args
+    await sshAgentExec(['-d', expandedPath]);
   } catch (error) {
     // Ignore errors (key might not be loaded)
   }
@@ -140,6 +163,9 @@ export async function switchToIdentitySshKey(identity: Identity): Promise<void> 
  * Check if a specific key is loaded in the agent
  */
 export async function isKeyLoaded(keyPath: string): Promise<boolean> {
+  // SECURITY: Validate path
+  validateKeyPath(keyPath);
+
   const expandedPath = expandPath(keyPath);
   const keys = await listSshKeys();
 
@@ -175,12 +201,18 @@ export async function detectCurrentIdentityFromSsh(): Promise<Identity | undefin
 
 /**
  * Get SSH key fingerprint
+ *
+ * SECURITY: Path is validated before use
  */
 export async function getKeyFingerprint(keyPath: string): Promise<string | undefined> {
+  // SECURITY: Validate path before use
+  validateKeyPath(keyPath);
+
   const expandedPath = expandPath(keyPath);
 
   try {
-    const { stdout } = await execAsync(`ssh-keygen -lf "${expandedPath}"`);
+    // SECURITY: Using sshKeygenExec with array args
+    const { stdout } = await sshKeygenExec(['-lf', expandedPath]);
     const match = stdout.match(/(\S+)\s+(\S+)/);
     return match ? match[2] : undefined;
   } catch {

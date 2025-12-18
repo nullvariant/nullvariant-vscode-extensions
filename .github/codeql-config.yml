@@ -1,0 +1,14 @@
+name: "CodeQL Configuration"
+
+# Focus on the git-identity-switcher extension
+paths:
+  - 'extensions/git-identity-switcher/src'
+
+paths-ignore:
+  - 'extensions/git-identity-switcher/node_modules'
+  - 'extensions/git-identity-switcher/out'
+  - '**/*.test.ts'
+
+queries:
+  - uses: security-extended
+  - uses: security-and-quality

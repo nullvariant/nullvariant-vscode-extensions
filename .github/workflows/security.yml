@@ -1,0 +1,137 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'extensions/git-identity-switcher/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'extensions/git-identity-switcher/**'
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extensions/git-identity-switcher
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: extensions/git-identity-switcher/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run npm audit (production only)
+        run: npm audit --omit=dev --audit-level=high
+
+  lint-security:
+    name: Security Linting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extensions/git-identity-switcher
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: extensions/git-identity-switcher/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check for dangerous patterns
+        run: |
+          echo "Checking for dangerous exec() usage..."
+          if grep -rn "exec(" src/ --include="*.ts" | grep -v "execFile" | grep -v "secureExec" | grep -v ".test.ts"; then
+            echo "❌ Found potentially dangerous exec() calls"
+            exit 1
+          fi
+          echo "✅ No dangerous exec() patterns found"
+
+          echo "Checking for string interpolation in commands..."
+          if grep -rn 'execAsync.*`' src/ --include="*.ts" | grep -v ".test.ts"; then
+            echo "❌ Found string interpolation in command execution"
+            exit 1
+          fi
+          echo "✅ No string interpolation in commands"
+
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extensions/git-identity-switcher
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: extensions/git-identity-switcher/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile TypeScript
+        run: npm run compile
+
+      - name: Run security tests
+        run: npm run test:security
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: typescript
+          config-file: ./.github/codeql-config.yml
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:typescript"

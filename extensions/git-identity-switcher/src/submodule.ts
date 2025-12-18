@@ -3,14 +3,14 @@
  *
  * Handles detection and configuration of Git submodules.
  * Allows identity settings to propagate to all submodules.
+ *
+ * SECURITY: Uses execFile() via secureExec to prevent command injection.
+ * @see https://owasp.org/www-community/attacks/Command_Injection
  */
 
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import * as path from 'path';
 import * as vscode from 'vscode';
-
-const execAsync = promisify(exec);
+import { gitExec } from './secureExec';
 
 export interface Submodule {
   /** Relative path from workspace root */
@@ -24,18 +24,6 @@ export interface Submodule {
 }
 
 /**
- * Execute a git command in the specified directory
- */
-async function execGitIn(cwd: string, command: string): Promise<string> {
-  try {
-    const { stdout } = await execAsync(`git ${command}`, { cwd });
-    return stdout.trim();
-  } catch (error) {
-    return '';
-  }
-}
-
-/**
  * List all submodules in the workspace
  *
  * Uses `git submodule status` to get submodule information.
@@ -43,7 +31,8 @@ async function execGitIn(cwd: string, command: string): Promise<string> {
  */
 export async function listSubmodules(workspacePath: string): Promise<Submodule[]> {
   try {
-    const { stdout } = await execAsync('git submodule status', { cwd: workspacePath });
+    // SECURITY: Using gitExec with array args
+    const stdout = await gitExec(['submodule', 'status'], workspacePath);
 
     if (!stdout.trim()) {
       return [];
@@ -112,6 +101,12 @@ export async function listSubmodulesRecursive(
 
 /**
  * Set Git config for a submodule
+ *
+ * SECURITY: Uses gitExec with array args to prevent command injection
+ *
+ * @param submodulePath - Absolute path to the submodule
+ * @param key - Git config key (e.g., 'user.name')
+ * @param value - Git config value
  */
 export async function setSubmoduleGitConfig(
   submodulePath: string,
@@ -119,7 +114,9 @@ export async function setSubmoduleGitConfig(
   value: string
 ): Promise<boolean> {
   try {
-    await execGitIn(submodulePath, `config --local ${key} "${value}"`);
+    // SECURITY: Using gitExec with array args prevents command injection
+    // The key and value are passed as separate array elements, not interpolated
+    await gitExec(['config', '--local', key, value], submodulePath);
     return true;
   } catch (error) {
     console.error(`Failed to set ${key} in ${submodulePath}:`, error);

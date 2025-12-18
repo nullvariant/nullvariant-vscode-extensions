@@ -27,6 +27,7 @@ import {
   showIdentitySwitchedNotification,
   showErrorNotification,
 } from './quickPick';
+import { securityLogger } from './securityLogger';
 
 // Global state
 let statusBar: IdentityStatusBar;
@@ -39,6 +40,10 @@ export async function activate(
   context: vscode.ExtensionContext
 ): Promise<void> {
   console.log('Git Identity Switcher is activating...');
+
+  // Initialize security logger
+  securityLogger.initialize();
+  securityLogger.logActivation();
 
   // Create status bar
   statusBar = createStatusBar();
@@ -83,6 +88,8 @@ export async function activate(
  * Extension deactivation
  */
 export function deactivate(): void {
+  securityLogger.logDeactivation();
+  securityLogger.dispose();
   console.log('Git Identity Switcher deactivated');
 }
 
@@ -194,6 +201,8 @@ async function switchToIdentity(
 ): Promise<void> {
   statusBar.setLoading();
 
+  const previousIdentityId = currentIdentity?.id ?? null;
+
   try {
     const config = vscode.workspace.getConfiguration('gitIdSwitcher');
     const autoSwitchSshKey = config.get<boolean>('autoSwitchSshKey', true);
@@ -206,6 +215,7 @@ async function switchToIdentity(
     // Switch SSH key if enabled and key is configured
     if (autoSwitchSshKey && identity.sshKeyPath) {
       await switchToIdentitySshKey(identity);
+      securityLogger.logSshKeyLoad(identity.sshKeyPath, true);
     }
 
     // Update state
@@ -214,6 +224,9 @@ async function switchToIdentity(
 
     // Save to workspace state
     await context.workspaceState.update('currentIdentityId', identity.id);
+
+    // Log identity switch
+    securityLogger.logIdentitySwitch(previousIdentityId, identity.id);
 
     // Show notification
     showIdentitySwitchedNotification(identity);
