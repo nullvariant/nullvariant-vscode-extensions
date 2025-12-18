@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-12-18
+
+### Added
+
+- **Full Internationalization**: Added 15 new language translations for VSCode UI
+  - Asian languages: 简体中文 (zh-CN), 繁體中文 (zh-TW), 한국어 (ko)
+  - European languages: Deutsch (de), Français (fr), Español (es), Português Brasil (pt-BR), Italiano (it), Русский (ru)
+  - Additional languages: Polski (pl), Türkçe (tr), Čeština (cs), Magyar (hu), Български (bg), Українська (uk)
+- All extension metadata, commands, settings, and runtime UI strings are now localized
+- Total supported languages: 17 (including existing English and Japanese)
+
 ## [0.4.5] - 2025-12-18
 
 ### Security
