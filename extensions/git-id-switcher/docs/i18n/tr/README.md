@@ -1,0 +1,438 @@
+# Git ID Switcher
+
+<table>
+  <tr>
+    <td align="center" width="150">
+      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
+    </td>
+    <td>
+      Tek tıklamayla birden fazla Git kimliği arasında geçiş yapın. Birden fazla GitHub hesabını, SSH anahtarlarını, GPG imzalamayı yönetin ve <b>kimliği Git alt modüllerine otomatik olarak uygulayın</b>.
+      <br><br>
+      <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
+      <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
+      <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+      <br>
+      🌐 Diller: <a href="../../../README.md">🇺🇸</a> <a href="../ja/README.md">🇯🇵</a> <a href="../zh-CN/README.md">🇨🇳</a> <a href="../zh-TW/README.md">🇹🇼</a> <a href="../ko/README.md">🇰🇷</a> <a href="../de/README.md">🇩🇪</a> <a href="../fr/README.md">🇫🇷</a> <a href="../es/README.md">🇪🇸</a> <b>🇹🇷</b> ... <a href="../../LANGUAGES.md">+20 more</a>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/docs/i18n/tr/demo.png" width="600" alt="Demo">
+
+## Özellikler
+
+- **Tek Tıkla Kimlik Değiştirme**: Git user.name ve user.email'i anında değiştirin
+- **SSH Anahtar Yönetimi**: ssh-agent'ta SSH anahtarlarını otomatik olarak değiştirin
+- **GPG İmzalama Desteği**: Commit imzalamak için GPG anahtarını yapılandırın (isteğe bağlı)
+- **Alt Modül Desteği**: Kimliği Git alt modüllerine otomatik olarak yayın
+- **Durum Çubuğu Entegrasyonu**: Mevcut kimliğinizi her zaman bir bakışta görün
+- **Zengin Araç İpuçları**: Açıklama ve SSH hostu içeren ayrıntılı kimlik bilgileri
+- **Çapraz Platform**: macOS, Linux ve Windows'ta çalışır
+- **Çok Dilli**: 17 dili destekler
+
+## 🚀 Neden Bu Eklenti?
+
+Birçok Git kimlik değiştirici olmasına rağmen, **Git ID Switcher** diğerlerinin genellikle görmezden geldiği karmaşık sorunları çözer:
+
+1. **Alt Modül Kabusu**: Alt modülleri olan depolarla (Hugo temaları, vendor kütüphaneleri vb.) çalışırken, genellikle *her* alt modül için `git config user.name`'i manuel olarak ayarlamanız gerekir. Bu eklenti, kimliğinizi tüm aktif alt modüllere özyinelemeli olarak uygulayarak bunu zarif bir şekilde çözer.
+2. **SSH ve GPG İşleme**: Sadece adınızı değiştirmez; aynı zamanda agent'taki SSH anahtarlarınızı değiştirir ve GPG imzalamayı yapılandırır, böylece asla yanlış imzayla commit yapmazsınız.
+
+## 🌏 Çok Dilli Destek Hakkında Bir Not
+
+> **Azınlıkların varlığına değer veriyorum.**
+> Sadece sayıca az oldukları için onları bir kenara atmak istemiyorum.
+> Çeviriler mükemmel olmasa bile, azınlık dillerini anlama ve saygı gösterme niyetimizi hissedeceğinizi umuyorum.
+
+Bu eklenti, VSCode'un desteklediği 17 dilin tamamını destekler. Ayrıca README belgeleri için azınlık dillerine ve hatta şaka dillerine çeviri yapmaya kendimizi zorluyoruz.
+
+Bu sadece "küresel destek" değil — "dilsel çeşitliliğe saygı"dır. Ve bu, dil engellerini aşarak dünyanın her yerinden geliştiricilerin dünyayı daha iyi yapan commitleri yaptığı bir altyapı haline gelirse mutlu olurum.
+
+---
+
+## Hızlı Başlangıç
+
+Birden fazla GitHub hesabını yönetmek için tipik bir kurulum.
+
+### Adım 1: SSH Anahtarlarını Hazırlayın
+
+Önce her hesap için SSH anahtarları oluşturun (zaten varsa atlayın):
+
+```bash
+# Kişisel
+ssh-keygen -t ed25519 -C "deniz.yilmaz@personal.example.com" -f ~/.ssh/id_ed25519_personal
+
+# İş
+ssh-keygen -t ed25519 -C "deniz.yilmaz@company.example.com" -f ~/.ssh/id_ed25519_work
+```
+
+Her anahtarın **genel anahtarını** (`.pub` dosyası) ilgili GitHub hesabına kaydedin.
+
+> **Not**: GitHub'a `id_ed25519_personal.pub` (genel anahtar) kaydedilir. `id_ed25519_personal` (uzantısız) özel anahtardır — asla kimseyle paylaşmayın veya hiçbir yere yüklemeyin.
+
+### Adım 2: SSH'ı Yapılandırın
+
+`~/.ssh/config` dosyasını düzenleyin:
+
+```ssh-config
+# Kişisel GitHub hesabı (varsayılan)
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_personal
+    IdentitiesOnly yes
+
+# İş GitHub hesabı
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes
+```
+
+### Adım 3: Eklentiyi Yapılandırın
+
+VS Code Ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın → "settings.json'da Düzenle"ye tıklayın:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "personal",
+      "icon": "🏠",
+      "name": "Deniz Yılmaz",
+      "email": "deniz.yilmaz@personal.example.com",
+      "description": "Kişisel projeler",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal"
+    },
+    {
+      "id": "work",
+      "icon": "💼",
+      "name": "Deniz Yılmaz",
+      "email": "deniz.yilmaz@company.example.com",
+      "description": "İş hesabı",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work"
+    }
+  ],
+  "gitIdSwitcher.defaultIdentity": "personal",
+  "gitIdSwitcher.autoSwitchSshKey": true,
+  "gitIdSwitcher.applyToSubmodules": true
+}
+```
+
+### Adım 4: Kullanın
+
+1. Durum çubuğundaki (sağ alt) kimlik simgesine tıklayın
+2. Bir kimlik seçin
+3. Tamam! Git yapılandırması ve SSH anahtarı değiştirildi.
+
+### SSH Host Takma Adlarını Kullanma
+
+Depoları klonlarken, kimliğinize karşılık gelen hostu kullanın:
+
+```bash
+# İş kimliği için (github-work takma adını kullanır)
+git clone git@github-work:company/repo.git
+
+# Kişisel kimlik için (varsayılan github.com kullanır)
+git clone git@github.com:dyilmaz/repo.git
+```
+
+---
+
+## İsteğe Bağlı: GPG İmzalama
+
+Commitleri GPG ile imzalıyorsanız:
+
+### Adım 1: GPG Anahtar ID'nizi Bulun
+
+```bash
+gpg --list-secret-keys --keyid-format SHORT
+```
+
+Örnek çıktı:
+
+```text
+sec   ed25519/ABCD1234 2024-01-01 [SC]
+      ...
+uid         [ultimate] Deniz Yılmaz <deniz.yilmaz@personal.example.com>
+```
+
+Anahtar ID'si `ABCD1234`'tür.
+
+### Adım 2: GPG Anahtarını Kimliğe Ekleyin
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "personal",
+      "icon": "🏠",
+      "name": "Deniz Yılmaz",
+      "email": "deniz.yilmaz@personal.example.com",
+      "description": "Kişisel projeler",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
+      "gpgKeyId": "ABCD1234"
+    }
+  ]
+}
+```
+
+Bu kimliğe geçtiğinizde, eklenti şunları ayarlar:
+
+- `git config user.signingkey ABCD1234`
+- `git config commit.gpgsign true`
+
+---
+
+## Tam Örnek: SSH + GPG ile 4 Hesap
+
+Her şeyi birleştiren tam bir örnek:
+
+### SSH Yapılandırması (`~/.ssh/config`)
+
+```ssh-config
+# Kişisel hesap (varsayılan)
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_personal
+    IdentitiesOnly yes
+
+# İş hesabı
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes
+
+# Açık kaynak persona
+Host github-oss
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
+    IdentitiesOnly yes
+```
+
+### Eklenti Ayarları
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "personal",
+      "icon": "🏠",
+      "name": "Deniz Yılmaz",
+      "email": "deniz.yilmaz@personal.example.com",
+      "description": "Kişisel projeler",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
+      "gpgKeyId": "PERSONAL1"
+    },
+    {
+      "id": "work",
+      "icon": "💼",
+      "name": "Deniz Yılmaz",
+      "email": "deniz.yilmaz@company.example.com",
+      "description": "İş hesabı",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "gpgKeyId": "WORK1234"
+    },
+    {
+      "id": "oss",
+      "icon": "🌟",
+      "name": "dyilmaz-oss",
+      "email": "dyilmaz.oss@example.com",
+      "description": "Açık kaynak katkılar",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "github-oss"
+    },
+    {
+      "id": "freelance",
+      "icon": "🎯",
+      "name": "Deniz Yılmaz",
+      "email": "deniz.yilmaz@freelance.example.com",
+      "description": "Serbest projeler"
+    }
+  ],
+  "gitIdSwitcher.defaultIdentity": "personal",
+  "gitIdSwitcher.autoSwitchSshKey": true,
+  "gitIdSwitcher.applyToSubmodules": true
+}
+```
+
+Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını değiştirir. Aynı GitHub hesabıyla farklı committer bilgileri kullanırken faydalıdır.
+
+---
+
+## Yapılandırma Referansı
+
+### Kimlik Özellikleri
+
+| Özellik       | Gerekli | Açıklama                                                   |
+| ------------- | ------- | ---------------------------------------------------------- |
+| `id`          | ✅      | Benzersiz tanımlayıcı (örn: `"work"`, `"personal"`)        |
+| `name`        | ✅      | Git user.name — commitlerde gösterilir                     |
+| `email`       | ✅      | Git user.email — commitlerde gösterilir                    |
+| `icon`        |         | Durum çubuğunda gösterilen emoji (örn: `"💼"`)              |
+| `description` |         | Seçici ve araç ipucunda gösterilen kısa açıklama           |
+| `sshKeyPath`  |         | Özel SSH anahtarının yolu (örn: `"~/.ssh/id_ed25519_work"`) |
+| `sshHost`     |         | SSH yapılandırma host takma adı (örn: `"github-work"`)     |
+| `gpgKeyId`    |         | Commit imzalamak için GPG anahtar ID'si                    |
+
+### Genel Ayarlar
+
+| Ayar                              | Varsayılan | Açıklama                                       |
+| --------------------------------- | ---------- | ---------------------------------------------- |
+| `gitIdSwitcher.identities`        | Örneğe bak | Kimlik yapılandırmaları listesi                |
+| `gitIdSwitcher.defaultIdentity`   | Örneğe bak | Varsayılan kimlik ID'si                        |
+| `gitIdSwitcher.autoSwitchSshKey`  | `true`     | SSH anahtarını otomatik değiştir               |
+| `gitIdSwitcher.showNotifications` | `true`     | Değiştirirken bildirim göster                  |
+| `gitIdSwitcher.applyToSubmodules` | `true`     | Kimliği Git alt modüllerine uygula             |
+| `gitIdSwitcher.submoduleDepth`    | `1`        | İç içe alt modüller için maks. derinlik (1-5)  |
+
+### Not: Temel Kurulum (SSH Olmadan)
+
+SSH anahtar değiştirmeye ihtiyacınız yoksa (örn., tek bir GitHub hesabıyla farklı committer bilgileri kullanma), minimal bir yapılandırma kullanabilirsiniz:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "personal",
+      "icon": "🏠",
+      "name": "Deniz Yılmaz",
+      "email": "deniz.yilmaz@personal.example.com",
+      "description": "Kişisel projeler"
+    },
+    {
+      "id": "work",
+      "icon": "💼",
+      "name": "Deniz Yılmaz",
+      "email": "deniz.yilmaz@company.example.com",
+      "description": "İş hesabı"
+    }
+  ]
+}
+```
+
+Bu kurulum sadece `git config user.name` ve `user.email`'i değiştirir.
+
+---
+
+## Nasıl Çalışır
+
+Kimlik değiştirirken, eklenti şunları yapar (sırayla):
+
+1. **Git Yapılandırması** (her zaman): `git config --local user.name` ve `user.email`'i ayarlar
+2. **SSH Anahtarı** (`sshKeyPath` ayarlanmışsa): Diğer anahtarları ssh-agent'tan kaldırır, seçileni ekler
+3. **GPG Anahtarı** (`gpgKeyId` ayarlanmışsa): `git config --local user.signingkey`'i ayarlar ve imzalamayı etkinleştirir
+4. **Alt Modüller** (etkinse): Yapılandırmayı tüm alt modüllere yayar (varsayılan: derinlik 1)
+
+---
+
+## Gelişmiş: Alt Modül Desteği
+
+Git alt modülleri kullanan karmaşık depolar için kimlik yönetimi genellikle zahmetlidir. Bir alt modülde commit yaparsanız, Git o alt modülün yerel yapılandırmasını kullanır; açıkça ayarlanmamışsa global yapılandırmaya (yanlış e-posta!) geri dönebilir.
+
+**Git ID Switcher** alt modülleri otomatik olarak algılar ve seçilen kimliği onlara uygular.
+
+```json
+{
+  "gitIdSwitcher.applyToSubmodules": true,
+  "gitIdSwitcher.submoduleDepth": 1
+}
+```
+
+- `applyToSubmodules`: Bu özelliği etkinleştir/devre dışı bırak
+- `submoduleDepth`: Ne kadar derine gidilsin?
+  - `1`: Sadece doğrudan alt modüller (en yaygın)
+  - `2+`: İç içe alt modüller (alt modüller içindeki alt modüller)
+
+Bu, ana depoda veya vendor kütüphanesinde commit yapsanız da kimliğinizin her zaman doğru olmasını sağlar.
+
+---
+
+## Sorun Giderme
+
+### SSH anahtarı değişmiyor mu?
+
+1. `ssh-agent`'ın çalıştığından emin olun:
+
+   ```bash
+   eval "$(ssh-agent -s)"
+   ```
+
+2. Anahtar yolunun doğru olduğunu kontrol edin:
+
+   ```bash
+   ls -la ~/.ssh/id_ed25519_*
+   ```
+
+3. macOS'ta Anahtar Zinciri'ne bir kez ekleyin:
+
+   ```bash
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
+   ```
+
+### Push'ta yanlış kimlik mi?
+
+1. Uzak URL'nin doğru host takma adını kullandığını kontrol edin:
+
+   ```bash
+   git remote -v
+   # İş depoları için git@github-work:... göstermeli
+   ```
+
+2. Gerekirse güncelleyin:
+
+   ```bash
+   git remote set-url origin git@github-work:company/repo.git
+   ```
+
+### GPG imzalama çalışmıyor mu?
+
+1. GPG anahtar ID'nizi bulun:
+
+   ```bash
+   gpg --list-secret-keys --keyid-format SHORT
+   ```
+
+2. İmzalamayı test edin:
+
+   ```bash
+   echo "test" | gpg --clearsign
+   ```
+
+3. Kimliğinizdeki e-postanın GPG anahtarının e-postasıyla eşleştiğinden emin olun.
+
+### Kimlik algılanmadı mı?
+
+- Bir Git deposunda olduğunuzdan emin olun
+- `settings.json`'da sözdizimi hatası olup olmadığını kontrol edin
+- VS Code penceresini yeniden yükleyin (`Cmd+Shift+P` → "Pencereyi Yeniden Yükle")
+
+---
+
+## Komutlar
+
+| Komut                           | Açıklama                        |
+| ------------------------------- | ------------------------------- |
+| `Git ID: Select Identity`       | Kimlik seçiciyi aç              |
+| `Git ID: Show Current Identity` | Mevcut kimlik bilgisini göster  |
+
+---
+
+## Katkıda Bulunma
+
+Katkılar memnuniyetle karşılanır! [CONTRIBUTING.md](../../CONTRIBUTING.md)'ye bakın.
+
+## Lisans
+
+MIT Lisansı — [LICENSE](../../LICENSE)'a bakın.
+
+## Teşekkürler
+
+[Null;Variant](https://github.com/nullvariant) tarafından oluşturuldu
