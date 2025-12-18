@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Git ID Switcher",
-  "extension.description": "複数のGit IDを切り替え。GitHub複数アカウント、SSHキー、GPG署名を管理し、ID設定をGitサブモジュールにも自動反映します。",
+  "extension.description": "ワンクリックで複数のGitプロフィールを切り替え。複数のGitHubアカウント、SSHキー、GPG署名を管理し、Gitサブモジュールにも自動的にプロフィールを適用します。",
   "command.selectIdentity": "Git ID: IDを選択",
   "command.showCurrentIdentity": "Git ID: 現在のIDを表示",
   "config.title": "Git ID Switcher",
