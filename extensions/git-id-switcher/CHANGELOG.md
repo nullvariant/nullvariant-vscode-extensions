@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2025-12-18
+
+### Fixed
+
+- **Allow semicolon in identity names**: Names like "Null;Variant" are now valid
+  - Semicolon was incorrectly flagged as a "shell metacharacter"
+  - Since we use `execFile()` (no shell), semicolon poses no security risk
+  - Other shell metacharacters (`$`, backticks, `|`, etc.) remain blocked
+
 ## [0.6.0] - 2025-12-18
 
 ### Added
@@ -245,7 +254,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.6.0...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.6.1...HEAD
+[0.6.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.6.0...git-id-switcher-v0.6.1
 [0.6.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.6...git-id-switcher-v0.6.0
 [0.5.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.5...git-id-switcher-v0.5.6
 [0.5.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.4...git-id-switcher-v0.5.5

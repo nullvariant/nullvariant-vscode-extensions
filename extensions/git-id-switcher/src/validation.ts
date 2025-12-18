@@ -22,7 +22,10 @@ export interface ValidationResult {
  * These patterns catch obvious attack attempts early.
  */
 const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; description: string }> = [
-  { pattern: /[`$(){}|;&<>]/, description: 'shell metacharacters' },
+  // Note: execFile() doesn't invoke shell, so most metacharacters are safe.
+  // We still block the most dangerous ones as defense-in-depth.
+  // Semicolon (;) is intentionally allowed - valid in names like "Null;Variant"
+  { pattern: /[`$(){}|&<>]/, description: 'shell metacharacters' },
   { pattern: /[\n\r]/, description: 'newline characters' },
   { pattern: /\\x[0-9a-f]{2}/i, description: 'hex escape sequences' },
   // eslint-disable-next-line no-control-regex

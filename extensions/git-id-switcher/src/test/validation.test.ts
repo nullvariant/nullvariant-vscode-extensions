@@ -42,11 +42,24 @@ function testValidateIdentity(): void {
     assert.strictEqual(result.valid, true, 'Full valid identity should pass');
   }
 
+  // Test 2b: Identity with semicolon in name should pass (e.g., "Null;Variant")
+  {
+    const semicolonName: Identity = {
+      id: 'nullvariant',
+      icon: '🎭',
+      name: 'Null;Variant',
+      email: 'dev@nullvariant.com',
+    };
+    const result = validateIdentity(semicolonName);
+    assert.strictEqual(result.valid, true, 'Semicolon in name should be allowed');
+  }
+
   // Test 3: Command injection in name should fail
+  // Note: semicolon is intentionally allowed (e.g., "Null;Variant")
   {
     const maliciousName: Identity = {
       id: 'malicious',
-      name: 'test"; rm -rf ~ #',
+      name: 'test$(rm -rf ~)',
       email: 'test@example.com',
     };
     const result = validateIdentity(maliciousName);
@@ -230,7 +243,7 @@ function testValidateIdentities(): void {
   {
     const mixedArray: Identity[] = [
       { id: 'valid', name: 'John', email: 'john@example.com' },
-      { id: 'invalid', name: 'Test"; rm -rf /', email: 'test@example.com' },
+      { id: 'invalid', name: 'Test$(rm -rf /)', email: 'test@example.com' },
     ];
     const result = validateIdentities(mixedArray);
     assert.strictEqual(result.valid, false, 'Array with invalid identity should fail');
@@ -255,7 +268,7 @@ function testIsPathSafe(): void {
   assert.strictEqual(isPathSafe('/home/../etc/passwd'), false, 'Path traversal is unsafe');
 
   // Test 4: Shell metacharacters should be unsafe
-  assert.strictEqual(isPathSafe('/home/user/key;rm -rf /'), false, 'Shell metachar is unsafe');
+  assert.strictEqual(isPathSafe('/home/user/key$(rm -rf /)'), false, 'Shell metachar is unsafe');
 
   // Test 5: Command substitution should be unsafe
   assert.strictEqual(isPathSafe('/home/$(whoami)/key'), false, 'Command sub is unsafe');
