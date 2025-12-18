@@ -12,10 +12,12 @@
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
       <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
       <br>
-      🌐 Languages: <b>🇺🇸</b> <a href="docs/i18n/ja/README.md">🇯🇵</a> <a href="docs/i18n/zh-CN/README.md">🇨🇳</a> <a href="docs/i18n/zh-TW/README.md">🇹🇼</a> <a href="docs/i18n/ko/README.md">🇰🇷</a> <a href="docs/i18n/de/README.md">🇩🇪</a> <a href="docs/i18n/fr/README.md">🇫🇷</a> <a href="docs/i18n/es/README.md">🇪🇸</a> ... <a href="docs/LANGUAGES.md">+20 more</a>
+      🌐 Languages: <b>🇺🇸</b> <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/i18n/ja/README.md">🇯🇵</a> <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/i18n/zh-CN/README.md">🇨🇳</a> <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/i18n/zh-TW/README.md">🇹🇼</a> <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/i18n/ko/README.md">🇰🇷</a> <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/i18n/de/README.md">🇩🇪</a> <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/i18n/fr/README.md">🇫🇷</a> <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/i18n/es/README.md">🇪🇸</a> ... <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/LANGUAGES.md">+20 more</a>
     </td>
   </tr>
 </table>
+
+<br>
 
 <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/docs/demo.png" width="600" alt="Demo">
 
@@ -425,11 +427,11 @@ This ensures that no matter where you commit—in the main repo or a vendored li
 
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](../../CONTRIBUTING.md).
+Contributions welcome! See [CONTRIBUTING.md](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/CONTRIBUTING.md).
 
 ## License
 
-MIT License - see [LICENSE](../../LICENSE).
+MIT License - see [LICENSE](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/LICENSE).
 
 ## Credits
 

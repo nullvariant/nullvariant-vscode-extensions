@@ -17,6 +17,8 @@
   </tr>
 </table>
 
+<br>
+
 <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/docs/i18n/ja/demo.png" width="600" alt="デモ">
 
 ## 機能
