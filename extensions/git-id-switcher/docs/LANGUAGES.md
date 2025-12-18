@@ -80,11 +80,11 @@ Full README documentation translated.
 > ⚠️ These translations are experimental and may contain errors.
 > Native speakers are warmly invited to submit corrections via PR.
 
-| Emoji | Code | Language | Native Name | Status |
+| Emoji | Code | Language | Native Name | README |
 |-------|------|----------|-------------|--------|
-| 🌺 | haw | Hawaiian | ʻŌlelo Hawaiʻi | 📝 Planned |
-| 🐻 | ain | Ainu | アイヌ イタㇰ | 📝 Planned |
-| 🌴 | ryu | Ryukyuan | 島言葉 | 📝 Planned |
+| 🌺 | haw | Hawaiian | ʻŌlelo Hawaiʻi | [README.md](i18n/haw/README.md) |
+| 🐻 | ain | Ainu | アイヌ イタㇰ | [README.md](i18n/ain/README.md) |
+| 🌴 | ryu | Ryukyuan | 島言葉 | [README.md](i18n/ryu/README.md) |
 
 ### Joke Languages 🎭
 
