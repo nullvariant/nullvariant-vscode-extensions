@@ -6,9 +6,9 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
 | | |
 |:---:|:---|
-| <img src="extensions/git-identity-switcher/images/icon.png" width="128" alt="Git ID Switcher"> | **Git ID Switcher**<br><br>Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.<br><br>[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher)<br><br>[📖 Documentation](extensions/git-identity-switcher/) \| [📦 Install from Marketplace](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher) |
+| <img src="extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher"> | **Git ID Switcher**<br><br>Switch between multiple Git identities with one click. Automatically configures Git author, SSH keys, and GPG signing.<br><br>[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher)](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher)<br><br>[📖 Documentation](extensions/git-id-switcher/) \| [📦 Install from Marketplace](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher) |
 
-![Git ID Switcher Demo](extensions/git-identity-switcher/docs/demo.png)
+![Git ID Switcher Demo](extensions/git-id-switcher/docs/demo.png)
 
 ## Development
 
@@ -19,7 +19,7 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 ### Working on an extension
 
 ```bash
-cd extensions/git-identity-switcher
+cd extensions/git-id-switcher
 
 # Install dependencies
 npm install
@@ -45,7 +45,7 @@ npm run package
 ```
 nullvariant-vscode-extensions/
 ├── extensions/
-│   └── git-identity-switcher/
+│   └── git-id-switcher/
 ├── .github/workflows/
 │   ├── ci.yml
 │   └── publish.yml
@@ -58,8 +58,8 @@ nullvariant-vscode-extensions/
 Extensions are automatically published when a tag is pushed:
 
 ```bash
-git tag git-identity-switcher-v0.1.0
-git push origin git-identity-switcher-v0.1.0
+git tag git-id-switcher-v0.1.0
+git push origin git-id-switcher-v0.1.0
 ```
 
 ## License

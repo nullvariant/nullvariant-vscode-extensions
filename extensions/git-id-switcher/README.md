@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" width="150">
-      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-identity-switcher/images/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Switch between multiple Git identities with one click. Manage multiple GitHub accounts, SSH keys, GPG signing, and <b>automatically apply identity to Git Submodules</b>.
@@ -17,7 +17,7 @@
   </tr>
 </table>
 
-<img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-identity-switcher/docs/demo.png" width="600" alt="Demo">
+<img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/docs/demo.png" width="600" alt="Demo">
 
 ## Features
 

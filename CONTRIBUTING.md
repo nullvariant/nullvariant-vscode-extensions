@@ -23,7 +23,7 @@ cd nullvariant-vscode-extensions
 npm install
 
 # Work on an extension
-cd extensions/git-identity-switcher
+cd extensions/git-id-switcher
 npm install
 npm run watch
 ```

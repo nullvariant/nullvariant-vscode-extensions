@@ -154,7 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Settings keys renamed**: `gitIdentitySwitcher.*` → `gitIdSwitcher.*`
   - Users must update their `settings.json` to use the new keys
-- **Command IDs renamed**: `git-identity-switcher.*` → `git-id-switcher.*`
+- **Command IDs renamed**: `git-id-switcher.*` → `git-id-switcher.*`
   - Keyboard shortcuts need to be updated
 
 ### Added
@@ -177,7 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - `gitIdentitySwitcher.defaultIdentity` → `gitIdSwitcher.defaultIdentity`
    - `gitIdentitySwitcher.autoSwitchSshKey` → `gitIdSwitcher.autoSwitchSshKey`
    - `gitIdentitySwitcher.showNotifications` → `gitIdSwitcher.showNotifications`
-2. Update any keyboard shortcuts referencing `git-identity-switcher.*`
+2. Update any keyboard shortcuts referencing `git-id-switcher.*`
 
 ## [0.1.1] - 2025-12-11
 

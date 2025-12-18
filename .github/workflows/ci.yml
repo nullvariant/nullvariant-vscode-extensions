@@ -23,20 +23,20 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: extensions/git-identity-switcher
+        working-directory: extensions/git-id-switcher
 
       - name: Lint
         run: npm run lint
-        working-directory: extensions/git-identity-switcher
+        working-directory: extensions/git-id-switcher
         continue-on-error: true
 
       - name: Compile
         run: npm run compile
-        working-directory: extensions/git-identity-switcher
+        working-directory: extensions/git-id-switcher
 
       - name: Package
         run: npm run package
-        working-directory: extensions/git-identity-switcher
+        working-directory: extensions/git-id-switcher
 
       - name: Verify VSIX created
-        run: ls -la extensions/git-identity-switcher/*.vsix
+        run: ls -la extensions/git-id-switcher/*.vsix

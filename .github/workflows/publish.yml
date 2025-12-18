@@ -23,15 +23,15 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: extensions/git-identity-switcher
+        working-directory: extensions/git-id-switcher
 
       - name: Compile
         run: npm run compile
-        working-directory: extensions/git-identity-switcher
+        working-directory: extensions/git-id-switcher
 
       - name: Package extension
         run: npm run package
-        working-directory: extensions/git-identity-switcher
+        working-directory: extensions/git-id-switcher
 
       - name: Get version from tag
         id: version
@@ -41,12 +41,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: git-id-switcher-${{ steps.version.outputs.version }}.vsix
-          path: extensions/git-identity-switcher/*.vsix
+          path: extensions/git-id-switcher/*.vsix
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: extensions/git-identity-switcher/*.vsix
+          files: extensions/git-id-switcher/*.vsix
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,9 +54,9 @@ jobs:
       - name: Publish to VS Code Marketplace
         if: ${{ vars.PUBLISH_TO_MARKETPLACE == 'true' }}
         run: npx vsce publish -p ${{ secrets.VSCE_PAT }}
-        working-directory: extensions/git-identity-switcher
+        working-directory: extensions/git-id-switcher
 
       - name: Publish to Open VSX
         if: ${{ vars.PUBLISH_TO_OPENVSX == 'true' }}
         run: npx ovsx publish -p ${{ secrets.OVSX_PAT }}
-        working-directory: extensions/git-identity-switcher
+        working-directory: extensions/git-id-switcher

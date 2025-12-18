@@ -166,8 +166,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/nullvariant/nullvariant-vscode-extensions",
-    "directory": "extensions/git-identity-switcher"
+    "directory": "extensions/git-id-switcher"
   },
-  "homepage": "https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-identity-switcher#readme",
+  "homepage": "https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher#readme",
   "license": "MIT"
 }
