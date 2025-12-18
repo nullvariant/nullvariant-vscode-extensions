@@ -25,7 +25,8 @@ const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; description: string }> = [
   { pattern: /[`$(){}|;&<>]/, description: 'shell metacharacters' },
   { pattern: /[\n\r]/, description: 'newline characters' },
   { pattern: /\\x[0-9a-f]{2}/i, description: 'hex escape sequences' },
-  { pattern: /\x00/, description: 'null bytes' },
+  // eslint-disable-next-line no-control-regex
+  { pattern: /\0/, description: 'null bytes' },
 ];
 
 /**

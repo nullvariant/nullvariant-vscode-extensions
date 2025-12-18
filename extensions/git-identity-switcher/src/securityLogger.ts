@@ -247,7 +247,8 @@ class SecurityLoggerImpl {
   private getExtensionVersion(): string {
     try {
       const ext = vscode.extensions.getExtension('nullvariant.git-id-switcher');
-      return ext?.packageJSON?.version || 'unknown';
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      return (ext?.packageJSON?.version as string) || 'unknown';
     } catch {
       return 'unknown';
     }
