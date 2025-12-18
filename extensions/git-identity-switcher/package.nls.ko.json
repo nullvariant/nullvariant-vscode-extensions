@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "여러 Git ID 간 전환. 여러 GitHub 계정, SSH 키, GPG 서명을 관리하고 Git 서브모듈에 자동으로 ID를 적용합니다.",
+  "command.selectIdentity": "Git ID: ID 선택",
+  "command.showCurrentIdentity": "Git ID: 현재 ID 표시",
+  "config.title": "Git ID Switcher",
+  "config.identities": "전환할 Git ID 목록",
+  "config.identities.markdown": "Git ID 목록. 각 ID에는 다음을 포함할 수 있습니다:\n- `id`: 고유 식별자 (필수)\n- `name`: Git user.name (필수)\n- `email`: Git user.email (필수)\n- `icon`: 상태 표시줄에 표시할 이모지\n- `description`: ID에 대한 간단한 설명\n- `sshKeyPath`: SSH 개인 키 경로\n- `sshHost`: SSH 구성 호스트 별칭 (다중 계정 설정용)\n- `gpgKeyId`: 커밋 서명을 위한 GPG 키 ID",
+  "config.identities.id": "이 ID의 고유 식별자",
+  "config.identities.icon": "상태 표시줄에 표시할 아이콘/이모지",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "ID에 대한 간단한 설명 (빠른 선택 및 툴팁에 표시)",
+  "config.identities.sshKeyPath": "SSH 개인 키 경로 (선택 사항)",
+  "config.identities.sshHost": "다중 계정 설정을 위한 SSH 구성 호스트 별칭 (선택 사항)",
+  "config.identities.gpgKeyId": "커밋 서명을 위한 GPG 키 ID (선택 사항)",
+  "config.defaultIdentity": "ID가 선택되지 않았을 때 사용할 기본 ID",
+  "config.autoSwitchSshKey": "ID 변경 시 SSH 키 자동 전환",
+  "config.showNotifications": "ID 전환 시 알림 표시",
+  "config.applyToSubmodules": "전환 시 Git 서브모듈에 자동으로 ID 적용",
+  "config.submoduleDepth": "중첩 서브모듈 구성의 최대 깊이 (1 = 직접 서브모듈만)"
+}

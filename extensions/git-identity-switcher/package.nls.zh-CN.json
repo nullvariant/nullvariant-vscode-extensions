@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "在多个 Git 身份之间切换。管理多个 GitHub 账户、SSH 密钥、GPG 签名，并自动将身份应用到 Git 子模块。",
+  "command.selectIdentity": "Git ID: 选择身份",
+  "command.showCurrentIdentity": "Git ID: 显示当前身份",
+  "config.title": "Git ID Switcher",
+  "config.identities": "要切换的 Git 身份列表",
+  "config.identities.markdown": "Git 身份列表。每个身份可以包含：\n- `id`: 唯一标识符（必填）\n- `name`: Git user.name（必填）\n- `email`: Git user.email（必填）\n- `icon`: 状态栏显示的表情符号\n- `description`: 身份的简短描述\n- `sshKeyPath`: SSH 私钥路径\n- `sshHost`: SSH 配置主机别名（用于多账户设置）\n- `gpgKeyId`: 用于提交签名的 GPG 密钥 ID",
+  "config.identities.id": "此身份的唯一标识符",
+  "config.identities.icon": "状态栏显示的图标/表情符号",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "身份的简短描述（显示在快速选择和工具提示中）",
+  "config.identities.sshKeyPath": "SSH 私钥路径（可选）",
+  "config.identities.sshHost": "用于多账户设置的 SSH 配置主机别名（可选）",
+  "config.identities.gpgKeyId": "用于提交签名的 GPG 密钥 ID（可选）",
+  "config.defaultIdentity": "未选择身份时使用的默认身份 ID",
+  "config.autoSwitchSshKey": "更改身份时自动切换 SSH 密钥",
+  "config.showNotifications": "切换身份时显示通知",
+  "config.applyToSubmodules": "切换时自动将身份应用到 Git 子模块",
+  "config.submoduleDepth": "嵌套子模块配置的最大深度（1 = 仅直接子模块）"
+}

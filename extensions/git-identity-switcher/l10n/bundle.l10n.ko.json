@@ -1,0 +1,23 @@
+{
+  "Select Identity": "ID 선택",
+  "Current": "현재",
+  "Switching...": "전환 중...",
+  "Switching identity...": "ID 전환 중...",
+  "Identity Error": "ID 오류",
+  "Click to select a Git identity": "Git ID를 선택하려면 클릭하세요",
+  "*Click to switch identity*": "*ID를 전환하려면 클릭하세요*",
+  "Already using {0}": "이미 {0} 사용 중",
+  "Current identity: {0} ({1})": "현재 ID: {0} ({1})",
+  "No identity selected. Click the status bar to select one.": "선택된 ID가 없습니다. 상태 표시줄을 클릭하여 선택하세요.",
+  "Failed to select identity: {0}": "ID 선택 실패: {0}",
+  "Failed to switch identity: {0}": "ID 전환 실패: {0}",
+  "No identities configured. Add identities in settings: {0}": "구성된 ID가 없습니다. 설정에서 ID를 추가하세요: {0}",
+  "Select Git Identity": "Git ID 선택",
+  "Search identities...": "ID 검색...",
+  "Switched to {0}": "{0}(으)로 전환됨",
+  "Git Identity Switcher: {0}": "Git Identity Switcher: {0}",
+  "**Email:** {0}": "**이메일:** {0}",
+  "**SSH Host:** {0}": "**SSH 호스트:** {0}",
+  "**SSH Key:** {0}": "**SSH 키:** {0}",
+  "**GPG Key:** {0}": "**GPG 키:** {0}"
+}

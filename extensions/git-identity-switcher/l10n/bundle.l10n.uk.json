@@ -1,0 +1,23 @@
+{
+  "Select Identity": "Вибрати ідентифікатор",
+  "Current": "Поточний",
+  "Switching...": "Перемикання...",
+  "Switching identity...": "Перемикання ідентифікатора...",
+  "Identity Error": "Помилка ідентифікатора",
+  "Click to select a Git identity": "Натисніть, щоб вибрати Git ідентифікатор",
+  "*Click to switch identity*": "*Натисніть, щоб перемкнути ідентифікатор*",
+  "Already using {0}": "Вже використовується {0}",
+  "Current identity: {0} ({1})": "Поточний ідентифікатор: {0} ({1})",
+  "No identity selected. Click the status bar to select one.": "Ідентифікатор не вибрано. Натисніть на рядок стану, щоб вибрати.",
+  "Failed to select identity: {0}": "Не вдалося вибрати ідентифікатор: {0}",
+  "Failed to switch identity: {0}": "Не вдалося перемкнути ідентифікатор: {0}",
+  "No identities configured. Add identities in settings: {0}": "Ідентифікатори не налаштовані. Додайте ідентифікатори в налаштуваннях: {0}",
+  "Select Git Identity": "Вибрати Git ідентифікатор",
+  "Search identities...": "Пошук ідентифікаторів...",
+  "Switched to {0}": "Перемкнуто на {0}",
+  "Git Identity Switcher: {0}": "Git Identity Switcher: {0}",
+  "**Email:** {0}": "**Email:** {0}",
+  "**SSH Host:** {0}": "**SSH хост:** {0}",
+  "**SSH Key:** {0}": "**SSH ключ:** {0}",
+  "**GPG Key:** {0}": "**GPG ключ:** {0}"
+}

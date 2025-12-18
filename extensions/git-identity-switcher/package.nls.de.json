@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Zwischen mehreren Git-Identitäten wechseln. Verwalten Sie mehrere GitHub-Konten, SSH-Schlüssel, GPG-Signierung und wenden Sie die Identität automatisch auf Git-Submodule an.",
+  "command.selectIdentity": "Git ID: Identität auswählen",
+  "command.showCurrentIdentity": "Git ID: Aktuelle Identität anzeigen",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Liste der Git-Identitäten zum Wechseln",
+  "config.identities.markdown": "Liste der Git-Identitäten. Jede Identität kann enthalten:\n- `id`: Eindeutige Kennung (erforderlich)\n- `name`: Git user.name (erforderlich)\n- `email`: Git user.email (erforderlich)\n- `icon`: Emoji zur Anzeige in der Statusleiste\n- `description`: Kurze Beschreibung dieser Identität\n- `sshKeyPath`: Pfad zum privaten SSH-Schlüssel\n- `sshHost`: SSH-Konfiguration Host-Alias (für Multi-Account-Setups)\n- `gpgKeyId`: GPG-Schlüssel-ID für Commit-Signierung",
+  "config.identities.id": "Eindeutige Kennung für diese Identität",
+  "config.identities.icon": "Symbol/Emoji zur Anzeige in der Statusleiste",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Kurze Beschreibung dieser Identität (wird in der Schnellauswahl und im Tooltip angezeigt)",
+  "config.identities.sshKeyPath": "Pfad zum privaten SSH-Schlüssel (optional)",
+  "config.identities.sshHost": "SSH-Konfiguration Host-Alias für Multi-Account-Setups (optional)",
+  "config.identities.gpgKeyId": "GPG-Schlüssel-ID für Commit-Signierung (optional)",
+  "config.defaultIdentity": "Standard-Identitäts-ID, wenn keine Identität ausgewählt ist",
+  "config.autoSwitchSshKey": "SSH-Schlüssel beim Wechseln der Identität automatisch wechseln",
+  "config.showNotifications": "Benachrichtigungen beim Wechseln der Identität anzeigen",
+  "config.applyToSubmodules": "Identität beim Wechseln automatisch auf Git-Submodule anwenden",
+  "config.submoduleDepth": "Maximale Tiefe für verschachtelte Submodul-Konfiguration (1 = nur direkte Submodule)"
+}

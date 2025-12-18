@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Přepínejte mezi více Git identitami. Spravujte více účtů GitHub, SSH klíče, GPG podepisování a automaticky aplikujte identitu na Git submoduly.",
+  "command.selectIdentity": "Git ID: Vybrat identitu",
+  "command.showCurrentIdentity": "Git ID: Zobrazit aktuální identitu",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Seznam Git identit pro přepínání",
+  "config.identities.markdown": "Seznam Git identit. Každá identita může obsahovat:\n- `id`: Jedinečný identifikátor (povinné)\n- `name`: Git user.name (povinné)\n- `email`: Git user.email (povinné)\n- `icon`: Emoji pro zobrazení ve stavovém řádku\n- `description`: Krátký popis této identity\n- `sshKeyPath`: Cesta k privátnímu SSH klíči\n- `sshHost`: Alias hostitele konfigurace SSH (pro nastavení více účtů)\n- `gpgKeyId`: ID GPG klíče pro podepisování commitů",
+  "config.identities.id": "Jedinečný identifikátor pro tuto identitu",
+  "config.identities.icon": "Ikona/emoji pro zobrazení ve stavovém řádku",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Krátký popis této identity (zobrazuje se v rychlém výběru a nápovědě)",
+  "config.identities.sshKeyPath": "Cesta k privátnímu SSH klíči (volitelné)",
+  "config.identities.sshHost": "Alias hostitele konfigurace SSH pro nastavení více účtů (volitelné)",
+  "config.identities.gpgKeyId": "ID GPG klíče pro podepisování commitů (volitelné)",
+  "config.defaultIdentity": "Výchozí ID identity, když není vybrána žádná identita",
+  "config.autoSwitchSshKey": "Automaticky přepnout SSH klíč při změně identity",
+  "config.showNotifications": "Zobrazovat oznámení při přepínání identit",
+  "config.applyToSubmodules": "Automaticky aplikovat identitu na Git submoduly při přepínání",
+  "config.submoduleDepth": "Maximální hloubka pro konfiguraci vnořených submodulů (1 = pouze přímé submoduly)"
+}

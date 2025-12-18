@@ -1,0 +1,23 @@
+{
+  "Select Identity": "Wybierz tożsamość",
+  "Current": "Bieżący",
+  "Switching...": "Przełączanie...",
+  "Switching identity...": "Przełączanie tożsamości...",
+  "Identity Error": "Błąd tożsamości",
+  "Click to select a Git identity": "Kliknij, aby wybrać tożsamość Git",
+  "*Click to switch identity*": "*Kliknij, aby przełączyć tożsamość*",
+  "Already using {0}": "Już używasz {0}",
+  "Current identity: {0} ({1})": "Bieżąca tożsamość: {0} ({1})",
+  "No identity selected. Click the status bar to select one.": "Nie wybrano tożsamości. Kliknij pasek stanu, aby wybrać.",
+  "Failed to select identity: {0}": "Nie udało się wybrać tożsamości: {0}",
+  "Failed to switch identity: {0}": "Nie udało się przełączyć tożsamości: {0}",
+  "No identities configured. Add identities in settings: {0}": "Nie skonfigurowano tożsamości. Dodaj tożsamości w ustawieniach: {0}",
+  "Select Git Identity": "Wybierz tożsamość Git",
+  "Search identities...": "Szukaj tożsamości...",
+  "Switched to {0}": "Przełączono na {0}",
+  "Git Identity Switcher: {0}": "Git Identity Switcher: {0}",
+  "**Email:** {0}": "**E-mail:** {0}",
+  "**SSH Host:** {0}": "**Host SSH:** {0}",
+  "**SSH Key:** {0}": "**Klucz SSH:** {0}",
+  "**GPG Key:** {0}": "**Klucz GPG:** {0}"
+}

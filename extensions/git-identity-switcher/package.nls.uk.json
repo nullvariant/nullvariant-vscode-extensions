@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Перемикання між кількома Git ідентифікаторами. Керуйте кількома обліковими записами GitHub, SSH ключами, GPG підписуванням та автоматично застосовуйте ідентифікатор до Git підмодулів.",
+  "command.selectIdentity": "Git ID: Вибрати ідентифікатор",
+  "command.showCurrentIdentity": "Git ID: Показати поточний ідентифікатор",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Список Git ідентифікаторів для перемикання",
+  "config.identities.markdown": "Список Git ідентифікаторів. Кожен ідентифікатор може містити:\n- `id`: Унікальний ідентифікатор (обов'язково)\n- `name`: Git user.name (обов'язково)\n- `email`: Git user.email (обов'язково)\n- `icon`: Емодзі для відображення в рядку стану\n- `description`: Короткий опис цього ідентифікатора\n- `sshKeyPath`: Шлях до приватного SSH ключа\n- `sshHost`: Псевдонім хоста конфігурації SSH (для налаштування кількох облікових записів)\n- `gpgKeyId`: ID GPG ключа для підписування комітів",
+  "config.identities.id": "Унікальний ідентифікатор для цього ідентифікатора",
+  "config.identities.icon": "Іконка/емодзі для відображення в рядку стану",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Короткий опис цього ідентифікатора (відображається в швидкому виборі та підказці)",
+  "config.identities.sshKeyPath": "Шлях до приватного SSH ключа (необов'язково)",
+  "config.identities.sshHost": "Псевдонім хоста конфігурації SSH для налаштування кількох облікових записів (необов'язково)",
+  "config.identities.gpgKeyId": "ID GPG ключа для підписування комітів (необов'язково)",
+  "config.defaultIdentity": "ID ідентифікатора за замовчуванням, коли ідентифікатор не вибрано",
+  "config.autoSwitchSshKey": "Автоматично перемикати SSH ключ при зміні ідентифікатора",
+  "config.showNotifications": "Показувати сповіщення при перемиканні ідентифікаторів",
+  "config.applyToSubmodules": "Автоматично застосовувати ідентифікатор до Git підмодулів при перемиканні",
+  "config.submoduleDepth": "Максимальна глибина для конфігурації вкладених підмодулів (1 = лише прямі підмодулі)"
+}

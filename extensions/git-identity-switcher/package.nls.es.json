@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Cambiar entre múltiples identidades de Git. Administra múltiples cuentas de GitHub, claves SSH, firma GPG y aplica automáticamente la identidad a los submódulos de Git.",
+  "command.selectIdentity": "Git ID: Seleccionar identidad",
+  "command.showCurrentIdentity": "Git ID: Mostrar identidad actual",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Lista de identidades de Git para cambiar",
+  "config.identities.markdown": "Lista de identidades de Git. Cada identidad puede tener:\n- `id`: Identificador único (requerido)\n- `name`: Git user.name (requerido)\n- `email`: Git user.email (requerido)\n- `icon`: Emoji para mostrar en la barra de estado\n- `description`: Breve descripción de esta identidad\n- `sshKeyPath`: Ruta a la clave privada SSH\n- `sshHost`: Alias de host de configuración SSH (para configuraciones multicuenta)\n- `gpgKeyId`: ID de clave GPG para firma de commits",
+  "config.identities.id": "Identificador único para esta identidad",
+  "config.identities.icon": "Icono/emoji para mostrar en la barra de estado",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Breve descripción de esta identidad (se muestra en la selección rápida y en el tooltip)",
+  "config.identities.sshKeyPath": "Ruta a la clave privada SSH (opcional)",
+  "config.identities.sshHost": "Alias de host de configuración SSH para configuraciones multicuenta (opcional)",
+  "config.identities.gpgKeyId": "ID de clave GPG para firma de commits (opcional)",
+  "config.defaultIdentity": "ID de identidad predeterminada a usar cuando no hay identidad seleccionada",
+  "config.autoSwitchSshKey": "Cambiar automáticamente la clave SSH al cambiar de identidad",
+  "config.showNotifications": "Mostrar notificaciones al cambiar de identidad",
+  "config.applyToSubmodules": "Aplicar automáticamente la identidad a los submódulos de Git al cambiar",
+  "config.submoduleDepth": "Profundidad máxima para configuración de submódulos anidados (1 = solo submódulos directos)"
+}

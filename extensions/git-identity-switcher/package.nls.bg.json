@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Превключване между множество Git самоличности. Управлявайте множество GitHub акаунти, SSH ключове, GPG подписване и автоматично прилагайте самоличността към Git подмодули.",
+  "command.selectIdentity": "Git ID: Избор на самоличност",
+  "command.showCurrentIdentity": "Git ID: Показване на текущата самоличност",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Списък с Git самоличности за превключване",
+  "config.identities.markdown": "Списък с Git самоличности. Всяка самоличност може да съдържа:\n- `id`: Уникален идентификатор (задължително)\n- `name`: Git user.name (задължително)\n- `email`: Git user.email (задължително)\n- `icon`: Емоджи за показване в лентата на състоянието\n- `description`: Кратко описание на тази самоличност\n- `sshKeyPath`: Път до частния SSH ключ\n- `sshHost`: Псевдоним на хост от SSH конфигурацията (за настройки с множество акаунти)\n- `gpgKeyId`: ID на GPG ключ за подписване на комити",
+  "config.identities.id": "Уникален идентификатор за тази самоличност",
+  "config.identities.icon": "Икона/емоджи за показване в лентата на състоянието",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Кратко описание на тази самоличност (показва се в бързия избор и подсказката)",
+  "config.identities.sshKeyPath": "Път до частния SSH ключ (по избор)",
+  "config.identities.sshHost": "Псевдоним на хост от SSH конфигурацията за настройки с множество акаунти (по избор)",
+  "config.identities.gpgKeyId": "ID на GPG ключ за подписване на комити (по избор)",
+  "config.defaultIdentity": "ID на самоличност по подразбиране, когато няма избрана самоличност",
+  "config.autoSwitchSshKey": "Автоматично превключване на SSH ключа при смяна на самоличност",
+  "config.showNotifications": "Показване на известия при превключване на самоличности",
+  "config.applyToSubmodules": "Автоматично прилагане на самоличността към Git подмодули при превключване",
+  "config.submoduleDepth": "Максимална дълбочина за конфигурация на вложени подмодули (1 = само преки подмодули)"
+}

@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Basculer entre plusieurs identités Git. Gérez plusieurs comptes GitHub, clés SSH, signature GPG et appliquez automatiquement l'identité aux sous-modules Git.",
+  "command.selectIdentity": "Git ID : Sélectionner l'identité",
+  "command.showCurrentIdentity": "Git ID : Afficher l'identité actuelle",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Liste des identités Git pour basculer",
+  "config.identities.markdown": "Liste des identités Git. Chaque identité peut contenir :\n- `id` : Identifiant unique (requis)\n- `name` : Git user.name (requis)\n- `email` : Git user.email (requis)\n- `icon` : Emoji à afficher dans la barre d'état\n- `description` : Brève description de cette identité\n- `sshKeyPath` : Chemin vers la clé privée SSH\n- `sshHost` : Alias d'hôte de configuration SSH (pour les configurations multi-comptes)\n- `gpgKeyId` : ID de clé GPG pour la signature des commits",
+  "config.identities.id": "Identifiant unique pour cette identité",
+  "config.identities.icon": "Icône/emoji à afficher dans la barre d'état",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Brève description de cette identité (affichée dans la sélection rapide et l'info-bulle)",
+  "config.identities.sshKeyPath": "Chemin vers la clé privée SSH (optionnel)",
+  "config.identities.sshHost": "Alias d'hôte de configuration SSH pour les configurations multi-comptes (optionnel)",
+  "config.identities.gpgKeyId": "ID de clé GPG pour la signature des commits (optionnel)",
+  "config.defaultIdentity": "ID d'identité par défaut à utiliser lorsqu'aucune identité n'est sélectionnée",
+  "config.autoSwitchSshKey": "Changer automatiquement la clé SSH lors du changement d'identité",
+  "config.showNotifications": "Afficher les notifications lors du changement d'identité",
+  "config.applyToSubmodules": "Appliquer automatiquement l'identité aux sous-modules Git lors du changement",
+  "config.submoduleDepth": "Profondeur maximale pour la configuration des sous-modules imbriqués (1 = sous-modules directs uniquement)"
+}

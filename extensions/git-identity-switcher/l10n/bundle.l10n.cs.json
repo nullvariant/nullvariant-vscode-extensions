@@ -1,0 +1,23 @@
+{
+  "Select Identity": "Vybrat identitu",
+  "Current": "Aktuální",
+  "Switching...": "Přepínání...",
+  "Switching identity...": "Přepínání identity...",
+  "Identity Error": "Chyba identity",
+  "Click to select a Git identity": "Klikněte pro výběr Git identity",
+  "*Click to switch identity*": "*Klikněte pro přepnutí identity*",
+  "Already using {0}": "Již používáte {0}",
+  "Current identity: {0} ({1})": "Aktuální identita: {0} ({1})",
+  "No identity selected. Click the status bar to select one.": "Není vybrána žádná identita. Klikněte na stavový řádek pro výběr.",
+  "Failed to select identity: {0}": "Nepodařilo se vybrat identitu: {0}",
+  "Failed to switch identity: {0}": "Nepodařilo se přepnout identitu: {0}",
+  "No identities configured. Add identities in settings: {0}": "Nejsou nakonfigurovány žádné identity. Přidejte identity v nastavení: {0}",
+  "Select Git Identity": "Vybrat Git identitu",
+  "Search identities...": "Hledat identity...",
+  "Switched to {0}": "Přepnuto na {0}",
+  "Git Identity Switcher: {0}": "Git Identity Switcher: {0}",
+  "**Email:** {0}": "**E-mail:** {0}",
+  "**SSH Host:** {0}": "**SSH hostitel:** {0}",
+  "**SSH Key:** {0}": "**SSH klíč:** {0}",
+  "**GPG Key:** {0}": "**GPG klíč:** {0}"
+}

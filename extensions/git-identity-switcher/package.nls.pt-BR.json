@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Alternar entre múltiplas identidades Git. Gerencie múltiplas contas GitHub, chaves SSH, assinatura GPG e aplique automaticamente a identidade aos submódulos Git.",
+  "command.selectIdentity": "Git ID: Selecionar Identidade",
+  "command.showCurrentIdentity": "Git ID: Mostrar Identidade Atual",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Lista de identidades Git para alternar",
+  "config.identities.markdown": "Lista de identidades Git. Cada identidade pode ter:\n- `id`: Identificador único (obrigatório)\n- `name`: Git user.name (obrigatório)\n- `email`: Git user.email (obrigatório)\n- `icon`: Emoji para exibir na barra de status\n- `description`: Breve descrição desta identidade\n- `sshKeyPath`: Caminho para a chave privada SSH\n- `sshHost`: Alias de host de configuração SSH (para configurações multi-conta)\n- `gpgKeyId`: ID da chave GPG para assinatura de commits",
+  "config.identities.id": "Identificador único para esta identidade",
+  "config.identities.icon": "Ícone/emoji para exibir na barra de status",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Breve descrição desta identidade (exibida na seleção rápida e na dica de ferramenta)",
+  "config.identities.sshKeyPath": "Caminho para a chave privada SSH (opcional)",
+  "config.identities.sshHost": "Alias de host de configuração SSH para configurações multi-conta (opcional)",
+  "config.identities.gpgKeyId": "ID da chave GPG para assinatura de commits (opcional)",
+  "config.defaultIdentity": "ID de identidade padrão a ser usada quando nenhuma identidade estiver selecionada",
+  "config.autoSwitchSshKey": "Alternar automaticamente a chave SSH ao mudar de identidade",
+  "config.showNotifications": "Mostrar notificações ao alternar identidades",
+  "config.applyToSubmodules": "Aplicar automaticamente a identidade aos submódulos Git ao alternar",
+  "config.submoduleDepth": "Profundidade máxima para configuração de submódulos aninhados (1 = apenas submódulos diretos)"
+}

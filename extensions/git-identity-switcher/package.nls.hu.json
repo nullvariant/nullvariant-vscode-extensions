@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Váltás több Git identitás között. Több GitHub fiók, SSH kulcs, GPG aláírás kezelése, és az identitás automatikus alkalmazása Git almodulokra.",
+  "command.selectIdentity": "Git ID: Identitás kiválasztása",
+  "command.showCurrentIdentity": "Git ID: Jelenlegi identitás megjelenítése",
+  "config.title": "Git ID Switcher",
+  "config.identities": "A váltáshoz használható Git identitások listája",
+  "config.identities.markdown": "Git identitások listája. Minden identitás tartalmazhatja:\n- `id`: Egyedi azonosító (kötelező)\n- `name`: Git user.name (kötelező)\n- `email`: Git user.email (kötelező)\n- `icon`: Emoji megjelenítése az állapotsorban\n- `description`: Az identitás rövid leírása\n- `sshKeyPath`: SSH privát kulcs elérési útja\n- `sshHost`: SSH konfiguráció gazdagép-álnév (több fiókos beállításokhoz)\n- `gpgKeyId`: GPG kulcs azonosító commit aláíráshoz",
+  "config.identities.id": "Egyedi azonosító ehhez az identitáshoz",
+  "config.identities.icon": "Ikon/emoji megjelenítése az állapotsorban",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Az identitás rövid leírása (megjelenik a gyorsválasztóban és az elemleírásban)",
+  "config.identities.sshKeyPath": "SSH privát kulcs elérési útja (opcionális)",
+  "config.identities.sshHost": "SSH konfiguráció gazdagép-álnév több fiókos beállításokhoz (opcionális)",
+  "config.identities.gpgKeyId": "GPG kulcs azonosító commit aláíráshoz (opcionális)",
+  "config.defaultIdentity": "Alapértelmezett identitás azonosító, ha nincs identitás kiválasztva",
+  "config.autoSwitchSshKey": "SSH kulcs automatikus váltása identitásváltáskor",
+  "config.showNotifications": "Értesítések megjelenítése identitásváltáskor",
+  "config.applyToSubmodules": "Identitás automatikus alkalmazása Git almodulokra váltáskor",
+  "config.submoduleDepth": "Beágyazott almodul konfiguráció maximális mélysége (1 = csak közvetlen almodulok)"
+}

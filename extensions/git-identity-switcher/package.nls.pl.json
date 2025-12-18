@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Przełączaj między wieloma tożsamościami Git. Zarządzaj wieloma kontami GitHub, kluczami SSH, podpisywaniem GPG i automatycznie stosuj tożsamość do podmodułów Git.",
+  "command.selectIdentity": "Git ID: Wybierz tożsamość",
+  "command.showCurrentIdentity": "Git ID: Pokaż bieżącą tożsamość",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Lista tożsamości Git do przełączania",
+  "config.identities.markdown": "Lista tożsamości Git. Każda tożsamość może zawierać:\n- `id`: Unikalny identyfikator (wymagany)\n- `name`: Git user.name (wymagany)\n- `email`: Git user.email (wymagany)\n- `icon`: Emoji do wyświetlenia na pasku stanu\n- `description`: Krótki opis tej tożsamości\n- `sshKeyPath`: Ścieżka do klucza prywatnego SSH\n- `sshHost`: Alias hosta konfiguracji SSH (dla konfiguracji wielu kont)\n- `gpgKeyId`: ID klucza GPG do podpisywania commitów",
+  "config.identities.id": "Unikalny identyfikator dla tej tożsamości",
+  "config.identities.icon": "Ikona/emoji do wyświetlenia na pasku stanu",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Krótki opis tej tożsamości (wyświetlany w szybkim wybieraniu i podpowiedzi)",
+  "config.identities.sshKeyPath": "Ścieżka do klucza prywatnego SSH (opcjonalnie)",
+  "config.identities.sshHost": "Alias hosta konfiguracji SSH dla konfiguracji wielu kont (opcjonalnie)",
+  "config.identities.gpgKeyId": "ID klucza GPG do podpisywania commitów (opcjonalnie)",
+  "config.defaultIdentity": "Domyślny ID tożsamości, gdy żadna tożsamość nie jest wybrana",
+  "config.autoSwitchSshKey": "Automatycznie przełączaj klucz SSH przy zmianie tożsamości",
+  "config.showNotifications": "Pokaż powiadomienia przy przełączaniu tożsamości",
+  "config.applyToSubmodules": "Automatycznie stosuj tożsamość do podmodułów Git przy przełączaniu",
+  "config.submoduleDepth": "Maksymalna głębokość konfiguracji zagnieżdżonych podmodułów (1 = tylko bezpośrednie podmoduły)"
+}

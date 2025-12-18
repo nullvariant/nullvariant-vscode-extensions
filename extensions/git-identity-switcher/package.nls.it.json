@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Passa tra più identità Git. Gestisci più account GitHub, chiavi SSH, firma GPG e applica automaticamente l'identità ai sottomoduli Git.",
+  "command.selectIdentity": "Git ID: Seleziona identità",
+  "command.showCurrentIdentity": "Git ID: Mostra identità corrente",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Elenco delle identità Git tra cui passare",
+  "config.identities.markdown": "Elenco delle identità Git. Ogni identità può avere:\n- `id`: Identificatore univoco (obbligatorio)\n- `name`: Git user.name (obbligatorio)\n- `email`: Git user.email (obbligatorio)\n- `icon`: Emoji da visualizzare nella barra di stato\n- `description`: Breve descrizione di questa identità\n- `sshKeyPath`: Percorso della chiave privata SSH\n- `sshHost`: Alias host configurazione SSH (per configurazioni multi-account)\n- `gpgKeyId`: ID chiave GPG per la firma dei commit",
+  "config.identities.id": "Identificatore univoco per questa identità",
+  "config.identities.icon": "Icona/emoji da visualizzare nella barra di stato",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Breve descrizione di questa identità (mostrata nella selezione rapida e nel tooltip)",
+  "config.identities.sshKeyPath": "Percorso della chiave privata SSH (opzionale)",
+  "config.identities.sshHost": "Alias host configurazione SSH per configurazioni multi-account (opzionale)",
+  "config.identities.gpgKeyId": "ID chiave GPG per la firma dei commit (opzionale)",
+  "config.defaultIdentity": "ID identità predefinita da usare quando nessuna identità è selezionata",
+  "config.autoSwitchSshKey": "Cambia automaticamente la chiave SSH quando si cambia identità",
+  "config.showNotifications": "Mostra notifiche quando si cambia identità",
+  "config.applyToSubmodules": "Applica automaticamente l'identità ai sottomoduli Git quando si cambia",
+  "config.submoduleDepth": "Profondità massima per la configurazione dei sottomoduli annidati (1 = solo sottomoduli diretti)"
+}

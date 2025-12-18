@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "Birden fazla Git kimliği arasında geçiş yapın. Birden fazla GitHub hesabını, SSH anahtarlarını, GPG imzalamayı yönetin ve kimliği Git alt modüllerine otomatik olarak uygulayın.",
+  "command.selectIdentity": "Git ID: Kimlik Seç",
+  "command.showCurrentIdentity": "Git ID: Mevcut Kimliği Göster",
+  "config.title": "Git ID Switcher",
+  "config.identities": "Geçiş yapılacak Git kimlikleri listesi",
+  "config.identities.markdown": "Git kimlikleri listesi. Her kimlik şunları içerebilir:\n- `id`: Benzersiz tanımlayıcı (gerekli)\n- `name`: Git user.name (gerekli)\n- `email`: Git user.email (gerekli)\n- `icon`: Durum çubuğunda görüntülenecek emoji\n- `description`: Bu kimliğin kısa açıklaması\n- `sshKeyPath`: SSH özel anahtar yolu\n- `sshHost`: SSH yapılandırma ana bilgisayar takma adı (çoklu hesap kurulumları için)\n- `gpgKeyId`: Commit imzalama için GPG anahtar ID'si",
+  "config.identities.id": "Bu kimlik için benzersiz tanımlayıcı",
+  "config.identities.icon": "Durum çubuğunda görüntülenecek simge/emoji",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "Bu kimliğin kısa açıklaması (hızlı seçimde ve araç ipucunda gösterilir)",
+  "config.identities.sshKeyPath": "SSH özel anahtar yolu (isteğe bağlı)",
+  "config.identities.sshHost": "Çoklu hesap kurulumları için SSH yapılandırma ana bilgisayar takma adı (isteğe bağlı)",
+  "config.identities.gpgKeyId": "Commit imzalama için GPG anahtar ID'si (isteğe bağlı)",
+  "config.defaultIdentity": "Kimlik seçilmediğinde kullanılacak varsayılan kimlik ID'si",
+  "config.autoSwitchSshKey": "Kimlik değiştirirken SSH anahtarını otomatik değiştir",
+  "config.showNotifications": "Kimlik değiştirirken bildirimleri göster",
+  "config.applyToSubmodules": "Değiştirirken kimliği Git alt modüllerine otomatik uygula",
+  "config.submoduleDepth": "İç içe alt modül yapılandırması için maksimum derinlik (1 = yalnızca doğrudan alt modüller)"
+}

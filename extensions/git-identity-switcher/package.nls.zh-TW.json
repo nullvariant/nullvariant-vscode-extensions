@@ -1,0 +1,22 @@
+{
+  "extension.displayName": "Git ID Switcher",
+  "extension.description": "在多個 Git 身分之間切換。管理多個 GitHub 帳戶、SSH 金鑰、GPG 簽署，並自動將身分套用到 Git 子模組。",
+  "command.selectIdentity": "Git ID: 選擇身分",
+  "command.showCurrentIdentity": "Git ID: 顯示目前身分",
+  "config.title": "Git ID Switcher",
+  "config.identities": "要切換的 Git 身分清單",
+  "config.identities.markdown": "Git 身分清單。每個身分可以包含：\n- `id`: 唯一識別碼（必填）\n- `name`: Git user.name（必填）\n- `email`: Git user.email（必填）\n- `icon`: 狀態列顯示的表情符號\n- `description`: 身分的簡短描述\n- `sshKeyPath`: SSH 私鑰路徑\n- `sshHost`: SSH 設定主機別名（用於多帳戶設定）\n- `gpgKeyId`: 用於提交簽署的 GPG 金鑰 ID",
+  "config.identities.id": "此身分的唯一識別碼",
+  "config.identities.icon": "狀態列顯示的圖示/表情符號",
+  "config.identities.name": "Git user.name",
+  "config.identities.email": "Git user.email",
+  "config.identities.description": "身分的簡短描述（顯示在快速選取和工具提示中）",
+  "config.identities.sshKeyPath": "SSH 私鑰路徑（選用）",
+  "config.identities.sshHost": "用於多帳戶設定的 SSH 設定主機別名（選用）",
+  "config.identities.gpgKeyId": "用於提交簽署的 GPG 金鑰 ID（選用）",
+  "config.defaultIdentity": "未選擇身分時使用的預設身分 ID",
+  "config.autoSwitchSshKey": "變更身分時自動切換 SSH 金鑰",
+  "config.showNotifications": "切換身分時顯示通知",
+  "config.applyToSubmodules": "切換時自動將身分套用到 Git 子模組",
+  "config.submoduleDepth": "巢狀子模組設定的最大深度（1 = 僅直接子模組）"
+}
