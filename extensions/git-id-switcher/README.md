@@ -59,10 +59,10 @@ First, create SSH keys for each account (skip if you already have them):
 
 ```bash
 # Personal
-ssh-keygen -t ed25519 -C "you@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "alex@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Work
-ssh-keygen -t ed25519 -C "you@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "alex.smith@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Register the **public key** (`.pub` file) of each key to the respective GitHub account.
@@ -99,16 +99,16 @@ Open VS Code Settings (`Cmd+,` / `Ctrl+,`) → search "Git ID Switcher" → clic
     {
       "id": "personal",
       "icon": "🏠",
-      "name": "Your Name",
-      "email": "you@personal.example.com",
+      "name": "Alex Smith",
+      "email": "alex@personal.example.com",
       "description": "Personal projects",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
       "icon": "💼",
-      "name": "Your Name",
-      "email": "you@company.example.com",
+      "name": "Alex Smith",
+      "email": "alex.smith@company.example.com",
       "description": "Work account",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -135,7 +135,7 @@ When cloning repos, use the host that corresponds to your identity:
 git clone git@github-work:company/repo.git
 
 # For personal identity (uses default github.com)
-git clone git@github.com:you/repo.git
+git clone git@github.com:asmith/repo.git
 ```
 
 ---
@@ -155,7 +155,7 @@ Output example:
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] Your Name <you@personal.example.com>
+uid         [ultimate] Alex Smith <alex@personal.example.com>
 ```
 
 The key ID is `ABCD1234`.
@@ -168,8 +168,8 @@ The key ID is `ABCD1234`.
     {
       "id": "personal",
       "icon": "🏠",
-      "name": "Your Name",
-      "email": "you@personal.example.com",
+      "name": "Alex Smith",
+      "email": "alex@personal.example.com",
       "description": "Personal projects",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -222,8 +222,8 @@ Host github-oss
     {
       "id": "personal",
       "icon": "🏠",
-      "name": "Your Name",
-      "email": "you@personal.example.com",
+      "name": "Alex Smith",
+      "email": "alex@personal.example.com",
       "description": "Personal projects",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
@@ -231,8 +231,8 @@ Host github-oss
     {
       "id": "work",
       "icon": "💼",
-      "name": "Your Name",
-      "email": "you@company.example.com",
+      "name": "Alex Smith",
+      "email": "alex.smith@company.example.com",
       "description": "Work account",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -241,8 +241,8 @@ Host github-oss
     {
       "id": "oss",
       "icon": "🌟",
-      "name": "OSS Handle",
-      "email": "oss@example.com",
+      "name": "asmith-oss",
+      "email": "asmith.oss@example.com",
       "description": "Open source contributions",
       "sshKeyPath": "~/.ssh/id_ed25519_oss",
       "sshHost": "github-oss"
@@ -250,8 +250,8 @@ Host github-oss
     {
       "id": "freelance",
       "icon": "🎯",
-      "name": "Your Name",
-      "email": "freelance@example.com",
+      "name": "Alex Smith",
+      "email": "alex@freelance.example.com",
       "description": "Freelance projects"
     }
   ],
@@ -301,15 +301,15 @@ If you don't need SSH key switching (e.g., using different committer info with a
     {
       "id": "personal",
       "icon": "🏠",
-      "name": "Your Name",
-      "email": "you@personal.example.com",
+      "name": "Alex Smith",
+      "email": "alex@personal.example.com",
       "description": "Personal projects"
     },
     {
       "id": "work",
       "icon": "💼",
-      "name": "Your Name",
-      "email": "you@company.example.com",
+      "name": "Alex Smith",
+      "email": "alex.smith@company.example.com",
       "description": "Work account"
     }
   ]

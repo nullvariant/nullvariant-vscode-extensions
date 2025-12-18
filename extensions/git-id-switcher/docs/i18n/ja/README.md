@@ -59,10 +59,10 @@ Gitプロフィール切り替えツールは数多く存在しますが、**Git
 
 ```bash
 # 個人用
-ssh-keygen -t ed25519 -C "taro@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "kaoru@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # 仕事用
-ssh-keygen -t ed25519 -C "taro.yamada@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "kaoru.takahashi@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 各キーの**公開鍵**（`.pub`ファイル）をそれぞれのGitHubアカウントに登録してください。
@@ -99,16 +99,16 @@ VS Code設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 
     {
       "id": "personal",
       "icon": "🏠",
-      "name": "山田太郎",
-      "email": "taro@personal.example.com",
+      "name": "高橋カオル",
+      "email": "kaoru@personal.example.com",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
       "icon": "💼",
-      "name": "山田太郎",
-      "email": "taro.yamada@company.example.com",
+      "name": "高橋カオル",
+      "email": "kaoru.takahashi@company.example.com",
       "description": "会社の開発用",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -135,7 +135,7 @@ VS Code設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 
 git clone git@github-work:company/repo.git
 
 # 個人用プロフィール（デフォルトのgithub.comを使用）
-git clone git@github.com:you/repo.git
+git clone git@github.com:kaoru/repo.git
 ```
 
 ---
@@ -155,7 +155,7 @@ gpg --list-secret-keys --keyid-format SHORT
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] 山田太郎 <taro@personal.example.com>
+uid         [ultimate] 高橋カオル <kaoru@personal.example.com>
 ```
 
 キーIDは`ABCD1234`です。
@@ -168,8 +168,8 @@ uid         [ultimate] 山田太郎 <taro@personal.example.com>
     {
       "id": "personal",
       "icon": "🏠",
-      "name": "山田太郎",
-      "email": "taro@personal.example.com",
+      "name": "高橋カオル",
+      "email": "kaoru@personal.example.com",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -222,8 +222,8 @@ Host github-oss
     {
       "id": "personal",
       "icon": "🏠",
-      "name": "山田太郎",
-      "email": "taro@personal.example.com",
+      "name": "高橋カオル",
+      "email": "kaoru@personal.example.com",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
@@ -231,8 +231,8 @@ Host github-oss
     {
       "id": "work",
       "icon": "💼",
-      "name": "山田太郎",
-      "email": "taro.yamada@company.example.com",
+      "name": "高橋カオル",
+      "email": "kaoru.takahashi@company.example.com",
       "description": "会社の開発用",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -241,8 +241,8 @@ Host github-oss
     {
       "id": "oss",
       "icon": "🌟",
-      "name": "TaroYamada",
-      "email": "taro.oss@example.com",
+      "name": "kaoru-oss",
+      "email": "kaoru.oss@example.com",
       "description": "オープンソース活動",
       "sshKeyPath": "~/.ssh/id_ed25519_oss",
       "sshHost": "github-oss"
@@ -250,8 +250,8 @@ Host github-oss
     {
       "id": "freelance",
       "icon": "🎯",
-      "name": "山田太郎",
-      "email": "taro@freelance.example.com",
+      "name": "高橋カオル",
+      "email": "kaoru@freelance.example.com",
       "description": "フリーランス案件"
     }
   ],
@@ -301,15 +301,15 @@ SSHキー切り替えが不要な場合（単一のGitHubアカウントで異�
     {
       "id": "personal",
       "icon": "🏠",
-      "name": "山田太郎",
-      "email": "taro@personal.example.com",
+      "name": "高橋カオル",
+      "email": "kaoru@personal.example.com",
       "description": "個人プロジェクト"
     },
     {
       "id": "work",
       "icon": "💼",
-      "name": "山田太郎",
-      "email": "taro.yamada@company.example.com",
+      "name": "高橋カオル",
+      "email": "kaoru.takahashi@company.example.com",
       "description": "会社の開発用"
     }
   ]
