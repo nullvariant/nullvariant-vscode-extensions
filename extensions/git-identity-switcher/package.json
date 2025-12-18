@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -168,6 +168,6 @@
     "url": "https://github.com/nullvariant/nullvariant-vscode-extensions",
     "directory": "extensions/git-identity-switcher"
   },
-  "homepage": "https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-identity-switcher",
+  "homepage": "https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-identity-switcher#readme",
   "license": "MIT"
 }
