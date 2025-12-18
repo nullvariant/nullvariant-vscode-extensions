@@ -65,7 +65,9 @@ ssh-keygen -t ed25519 -C "taro@personal.example.com" -f ~/.ssh/id_ed25519_person
 ssh-keygen -t ed25519 -C "taro.yamada@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
-各キーの公開鍵（`.pub`）をそれぞれのGitHubアカウントに登録してください。
+各キーの**公開鍵**（`.pub`ファイル）をそれぞれのGitHubアカウントに登録してください。
+
+> **注意**: GitHubに登録するのは `id_ed25519_personal.pub`（公開鍵）です。`id_ed25519_personal`（拡張子なし）は秘密鍵なので、絶対に他人と共有したりアップロードしないでください。
 
 ### ステップ 2: SSH configを設定
 
