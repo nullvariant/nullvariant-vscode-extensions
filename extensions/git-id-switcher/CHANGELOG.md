@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2025-12-19
+
+### Added
+
+- **Tier 3 Documentation i18n**: Added 9 additional README translations
+  - **Minority Languages**: Hawaiian (haw), Ainu (ain), Ryukyuan (ryu)
+    - Each with language-specific disclaimer and cultural resource links
+    - Selection based on personal connections, not comprehensiveness
+  - **Joke Languages**: Pirate (x-pirate), LOLcat (x-lolcat), Shakespearean (x-shakespeare)
+    - Fun themed identity examples (captains, famous cats, Shakespeare characters)
+  - **Constructed Languages**: Klingon (tlh), Toki Pona (tok), Esperanto (eo)
+    - Vocabulary reference tables for language learners
+- **LANGUAGES.md**: Updated with "Why only three minority languages?" section
+  - Explains selection rationale based on personal experiences
+  - Links to language revitalization resources
+
 ## [0.6.1] - 2025-12-18
 
 ### Fixed
@@ -254,7 +270,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.6.1...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.7.0...HEAD
+[0.7.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.6.1...git-id-switcher-v0.7.0
 [0.6.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.6.0...git-id-switcher-v0.6.1
 [0.6.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.6...git-id-switcher-v0.6.0
 [0.5.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.5...git-id-switcher-v0.5.6
