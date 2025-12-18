@@ -291,6 +291,33 @@ Host github-oss
 | `gitIdSwitcher.applyToSubmodules` | `true`     | Gitサブモジュールにプロフィールを伝播        |
 | `gitIdSwitcher.submoduleDepth`    | `1`        | ネストされたサブモジュール設定の最大深度（1-5） |
 
+### 補足: 基本設定のみ（SSHなし）
+
+SSHキー切り替えが不要な場合（単一のGitHubアカウントで異なるコミット者情報を使い分けるなど）、最小構成で利用できます：
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "personal",
+      "icon": "🏠",
+      "name": "山田太郎",
+      "email": "taro@personal.example.com",
+      "description": "個人プロジェクト"
+    },
+    {
+      "id": "work",
+      "icon": "💼",
+      "name": "山田太郎",
+      "email": "taro.yamada@company.example.com",
+      "description": "会社の開発用"
+    }
+  ]
+}
+```
+
+この設定では`git config user.name`と`user.email`のみを切り替えます。
+
 ---
 
 ## 仕組み
@@ -407,32 +434,3 @@ MITライセンス - [LICENSE](../../LICENSE)をご覧ください。
 ## クレジット
 
 [Null;Variant](https://github.com/nullvariant) によって作成
-
----
-
-## 補足: 基本設定のみ（SSHなし）
-
-SSHキー切り替えが不要な場合（単一のGitHubアカウントで異なるコミット者情報を使い分けるなど）、最小構成で利用できます：
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "icon": "🏠",
-      "name": "山田太郎",
-      "email": "taro@personal.example.com",
-      "description": "個人プロジェクト"
-    },
-    {
-      "id": "work",
-      "icon": "💼",
-      "name": "山田太郎",
-      "email": "taro.yamada@company.example.com",
-      "description": "会社の開発用"
-    }
-  ]
-}
-```
-
-この設定では`git config user.name`と`user.email`のみを切り替えます。
