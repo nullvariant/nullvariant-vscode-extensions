@@ -1,8 +1,0 @@
-# English-only repository marker
-#
-# This file indicates that commit messages must be in English only.
-# The commit-msg hook will block:
-# - Japanese characters (hiragana, katakana, kanji)
-# - Private references (ADR-XXXXX, PRD-XXXXX-XXX, Issue-XXXXX)
-#
-# This is a public repository intended for international users.
