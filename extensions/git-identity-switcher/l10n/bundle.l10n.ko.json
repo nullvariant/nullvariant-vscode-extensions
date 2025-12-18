@@ -19,5 +19,7 @@
   "**Email:** {0}": "**이메일:** {0}",
   "**SSH Host:** {0}": "**SSH 호스트:** {0}",
   "**SSH Key:** {0}": "**SSH 키:** {0}",
-  "**GPG Key:** {0}": "**GPG 키:** {0}"
+  "**GPG Key:** {0}": "**GPG 키:** {0}",
+  "Welcome to Git ID Switcher! Configure your identities to get started.": "Git ID Switcher에 오신 것을 환영합니다! ID를 구성하여 시작하세요.",
+  "Open Settings": "설정 열기"
 }

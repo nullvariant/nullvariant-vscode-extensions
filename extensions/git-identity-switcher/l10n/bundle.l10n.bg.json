@@ -19,5 +19,7 @@
   "**Email:** {0}": "**Имейл:** {0}",
   "**SSH Host:** {0}": "**SSH хост:** {0}",
   "**SSH Key:** {0}": "**SSH ключ:** {0}",
-  "**GPG Key:** {0}": "**GPG ключ:** {0}"
+  "**GPG Key:** {0}": "**GPG ключ:** {0}",
+  "Welcome to Git ID Switcher! Configure your identities to get started.": "Добре дошли в Git ID Switcher! Конфигурирайте вашите самоличности, за да започнете.",
+  "Open Settings": "Отвори настройки"
 }

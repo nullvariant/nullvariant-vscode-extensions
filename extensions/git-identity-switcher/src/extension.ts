@@ -106,6 +106,14 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
       return;
     }
 
+    // First-run welcome notification: detect example-only state
+    const hasShownWelcome = context.globalState.get<boolean>('hasShownWelcome', false);
+    if (!hasShownWelcome && identities.length === 1 && identities[0].id === 'example') {
+      // Show welcome notification (non-blocking)
+      showWelcomeNotification();
+      await context.globalState.update('hasShownWelcome', true);
+    }
+
     // Try to restore saved identity
     const savedIdentityId = context.workspaceState.get<string>('currentIdentityId');
     if (savedIdentityId) {
@@ -244,5 +252,22 @@ async function switchToIdentity(
     }
 
     throw error;
+  }
+}
+
+/**
+ * Show welcome notification for first-time users
+ */
+async function showWelcomeNotification(): Promise<void> {
+  const action = await vscode.window.showInformationMessage(
+    vscode.l10n.t('Welcome to Git ID Switcher! Configure your identities to get started.'),
+    vscode.l10n.t('Open Settings')
+  );
+
+  if (action) {
+    vscode.commands.executeCommand(
+      'workbench.action.openSettings',
+      'gitIdSwitcher.identities'
+    );
   }
 }

@@ -19,5 +19,7 @@
   "**Email:** {0}": "**E-mail:** {0}",
   "**SSH Host:** {0}": "**SSH gazdagép:** {0}",
   "**SSH Key:** {0}": "**SSH kulcs:** {0}",
-  "**GPG Key:** {0}": "**GPG kulcs:** {0}"
+  "**GPG Key:** {0}": "**GPG kulcs:** {0}",
+  "Welcome to Git ID Switcher! Configure your identities to get started.": "Üdvözöljük a Git ID Switcher-ben! Konfigurálja identitásait a kezdéshez.",
+  "Open Settings": "Beállítások megnyitása"
 }

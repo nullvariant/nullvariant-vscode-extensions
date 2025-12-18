@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2025-12-18
+
+### Added
+
+- **Welcome Notification**: Show localized welcome message on first run
+  - Detects example-only identity configuration
+  - Offers "Open Settings" button to guide users
+  - Supports all 17 languages
+
 ## [0.5.1] - 2025-12-18
 
 ### Improved
@@ -183,7 +192,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.1...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.2...HEAD
+[0.5.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.1...git-id-switcher-v0.5.2
 [0.5.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.5.0...git-id-switcher-v0.5.1
 [0.5.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.4.5...git-id-switcher-v0.5.0
 [0.4.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.4.4...git-id-switcher-v0.4.5

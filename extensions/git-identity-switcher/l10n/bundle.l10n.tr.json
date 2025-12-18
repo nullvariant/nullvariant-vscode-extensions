@@ -19,5 +19,7 @@
   "**Email:** {0}": "**E-posta:** {0}",
   "**SSH Host:** {0}": "**SSH Ana Bilgisayar:** {0}",
   "**SSH Key:** {0}": "**SSH Anahtarı:** {0}",
-  "**GPG Key:** {0}": "**GPG Anahtarı:** {0}"
+  "**GPG Key:** {0}": "**GPG Anahtarı:** {0}",
+  "Welcome to Git ID Switcher! Configure your identities to get started.": "Git ID Switcher'a hoş geldiniz! Başlamak için kimliklerinizi yapılandırın.",
+  "Open Settings": "Ayarları Aç"
 }
