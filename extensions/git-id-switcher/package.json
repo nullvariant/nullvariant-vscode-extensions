@@ -162,7 +162,8 @@
     "lint": "eslint src --ext ts",
     "test": "npm run compile && node out/test/runTests.js",
     "test:security": "npm run compile && node out/test/runTests.js",
-    "package": "vsce package"
+    "package": "vsce package",
+    "publish": "echo '❌ Do not use vsce publish directly. Push a tag instead: git tag git-id-switcher-vX.X.X && git push --tags' && exit 1"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
