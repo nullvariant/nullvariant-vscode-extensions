@@ -91,6 +91,10 @@
                 "type": "string",
                 "description": "%config.identities.name%"
               },
+              "service": {
+                "type": "string",
+                "description": "%config.identities.service%"
+              },
               "email": {
                 "type": "string",
                 "description": "%config.identities.email%"

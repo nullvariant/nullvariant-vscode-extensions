@@ -43,12 +43,19 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
   },
   name: {
     type: 'string',
-    description: 'Git user.name',
+    description: 'Git user.name (pure name without service info)',
     required: true,
     minLength: 1,
     maxLength: 256,
     // Disallow control characters and shell metacharacters
     pattern: '^[^\\x00-\\x1f\\x7f`$(){}|;&<>]+$',
+  },
+  service: {
+    type: 'string',
+    description: 'Git hosting service (e.g., GitHub, GitLab, Bitbucket)',
+    maxLength: 64,
+    // Alphanumeric, spaces, and common punctuation only
+    pattern: '^[a-zA-Z0-9 ._-]+$',
   },
   email: {
     type: 'string',

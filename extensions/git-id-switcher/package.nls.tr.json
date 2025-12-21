@@ -9,6 +9,7 @@
   "config.identities.id": "Bu kimlik için benzersiz tanımlayıcı",
   "config.identities.icon": "Durum çubuğunda görüntülenecek simge/emoji",
   "config.identities.name": "Git user.name",
+  "config.identities.service": "Git barındırma hizmeti (ör. GitHub, GitLab, Bitbucket)",
   "config.identities.email": "Git user.email",
   "config.identities.description": "Bu kimliğin kısa açıklaması (hızlı seçimde ve araç ipucunda gösterilir)",
   "config.identities.sshKeyPath": "SSH özel anahtar yolu (isteğe bağlı)",

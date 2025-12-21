@@ -14,8 +14,11 @@ export interface Identity {
   /** Display icon (emoji) - optional */
   icon?: string;
 
-  /** Git user.name */
+  /** Git user.name (pure name without service info) */
   name: string;
+
+  /** Git hosting service (e.g., "GitHub", "GitLab", "Bitbucket") - optional */
+  service?: string;
 
   /** Git user.email */
   email: string;
@@ -73,12 +76,17 @@ export function getDefaultIdentity(): Identity | undefined {
 
 /**
  * Get identity display label for UI
+ * If service is specified, formats as "Name - Service"
  */
 export function getIdentityLabel(identity: Identity): string {
+  const displayName = identity.service
+    ? `${identity.name} - ${identity.service}`
+    : identity.name;
+
   if (identity.icon) {
-    return `${identity.icon} ${identity.name}`;
+    return `${identity.icon} ${displayName}`;
   }
-  return identity.name;
+  return displayName;
 }
 
 /**

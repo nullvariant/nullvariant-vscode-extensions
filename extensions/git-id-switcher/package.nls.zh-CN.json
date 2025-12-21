@@ -9,6 +9,7 @@
   "config.identities.id": "此身份的唯一标识符",
   "config.identities.icon": "状态栏显示的图标/表情符号",
   "config.identities.name": "Git user.name",
+  "config.identities.service": "Git 托管服务（如 GitHub、GitLab、Bitbucket）",
   "config.identities.email": "Git user.email",
   "config.identities.description": "身份的简短描述（显示在快速选择和工具提示中）",
   "config.identities.sshKeyPath": "SSH 私钥路径（可选）",

@@ -9,6 +9,7 @@
   "config.identities.id": "Унікальний ідентифікатор для цього ідентифікатора",
   "config.identities.icon": "Іконка/емодзі для відображення в рядку стану",
   "config.identities.name": "Git user.name",
+  "config.identities.service": "Git хостинг-сервіс (наприклад, GitHub, GitLab, Bitbucket)",
   "config.identities.email": "Git user.email",
   "config.identities.description": "Короткий опис цього ідентифікатора (відображається в швидкому виборі та підказці)",
   "config.identities.sshKeyPath": "Шлях до приватного SSH ключа (необов'язково)",

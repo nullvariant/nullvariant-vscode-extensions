@@ -9,6 +9,7 @@
   "config.identities.id": "Jedinečný identifikátor pro tuto identitu",
   "config.identities.icon": "Ikona/emoji pro zobrazení ve stavovém řádku",
   "config.identities.name": "Git user.name",
+  "config.identities.service": "Git hostingová služba (např. GitHub, GitLab, Bitbucket)",
   "config.identities.email": "Git user.email",
   "config.identities.description": "Krátký popis této identity (zobrazuje se v rychlém výběru a nápovědě)",
   "config.identities.sshKeyPath": "Cesta k privátnímu SSH klíči (volitelné)",

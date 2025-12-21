@@ -9,6 +9,7 @@
   "config.identities.id": "Identificador único para esta identidade",
   "config.identities.icon": "Ícone/emoji para exibir na barra de status",
   "config.identities.name": "Git user.name",
+  "config.identities.service": "Serviço de hospedagem Git (ex. GitHub, GitLab, Bitbucket)",
   "config.identities.email": "Git user.email",
   "config.identities.description": "Breve descrição desta identidade (exibida na seleção rápida e na dica de ferramenta)",
   "config.identities.sshKeyPath": "Caminho para a chave privada SSH (opcional)",
