@@ -7,6 +7,7 @@
 
 import * as vscode from 'vscode';
 import { Identity, getIdentityLabel } from './identity';
+import { truncateForStatusBar } from './displayLimits';
 
 /**
  * Status bar item wrapper
@@ -40,7 +41,9 @@ export class IdentityStatusBar implements vscode.Disposable {
     this.currentIdentity = identity;
     // Use identity's icon if available, otherwise default emoji
     const icon = identity.icon || '👤';
-    this.statusBarItem.text = `${icon} ${identity.name}`;
+    // Truncate for status bar to avoid taking too much horizontal space
+    const displayText = truncateForStatusBar(`${icon} ${identity.name}`);
+    this.statusBarItem.text = displayText;
     this.statusBarItem.tooltip = new vscode.MarkdownString(
       this.buildTooltip(identity)
     );

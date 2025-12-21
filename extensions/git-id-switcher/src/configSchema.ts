@@ -7,6 +7,8 @@
  * @see https://json-schema.org/
  */
 
+import { isSingleGrapheme } from './displayLimits';
+
 /**
  * Property schema definition
  */
@@ -17,7 +19,7 @@ interface PropertySchema {
   maxLength?: number;
   minLength?: number;
   pattern?: string;
-  format?: 'email' | 'uri' | 'date' | 'hex';
+  format?: 'email' | 'uri' | 'date' | 'hex' | 'single-grapheme';
   minimum?: number;
   maximum?: number;
 }
@@ -39,7 +41,8 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
   icon: {
     type: 'string',
     description: 'Display emoji (single emoji character)',
-    maxLength: 8, // Composed emoji can be up to 8 bytes
+    maxLength: 32, // Allow for complex composed emoji (byte length)
+    format: 'single-grapheme', // Validate as single visible character
   },
   name: {
     type: 'string',
@@ -190,6 +193,14 @@ function validateProperty(
         errors.push({
           field,
           message: 'Must be hexadecimal',
+          value,
+        });
+      }
+
+      if (schema.format === 'single-grapheme' && !isSingleGrapheme(value)) {
+        errors.push({
+          field,
+          message: 'Must be a single visible character (emoji or letter)',
           value,
         });
       }
