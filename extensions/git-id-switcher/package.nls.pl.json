@@ -19,5 +19,6 @@
   "config.autoSwitchSshKey": "Automatycznie przełączaj klucz SSH przy zmianie tożsamości",
   "config.showNotifications": "Pokaż powiadomienia przy przełączaniu tożsamości",
   "config.applyToSubmodules": "Automatycznie stosuj tożsamość do podmodułów Git przy przełączaniu",
-  "config.submoduleDepth": "Maksymalna głębokość konfiguracji zagnieżdżonych podmodułów (1 = tylko bezpośrednie podmoduły)"
+  "config.submoduleDepth": "Maksymalna głębokość konfiguracji zagnieżdżonych podmodułów (1 = tylko bezpośrednie podmoduły)",
+  "config.includeIconInGitConfig": "Dołącz emoji ikony do Git config user.name (wpływa na historię commitów). Jeśli false, ikona jest wyświetlana tylko w interfejsie edytora."
 }

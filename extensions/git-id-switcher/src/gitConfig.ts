@@ -20,6 +20,26 @@ import {
   getSubmoduleDepth,
 } from './submodule';
 
+/**
+ * Check if icon should be included in Git config user.name
+ * @returns true if icon should be included, false otherwise (default: false)
+ */
+function shouldIncludeIconInGitConfig(): boolean {
+  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  return config.get<boolean>('includeIconInGitConfig', false);
+}
+
+/**
+ * Build user.name string for Git config
+ * Icon is only included if includeIconInGitConfig setting is true
+ */
+function buildGitUserName(identity: Identity): string {
+  if (identity.icon && shouldIncludeIconInGitConfig()) {
+    return `${identity.icon} ${identity.name}`;
+  }
+  return identity.name;
+}
+
 export interface GitConfig {
   userName?: string;
   userEmail?: string;
@@ -86,10 +106,8 @@ export async function setGitConfigForIdentity(identity: Identity): Promise<void>
 
   const cwd = workspaceFolder.uri.fsPath;
 
-  // Set user.name (with emoji prefix if provided)
-  const userName = identity.icon
-    ? `${identity.icon} ${identity.name}`
-    : identity.name;
+  // Set user.name (icon is only included if includeIconInGitConfig is true)
+  const userName = buildGitUserName(identity);
 
   // SECURITY: Using gitExec with array args prevents command injection
   await gitExec(['config', '--local', 'user.name', userName], cwd);
@@ -123,9 +141,8 @@ async function propagateToSubmodules(
     return;
   }
 
-  const userName = identity.icon
-    ? `${identity.icon} ${identity.name}`
-    : identity.name;
+  // Use same logic as main repo (icon only if includeIconInGitConfig is true)
+  const userName = buildGitUserName(identity);
 
   const result = await setIdentityForSubmodules(
     submodules,

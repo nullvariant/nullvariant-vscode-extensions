@@ -19,5 +19,6 @@
   "config.autoSwitchSshKey": "Kimlik değiştirirken SSH anahtarını otomatik değiştir",
   "config.showNotifications": "Kimlik değiştirirken bildirimleri göster",
   "config.applyToSubmodules": "Değiştirirken kimliği Git alt modüllerine otomatik uygula",
-  "config.submoduleDepth": "İç içe alt modül yapılandırması için maksimum derinlik (1 = yalnızca doğrudan alt modüller)"
+  "config.submoduleDepth": "İç içe alt modül yapılandırması için maksimum derinlik (1 = yalnızca doğrudan alt modüller)",
+  "config.includeIconInGitConfig": "Git config user.name'e simge emojisi ekle (commit geçmişini etkiler). false ise simge yalnızca editör arayüzünde gösterilir."
 }

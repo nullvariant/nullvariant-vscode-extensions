@@ -19,5 +19,6 @@
   "config.autoSwitchSshKey": "SSH-Schlüssel beim Wechseln der Identität automatisch wechseln",
   "config.showNotifications": "Benachrichtigungen beim Wechseln der Identität anzeigen",
   "config.applyToSubmodules": "Identität beim Wechseln automatisch auf Git-Submodule anwenden",
-  "config.submoduleDepth": "Maximale Tiefe für verschachtelte Submodul-Konfiguration (1 = nur direkte Submodule)"
+  "config.submoduleDepth": "Maximale Tiefe für verschachtelte Submodul-Konfiguration (1 = nur direkte Submodule)",
+  "config.includeIconInGitConfig": "Icon-Emoji in Git config user.name einschließen (beeinflusst Commit-Verlauf). Bei false wird das Icon nur in der Editor-Oberfläche angezeigt."
 }

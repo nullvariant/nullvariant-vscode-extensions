@@ -19,5 +19,6 @@
   "config.autoSwitchSshKey": "變更身分時自動切換 SSH 金鑰",
   "config.showNotifications": "切換身分時顯示通知",
   "config.applyToSubmodules": "切換時自動將身分套用到 Git 子模組",
-  "config.submoduleDepth": "巢狀子模組設定的最大深度（1 = 僅直接子模組）"
+  "config.submoduleDepth": "巢狀子模組設定的最大深度（1 = 僅直接子模組）",
+  "config.includeIconInGitConfig": "在 Git config user.name 中包含圖示表情符號（影響提交歷史）。設為 false 時，圖示僅在編輯器介面中顯示。"
 }

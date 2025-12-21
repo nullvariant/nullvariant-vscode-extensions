@@ -19,5 +19,6 @@
   "config.autoSwitchSshKey": "Cambia automaticamente la chiave SSH quando si cambia identità",
   "config.showNotifications": "Mostra notifiche quando si cambia identità",
   "config.applyToSubmodules": "Applica automaticamente l'identità ai sottomoduli Git quando si cambia",
-  "config.submoduleDepth": "Profondità massima per la configurazione dei sottomoduli annidati (1 = solo sottomoduli diretti)"
+  "config.submoduleDepth": "Profondità massima per la configurazione dei sottomoduli annidati (1 = solo sottomoduli diretti)",
+  "config.includeIconInGitConfig": "Includi l'emoji dell'icona in Git config user.name (influisce sulla cronologia dei commit). Se false, l'icona viene mostrata solo nell'interfaccia dell'editor."
 }

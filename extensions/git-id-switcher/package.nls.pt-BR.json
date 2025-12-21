@@ -19,5 +19,6 @@
   "config.autoSwitchSshKey": "Alternar automaticamente a chave SSH ao mudar de identidade",
   "config.showNotifications": "Mostrar notificações ao alternar identidades",
   "config.applyToSubmodules": "Aplicar automaticamente a identidade aos submódulos Git ao alternar",
-  "config.submoduleDepth": "Profundidade máxima para configuração de submódulos aninhados (1 = apenas submódulos diretos)"
+  "config.submoduleDepth": "Profundidade máxima para configuração de submódulos aninhados (1 = apenas submódulos diretos)",
+  "config.includeIconInGitConfig": "Incluir emoji de ícone no Git config user.name (afeta o histórico de commits). Se false, o ícone é exibido apenas na interface do editor."
 }

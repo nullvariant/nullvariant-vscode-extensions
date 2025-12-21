@@ -19,5 +19,6 @@
   "config.autoSwitchSshKey": "ID 변경 시 SSH 키 자동 전환",
   "config.showNotifications": "ID 전환 시 알림 표시",
   "config.applyToSubmodules": "전환 시 Git 서브모듈에 자동으로 ID 적용",
-  "config.submoduleDepth": "중첩 서브모듈 구성의 최대 깊이 (1 = 직접 서브모듈만)"
+  "config.submoduleDepth": "중첩 서브모듈 구성의 최대 깊이 (1 = 직접 서브모듈만)",
+  "config.includeIconInGitConfig": "Git config user.name에 아이콘 이모지를 포함합니다 (커밋 기록에 영향). false인 경우 아이콘은 에디터 UI에서만 표시됩니다."
 }

@@ -19,5 +19,6 @@
   "config.autoSwitchSshKey": "SSH kulcs automatikus váltása identitásváltáskor",
   "config.showNotifications": "Értesítések megjelenítése identitásváltáskor",
   "config.applyToSubmodules": "Identitás automatikus alkalmazása Git almodulokra váltáskor",
-  "config.submoduleDepth": "Beágyazott almodul konfiguráció maximális mélysége (1 = csak közvetlen almodulok)"
+  "config.submoduleDepth": "Beágyazott almodul konfiguráció maximális mélysége (1 = csak közvetlen almodulok)",
+  "config.includeIconInGitConfig": "Ikon emoji beillesztése a Git config user.name-be (hatással van a commit előzményekre). Ha false, az ikon csak a szerkesztő felületén jelenik meg."
 }

@@ -19,5 +19,6 @@
   "config.autoSwitchSshKey": "ID変更時にSSHキーも自動的に切り替える",
   "config.showNotifications": "ID切り替え時に通知を表示する",
   "config.applyToSubmodules": "切り替え時にGitサブモジュールにもIDを自動適用する",
-  "config.submoduleDepth": "ネストされたサブモジュール設定の最大深度（1 = 直接のサブモジュールのみ）"
+  "config.submoduleDepth": "ネストされたサブモジュール設定の最大深度（1 = 直接のサブモジュールのみ）",
+  "config.includeIconInGitConfig": "Git configのuser.nameにアイコン絵文字を含める（コミット履歴に影響）。falseの場合、アイコンはエディタUIのみに表示されます。"
 }
