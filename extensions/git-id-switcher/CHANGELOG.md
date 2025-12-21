@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2025-12-21
+
+### Added
+
+- **New `service` Field**: Separate hosting service from identity name (ISSUE-00021)
+  - `name` now contains pure identity name (e.g., "Alex")
+  - `service` specifies hosting provider (e.g., "GitHub", "GitLab", "Bitbucket")
+  - QuickPick displays combined label: "Alex - GitHub"
+  - Git author uses only `name`: "Alex <alex@example.com>"
+  - Backward compatible: `service` is optional
+- **Display Context Limits**: Smart truncation for different UI contexts (ISSUE-00022)
+  - Status bar: 25 characters max with "..." suffix
+  - QuickPick: Uses VS Code's native truncation
+  - Tooltip: No limit (full Markdown support)
+- **Grapheme-Based Icon Validation**: Single visible character enforcement
+  - Uses `Intl.Segmenter` API for accurate emoji counting
+  - Composed emoji (e.g., family emoji) counts as 1 character
+  - Prevents multiple emoji in icon field
+
+### Changed
+
+- Icon validation uses grapheme clusters instead of byte length
+- Status bar text automatically truncates long names
+
 ## [0.7.1] - 2025-12-19
 
 ### Changed
@@ -277,7 +301,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.7.1...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.8.0...HEAD
+[0.8.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.7.1...git-id-switcher-v0.8.0
 [0.7.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.7.0...git-id-switcher-v0.7.1
 [0.7.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.6.1...git-id-switcher-v0.7.0
 [0.6.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.6.0...git-id-switcher-v0.6.1
