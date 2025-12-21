@@ -2,7 +2,7 @@
 
 <table>
   <tr>
-    <td align="center" width="150">
+    <td align="center" valign="top" width="150">
       <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
@@ -53,7 +53,7 @@ Gitプロフィール切り替えツールは数多く存在しますが、**Git
 
 ## クイックスタート
 
-複数のGitHubアカウントを使い分ける典型的なセットアップです。
+個人アカウントと会社発行アカウント（Enterprise Managed User）を使い分ける典型的なセットアップです。
 
 ### ステップ 1: SSHキーを準備
 
@@ -93,7 +93,7 @@ Host github-work
 
 ### ステップ 3: 拡張機能を設定
 
-VS Code設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 →「settings.jsonで編集」をクリック：
+拡張機能の設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 →「settings.jsonで編集」をクリック：
 
 ```json
 {
@@ -102,6 +102,7 @@ VS Code設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 
       "id": "personal",
       "icon": "🏠",
       "name": "高橋カオル",
+      "service": "GitHub",
       "email": "kaoru@personal.example.com",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
@@ -110,6 +111,7 @@ VS Code設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 
       "id": "work",
       "icon": "💼",
       "name": "高橋カオル",
+      "service": "GitHub 会社用",
       "email": "kaoru.takahashi@company.example.com",
       "description": "会社の開発用",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
@@ -171,6 +173,7 @@ uid         [ultimate] 高橋カオル <kaoru@personal.example.com>
       "id": "personal",
       "icon": "🏠",
       "name": "高橋カオル",
+      "service": "GitHub",
       "email": "kaoru@personal.example.com",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -201,18 +204,18 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# 仕事用アカウント
+# 仕事用アカウント（会社発行のEnterprise Managed User）
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# OSS活動用アカウント
-Host github-oss
-    HostName github.com
+# Bitbucket用アカウント
+Host bitbucket.org
+    HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_oss
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
     IdentitiesOnly yes
 ```
 
@@ -225,6 +228,7 @@ Host github-oss
       "id": "personal",
       "icon": "🏠",
       "name": "高橋カオル",
+      "service": "GitHub",
       "email": "kaoru@personal.example.com",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -234,6 +238,7 @@ Host github-oss
       "id": "work",
       "icon": "💼",
       "name": "高橋カオル",
+      "service": "GitHub 会社用",
       "email": "kaoru.takahashi@company.example.com",
       "description": "会社の開発用",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
@@ -241,18 +246,20 @@ Host github-oss
       "gpgKeyId": "WORK1234"
     },
     {
-      "id": "oss",
-      "icon": "🌟",
-      "name": "kaoru-oss",
-      "email": "kaoru.oss@example.com",
-      "description": "オープンソース活動",
-      "sshKeyPath": "~/.ssh/id_ed25519_oss",
-      "sshHost": "github-oss"
+      "id": "bitbucket",
+      "icon": "🪣",
+      "name": "高橋カオル",
+      "service": "Bitbucket",
+      "email": "kaoru@bitbucket.example.com",
+      "description": "Bitbucketプロジェクト",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
+      "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
       "icon": "🎯",
       "name": "高橋カオル",
+      "service": "GitLab",
       "email": "kaoru@freelance.example.com",
       "description": "フリーランス案件"
     }
@@ -276,11 +283,17 @@ Host github-oss
 | `id`          | ✅    | 一意の識別子（例：`"personal"`, `"work"`）                |
 | `name`        | ✅    | Git user.name - コミットに表示                           |
 | `email`       | ✅    | Git user.email - コミットに表示                          |
-| `icon`        |      | ステータスバーに表示される絵文字（例：`"🏠"`）            |
+| `icon`        |      | ステータスバーに表示される絵文字（例：`"🏠"`）。単一の絵文字のみ |
+| `service`     |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI表示に使用   |
 | `description` |      | ピッカーとツールチップに表示される短い説明               |
 | `sshKeyPath`  |      | SSHプライベートキーへのパス（例：`"~/.ssh/id_ed25519_work"`） |
 | `sshHost`     |      | SSH configのHostエイリアス（例：`"github-work"`）       |
 | `gpgKeyId`    |      | コミット署名用のGPGキーID                                |
+
+#### 表示に関する制限
+
+- **ステータスバー**: 約25文字を超える場合は `...` で省略されます
+- **`icon`**: 単一の絵文字（書記素クラスター）のみ使用可能。複数の絵文字や長い文字列は使用できません
 
 ### グローバル設定
 
@@ -292,6 +305,23 @@ Host github-oss
 | `gitIdSwitcher.showNotifications` | `true`     | プロフィール切り替え時に通知を表示           |
 | `gitIdSwitcher.applyToSubmodules` | `true`     | Gitサブモジュールにプロフィールを伝播        |
 | `gitIdSwitcher.submoduleDepth`    | `1`        | ネストされたサブモジュール設定の最大深度（1-5） |
+| `gitIdSwitcher.includeIconInGitConfig` | `false` | アイコン絵文字をGit configの`user.name`に含めるか |
+
+#### `includeIconInGitConfig` について
+
+`icon` フィールドを設定した場合の動作を制御します：
+
+| 値 | 動作 |
+|----|------|
+| `false`（デフォルト） | `icon`はエディタUIのみに表示。Git configには`name`のみ書き込み |
+| `true` | Git configに`icon + name`を書き込み。コミット履歴にも絵文字が残る |
+
+例：`icon: "👤"`, `name: "高橋カオル"` の場合
+
+| includeIconInGitConfig | Git config `user.name` | コミット署名 |
+|------------------------|------------------------|-------------|
+| `false` | `高橋カオル` | `高橋カオル <email>` |
+| `true` | `👤 高橋カオル` | `👤 高橋カオル <email>` |
 
 ### 補足: 基本設定のみ（SSHなし）
 
@@ -324,12 +354,39 @@ SSHキー切り替えが不要な場合（単一のGitHubアカウントで異�
 
 ## 仕組み
 
+### Git configのレイヤー構造
+
+Gitの設定には3つのレイヤーがあり、下位の設定を上位が上書きします：
+
+```text
+システム (/etc/gitconfig)
+    ↓ 上書き
+グローバル (~/.gitconfig)
+    ↓ 上書き
+ローカル (.git/config)  ← 最優先
+```
+
+**Git ID Switcherは `--local`（リポジトリローカル）に書き込みます。**
+
+つまり：
+
+- 各リポジトリの `.git/config` にプロフィールを保存
+- リポジトリごとに異なるプロフィールを維持可能
+- グローバル設定（`~/.gitconfig`）は変更しない
+
+### プロフィール切り替え時の動作
+
 プロフィールを切り替えると、拡張機能は以下を（順番に）実行します：
 
 1. **Git Config**（常時）: `git config --local user.name`と`user.email`を設定
 2. **SSHキー**（`sshKeyPath`設定時）: 他のキーをssh-agentから削除し、選択したキーを追加
 3. **GPGキー**（`gpgKeyId`設定時）: `git config --local user.signingkey`を設定し、署名を有効化
 4. **サブモジュール**（有効時）: すべてのサブモジュールに設定を伝播（デフォルト：深度1）
+
+### サブモジュール伝播の仕組み
+
+ローカル設定はリポジトリ単位のため、サブモジュールには自動的に適用されません。
+そのため、本拡張機能はサブモジュールへの伝播機能を提供しています（詳細は「上級者向け: サブモジュールサポート」を参照）。
 
 ---
 
@@ -413,6 +470,23 @@ Gitサブモジュールを使用する複雑なリポジトリでは、プロ�
 - Gitリポジトリ内にいることを確認
 - `settings.json`に構文エラーがないか確認
 - VS Codeウィンドウをリロード（`Cmd+Shift+P` → 「ウィンドウの再読み込み」）
+
+### `name` フィールドでエラーが発生する？
+
+`name` フィールドに以下の文字が含まれているとエラーになります：
+
+`` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
+
+サービス名を含めたい場合は `service` フィールドを使用してください。
+
+```jsonc
+// NG
+"name": "高橋カオル (個人)"
+
+// OK
+"name": "高橋カオル",
+"service": "GitHub"
+```
 
 ---
 

@@ -6,7 +6,7 @@
 
 <table>
   <tr>
-    <td align="center" width="150">
+    <td align="center" valign="top" width="150">
       <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
