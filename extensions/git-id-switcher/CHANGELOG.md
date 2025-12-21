@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2] - 2025-12-21
+
+### Changed
+
+- **English README**: Comprehensive documentation update
+  - Added EMU (Enterprise Managed User) mention in Quick Start
+  - Added `service` field to all configuration examples
+  - Changed OSS example from GitHub to Bitbucket (GitHub ToS compliance)
+  - Added "Display Limitations" section (status bar ~25 chars, single emoji)
+  - Added `includeIconInGitConfig` setting documentation with behavior table
+  - Added "Git Config Layer Structure" section explaining --local writes
+  - Added "When Switching Identities" section with step-by-step flow
+  - Added "How Submodule Propagation Works" section
+  - Added troubleshooting: name field shell metacharacters error
+  - Added troubleshooting: settings cache issue (machine restart)
+  - Added troubleshooting: Settings Sync overwriting defaults
+  - Fixed bitbucket icon to bucket emoji (matches Bitbucket logo)
+  - Fixed freelance service from GitHub to GitLab
+
 ## [0.9.1] - 2025-12-21
 
 ### Fixed
