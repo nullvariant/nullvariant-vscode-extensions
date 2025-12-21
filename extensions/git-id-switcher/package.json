@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -68,6 +68,7 @@
               "id": "example",
               "icon": "👤",
               "name": "Your Name",
+              "service": "",
               "email": "you@example.com",
               "description": "Edit this or add your own identity",
               "sshKeyPath": "",
