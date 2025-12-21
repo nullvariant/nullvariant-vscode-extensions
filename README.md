@@ -59,6 +59,16 @@ npm run package
 2. Press `F5` to launch Extension Development Host
 3. Test the extension in the new window
 
+### Git Hooks Setup
+
+This repository uses custom git hooks for release safety. After cloning, run:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+This enables the pre-push hook that prevents pushing version bumps without release tags.
+
 ## Repository Structure
 
 ```
@@ -68,6 +78,8 @@ nullvariant-vscode-extensions/
 ├── .github/workflows/
 │   ├── ci.yml
 │   └── publish.yml
+├── .githooks/
+│   └── pre-push
 ├── LICENSE
 └── README.md
 ```

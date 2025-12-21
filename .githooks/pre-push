@@ -1,0 +1,98 @@
+#!/bin/bash
+# pre-push hook: Enforce tagging when version changes
+# Prevents pushing version bumps without corresponding release tags
+
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Remote and URL passed by git
+remote="$1"
+url="$2"
+
+# Extension definitions (monorepo support)
+# Format: "directory:tag_prefix"
+EXTENSIONS=(
+    "git-id-switcher:git-id-switcher-v"
+)
+
+# Check a single extension
+check_extension() {
+    local ext_dir="$1"
+    local tag_prefix="$2"
+    local package_json="extensions/${ext_dir}/package.json"
+
+    # Skip if package.json doesn't exist
+    if [[ ! -f "$package_json" ]]; then
+        return 0
+    fi
+
+    # Get local version
+    local local_version
+    local_version=$(jq -r '.version' "$package_json" 2>/dev/null)
+    if [[ -z "$local_version" || "$local_version" == "null" ]]; then
+        echo -e "${YELLOW}⚠️  ${ext_dir}: Cannot read version from package.json${NC}"
+        return 0
+    fi
+
+    # Get remote version (from origin/main)
+    local remote_version
+    remote_version=$(git show origin/main:"$package_json" 2>/dev/null | jq -r '.version' 2>/dev/null || echo "")
+
+    # Skip if file doesn't exist on remote (new extension)
+    if [[ -z "$remote_version" || "$remote_version" == "null" ]]; then
+        return 0
+    fi
+
+    # Skip if version unchanged
+    if [[ "$local_version" == "$remote_version" ]]; then
+        return 0
+    fi
+
+    # Version changed - check for corresponding tag
+    local expected_tag="${tag_prefix}${local_version}"
+
+    # Check if local tag exists
+    if ! git tag -l "$expected_tag" | grep -q "^${expected_tag}$"; then
+        echo ""
+        echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
+        echo -e "${RED}❌ PUSH BLOCKED: Missing release tag${NC}"
+        echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
+        echo ""
+        echo -e "  Extension: ${YELLOW}${ext_dir}${NC}"
+        echo -e "  Version change: ${remote_version} → ${GREEN}${local_version}${NC}"
+        echo -e "  Required tag: ${GREEN}${expected_tag}${NC}"
+        echo ""
+        echo -e "  ${YELLOW}Create the tag before pushing:${NC}"
+        echo -e "    git tag ${expected_tag}"
+        echo -e "    git push --tags"
+        echo ""
+        echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
+        return 1
+    fi
+
+    echo -e "${GREEN}✅ ${ext_dir}: Found tag ${expected_tag}${NC}"
+    return 0
+}
+
+# Main
+main() {
+    local has_error=0
+
+    for ext_spec in "${EXTENSIONS[@]}"; do
+        IFS=':' read -r ext_dir tag_prefix <<< "$ext_spec"
+        if ! check_extension "$ext_dir" "$tag_prefix"; then
+            has_error=1
+        fi
+    done
+
+    if [[ $has_error -eq 1 ]]; then
+        exit 1
+    fi
+}
+
+main
