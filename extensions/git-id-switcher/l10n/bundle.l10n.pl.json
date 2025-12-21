@@ -15,7 +15,7 @@
   "Select Git Identity": "Wybierz tożsamość Git",
   "Search identities...": "Szukaj tożsamości...",
   "Switched to {0}": "Przełączono na {0}",
-  "Git Identity Switcher: {0}": "Git Identity Switcher: {0}",
+  "Git ID Switcher: {0}": "Git ID Switcher: {0}",
   "**Email:** {0}": "**E-mail:** {0}",
   "**SSH Host:** {0}": "**Host SSH:** {0}",
   "**SSH Key:** {0}": "**Klucz SSH:** {0}",

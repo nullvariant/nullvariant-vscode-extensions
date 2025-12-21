@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2025-12-21
+
+### Fixed
+
+- **Naming Consistency**: Unified old name "Git Identity Switcher" to "Git ID Switcher" across all source files
+  - Updated console logs, comments, and error message prefixes in source code
+  - Updated all 17 localization files (l10n/bundle.l10n*.json)
+  - CHANGELOG entries remain as historical record
+
 ## [0.8.1] - 2025-12-21
 
 ### Fixed
@@ -308,7 +317,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.8.1...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.1...HEAD
+[0.9.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.8.1...git-id-switcher-v0.9.1
 [0.8.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.8.0...git-id-switcher-v0.8.1
 [0.8.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.7.1...git-id-switcher-v0.8.0
 [0.7.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.7.0...git-id-switcher-v0.7.1

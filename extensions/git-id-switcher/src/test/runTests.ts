@@ -9,7 +9,7 @@ import { runSecureExecTests } from './secureExec.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
-  console.log('║   Git Identity Switcher Security Tests     ║');
+  console.log('║   Git ID Switcher Security Tests           ║');
   console.log('╚════════════════════════════════════════════╝\n');
 
   try {

@@ -1,5 +1,5 @@
 /**
- * Git Identity Switcher - VS Code Extension Entry Point
+ * Git ID Switcher - VS Code Extension Entry Point
  *
  * Switch between multiple Git identities with one click.
  * Automatically configures Git author, SSH keys, and GPG signing.
@@ -39,7 +39,7 @@ let currentIdentity: Identity | undefined;
 export async function activate(
   context: vscode.ExtensionContext
 ): Promise<void> {
-  console.log('Git Identity Switcher is activating...');
+  console.log('Git ID Switcher is activating...');
 
   // Initialize security logger
   securityLogger.initialize();
@@ -81,7 +81,7 @@ export async function activate(
     })
   );
 
-  console.log('Git Identity Switcher activated!');
+  console.log('Git ID Switcher activated!');
 }
 
 /**
@@ -90,7 +90,7 @@ export async function activate(
 export function deactivate(): void {
   securityLogger.logDeactivation();
   securityLogger.dispose();
-  console.log('Git Identity Switcher deactivated');
+  console.log('Git ID Switcher deactivated');
 }
 
 /**
@@ -148,7 +148,7 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     // No identity detected, show selection prompt
     statusBar.setNoIdentity();
   } catch (error) {
-    console.error('Failed to initialize Git Identity Switcher:', error);
+    console.error('Failed to initialize Git ID Switcher:', error);
     statusBar.setNoIdentity();
   }
 }

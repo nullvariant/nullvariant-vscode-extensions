@@ -108,5 +108,5 @@ export function showIdentitySwitchedNotification(identity: Identity): void {
  * Show error notification
  */
 export function showErrorNotification(message: string): void {
-  vscode.window.showErrorMessage(vscode.l10n.t('Git Identity Switcher: {0}', message));
+  vscode.window.showErrorMessage(vscode.l10n.t('Git ID Switcher: {0}', message));
 }
