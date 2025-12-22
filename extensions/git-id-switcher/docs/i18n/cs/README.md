@@ -524,7 +524,7 @@ Příspěvky jsou vítány! Viz [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Licence
 
-MIT licence — viz [LICENSE](../../LICENSE).
+MIT licence — viz [LICENSE](../../../LICENSE).
 
 ## Poděkování
 

@@ -539,7 +539,7 @@ Contributions welcome! [CONTRIBUTING.md](../../CONTRIBUTING.md) yIlaD.
 
 ## License
 
-MIT License - [LICENSE](../../LICENSE) yIlaD.
+MIT License - [LICENSE](../../../LICENSE) yIlaD.
 
 ## Credits
 

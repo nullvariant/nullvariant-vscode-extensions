@@ -525,7 +525,7 @@ I contributi sono benvenuti! Vedi [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Licenza
 
-Licenza MIT - vedi [LICENSE](../../LICENSE).
+Licenza MIT - vedi [LICENSE](../../../LICENSE).
 
 ## Crediti
 

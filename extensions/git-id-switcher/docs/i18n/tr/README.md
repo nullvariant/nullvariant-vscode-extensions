@@ -525,7 +525,7 @@ Katkılar memnuniyetle karşılanır! [CONTRIBUTING.md](../../CONTRIBUTING.md)'y
 
 ## Lisans
 
-MIT Lisansı — [LICENSE](../../LICENSE)'a bakın.
+MIT Lisansı — [LICENSE](../../../LICENSE)'a bakın.
 
 ## Teşekkürler
 

@@ -543,7 +543,7 @@ sina ken pana! o lukin e [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## lawa (License)
 
-MIT License - o lukin e [LICENSE](../../LICENSE).
+MIT License - o lukin e [LICENSE](../../../LICENSE).
 
 ## jan pali (Credits)
 

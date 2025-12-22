@@ -14,9 +14,8 @@
 
 > Hawaiian (ʻŌlelo Hawaiʻi) is an endangered Polynesian language native to Hawaiʻi. Once nearly extinct, it has experienced a remarkable revival through immersion schools and community efforts.
 
-- [UNESCO Atlas of World's Languages in Danger](https://en.wal.unesco.org/)
+- [UNESCO Atlas of World's Languages in Danger (PDF)](https://unesdoc.unesco.org/ark:/48223/pf0000187026)
 - [ʻAha Pūnana Leo - Hawaiian Language Immersion](https://www.ahapunanaleo.org/)
-- [Duolingo Hawaiian Course](https://www.duolingo.com/course/haw/en/Learn-Hawaiian)
 - [Ulukau - Hawaiian Electronic Library](https://ulukau.org/)
 
 ---
@@ -546,7 +545,7 @@ E ʻoluʻolu e nānā i [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Laikini (License)
 
-MIT License - E nānā i [LICENSE](../../LICENSE).
+MIT License - E nānā i [LICENSE](../../../LICENSE).
 
 ## Nā Hōʻoia (Credits)
 

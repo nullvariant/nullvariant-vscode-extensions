@@ -525,7 +525,7 @@ Hozzájárulásokat szívesen fogadunk! Lásd: [CONTRIBUTING.md](../../CONTRIBUT
 
 ## Licenc
 
-MIT licenc — lásd: [LICENSE](../../LICENSE).
+MIT licenc — lásd: [LICENSE](../../../LICENSE).
 
 ## Köszönet
 

@@ -525,7 +525,7 @@ Si guardaste ajustes vacíos anteriormente, pueden haberse sincronizado a la nub
 
 ## Licencia
 
-Licencia MIT - ver [LICENSE](../../LICENSE).
+Licencia MIT - ver [LICENSE](../../../LICENSE).
 
 ## Créditos
 

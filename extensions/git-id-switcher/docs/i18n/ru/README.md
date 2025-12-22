@@ -525,7 +525,7 @@ Host bitbucket.org
 
 ## Лицензия
 
-Лицензия MIT — см. [LICENSE](../../LICENSE).
+Лицензия MIT — см. [LICENSE](../../../LICENSE).
 
 ## Благодарности
 

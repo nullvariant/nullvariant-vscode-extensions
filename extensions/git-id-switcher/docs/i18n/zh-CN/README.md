@@ -525,7 +525,7 @@ VS Code 等编辑器会将设置架构缓存在内存中，"重新加载窗口"�
 
 ## 许可证
 
-MIT 许可证 - 请查看 [LICENSE](../../LICENSE)。
+MIT 许可证 - 请查看 [LICENSE](../../../LICENSE)。
 
 ## 致谢
 

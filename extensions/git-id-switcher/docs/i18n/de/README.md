@@ -525,7 +525,7 @@ Beiträge willkommen! Siehe [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Lizenz
 
-MIT-Lizenz - siehe [LICENSE](../../LICENSE).
+MIT-Lizenz - siehe [LICENSE](../../../LICENSE).
 
 ## Credits
 

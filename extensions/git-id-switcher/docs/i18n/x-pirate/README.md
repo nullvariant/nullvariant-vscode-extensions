@@ -431,7 +431,7 @@ We welcome contributions from all pirates! See [CONTRIBUTING.md](../../CONTRIBUT
 
 ## License
 
-MIT License - See [LICENSE](../../LICENSE). Share the plunder fairly!
+MIT License - See [LICENSE](../../../LICENSE). Share the plunder fairly!
 
 ## Credits
 

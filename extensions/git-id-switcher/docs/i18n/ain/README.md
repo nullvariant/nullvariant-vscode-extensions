@@ -14,11 +14,11 @@
 
 > アイヌ語（アイヌ イタㇰ）は、日本の北海道・樺太・千島列島で話されてきた言語です。現在はユネスコにより「極めて深刻な危機」に分類されていますが、復興の取り組みが進められています。
 
-- [UNESCO Atlas of World's Languages in Danger](https://en.wal.unesco.org/)
-- [アイヌ民族文化財団（公益財団法人）](https://www.frpac.or.jp/)
+- [UNESCO Atlas of World's Languages in Danger (PDF)](https://unesdoc.unesco.org/ark:/48223/pf0000187026)
+- [公益財団法人アイヌ民族文化財団](https://www.ff-ainu.or.jp/)
 - [国立アイヌ民族博物館 ウポポイ](https://ainu-upopoy.jp/)
 - [アイヌ語アーカイブ](https://ainugo.nam.go.jp/)
-- [北海道立アイヌ民族文化研究センター](https://ainu-center.pref.hokkaido.jp/)
+- [北海道立アイヌ民族文化研究センター](https://ainu-center.hm.pref.hokkaido.lg.jp/)
 
 ---
 
@@ -545,7 +545,7 @@ VS Code 設定スキーマ メモリ キャッシュ、"Reload Window" ウン re
 
 ## License
 
-MIT License - [LICENSE](../../LICENSE) エヌカㇻ。
+MIT License - [LICENSE](../../../LICENSE) エヌカㇻ。
 
 ## Credits
 

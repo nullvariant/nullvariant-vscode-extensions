@@ -14,10 +14,10 @@
 
 > 琉球諸語（しまくとぅば）は、沖縄・奄美諸島で話されてきた言語群です。沖縄語、宮古語、八重山語、与那国語、奄美語などが含まれます。ユネスコにより危機言語に分類されていますが、復興の取り組みが進められています。
 
-- [UNESCO Atlas of World's Languages in Danger](https://en.wal.unesco.org/)
-- [沖縄県 しまくとぅば普及推進](https://www.pref.okinawa.jp/site/bunka-sports/bunka/shinko/simakutuba/index.html)
-- [しまくとぅばの日（9月18日）](https://www.pref.okinawa.jp/site/bunka-sports/bunka/shinko/simakutuba/simakutubaday.html)
-- [琉球大学 琉球語研究](https://rlang.lib.u-ryukyu.ac.jp/)
+- [UNESCO Atlas of World's Languages in Danger (PDF)](https://unesdoc.unesco.org/ark:/48223/pf0000187026)
+- [沖縄県 しまくとぅば普及推進計画](https://www.pref.okinawa.jp/shigoto/kankotokusan/1011671/1011741/1011777/1011778.html)
+- [しまくとぅばの日 - Wikipedia](https://ja.wikipedia.org/wiki/%E3%81%97%E3%81%BE%E3%81%8F%E3%81%A8%E3%81%85%E3%81%B0%E3%81%AE%E6%97%A5)
+- [琉球大学 人文社会学部](https://www.hs.u-ryukyu.ac.jp/)
 - [国立国語研究所 危機言語プロジェクト](https://www.ninjal.ac.jp/)
 
 ---
@@ -547,7 +547,7 @@ VS Codeんかいぬエディタや設定スキーマばメモリんかいキャ�
 
 ## ライセンス
 
-MIT License - [LICENSE](../../LICENSE) 見てぃくぃみそーれー。
+MIT License - [LICENSE](../../../LICENSE) 見てぃくぃみそーれー。
 
 ## クレジット
 

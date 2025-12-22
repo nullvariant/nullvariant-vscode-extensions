@@ -435,7 +435,7 @@ We welcome contributions from all players upon this stage! See [CONTRIBUTING.md]
 
 ## License
 
-MIT License - See [LICENSE](../../LICENSE).
+MIT License - See [LICENSE](../../../LICENSE).
 
 ## Credits
 

@@ -545,7 +545,7 @@ Ni bonvenigas kontribuojn! Vidu [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Permesilo
 
-MIT-Permesilo - Vidu [LICENSE](../../LICENSE).
+MIT-Permesilo - Vidu [LICENSE](../../../LICENSE).
 
 ## Kreditoj
 
