@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.6] - 2025-12-22
+
+### Fixed
+
+- **i18n README Links**: Fixed broken links in all 25 translated READMEs
+  - LICENSE link path corrected (was pointing to wrong directory)
+  - UNESCO Atlas link updated to working PDF version
+  - Ainu Foundation URL updated to new domain (ff-ainu.or.jp)
+  - Ainu Culture Research Center URL updated
+  - Okinawa shimakutuba links updated to current URLs
+  - Ryukyu University link updated to Faculty of Humanities
+  - Removed Duolingo Hawaiian link (redirects incorrectly by region)
+
 ## [0.9.5] - 2025-12-22
 
 ### Changed
@@ -376,7 +389,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.5...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.6...HEAD
+[0.9.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.5...git-id-switcher-v0.9.6
 [0.9.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.4...git-id-switcher-v0.9.5
 [0.9.4]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.3...git-id-switcher-v0.9.4
 [0.9.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.2...git-id-switcher-v0.9.3
