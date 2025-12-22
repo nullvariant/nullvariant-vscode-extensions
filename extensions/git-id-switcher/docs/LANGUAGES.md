@@ -117,7 +117,7 @@ Full README documentation translated.
 
 ## Contributing Translations
 
-We welcome translation contributions! See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+We welcome translation contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ### Priority Languages
 
@@ -137,7 +137,7 @@ We especially welcome contributions for:
 ## Resources
 
 ### Minority Languages
-- [UNESCO Atlas of World's Languages in Danger](https://en.wal.unesco.org/)
+- [UNESCO Atlas of the World's Languages in Danger (PDF)](https://unesdoc.unesco.org/ark:/48223/pf0000187026)
 - [Endangered Languages Project](https://www.endangeredlanguages.com/)
 
 ### Language Codes

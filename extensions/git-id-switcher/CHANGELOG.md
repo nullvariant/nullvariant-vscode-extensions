@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.4] - 2025-12-22
+
+### Changed
+
+- **Language Selector Update**: Expanded language flags in README header
+  - Now shows all 17 VSCode-supported languages as clickable flags
+  - Changed from 8 flags to 17 flags (🇺🇸 🇯🇵 🇨🇳 🇹🇼 🇰🇷 🇩🇪 🇫🇷 🇪🇸 🇧🇷 🇮🇹 🇷🇺 🇵🇱 🇹🇷 🇨🇿 🇭🇺 🇧🇬 🇺🇦)
+  - Updated "+20 more" to "+8 more" (remaining minority/joke languages)
+  - Applied to all 26 README files
+
+### Fixed
+
+- **LANGUAGES.md**: Fixed broken links
+  - CONTRIBUTING.md link now points to correct location
+  - UNESCO Atlas link updated to working PDF document
+
 ## [0.9.3] - 2025-12-22
 
 ### Changed
@@ -354,7 +370,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.3...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.4...HEAD
+[0.9.4]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.3...git-id-switcher-v0.9.4
 [0.9.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.2...git-id-switcher-v0.9.3
 [0.9.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.1...git-id-switcher-v0.9.2
 [0.9.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.8.1...git-id-switcher-v0.9.1
