@@ -53,7 +53,7 @@
 
 ## 快速開始
 
-管理多個 GitHub 帳戶的典型設定。
+管理個人帳戶和公司發放帳戶（企業託管使用者）的典型設定。
 
 ### 步驟 1: 準備 SSH 金鑰
 
@@ -93,7 +93,7 @@ Host github-work
 
 ### 步驟 3: 設定擴充功能
 
-開啟 VS Code 設定（`Cmd+,` / `Ctrl+,`）→ 搜尋 "Git ID Switcher" → 點擊 "在 settings.json 中編輯"：
+開啟擴充功能設定（`Cmd+,` / `Ctrl+,`）→ 搜尋 "Git ID Switcher" → 點擊 "在 settings.json 中編輯"：
 
 ```json
 {
@@ -102,6 +102,7 @@ Host github-work
       "id": "personal",
       "icon": "🏠",
       "name": "陳雨",
+      "service": "GitHub",
       "email": "chenyu@personal.example.com",
       "description": "個人專案",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
@@ -110,8 +111,9 @@ Host github-work
       "id": "work",
       "icon": "💼",
       "name": "陳雨",
+      "service": "GitHub 公司",
       "email": "chenyu@company.example.com",
-      "description": "工作開發",
+      "description": "公司開發（企業託管使用者）",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
     }
@@ -171,6 +173,7 @@ uid         [ultimate] 陳雨 <chenyu@personal.example.com>
       "id": "personal",
       "icon": "🏠",
       "name": "陳雨",
+      "service": "GitHub",
       "email": "chenyu@personal.example.com",
       "description": "個人專案",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -201,18 +204,18 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# 工作帳戶
+# 工作帳戶（公司發放的企業託管使用者）
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# 開源活動帳戶
-Host github-oss
-    HostName github.com
+# Bitbucket 帳戶
+Host bitbucket.org
+    HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_oss
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
     IdentitiesOnly yes
 ```
 
@@ -225,6 +228,7 @@ Host github-oss
       "id": "personal",
       "icon": "🏠",
       "name": "陳雨",
+      "service": "GitHub",
       "email": "chenyu@personal.example.com",
       "description": "個人專案",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -234,25 +238,28 @@ Host github-oss
       "id": "work",
       "icon": "💼",
       "name": "陳雨",
+      "service": "GitHub 公司",
       "email": "chenyu@company.example.com",
-      "description": "工作開發",
+      "description": "公司開發（企業託管使用者）",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
     },
     {
-      "id": "oss",
-      "icon": "🌟",
-      "name": "chenyu-oss",
-      "email": "chenyu.oss@example.com",
-      "description": "開源貢獻",
-      "sshKeyPath": "~/.ssh/id_ed25519_oss",
-      "sshHost": "github-oss"
+      "id": "bitbucket",
+      "icon": "🪣",
+      "name": "陳雨",
+      "service": "Bitbucket",
+      "email": "chenyu@bitbucket.example.com",
+      "description": "Bitbucket 專案",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
+      "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
       "icon": "🎯",
       "name": "陳雨",
+      "service": "GitLab",
       "email": "chenyu@freelance.example.com",
       "description": "自由接案專案"
     }
@@ -276,22 +283,45 @@ Host github-oss
 | `id`          | ✅   | 唯一識別碼（如 `"work"`, `"personal"`）                |
 | `name`        | ✅   | Git user.name - 顯示在提交中                           |
 | `email`       | ✅   | Git user.email - 顯示在提交中                          |
-| `icon`        |      | 狀態列顯示的表情符號（如 `"💼"`）                       |
+| `icon`        |      | 狀態列顯示的表情符號（如 `"💼"`）。僅限單一表情符號    |
+| `service`     |      | 服務名稱（如 `"GitHub"`, `"GitLab"`）。用於 UI 顯示    |
 | `description` |      | 在選擇器和工具提示中顯示的簡短描述                     |
 | `sshKeyPath`  |      | SSH 私鑰路徑（如 `"~/.ssh/id_ed25519_work"`）          |
 | `sshHost`     |      | SSH 設定主機別名（如 `"github-work"`）                 |
 | `gpgKeyId`    |      | 用於提交簽署的 GPG 金鑰 ID                             |
 
+#### 顯示限制
+
+- **狀態列**: 超過約25個字元的文字將用 `...` 截斷
+- **`icon`**: 僅允許單一表情符號（字素叢集）。不支援多個表情符號或長字串
+
 ### 全域設定
 
-| 設定                              | 預設值     | 描述                                       |
-| --------------------------------- | ---------- | ------------------------------------------ |
-| `gitIdSwitcher.identities`        | 見範例     | 身份設定列表                               |
-| `gitIdSwitcher.defaultIdentity`   | 見範例     | 預設使用的身份 ID                          |
-| `gitIdSwitcher.autoSwitchSshKey`  | `true`     | 切換身份時自動切換 SSH 金鑰                |
-| `gitIdSwitcher.showNotifications` | `true`     | 切換身份時顯示通知                         |
-| `gitIdSwitcher.applyToSubmodules` | `true`     | 將身份傳播到 Git 子模組                    |
-| `gitIdSwitcher.submoduleDepth`    | `1`        | 巢狀子模組設定的最大深度（1-5）            |
+| 設定                                   | 預設值     | 描述                                           |
+| -------------------------------------- | ---------- | ---------------------------------------------- |
+| `gitIdSwitcher.identities`             | 見範例     | 身份設定列表                                   |
+| `gitIdSwitcher.defaultIdentity`        | 見範例     | 預設使用的身份 ID                              |
+| `gitIdSwitcher.autoSwitchSshKey`       | `true`     | 切換身份時自動切換 SSH 金鑰                    |
+| `gitIdSwitcher.showNotifications`      | `true`     | 切換身份時顯示通知                             |
+| `gitIdSwitcher.applyToSubmodules`      | `true`     | 將身份傳播到 Git 子模組                        |
+| `gitIdSwitcher.submoduleDepth`         | `1`        | 巢狀子模組設定的最大深度（1-5）                |
+| `gitIdSwitcher.includeIconInGitConfig` | `false`    | 在 Git config `user.name` 中包含圖示表情符號  |
+
+#### 關於 `includeIconInGitConfig`
+
+控制設定 `icon` 欄位時的行為：
+
+| 值 | 行為 |
+|----|------|
+| `false`（預設） | `icon` 僅顯示在編輯器 UI 中。Git config 只寫入 `name` |
+| `true` | Git config 寫入 `icon + name`。表情符號會出現在提交歷史中 |
+
+範例：`icon: "👤"`, `name: "陳雨"` 的情況
+
+| includeIconInGitConfig | Git config `user.name` | 提交簽章 |
+|------------------------|------------------------|----------|
+| `false` | `陳雨` | `陳雨 <email>` |
+| `true` | `👤 陳雨` | `👤 陳雨 <email>` |
 
 ### 注意: 基本設定（無 SSH）
 
@@ -324,12 +354,39 @@ Host github-oss
 
 ## 運作原理
 
+### Git 設定層次結構
+
+Git 設定有三個層次，下層的設定會覆蓋上層：
+
+```text
+系統 (/etc/gitconfig)
+    ↓ 覆蓋
+全域 (~/.gitconfig)
+    ↓ 覆蓋
+本機 (.git/config)  ← 最高優先順序
+```
+
+**Git ID Switcher 寫入 `--local`（儲存庫本機）。**
+
+這意味著：
+
+- 身份儲存到每個儲存庫的 `.git/config`
+- 每個儲存庫可以維護不同的身份
+- 全域設定（`~/.gitconfig`）不會被修改
+
+### 切換身份時
+
 切換身份時，擴充功能按順序執行以下操作：
 
 1. **Git 設定**（始終）: 設定 `git config --local user.name` 和 `user.email`
 2. **SSH 金鑰**（如果設定了 `sshKeyPath`）: 從 ssh-agent 移除其他金鑰，加入選定的金鑰
 3. **GPG 金鑰**（如果設定了 `gpgKeyId`）: 設定 `git config --local user.signingkey` 並啟用簽署
 4. **子模組**（如果啟用）: 將設定傳播到所有子模組（預設：深度 1）
+
+### 子模組傳播的運作原理
+
+本機設定是每個儲存庫獨立的，因此不會自動套用到子模組。
+這就是本擴充功能提供子模組傳播功能的原因（詳見「進階: 子模組支援」部分）。
 
 ---
 
@@ -413,6 +470,43 @@ Host github-oss
 - 確保您在 Git 儲存庫中
 - 檢查 `settings.json` 是否有語法錯誤
 - 重新載入 VS Code 視窗（`Cmd+Shift+P` → "重新載入視窗"）
+
+### `name` 欄位出錯？
+
+`name` 欄位中包含以下字元會導致錯誤：
+
+`` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
+
+如果要包含服務資訊，請使用 `service` 欄位。
+
+```jsonc
+// NG
+"name": "陳雨 (個人)"
+
+// OK
+"name": "陳雨",
+"service": "GitHub"
+```
+
+### 新設定未顯示？
+
+更新擴充功能後，新的設定項目可能不會出現在設定介面中。
+
+**解決方案：** 完全重新啟動您的電腦。
+
+VS Code 等編輯器會將設定架構快取在記憶體中，「重新載入視窗」或重新安裝擴充功能可能不足以重新整理它。
+
+### 預設值為空？
+
+如果新安裝後範例設定也沒有出現，**Settings Sync** 可能是原因。
+
+如果您之前儲存了空設定，它們可能已同步到雲端，並在新安裝時覆蓋了預設值。
+
+**解決方案：**
+
+1. 在設定介面中找到該設定項目
+2. 點擊齒輪圖示 → "重設設定"
+3. 與 Settings Sync 同步（這會從雲端刪除舊設定）
 
 ---
 

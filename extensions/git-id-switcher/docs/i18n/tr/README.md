@@ -53,7 +53,7 @@ Bu sadece "küresel destek" değil — "dilsel çeşitliliğe saygı"dır. Ve bu
 
 ## Hızlı Başlangıç
 
-Birden fazla GitHub hesabını yönetmek için tipik bir kurulum.
+Kişisel hesap ve kurumsal hesap (Enterprise Managed User) yönetmek için tipik bir kurulum.
 
 ### Adım 1: SSH Anahtarlarını Hazırlayın
 
@@ -93,7 +93,7 @@ Host github-work
 
 ### Adım 3: Eklentiyi Yapılandırın
 
-VS Code Ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın → "settings.json'da Düzenle"ye tıklayın:
+Eklenti ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın → "settings.json'da Düzenle"ye tıklayın:
 
 ```json
 {
@@ -102,6 +102,7 @@ VS Code Ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın �
       "id": "personal",
       "icon": "🏠",
       "name": "Deniz Yılmaz",
+      "service": "GitHub",
       "email": "deniz.yilmaz@personal.example.com",
       "description": "Kişisel projeler",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
@@ -110,6 +111,7 @@ VS Code Ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın �
       "id": "work",
       "icon": "💼",
       "name": "Deniz Yılmaz",
+      "service": "GitHub İş",
       "email": "deniz.yilmaz@company.example.com",
       "description": "İş hesabı",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
@@ -171,6 +173,7 @@ Anahtar ID'si `ABCD1234`'tür.
       "id": "personal",
       "icon": "🏠",
       "name": "Deniz Yılmaz",
+      "service": "GitHub",
       "email": "deniz.yilmaz@personal.example.com",
       "description": "Kişisel projeler",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -208,11 +211,11 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Açık kaynak persona
-Host github-oss
-    HostName github.com
+# Bitbucket hesabı
+Host bitbucket.org
+    HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_oss
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
     IdentitiesOnly yes
 ```
 
@@ -225,6 +228,7 @@ Host github-oss
       "id": "personal",
       "icon": "🏠",
       "name": "Deniz Yılmaz",
+      "service": "GitHub",
       "email": "deniz.yilmaz@personal.example.com",
       "description": "Kişisel projeler",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -234,6 +238,7 @@ Host github-oss
       "id": "work",
       "icon": "💼",
       "name": "Deniz Yılmaz",
+      "service": "GitHub İş",
       "email": "deniz.yilmaz@company.example.com",
       "description": "İş hesabı",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
@@ -241,18 +246,20 @@ Host github-oss
       "gpgKeyId": "WORK1234"
     },
     {
-      "id": "oss",
-      "icon": "🌟",
-      "name": "dyilmaz-oss",
-      "email": "dyilmaz.oss@example.com",
-      "description": "Açık kaynak katkılar",
-      "sshKeyPath": "~/.ssh/id_ed25519_oss",
-      "sshHost": "github-oss"
+      "id": "bitbucket",
+      "icon": "🪣",
+      "name": "Deniz Yılmaz",
+      "service": "Bitbucket",
+      "email": "deniz.yilmaz@bitbucket.example.com",
+      "description": "Bitbucket projeleri",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
+      "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
       "icon": "🎯",
       "name": "Deniz Yılmaz",
+      "service": "GitLab",
       "email": "deniz.yilmaz@freelance.example.com",
       "description": "Serbest projeler"
     }
@@ -263,7 +270,7 @@ Host github-oss
 }
 ```
 
-Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını değiştirir. Aynı GitHub hesabıyla farklı committer bilgileri kullanırken faydalıdır.
+Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını değiştirir. Aynı GitLab hesabıyla farklı committer bilgileri kullanırken faydalıdır.
 
 ---
 
@@ -276,11 +283,17 @@ Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını deği
 | `id`          | ✅      | Benzersiz tanımlayıcı (örn: `"work"`, `"personal"`)        |
 | `name`        | ✅      | Git user.name — commitlerde gösterilir                     |
 | `email`       | ✅      | Git user.email — commitlerde gösterilir                    |
-| `icon`        |         | Durum çubuğunda gösterilen emoji (örn: `"💼"`)              |
+| `icon`        |         | Durum çubuğunda gösterilen emoji (örn: `"🏠"`). Sadece tek emoji |
+| `service`     |         | Hizmet adı (örn: `"GitHub"`, `"GitLab"`). UI için          |
 | `description` |         | Seçici ve araç ipucunda gösterilen kısa açıklama           |
 | `sshKeyPath`  |         | Özel SSH anahtarının yolu (örn: `"~/.ssh/id_ed25519_work"`) |
 | `sshHost`     |         | SSH yapılandırma host takma adı (örn: `"github-work"`)     |
 | `gpgKeyId`    |         | Commit imzalamak için GPG anahtar ID'si                    |
+
+#### Görüntüleme Sınırlamaları
+
+- **Durum çubuğu**: ~25 karakterden uzun metinler `...` ile kısaltılır
+- **`icon`**: Sadece tek emoji (grapheme cluster) kullanılabilir. Birden fazla emoji veya uzun metin kullanılamaz
 
 ### Genel Ayarlar
 
@@ -292,6 +305,23 @@ Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını deği
 | `gitIdSwitcher.showNotifications` | `true`     | Değiştirirken bildirim göster                  |
 | `gitIdSwitcher.applyToSubmodules` | `true`     | Kimliği Git alt modüllerine uygula             |
 | `gitIdSwitcher.submoduleDepth`    | `1`        | İç içe alt modüller için maks. derinlik (1-5)  |
+| `gitIdSwitcher.includeIconInGitConfig` | `false` | Emoji ikonunu Git config `user.name`'e yaz     |
+
+#### `includeIconInGitConfig` Hakkında
+
+`icon` alanı ayarlandığında davranışı kontrol eder:
+
+| Değer | Davranış |
+|-------|----------|
+| `false` (varsayılan) | `icon` sadece editör UI'da gösterilir. Git config'e sadece `name` yazılır |
+| `true` | Git config'e `icon + name` yazılır. Emoji commit geçmişinde kalır |
+
+Örnek: `icon: "👤"`, `name: "Deniz Yılmaz"`
+
+| includeIconInGitConfig | Git config `user.name` | Commit imzası |
+|------------------------|------------------------|---------------|
+| `false` | `Deniz Yılmaz` | `Deniz Yılmaz <email>` |
+| `true` | `👤 Deniz Yılmaz` | `👤 Deniz Yılmaz <email>` |
 
 ### Not: Temel Kurulum (SSH Olmadan)
 
@@ -324,12 +354,39 @@ Bu kurulum sadece `git config user.name` ve `user.email`'i değiştirir.
 
 ## Nasıl Çalışır
 
+### Git Config Katman Yapısı
+
+Git yapılandırmasının üç katmanı vardır; alt katmanlar üst katmanlar tarafından geçersiz kılınır:
+
+```text
+Sistem (/etc/gitconfig)
+    ↓ geçersiz kılar
+Global (~/.gitconfig)
+    ↓ geçersiz kılar
+Yerel (.git/config)  ← en yüksek öncelik
+```
+
+**Git ID Switcher `--local` (depo yerel) seviyesine yazar.**
+
+Bu şu anlama gelir:
+
+- Kimliği her deponun `.git/config` dosyasına kaydeder
+- Her depo için farklı kimlikler tutulabilir
+- Global ayarlar (`~/.gitconfig`) değiştirilmez
+
+### Kimlik Değiştirme Davranışı
+
 Kimlik değiştirirken, eklenti şunları yapar (sırayla):
 
 1. **Git Yapılandırması** (her zaman): `git config --local user.name` ve `user.email`'i ayarlar
 2. **SSH Anahtarı** (`sshKeyPath` ayarlanmışsa): Diğer anahtarları ssh-agent'tan kaldırır, seçileni ekler
 3. **GPG Anahtarı** (`gpgKeyId` ayarlanmışsa): `git config --local user.signingkey`'i ayarlar ve imzalamayı etkinleştirir
 4. **Alt Modüller** (etkinse): Yapılandırmayı tüm alt modüllere yayar (varsayılan: derinlik 1)
+
+### Alt Modüllere Yayılım Mekanizması
+
+Yerel yapılandırma depo seviyesinde çalıştığından, alt modüllere otomatik olarak uygulanmaz.
+Bu nedenle bu eklenti alt modüllere yayılım özelliği sağlar (detaylar için "Gelişmiş: Alt Modül Desteği"ne bakın).
 
 ---
 
@@ -413,6 +470,43 @@ Bu, ana depoda veya vendor kütüphanesinde commit yapsanız da kimliğinizin he
 - Bir Git deposunda olduğunuzdan emin olun
 - `settings.json`'da sözdizimi hatası olup olmadığını kontrol edin
 - VS Code penceresini yeniden yükleyin (`Cmd+Shift+P` → "Pencereyi Yeniden Yükle")
+
+### `name` alanında hata mı?
+
+`name` alanında aşağıdaki karakterler bulunursa hata oluşur:
+
+`` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
+
+Hizmet adını eklemek istiyorsanız `service` alanını kullanın.
+
+```jsonc
+// YANLIŞ
+"name": "Deniz Yılmaz (Kişisel)"
+
+// DOĞRU
+"name": "Deniz Yılmaz",
+"service": "GitHub"
+```
+
+### Yeni ayarlar görünmüyor mu?
+
+Eklentiyi güncelledikten sonra bile yeni ayarlar ayarlar ekranında görünmeyebilir.
+
+**Çözüm:** Makinenizi tamamen yeniden başlatın.
+
+VS Code gibi editörler ayar şemasını bellekte önbelleğe alır ve "Pencereyi Yeniden Yükle" veya eklentiyi yeniden yüklemek yeterli olmayabilir.
+
+### Varsayılan değerler (identities vb.) boş mu?
+
+Yeni kurulumda bile örnek ayarlar görünmüyorsa, **Settings Sync** nedeniyle olabilir.
+
+Geçmişte boş ayarlar kaydettiyseniz, bu ayarlar buluta senkronize edilmiş ve yeni kurulumda varsayılan değerleri geçersiz kılmış olabilir.
+
+**Çözüm:**
+
+1. Ayarlar ekranında ilgili ayar öğesini bulun
+2. Dişli simgesi → "Ayarı Sıfırla" seçin
+3. Settings Sync ile senkronize edin (eski ayarlar buluttan silinir)
 
 ---
 

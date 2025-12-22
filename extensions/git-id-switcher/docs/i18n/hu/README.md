@@ -53,7 +53,7 @@ Ez nem csak „globális támogatás" — ez „tisztelet a nyelvi sokféleség 
 
 ## Gyors kezdés
 
-Tipikus beállítás több GitHub-fiók kezeléséhez.
+Tipikus beállítás a személyes fiók és a vállalati fiók (Enterprise Managed User) kezeléséhez.
 
 ### 1. lépés: SSH-kulcsok előkészítése
 
@@ -93,7 +93,7 @@ Host github-work
 
 ### 3. lépés: A bővítmény konfigurálása
 
-Nyissa meg a VS Code beállításokat (`Cmd+,` / `Ctrl+,`) → keressen rá: "Git ID Switcher" → kattintson a "Szerkesztés a settings.json-ban" lehetőségre:
+Nyissa meg a bővítmény beállításait (`Cmd+,` / `Ctrl+,`) → keressen rá: "Git ID Switcher" → kattintson a "Szerkesztés a settings.json-ban" lehetőségre:
 
 ```json
 {
@@ -102,6 +102,7 @@ Nyissa meg a VS Code beállításokat (`Cmd+,` / `Ctrl+,`) → keressen rá: "Gi
       "id": "personal",
       "icon": "🏠",
       "name": "Alex Kovács",
+      "service": "GitHub",
       "email": "alex.kovacs@personal.example.com",
       "description": "Személyes projektek",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
@@ -110,6 +111,7 @@ Nyissa meg a VS Code beállításokat (`Cmd+,` / `Ctrl+,`) → keressen rá: "Gi
       "id": "work",
       "icon": "💼",
       "name": "Alex Kovács",
+      "service": "GitHub Munkahelyi",
       "email": "alex.kovacs@company.example.com",
       "description": "Munkahelyi fiók",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
@@ -171,6 +173,7 @@ A kulcs ID: `ABCD1234`.
       "id": "personal",
       "icon": "🏠",
       "name": "Alex Kovács",
+      "service": "GitHub",
       "email": "alex.kovacs@personal.example.com",
       "description": "Személyes projektek",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -208,11 +211,11 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Open source persona
-Host github-oss
-    HostName github.com
+# Bitbucket fiók
+Host bitbucket.org
+    HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_oss
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
     IdentitiesOnly yes
 ```
 
@@ -225,6 +228,7 @@ Host github-oss
       "id": "personal",
       "icon": "🏠",
       "name": "Alex Kovács",
+      "service": "GitHub",
       "email": "alex.kovacs@personal.example.com",
       "description": "Személyes projektek",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -234,6 +238,7 @@ Host github-oss
       "id": "work",
       "icon": "💼",
       "name": "Alex Kovács",
+      "service": "GitHub Munkahelyi",
       "email": "alex.kovacs@company.example.com",
       "description": "Munkahelyi fiók",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
@@ -241,18 +246,20 @@ Host github-oss
       "gpgKeyId": "WORK1234"
     },
     {
-      "id": "oss",
-      "icon": "🌟",
-      "name": "akovacs-oss",
-      "email": "akovacs.oss@example.com",
-      "description": "Open source hozzájárulások",
-      "sshKeyPath": "~/.ssh/id_ed25519_oss",
-      "sshHost": "github-oss"
+      "id": "bitbucket",
+      "icon": "🪣",
+      "name": "Alex Kovács",
+      "service": "Bitbucket",
+      "email": "alex.kovacs@bitbucket.example.com",
+      "description": "Bitbucket projektek",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
+      "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
       "icon": "🎯",
       "name": "Alex Kovács",
+      "service": "GitLab",
       "email": "alex.kovacs@freelance.example.com",
       "description": "Szabadúszó projektek"
     }
@@ -263,7 +270,7 @@ Host github-oss
 }
 ```
 
-Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-konfigurációt váltja. Ez hasznos, ha különböző committer-információkat használ ugyanazzal a GitHub-fiókkal.
+Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-konfigurációt váltja. Ez hasznos, ha különböző committer-információkat használ ugyanazzal a GitLab-fiókkal.
 
 ---
 
@@ -276,11 +283,17 @@ Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-k
 | `id`          | ✅       | Egyedi azonosító (pl.: `"work"`, `"personal"`)             |
 | `name`        | ✅       | Git user.name — commitokban jelenik meg                    |
 | `email`       | ✅       | Git user.email — commitokban jelenik meg                   |
-| `icon`        |          | Emoji az állapotsávon (pl.: `"💼"`)                         |
+| `icon`        |          | Emoji az állapotsávon (pl.: `"🏠"`). Csak egyetlen emoji használható |
+| `service`     |          | Szolgáltatás neve (pl.: `"GitHub"`, `"GitLab"`). UI megjelenítéshez |
 | `description` |          | Rövid leírás a választóban és tooltipben                   |
 | `sshKeyPath`  |          | Privát SSH-kulcs elérési útja (pl.: `"~/.ssh/id_ed25519_work"`) |
 | `sshHost`     |          | SSH config host alias (pl.: `"github-work"`)               |
 | `gpgKeyId`    |          | GPG-kulcs ID commit-aláíráshoz                             |
+
+#### Megjelenítési korlátozások
+
+- **Állapotsáv**: Kb. 25 karakternél hosszabb szöveg `...`-tal rövidül
+- **`icon`**: Csak egyetlen emoji (grafémafürt) használható. Több emoji vagy hosszú szöveg nem engedélyezett
 
 ### Globális beállítások
 
@@ -292,6 +305,23 @@ Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-k
 | `gitIdSwitcher.showNotifications` | `true`          | Értesítés megjelenítése váltáskor              |
 | `gitIdSwitcher.applyToSubmodules` | `true`          | Azonosító alkalmazása Git-almodulokra          |
 | `gitIdSwitcher.submoduleDepth`    | `1`             | Max. mélység beágyazott almodulokhoz (1-5)     |
+| `gitIdSwitcher.includeIconInGitConfig` | `false`    | Ikon emoji beírása a Git config `user.name`-be |
+
+#### Az `includeIconInGitConfig` beállításról
+
+Az `icon` mező beállítása esetén a viselkedést szabályozza:
+
+| Érték | Viselkedés |
+|-------|------------|
+| `false` (alapértelmezett) | Az `icon` csak a szerkesztő UI-ban jelenik meg. A Git configba csak a `name` kerül |
+| `true` | Az `icon + name` íródik a Git configba. Az emoji a commit-előzményekben is megjelenik |
+
+Példa: `icon: "👤"`, `name: "Alex Kovács"` esetén
+
+| includeIconInGitConfig | Git config `user.name` | Commit-aláírás |
+|------------------------|------------------------|----------------|
+| `false` | `Alex Kovács` | `Alex Kovács <email>` |
+| `true` | `👤 Alex Kovács` | `👤 Alex Kovács <email>` |
 
 ### Megjegyzés: Alapbeállítás (SSH nélkül)
 
@@ -324,12 +354,39 @@ Ez a beállítás csak a `git config user.name` és `user.email` értékeket vá
 
 ## Működés
 
+### Git config rétegstruktúra
+
+A Git konfigurációnak három rétege van, ahol az alsó rétegeket a felsők felülírják:
+
+```text
+Rendszer (/etc/gitconfig)
+    ↓ felülírja
+Globális (~/.gitconfig)
+    ↓ felülírja
+Lokális (.git/config)  ← legmagasabb prioritás
+```
+
+**A Git ID Switcher `--local` (tároló-lokális) szinten ír.**
+
+Ez azt jelenti:
+
+- Az azonosítót minden tároló `.git/config` fájljába menti
+- Tárolónként különböző azonosítók tarthatók fenn
+- A globális beállítás (`~/.gitconfig`) nem módosul
+
+### Azonosítóváltás viselkedése
+
 Azonosító váltásakor a bővítmény a következőket hajtja végre (sorrendben):
 
 1. **Git konfiguráció** (mindig): Beállítja a `git config --local user.name` és `user.email` értékeket
 2. **SSH-kulcs** (ha `sshKeyPath` be van állítva): Eltávolítja a többi kulcsot az ssh-agent-ből, hozzáadja a kiválasztottat
 3. **GPG-kulcs** (ha `gpgKeyId` be van állítva): Beállítja a `git config --local user.signingkey` értéket és engedélyezi az aláírást
 4. **Almodulok** (ha engedélyezve): Propagálja a konfigurációt az összes almodulba (alapértelmezett: mélység 1)
+
+### Almodul-propagáció mechanizmusa
+
+A lokális konfiguráció tároló-szintű, ezért az almodulokra nem vonatkozik automatikusan.
+Ezért ez a bővítmény almodul-propagációs funkciót biztosít (részletekért lásd: „Haladó: Almodul-támogatás").
 
 ---
 
@@ -413,6 +470,43 @@ Ez biztosítja, hogy az azonosítója mindig helyes legyen, akár a fő tároló
 - Győződjön meg róla, hogy Git-tárolóban van
 - Ellenőrizze, hogy a `settings.json`-ban nincsenek szintaktikai hibák
 - Töltse újra a VS Code ablakot (`Cmd+Shift+P` → "Ablak újratöltése")
+
+### A `name` mezőben hiba van?
+
+A `name` mező hibát okoz, ha a következő karaktereket tartalmazza:
+
+`` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
+
+Ha szolgáltatásnevet szeretne hozzáadni, használja a `service` mezőt.
+
+```jsonc
+// Helytelen
+"name": "Alex Kovács (személyes)"
+
+// Helyes
+"name": "Alex Kovács",
+"service": "GitHub"
+```
+
+### Új beállítások nem jelennek meg?
+
+Előfordulhat, hogy a bővítmény frissítése után az új beállítások nem jelennek meg a beállítások képernyőn.
+
+**Megoldás:** Indítsa újra a teljes gépet.
+
+A VS Code és más szerkesztők memóriában tárolják a beállítások sémáját, és ez nem mindig frissül az „Ablak újratöltése" vagy a bővítmény újratelepítése után.
+
+### Alapértelmezett értékek (identities stb.) üresek?
+
+Ha új telepítésnél sem jelennek meg a mintabeállítások, a **Settings Sync** lehet az ok.
+
+Ha korábban üres beállításokat mentett, azok szinkronizálódtak a felhőbe, és felülírják az alapértelmezett értékeket az új telepítésnél.
+
+**Megoldás:**
+
+1. Keresse meg a beállítást a beállítások képernyőn
+2. Kattintson a fogaskerék ikonra → „Beállítás visszaállítása"
+3. Szinkronizáljon a Settings Sync-kel (a régi beállítás törlődik a felhőből)
 
 ---
 

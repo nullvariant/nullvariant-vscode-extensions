@@ -53,6 +53,8 @@ WILE MANY GIT IDENTITY SWITCHERZ EXIST, **GIT ID SWITCHER** SOLVEZ TEH HARD PROB
 
 ## QUICK START 🐾
 
+TIPICAL SETUP 4 MANAGIN PURSONAL ACCOUNT AN COMPANY ACCOUNT (ENTERPRISE MANAGED USUR). MOST IMPORTINT THINGZ!
+
 ### STEP 1: PREPAR UR SSH KEYZ
 
 ```bash
@@ -63,27 +65,38 @@ ssh-keygen -t ed25519 -C "ceiling@cat.example.com" -f ~/.ssh/id_ed25519_ceiling
 ssh-keygen -t ed25519 -C "keyboard@cat.example.com" -f ~/.ssh/id_ed25519_keyboard
 ```
 
+AFTR U MAK TEH KEYZ, REGISTAR UR PUBLIK KEYZ (`.pub`) 2 EACH SERVIS (GITHUB, GITLAB, BITBUCKET, ETC.). IMPORTINT!
+
 ### STEP 2: CONFIGUR SSH
 
 EDIT `~/.ssh/config`:
 
 ```ssh-config
-# CEILING CAT ACCOUNT
+# CEILING CAT ACCOUNT (GITHUB)
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_ceiling
     IdentitiesOnly yes
 
-# KEYBOARD CAT ACCOUNT
+# KEYBOARD CAT ACCOUNT (GITHUB)
 Host github-keyboard
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_keyboard
     IdentitiesOnly yes
+
+# NYAN CAT ACCOUNT (BITBUCKET)
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_nyan
+    IdentitiesOnly yes
 ```
 
 ### STEP 3: CONFIGUR TEH EXTENSHUN
+
+OPEN **EXTENSHUN SETTINGZ** AN CONFIGUR UR IDENTITIEZ IN `gitIdSwitcher.identities`:
 
 ```json
 {
@@ -94,7 +107,8 @@ Host github-keyboard
       "name": "Ceiling Cat",
       "email": "ceiling@cat.example.com",
       "description": "WATCHIN U CODE",
-      "sshKeyPath": "~/.ssh/id_ed25519_ceiling"
+      "sshKeyPath": "~/.ssh/id_ed25519_ceiling",
+      "service": "github"
     },
     {
       "id": "keyboard-cat",
@@ -103,21 +117,24 @@ Host github-keyboard
       "email": "keyboard@cat.example.com",
       "description": "PLAY HIM OFF",
       "sshKeyPath": "~/.ssh/id_ed25519_keyboard",
-      "sshHost": "github-keyboard"
+      "sshHost": "github-keyboard",
+      "service": "github"
     },
     {
       "id": "grumpy-cat",
       "icon": "😾",
       "name": "Grumpy Cat",
       "email": "grumpy@cat.example.com",
-      "description": "I HAD FUN ONCE. IT WUZ AWFUL."
+      "description": "I HAD FUN ONCE. IT WUZ AWFUL.",
+      "service": "gitlab"
     },
     {
       "id": "nyan",
       "icon": "🌈",
       "name": "Nyan Cat",
       "email": "nyan@cat.example.com",
-      "description": "NYANYANYANYANYA"
+      "description": "NYANYANYANYANYA",
+      "service": "bitbucket"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "ceiling-cat",
@@ -126,11 +143,143 @@ Host github-keyboard
 }
 ```
 
-### STEP 4: DO TEH THING!
+### STEP 4: DO TEH THING
 
 1. CLIK TEH IDENTITY ICON IN TEH STATUS BAR
 2. PIK UR IDENTITY
 3. INVISIBLE IDENTITY SWITCH! U CANT C IT BUT ITS DERE!
+
+---
+
+## OPSHUNUL: GPG SININ
+
+IF U WANT 2 SIGN UR COMMITS WIF GPG (LIEK A FANCY CAT):
+
+### STEP 1: FIND UR GPG KEY ID
+
+```bash
+gpg --list-secret-keys --keyid-format SHORT
+```
+
+EXAMPL OUTPUT:
+
+```text
+sec   ed25519/ABCD1234 2024-01-01 [SC]
+      ...
+uid         [ultimate] Ceiling Cat <ceiling@cat.example.com>
+```
+
+UR KEY ID IZ `ABCD1234`. REMEMBR IT!
+
+### STEP 2: ADD GPG KEY 2 UR IDENTITY
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "ceiling-cat",
+      "icon": "😼",
+      "name": "Ceiling Cat",
+      "service": "GitHub",
+      "email": "ceiling@cat.example.com",
+      "description": "WATCHIN U CODE",
+      "sshKeyPath": "~/.ssh/id_ed25519_ceiling",
+      "gpgKeyId": "ABCD1234"
+    }
+  ]
+}
+```
+
+WEN U SWITCH 2 DIS IDENTITY, TEH EXTENSHUN SETZ:
+
+- `git config user.signingkey ABCD1234`
+- `git config commit.gpgsign true`
+
+KTHXBAI! UR COMMITS R NOW SIGNED LIEK A BOSS CAT!
+
+---
+
+## FULL EXAMPL: 4 ACCOUNTZ WIF SSH + GPG (MOAR CATZ)
+
+ALL TEH THINGZ COMBIND! HEER IZ FULL EXAMPL:
+
+### SSH CONFIG (`~/.ssh/config`)
+
+```ssh-config
+# CEILING CAT ACCOUNT (DEFALT)
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_ceiling
+    IdentitiesOnly yes
+
+# KEYBOARD CAT ACCOUNT (COMPANY EMU)
+Host github-keyboard
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_keyboard
+    IdentitiesOnly yes
+
+# NYAN CAT ACCOUNT (BITBUCKET)
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_nyan
+    IdentitiesOnly yes
+```
+
+### EXTENSHUN CONFIG
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "ceiling-cat",
+      "icon": "😼",
+      "name": "Ceiling Cat",
+      "service": "GitHub",
+      "email": "ceiling@cat.example.com",
+      "description": "PURSONAL - WATCHIN U CODE",
+      "sshKeyPath": "~/.ssh/id_ed25519_ceiling",
+      "gpgKeyId": "CEILING1"
+    },
+    {
+      "id": "keyboard-cat",
+      "icon": "🎹",
+      "name": "Keyboard Cat",
+      "service": "GitHub COMPANY",
+      "email": "keyboard@company_ceiling-cat.example.com",
+      "description": "COMPANY (EMU) - PLAY HIM OFF",
+      "sshKeyPath": "~/.ssh/id_ed25519_keyboard",
+      "sshHost": "github-keyboard",
+      "gpgKeyId": "KEYBOARD1"
+    },
+    {
+      "id": "nyan-cat",
+      "icon": "🪣",
+      "name": "Nyan Cat",
+      "service": "Bitbucket",
+      "email": "nyan@cat.example.com",
+      "description": "BITBUCKET - NYANYANYA",
+      "sshKeyPath": "~/.ssh/id_ed25519_nyan",
+      "sshHost": "bitbucket.org"
+    },
+    {
+      "id": "grumpy-cat",
+      "icon": "😾",
+      "name": "Grumpy Cat",
+      "service": "GitLab",
+      "email": "grumpy@freelance.example.com",
+      "description": "FREELANS - I HAD FUN ONCE"
+    }
+  ],
+  "gitIdSwitcher.defaultIdentity": "ceiling-cat",
+  "gitIdSwitcher.autoSwitchSshKey": true,
+  "gitIdSwitcher.applyToSubmodules": true
+}
+```
+
+NOTE: TEH LAST IDENTITY (`grumpy-cat`) HAZ NO SSH. U CAN USE DIS 4 SWITCHIN JUSS GIT CONFIG (LIEK DIFFRNT COMITTR INFO ON SAEM ACCOUNT).
 
 ---
 
@@ -145,12 +294,145 @@ Host github-keyboard
 
 ---
 
+## IDENTITY PROPERTIEZ
+
+| PROPRTY | REQIRED | DESCRIPSHUN |
+|---------|---------|-------------|
+| `id` | ✅ | UNIQ IDENTIFYR 4 DIS IDENTITY |
+| `name` | ✅ | GIT `user.name` (SHOWZ IN COMMITS) |
+| `email` | ✅ | GIT `user.email` |
+| `icon` | ❌ | SINGUL EMOJI 4 STATUS BAR. EMOJI ONLY! NO TEXTIE! |
+| `description` | ❌ | DESCRIPSHUN (SHOWZ IN DROPDOWN) |
+| `sshKeyPath` | ❌ | PATH 2 SSH PRIVAT KEY |
+| `sshHost` | ❌ | SSH HOST ALIAS (`Host` IN ~/.ssh/config) |
+| `gpgKeyId` | ❌ | GPG KEY ID 4 COMMIT SININ |
+| `service` | ❌ | GIT SERVIS: `github`, `gitlab`, `bitbucket`, `other` |
+
+---
+
 ## COMMANDZ
 
 | COMMAND                         | WAT IT DOEZ                    |
 | ------------------------------- | ------------------------------ |
 | `Git ID: Select Identity`       | OPEN TEH IDENTITY PIKR         |
 | `Git ID: Show Current Identity` | SHOW CURRENT IDENTITY INFO     |
+
+---
+
+## SETTINGZ
+
+| SETTIN | DEFALT | DESCRIPSHUN |
+|--------|--------|-------------|
+| `gitIdSwitcher.identities` | `[]` | LIST OF IDENTITIEZ |
+| `gitIdSwitcher.defaultIdentity` | `""` | DEFALT IDENTITY ID |
+| `gitIdSwitcher.autoSwitchSshKey` | `true` | AUTOMAGICALLY SWITCH SSH KEYZ |
+| `gitIdSwitcher.applyToSubmodules` | `true` | APPLY IDENTITY 2 SUBMODULEZ |
+| `gitIdSwitcher.includeIconInGitConfig` | `false` | INCLUD EMOJI IN GIT CONFIG (C BELOW) |
+
+---
+
+## DISPLAY LIMITASHUNZ
+
+- **`icon` PROPRTY**: ONLY SINGUL EMOJI! NO TEXTIE LIEK "🐱 CAT". JUS "🐱".
+- **`includeIconInGitConfig`**: WHEN DISABLD (DEFALT), EMOJI NOT ADED 2 GIT CONFIG USER.NAME.
+
+---
+
+## `includeIconInGitConfig` SETTIN
+
+DIS SETTIN CONTROLZ IF EMOJI IZ ADED 2 GIT `user.name`.
+
+| SETTIN | BEHAVYR |
+|--------|---------|
+| `false` (DEFALT) | GIT CONFIG: `user.name = Ceiling Cat` (NO EMOJI IN CONFIG) |
+| `true` | GIT CONFIG: `user.name = 😼 Ceiling Cat` (EMOJI IN CONFIG) |
+
+> **NOTE**: EMOJI ALWAYZ SHOWZ IN STATUS BAR REGARDLES OF DIS SETTIN! DIS ONLY AFFEKTS GIT CONFIG.
+
+---
+
+## GIT CONFIG LAYR STRUCTUR
+
+### HOW GIT CONFIG WERKZ
+
+GIT CONFIG HAZ 3 LAYERZ, LIEK A SANDWICH:
+
+```text
+SYSTEM (/etc/gitconfig)
+   ↓ OVERRIDEN BY
+GLOBAL (~/.gitconfig)
+   ↓ OVERRIDEN BY
+LOCAL (.git/config)  ← DIS EXTENSHUN WRITZ HEER WIF `--local`
+```
+
+### SUBMODULE PROPAGASHUN
+
+LOKAL SETTINGZ R PER-REPOSITRY, SO SUBMODULEZ DONT AUTOMAGICALLY GET DEM.
+DAT Y DIS EXTENSHUN HAZ PROPAGASHUN FEATUR (C "ADVANSED: SUBMODULE SUPPORT" SEKSHUN).
+
+---
+
+## ADVANSED: SUBMODULE SUPPORT
+
+WEN U HAZ KOMPLEKS REPOSITORIEZ WIF GIT SUBMODULEZ, IDENTITY MANAGEMINT CAN B ANNOYIN. WEN U COMMIT INSIED A SUBMODULE, GIT USES DAT SUBMODULE'Z LOKAL CONFIG, AN IF NOT SET, IT FALLZ BAK 2 GLOBAL CONFIG (RONG EMAEL ADRES!).
+
+**GIT ID SWITCHER** AUTOMAGICALLY DETEKTZ SUBMODULEZ AN APPLIEZ UR SELECTED IDENTITY.
+
+```json
+{
+  "gitIdSwitcher.applyToSubmodules": true,
+  "gitIdSwitcher.submoduleDepth": 1
+}
+```
+
+- `applyToSubmodules`: ENABL/DISABL DIS FEATUR
+- `submoduleDepth`: HOW DEEP 2 GO?
+  - `1`: ONLY DIRECT SUBMODULEZ (MOST COMMON)
+  - `2+`: NESTED SUBMODULEZ (SUBMODULE INSIED SUBMODULE - INCEPTSHUN!)
+
+DIS WAI, WHETHER U COMMIT IN MAIN REPO OR IN VENDOR LIBRARY, UR IDENTITY IZ ALWAYZ CORREKT. NO MOAR EMBARASING COMMITS!
+
+---
+
+## TROUBLESHOOTIN
+
+### "NAME FEELD IZ REQIRED" ERUR
+
+IF U C DIS ERUR, CHEEK UR SETTINGZ:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "ceiling-cat",
+      "name": "Ceiling Cat",  // ← DIS IZ REQIRED!
+      "email": "ceiling@cat.example.com"  // ← DIS 2!
+    }
+  ]
+}
+```
+
+BOTH `name` AN `email` R REQIRED. CANT HAZ IDENTITY WITHOUT DEM!
+
+### NEW SETTINGZ NOT SHOWIN
+
+IF NEW SETTINGZ LIEK `service` OR `includeIconInGitConfig` NOT SHOWIN:
+
+1. **RELOAD WINDOE**: PRES `Cmd+Shift+P` (MAC) OR `Ctrl+Shift+P` (WINDOWZ/LINUX)
+2. **TIPE**: "Developr: Reload Window"
+3. **PRES ENTR**
+
+VS CODE CACHZ SETTIN SKEEMAZ. RELOAD FIXEZ IT!
+
+### SETTINGZ SYNC CONFLICTZ
+
+IF U USE VS CODE SETTINGZ SYNC AN HAZ DIFFRNT IDENTITIEZ ON DIFFRNT MASHINEZ:
+
+1. **OPSHUN A**: DISABL SYNC 4 DIS EXTENSHUN SETTINGZ
+2. **OPSHUN B**: USE SAEM IDENTITIEZ ON ALL MASHINEZ
+3. **OPSHUN C**: USE WORKSPASE SETTINGZ (`.vscode/settings.json`) INSTED
+
+> **TIP**: WORKSPASE SETTINGZ R PUR-PROJEKT AN DONT SYNC. GUD 4 DIFFRNT IDENTITIEZ!
 
 ---
 

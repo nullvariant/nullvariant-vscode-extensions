@@ -53,7 +53,7 @@ To není jen „globální podpora" — je to „respekt k jazykové rozmanitost
 
 ## Rychlý start
 
-Typické nastavení pro správu více GitHub účtů.
+Typické nastavení pro správu osobního účtu a pracovního účtu (Enterprise Managed User).
 
 ### Krok 1: Připravte SSH klíče
 
@@ -93,7 +93,7 @@ Host github-work
 
 ### Krok 3: Nakonfigurujte rozšíření
 
-Otevřete nastavení VS Code (`Cmd+,` / `Ctrl+,`) → hledejte "Git ID Switcher" → klikněte na "Upravit v settings.json":
+Otevřete nastavení rozšíření (`Cmd+,` / `Ctrl+,`) → hledejte "Git ID Switcher" → klikněte na "Upravit v settings.json":
 
 ```json
 {
@@ -103,6 +103,7 @@ Otevřete nastavení VS Code (`Cmd+,` / `Ctrl+,`) → hledejte "Git ID Switcher"
       "icon": "🏠",
       "name": "Alex Novák",
       "email": "alex.novak@personal.example.com",
+      "service": "GitHub",
       "description": "Osobní projekty",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
@@ -111,6 +112,7 @@ Otevřete nastavení VS Code (`Cmd+,` / `Ctrl+,`) → hledejte "Git ID Switcher"
       "icon": "💼",
       "name": "Alex Novák",
       "email": "alex.novak@company.example.com",
+      "service": "GitHub Práce",
       "description": "Pracovní účet",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -201,18 +203,18 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Pracovní účet
+# Pracovní účet (Enterprise Managed User od společnosti)
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Open source persona
-Host github-oss
-    HostName github.com
+# Bitbucket účet
+Host bitbucket.org
+    HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_oss
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
     IdentitiesOnly yes
 ```
 
@@ -226,6 +228,7 @@ Host github-oss
       "icon": "🏠",
       "name": "Alex Novák",
       "email": "alex.novak@personal.example.com",
+      "service": "GitHub",
       "description": "Osobní projekty",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
@@ -235,25 +238,28 @@ Host github-oss
       "icon": "💼",
       "name": "Alex Novák",
       "email": "alex.novak@company.example.com",
+      "service": "GitHub Práce",
       "description": "Pracovní účet",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
     },
     {
-      "id": "oss",
-      "icon": "🌟",
-      "name": "anovak-oss",
-      "email": "anovak.oss@example.com",
-      "description": "Open source příspěvky",
-      "sshKeyPath": "~/.ssh/id_ed25519_oss",
-      "sshHost": "github-oss"
+      "id": "bitbucket",
+      "icon": "🪣",
+      "name": "Alex Novák",
+      "email": "alex.novak@bitbucket.example.com",
+      "service": "Bitbucket",
+      "description": "Bitbucket projekty",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
+      "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
       "icon": "🎯",
       "name": "Alex Novák",
       "email": "alex.novak@freelance.example.com",
+      "service": "GitLab",
       "description": "Freelance projekty"
     }
   ],
@@ -263,7 +269,7 @@ Host github-oss
 }
 ```
 
-Poznámka: Poslední identita (`freelance`) nemá SSH — pouze přepíná Git konfiguraci. To je užitečné při použití různých committer informací se stejným GitHub účtem.
+Poznámka: Poslední identita (`freelance`) nemá SSH — pouze přepíná Git konfiguraci. To je užitečné při použití různých committer informací se stejným GitLab účtem.
 
 ---
 
@@ -276,22 +282,45 @@ Poznámka: Poslední identita (`freelance`) nemá SSH — pouze přepíná Git k
 | `id`          | ✅      | Jedinečný identifikátor (např.: `"work"`, `"personal"`)    |
 | `name`        | ✅      | Git user.name — zobrazeno v commitech                      |
 | `email`       | ✅      | Git user.email — zobrazeno v commitech                     |
-| `icon`        |         | Emoji ve stavovém řádku (např.: `"💼"`)                     |
+| `icon`        |         | Emoji ve stavovém řádku (např.: `"🏠"`). Pouze jedno emoji |
+| `service`     |         | Název služby (např.: `"GitHub"`, `"GitLab"`). Používá se pro zobrazení v UI |
 | `description` |         | Krátký popis ve výběru a nápovědě                          |
 | `sshKeyPath`  |         | Cesta k soukromému SSH klíči (např.: `"~/.ssh/id_ed25519_work"`) |
 | `sshHost`     |         | SSH config host alias (např.: `"github-work"`)             |
 | `gpgKeyId`    |         | ID GPG klíče pro podepisování commitů                      |
 
+#### Omezení zobrazení
+
+- **Stavový řádek**: Text delší než ~25 znaků bude zkrácen s `...`
+- **`icon`**: Povoleno pouze jedno emoji (grafémový cluster). Více emoji nebo dlouhé řetězce nejsou podporovány
+
 ### Globální nastavení
 
-| Nastavení                         | Výchozí    | Popis                                          |
-| --------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`        | Viz příklad | Seznam konfigurací identit                    |
-| `gitIdSwitcher.defaultIdentity`   | Viz příklad | ID výchozí identity                           |
-| `gitIdSwitcher.autoSwitchSshKey`  | `true`     | Automaticky přepínat SSH klíč                  |
-| `gitIdSwitcher.showNotifications` | `true`     | Zobrazit oznámení při přepnutí                 |
-| `gitIdSwitcher.applyToSubmodules` | `true`     | Aplikovat identitu na Git submoduly            |
-| `gitIdSwitcher.submoduleDepth`    | `1`        | Max. hloubka pro vnořené submoduly (1-5)       |
+| Nastavení                              | Výchozí     | Popis                                          |
+| -------------------------------------- | ----------- | ---------------------------------------------- |
+| `gitIdSwitcher.identities`             | Viz příklad | Seznam konfigurací identit                     |
+| `gitIdSwitcher.defaultIdentity`        | Viz příklad | ID výchozí identity                            |
+| `gitIdSwitcher.autoSwitchSshKey`       | `true`      | Automaticky přepínat SSH klíč                  |
+| `gitIdSwitcher.showNotifications`      | `true`      | Zobrazit oznámení při přepnutí                 |
+| `gitIdSwitcher.applyToSubmodules`      | `true`      | Aplikovat identitu na Git submoduly            |
+| `gitIdSwitcher.submoduleDepth`         | `1`         | Max. hloubka pro vnořené submoduly (1-5)       |
+| `gitIdSwitcher.includeIconInGitConfig` | `false`     | Zahrnout emoji ikonu do Git config `user.name` |
+
+#### O nastavení `includeIconInGitConfig`
+
+Ovládá chování, když je nastaveno pole `icon`:
+
+| Hodnota | Chování |
+|---------|---------|
+| `false` (výchozí) | `icon` se zobrazuje pouze v rozhraní editoru. Do Git configu se zapisuje pouze `name` |
+| `true` | Do Git configu se zapisuje `icon + name`. Emoji se objeví v historii commitů |
+
+Příklad: `icon: "👤"`, `name: "Alex Novák"`
+
+| includeIconInGitConfig | Git config `user.name` | Podpis commitu |
+|------------------------|------------------------|----------------|
+| `false` | `Alex Novák` | `Alex Novák <email>` |
+| `true` | `👤 Alex Novák` | `👤 Alex Novák <email>` |
 
 ### Poznámka: Základní nastavení (bez SSH)
 
@@ -324,12 +353,39 @@ Toto nastavení pouze přepíná `git config user.name` a `user.email`.
 
 ## Jak to funguje
 
+### Struktura vrstev Git konfigurace
+
+Git konfigurace má tři vrstvy, kde nižší vrstvy přepisují vyšší:
+
+```text
+Systémová (/etc/gitconfig)
+    ↓ přepisuje
+Globální (~/.gitconfig)
+    ↓ přepisuje
+Lokální (.git/config)  ← nejvyšší priorita
+```
+
+**Git ID Switcher zapisuje do `--local` (lokální pro repozitář).**
+
+To znamená:
+
+- Identita je uložena v `.git/config` každého repozitáře
+- Lze udržovat různé identity pro každý repozitář
+- Globální nastavení (`~/.gitconfig`) se nemění
+
+### Chování při přepnutí identity
+
 Při přepnutí identity rozšíření provede (v pořadí):
 
 1. **Git konfigurace** (vždy): Nastaví `git config --local user.name` a `user.email`
 2. **SSH klíč** (pokud je nastaven `sshKeyPath`): Odstraní ostatní klíče z ssh-agent, přidá vybraný
 3. **GPG klíč** (pokud je nastaven `gpgKeyId`): Nastaví `git config --local user.signingkey` a povolí podepisování
 4. **Submoduly** (pokud povoleno): Propaguje konfiguraci do všech submodulů (výchozí: hloubka 1)
+
+### Mechanismus propagace do submodulů
+
+Lokální nastavení jsou specifická pro repozitář, takže se automaticky neaplikují na submoduly.
+Proto toto rozšíření poskytuje funkci propagace do submodulů (podrobnosti viz „Pokročilé: Podpora submodulů").
 
 ---
 
@@ -413,6 +469,43 @@ To zajišťuje, že vaše identita je vždy správná, ať už děláte commit v
 - Ujistěte se, že jste v Git repozitáři
 - Zkontrolujte, že `settings.json` nemá syntaktické chyby
 - Znovu načtěte okno VS Code (`Cmd+Shift+P` → "Znovu načíst okno")
+
+### Chyba v poli `name`?
+
+Následující znaky v poli `name` způsobí chybu:
+
+`` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
+
+Pokud chcete zahrnout informace o službě, použijte pole `service`.
+
+```jsonc
+// NG
+"name": "Alex Novák (Osobní)"
+
+// OK
+"name": "Alex Novák",
+"service": "GitHub"
+```
+
+### Nová nastavení se nezobrazují?
+
+Po aktualizaci rozšíření se nová nastavení nemusí zobrazit v rozhraní nastavení.
+
+**Řešení:** Kompletně restartujte počítač.
+
+Editory založené na VS Code ukládají do mezipaměti schémata nastavení v paměti a „Znovu načíst okno" nebo přeinstalace rozšíření nemusí stačit k jejich obnovení.
+
+### Výchozí hodnoty jsou prázdné?
+
+Pokud se ukázková nastavení nezobrazují ani po čisté instalaci, příčinou může být **Settings Sync**.
+
+Pokud jste dříve uložili prázdná nastavení, mohla být synchronizována do cloudu a přepisují výchozí hodnoty při nových instalacích.
+
+**Řešení:**
+
+1. Najděte nastavení v rozhraní nastavení
+2. Klikněte na ikonu ozubeného kola → „Resetovat nastavení"
+3. Synchronizujte s Settings Sync (tím se odstraní stará nastavení z cloudu)
 
 ---
 

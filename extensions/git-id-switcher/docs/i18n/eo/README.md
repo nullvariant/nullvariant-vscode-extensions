@@ -56,7 +56,11 @@ Esperanto mem naskiĝis el la ideo de lingva egaleco—ke ĉiu homo meritas voĉ
 
 ## Rapida Komenco
 
+Tipa agordo por administri personan konton kaj entrepranan konton (Enterprise Managed User).
+
 ### Paŝo 1: Preparu Viajn SSH-Ŝlosilojn
+
+Unue, generu SSH-ŝlosilojn por ĉiu konto (preterpasu se vi jam havas):
 
 ```bash
 # Persona konto
@@ -65,6 +69,10 @@ ssh-keygen -t ed25519 -C "zamenhof@persona.example.com" -f ~/.ssh/id_ed25519_per
 # Labora konto
 ssh-keygen -t ed25519 -C "zamenhof@laboro.example.com" -f ~/.ssh/id_ed25519_laboro
 ```
+
+Registru la **publikan ŝlosilon** (`.pub` dosiero) de ĉiu ŝlosilo al la responda GitHub-konto.
+
+> **Noto**: Al GitHub oni registras `id_ed25519_persona.pub` (publika ŝlosilo). `id_ed25519_persona` (sen etendo) estas la privata ŝlosilo—neniam dividu aŭ alŝutu ĝin ien ajn.
 
 ### Paŝo 2: Agordu SSH
 
@@ -88,6 +96,8 @@ Host github-laboro
 
 ### Paŝo 3: Agordu la Etendon
 
+Malfermu etendo-agordojn (`Cmd+,` / `Ctrl+,`) → Serĉu "Git ID Switcher" → Klaku "Redakti en settings.json":
+
 ```json
 {
   "gitIdSwitcher.identities": [
@@ -95,6 +105,7 @@ Host github-laboro
       "id": "persona",
       "icon": "🏠",
       "name": "Ludoviko Zamenhof",
+      "service": "GitHub",
       "email": "zamenhof@persona.example.com",
       "description": "Personaj projektoj",
       "sshKeyPath": "~/.ssh/id_ed25519_persona"
@@ -103,24 +114,11 @@ Host github-laboro
       "id": "laboro",
       "icon": "💼",
       "name": "Ludoviko Zamenhof",
+      "service": "GitHub Laboro",
       "email": "zamenhof@laboro.example.com",
       "description": "Labora evoluo",
       "sshKeyPath": "~/.ssh/id_ed25519_laboro",
       "sshHost": "github-laboro"
-    },
-    {
-      "id": "esperantisto",
-      "icon": "🌍",
-      "name": "Esperantisto",
-      "email": "esperantisto@mondo.example.com",
-      "description": "Esperanto-komunumo projektoj"
-    },
-    {
-      "id": "malferma-fonto",
-      "icon": "🌟",
-      "name": "Open Source Dev",
-      "email": "dev@opensource.example.com",
-      "description": "Malfermfontaj kontribuoj"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "persona",
@@ -131,9 +129,387 @@ Host github-laboro
 
 ### Paŝo 4: Uzu!
 
-1. Klaku la identeco-ikonon en la statusbreto
+1. Klaku la identeco-ikonon en la statusbreto (malsupra dekstra)
 2. Elektu vian identecon
-3. Farite! Via Git-agordo kaj SSH-ŝlosiloj estas ŝanĝitaj.
+3. Farite! Via Git-agordo kaj SSH-ŝlosilo estas ŝanĝitaj.
+
+### Uzi SSH-Gastigajn Kaŝnomojn
+
+Klonante deponejojn, uzu la gastigon kiu respondas al via identeco:
+
+```bash
+# Por labora identeco (uzas github-laboro kaŝnomon)
+git clone git@github-laboro:kompanio/repo.git
+
+# Por persona identeco (uzas defaŭltan github.com)
+git clone git@github.com:zamenhof/repo.git
+```
+
+---
+
+## Laŭvola: GPG-Subskribo
+
+Se vi subskribas commit-ojn per GPG:
+
+### Paŝo 1: Trovu Vian GPG-Ŝlosilan ID
+
+```bash
+gpg --list-secret-keys --keyid-format SHORT
+```
+
+Ekzempla eligo:
+
+```text
+sec   ed25519/ABCD1234 2024-01-01 [SC]
+      ...
+uid         [ultimate] Ludoviko Zamenhof <zamenhof@persona.example.com>
+```
+
+La ŝlosila ID estas `ABCD1234`.
+
+### Paŝo 2: Aldonu GPG-Ŝlosilon al la Identeco
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "persona",
+      "icon": "🏠",
+      "name": "Ludoviko Zamenhof",
+      "service": "GitHub",
+      "email": "zamenhof@persona.example.com",
+      "description": "Personaj projektoj",
+      "sshKeyPath": "~/.ssh/id_ed25519_persona",
+      "gpgKeyId": "ABCD1234"
+    }
+  ]
+}
+```
+
+Kiam vi ŝanĝas al ĉi tiu identeco, la etendo agordas:
+
+- `git config user.signingkey ABCD1234`
+- `git config commit.gpgsign true`
+
+---
+
+## Plena Ekzemplo: 4 Kontoj kun SSH + GPG
+
+Plena ekzemplo kiu kombinas ĉion:
+
+### SSH-Agordo (`~/.ssh/config`)
+
+```ssh-config
+# Persona konto (defaŭlta)
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_persona
+    IdentitiesOnly yes
+
+# Labora konto
+Host github-laboro
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_laboro
+    IdentitiesOnly yes
+
+# Bitbucket konto
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentitiesOnly yes
+```
+
+### Etendo-Agordoj
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "persona",
+      "icon": "🏠",
+      "name": "Ludoviko Zamenhof",
+      "service": "GitHub",
+      "email": "zamenhof@persona.example.com",
+      "description": "Personaj projektoj",
+      "sshKeyPath": "~/.ssh/id_ed25519_persona",
+      "gpgKeyId": "PERSONA1"
+    },
+    {
+      "id": "laboro",
+      "icon": "💼",
+      "name": "Ludoviko Zamenhof",
+      "service": "GitHub Laboro",
+      "email": "zamenhof@laboro.example.com",
+      "description": "Labora konto",
+      "sshKeyPath": "~/.ssh/id_ed25519_laboro",
+      "sshHost": "github-laboro",
+      "gpgKeyId": "LABORO12"
+    },
+    {
+      "id": "bitbucket",
+      "icon": "🪣",
+      "name": "Ludoviko Zamenhof",
+      "service": "Bitbucket",
+      "email": "zamenhof@bitbucket.example.com",
+      "description": "Bitbucket-projektoj",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
+      "sshHost": "bitbucket.org"
+    },
+    {
+      "id": "liberprofesia",
+      "icon": "🎯",
+      "name": "Ludoviko Zamenhof",
+      "service": "GitLab",
+      "email": "zamenhof@liberprofesia.example.com",
+      "description": "Liberprofesiaj projektoj"
+    }
+  ],
+  "gitIdSwitcher.defaultIdentity": "persona",
+  "gitIdSwitcher.autoSwitchSshKey": true,
+  "gitIdSwitcher.applyToSubmodules": true
+}
+```
+
+Noto: La lasta identeco (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-agordon. Utile kiam oni uzas la saman GitLab-konton kun malsamaj commit-informoj.
+
+---
+
+## Agorda Referenco
+
+### Identeco-Propraĵoj
+
+| Propraĵo      | Deviga | Priskribo                                                  |
+| ------------- | ------ | ---------------------------------------------------------- |
+| `id`          | ✅     | Unika identigilo (ekz: `"laboro"`, `"persona"`)            |
+| `name`        | ✅     | Git user.name — montrita en commit-oj                      |
+| `email`       | ✅     | Git user.email — montrita en commit-oj                     |
+| `icon`        |        | Emoji montrita en statusbreto (ekz: `"🏠"`). Nur unu emoji |
+| `service`     |        | Serva nomo (ekz: `"GitHub"`, `"GitLab"`). Por UI           |
+| `description` |        | Mallonga priskribo por elektilo kaj konsileto              |
+| `sshKeyPath`  |        | Vojo al privata SSH-ŝlosilo (ekz: `"~/.ssh/id_ed25519_laboro"`) |
+| `sshHost`     |        | SSH-agordo gastiga kaŝnomo (ekz: `"github-laboro"`)        |
+| `gpgKeyId`    |        | GPG-ŝlosila ID por commit-subskribo                        |
+
+#### Montraj Limigoj
+
+- **Statusbreto**: Teksto pli longa ol ~25 signoj estos mallongigita per `...`
+- **`icon`**: Nur unu emoji (grapheme cluster) permesata. Multaj emojioj aŭ longa teksto ne funkcias
+
+### Ĝeneralaj Agordoj
+
+| Agordo                              | Defaŭlto   | Priskribo                                      |
+| ----------------------------------- | ---------- | ---------------------------------------------- |
+| `gitIdSwitcher.identities`          | Vidu ekz.  | Listo de identeco-agordoj                      |
+| `gitIdSwitcher.defaultIdentity`     | Vidu ekz.  | Defaŭlta identeco ID                           |
+| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | Aŭtomate ŝanĝu SSH-ŝlosilon                    |
+| `gitIdSwitcher.showNotifications`   | `true`     | Montru sciigon kiam ŝanĝante                   |
+| `gitIdSwitcher.applyToSubmodules`   | `true`     | Apliku identecon al Git-submoduloj             |
+| `gitIdSwitcher.submoduleDepth`      | `1`        | Maks. profundeco por nestitaj submoduloj (1-5) |
+| `gitIdSwitcher.includeIconInGitConfig` | `false` | Skribu emoji-ikonon al Git-agordo `user.name`  |
+
+#### Pri `includeIconInGitConfig`
+
+Kontrolas konduton kiam `icon`-kampo estas agordita:
+
+| Valoro | Konduto |
+|--------|---------|
+| `false` (defaŭlto) | `icon` montriĝas nur en redaktilo-UI. Nur `name` estas skribita al Git-agordo |
+| `true` | `icon + name` estas skribita al Git-agordo. Emoji restas en commit-historio |
+
+Ekzemplo: `icon: "👤"`, `name: "Ludoviko Zamenhof"`
+
+| includeIconInGitConfig | Git-agordo `user.name` | Commit-subskribo |
+|------------------------|------------------------|------------------|
+| `false` | `Ludoviko Zamenhof` | `Ludoviko Zamenhof <retpoŝto>` |
+| `true` | `👤 Ludoviko Zamenhof` | `👤 Ludoviko Zamenhof <retpoŝto>` |
+
+### Noto: Baza Agordo (Sen SSH)
+
+Se vi ne bezonas SSH-ŝlosilan ŝanĝon (ekz., uzante la saman GitHub-konton kun malsamaj commit-informoj), vi povas uzi minimuman agordon:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "persona",
+      "icon": "🏠",
+      "name": "Ludoviko Zamenhof",
+      "email": "zamenhof@persona.example.com",
+      "description": "Personaj projektoj"
+    },
+    {
+      "id": "laboro",
+      "icon": "💼",
+      "name": "Ludoviko Zamenhof",
+      "email": "zamenhof@laboro.example.com",
+      "description": "Labora konto"
+    }
+  ]
+}
+```
+
+Ĉi tiu agordo nur ŝanĝas `git config user.name` kaj `user.email`.
+
+---
+
+## Kiel Ĝi Funkcias
+
+### Git-Agordo Tavola Strukturo
+
+Git-agordo havas tri tavolojn; pli malaltaj tavoloj superskribas pli altajn:
+
+```text
+Sistemo (/etc/gitconfig)
+    ↓ superskribas
+Ĝenerala (~/.gitconfig)
+    ↓ superskribas
+Loka (.git/config)  ← plej alta prioritato
+```
+
+**Git ID Switcher skribas al `--local` (deponeja loka) nivelo.**
+
+Tio signifas:
+
+- Identeco estas konservita en la `.git/config`-dosiero de ĉiu deponejo
+- Malsamaj identecoj povas esti konservitaj por ĉiu deponejo
+- Ĝeneralaj agordoj (`~/.gitconfig`) ne estas modifitaj
+
+### Identeco-Ŝanĝa Konduto
+
+Kiam vi ŝanĝas identecon, la etendo plenumas (en ordo):
+
+1. **Git-Agordo** (ĉiam): Agordas `git config --local user.name` kaj `user.email`
+2. **SSH-Ŝlosilo** (se `sshKeyPath` agordita): Forigas aliajn ŝlosilojn el ssh-agent, aldonas la elektitan
+3. **GPG-Ŝlosilo** (se `gpgKeyId` agordita): Agordas `git config --local user.signingkey` kaj ebligas subskribon
+4. **Submoduloj** (se ebligita): Disvastigas agordon al ĉiuj submoduloj (defaŭlte: profundeco 1)
+
+### Submodula Disvastiga Mekanismo
+
+Ĉar loka agordo funkcias sur deponeja nivelo, ĝi ne aŭtomate aplikiĝas al submoduloj.
+Tial ĉi tiu etendo provizas submodulan disvastigan funkcion (vidu "Altnivela: Submodula Subteno" por detaloj).
+
+---
+
+## Altnivela: Submodula Subteno
+
+Por kompleksaj deponejoj kun Git-submoduloj, identeco-administrado ofte malfacilas. Se vi faras commit en submodulo, Git uzas la lokan agordon de tiu submodulo; se ne eksplicite agordita, ĝi povas reveni al la ĝenerala agordo (malĝusta retpoŝto!).
+
+**Git ID Switcher** aŭtomate detektas submodulojn kaj aplikas la elektitan identecon al ili.
+
+```json
+{
+  "gitIdSwitcher.applyToSubmodules": true,
+  "gitIdSwitcher.submoduleDepth": 1
+}
+```
+
+- `applyToSubmodules`: Ebligi/malebligi ĉi tiun funkcion
+- `submoduleDepth`: Kiom profunde iri?
+  - `1`: Nur rektaj submoduloj (plej ofta)
+  - `2+`: Nestitaj submoduloj (submoduloj ene de submoduloj)
+
+Ĉi tio certigas ke via identeco ĉiam estas ĝusta, ĉu vi faras commit en la ĉefa deponejo aŭ en vendora biblioteko.
+
+---
+
+## Problemsolvado
+
+### SSH-ŝlosilo ne ŝanĝiĝas?
+
+1. Certigu ke `ssh-agent` funkcias:
+
+   ```bash
+   eval "$(ssh-agent -s)"
+   ```
+
+2. Kontrolu ke la ŝlosila vojo estas ĝusta:
+
+   ```bash
+   ls -la ~/.ssh/id_ed25519_*
+   ```
+
+3. Sur macOS, aldonu al Keychain unufoje:
+
+   ```bash
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_laboro
+   ```
+
+### Malĝusta identeco ĉe push?
+
+1. Kontrolu ke la fora URL uzas la ĝustan gastigan kaŝnomon:
+
+   ```bash
+   git remote -v
+   # Por laboraj deponejoj devus montri git@github-laboro:...
+   ```
+
+2. Ĝisdatigu se necese:
+
+   ```bash
+   git remote set-url origin git@github-laboro:kompanio/repo.git
+   ```
+
+### GPG-subskribo ne funkcias?
+
+1. Trovu vian GPG-ŝlosilan ID:
+
+   ```bash
+   gpg --list-secret-keys --keyid-format SHORT
+   ```
+
+2. Testu subskribon:
+
+   ```bash
+   echo "test" | gpg --clearsign
+   ```
+
+3. Certigu ke la retpoŝto en via identeco kongruas kun la retpoŝto de la GPG-ŝlosilo.
+
+### Identeco ne detektita?
+
+- Certigu ke vi estas en Git-deponejo
+- Kontrolu sintaksan eraron en `settings.json`
+- Reŝargu VS Code fenestron (`Cmd+Shift+P` → "Reŝargi Fenestron")
+
+### Eraro en `name`-kampo?
+
+Se la `name`-kampo enhavas la jenajn signojn, eraro okazas:
+
+`` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
+
+Se vi volas inkluzivi servan nomon, uzu la `service`-kampon.
+
+```jsonc
+// MALĜUSTA
+"name": "Ludoviko Zamenhof (Persona)"
+
+// ĜUSTA
+"name": "Ludoviko Zamenhof",
+"service": "GitHub"
+```
+
+### Novaj agordoj ne aperas?
+
+Eĉ post ĝisdatigo de la etendo, novaj agordoj eble ne aperos en la agord-ekrano.
+
+**Solvo:** Restartigi vian maŝinon tute.
+
+Redaktiloj kiel VS Code konservas agord-skemon en memoro, kaj "Reŝargi Fenestron" aŭ reinstali la etendon eble ne sufiĉas.
+
+### Defaŭltaj valoroj (identities ktp.) malplenaj?
+
+Se ekzemplaj agordoj ne aperas eĉ ĉe nova instalado, la kaŭzo eble estas **Settings Sync**.
+
+Se vi antaŭe konservis malplenajn agordojn, ili estis sinkronigitaj al la nubo kaj eble superskribus defaŭltajn valorojn ĉe nova instalado.
+
+**Solvo:**
+
+1. Trovu la rilatan agordon en agord-ekrano
+2. Dentrado-ikono → Elektu "Restarigi Agordon"
+3. Sinkronigu per Settings Sync (malnovaj agordoj estos forigitaj el la nubo)
 
 ---
 

@@ -55,7 +55,11 @@ ilo ante mute li lon. taso **Git ID Switcher** li pona tan ni:
 
 ## open (Quick Start)
 
+ni li nasin pona tawa jan pona account en jan lawa account (Enterprise Managed User).
+
 ### nanpa wan: SSH key
+
+o pali e SSH key (o ante ala la, sina jo):
 
 ```bash
 # jan pona (personal)
@@ -64,6 +68,10 @@ ssh-keygen -t ed25519 -C "janpona@pona.example.com" -f ~/.ssh/id_ed25519_pona
 # jan lawa (work)
 ssh-keygen -t ed25519 -C "janlawa@lawa.example.com" -f ~/.ssh/id_ed25519_lawa
 ```
+
+o pana e **key open** (`.pub` file) tawa GitHub account.
+
+> **sona**: GitHub li kama jo e `id_ed25519_pona.pub` (key open). `id_ed25519_pona` (ala .pub) li key len—o pana ala tawa jan ante!
 
 ### nanpa tu: SSH config
 
@@ -87,6 +95,8 @@ Host github-lawa
 
 ### nanpa tu wan: ilo ni
 
+o open e settings (`Cmd+,` / `Ctrl+,`) → o alasa e "Git ID Switcher" → o luka e "Edit in settings.json":
+
 ```json
 {
   "gitIdSwitcher.identities": [
@@ -94,6 +104,7 @@ Host github-lawa
       "id": "jan-pona",
       "icon": "😊",
       "name": "jan pona",
+      "service": "GitHub",
       "email": "janpona@pona.example.com",
       "description": "pali pona mi",
       "sshKeyPath": "~/.ssh/id_ed25519_pona"
@@ -102,24 +113,11 @@ Host github-lawa
       "id": "jan-lawa",
       "icon": "👔",
       "name": "jan lawa",
+      "service": "GitHub lawa",
       "email": "janlawa@lawa.example.com",
       "description": "pali lawa",
       "sshKeyPath": "~/.ssh/id_ed25519_lawa",
       "sshHost": "github-lawa"
-    },
-    {
-      "id": "jan-sona",
-      "icon": "📚",
-      "name": "jan sona",
-      "email": "jansona@sona.example.com",
-      "description": "kama sona"
-    },
-    {
-      "id": "jan-musi",
-      "icon": "🎮",
-      "name": "jan musi",
-      "email": "janmusi@musi.example.com",
-      "description": "musi pona"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "jan-pona",
@@ -130,9 +128,387 @@ Host github-lawa
 
 ### nanpa tu tu: pali!
 
-1. o luka e sitelen lon status bar
+1. o luka e sitelen lon status bar (noka pini)
 2. o kama jo e nimi
 3. pona! nimi sina li ante!
+
+### SSH Host Alias
+
+sina kama jo e repo la, o kepeken host pona:
+
+```bash
+# jan lawa ID (kepeken github-lawa)
+git clone git@github-lawa:lawa/repo.git
+
+# jan pona ID (kepeken github.com)
+git clone git@github.com:janpona/repo.git
+```
+
+---
+
+## wile ala: GPG
+
+sina sitelen e nimi lon commit kepeken GPG la:
+
+### nanpa wan: GPG key ID
+
+```bash
+gpg --list-secret-keys --keyid-format SHORT
+```
+
+ni li pana:
+
+```text
+sec   ed25519/ABCD1234 2024-01-01 [SC]
+      ...
+uid         [ultimate] jan pona <janpona@pona.example.com>
+```
+
+key ID li `ABCD1234`.
+
+### nanpa tu: GPG key ID pana
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "jan-pona",
+      "icon": "😊",
+      "name": "jan pona",
+      "service": "GitHub",
+      "email": "janpona@pona.example.com",
+      "description": "pali pona mi",
+      "sshKeyPath": "~/.ssh/id_ed25519_pona",
+      "gpgKeyId": "ABCD1234"
+    }
+  ]
+}
+```
+
+sina ante e nimi la, ilo li pali e ni:
+
+- `git config user.signingkey ABCD1234`
+- `git config commit.gpgsign true`
+
+---
+
+## sona ale: 4 account SSH + GPG
+
+ale li lon ni:
+
+### SSH Config (`~/.ssh/config`)
+
+```ssh-config
+# jan pona account (open)
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_pona
+    IdentitiesOnly yes
+
+# jan lawa account
+Host github-lawa
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_lawa
+    IdentitiesOnly yes
+
+# Bitbucket account
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentitiesOnly yes
+```
+
+### ilo settings
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "jan-pona",
+      "icon": "😊",
+      "name": "jan pona",
+      "service": "GitHub",
+      "email": "janpona@pona.example.com",
+      "description": "pali pona mi",
+      "sshKeyPath": "~/.ssh/id_ed25519_pona",
+      "gpgKeyId": "PONA1234"
+    },
+    {
+      "id": "jan-lawa",
+      "icon": "👔",
+      "name": "jan lawa",
+      "service": "GitHub lawa",
+      "email": "janlawa@lawa.example.com",
+      "description": "pali lawa",
+      "sshKeyPath": "~/.ssh/id_ed25519_lawa",
+      "sshHost": "github-lawa",
+      "gpgKeyId": "LAWA1234"
+    },
+    {
+      "id": "bitbucket",
+      "icon": "🪣",
+      "name": "jan pona",
+      "service": "Bitbucket",
+      "email": "janpona@bitbucket.example.com",
+      "description": "pali Bitbucket",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
+      "sshHost": "bitbucket.org"
+    },
+    {
+      "id": "jan-musi",
+      "icon": "🎮",
+      "name": "jan musi",
+      "service": "GitLab",
+      "email": "janmusi@musi.example.com",
+      "description": "musi pona"
+    }
+  ],
+  "gitIdSwitcher.defaultIdentity": "jan-pona",
+  "gitIdSwitcher.autoSwitchSshKey": true,
+  "gitIdSwitcher.applyToSubmodules": true
+}
+```
+
+sona: pini ID (`jan-musi`) li jo ala e SSH—Git config taso li ante. GitLab account sama, commit nimi ante.
+
+---
+
+## sona settings (Configuration Reference)
+
+### nimi ijo (Identity Properties)
+
+| ijo           | wile | sona                                                       |
+| ------------- | ---- | ---------------------------------------------------------- |
+| `id`          | ✅   | nimi ante (example: `"jan-pona"`, `"jan-lawa"`)            |
+| `name`        | ✅   | Git user.name — commit li jo e ni                          |
+| `email`       | ✅   | Git user.email — commit li jo e ni                         |
+| `icon`        |      | sitelen lon status bar (example: `"😊"`). sitelen wan taso |
+| `service`     |      | nimi ilo (example: `"GitHub"`, `"GitLab"`). tawa UI        |
+| `description` |      | sona lili tawa picker en tooltip                           |
+| `sshKeyPath`  |      | nasin tawa SSH key len (example: `"~/.ssh/id_ed25519_lawa"`) |
+| `sshHost`     |      | SSH config host nimi (example: `"github-lawa"`)            |
+| `gpgKeyId`    |      | GPG key ID tawa commit sitelen                             |
+
+#### lukin poka (Display Limitations)
+
+- **status bar**: ~25 sitelen li ante tawa `...`
+- **`icon`**: sitelen wan taso (grapheme cluster). sitelen mute li ken ala
+
+### settings ale (General Settings)
+
+| settings                            | open       | sona                                           |
+| ----------------------------------- | ---------- | ---------------------------------------------- |
+| `gitIdSwitcher.identities`          | lukin e ni | nimi ale                                       |
+| `gitIdSwitcher.defaultIdentity`     | lukin e ni | nimi open                                      |
+| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | SSH key li ante                                |
+| `gitIdSwitcher.showNotifications`   | `true`     | toki li kama                                   |
+| `gitIdSwitcher.applyToSubmodules`   | `true`     | submodule li kama jo e nimi                    |
+| `gitIdSwitcher.submoduleDepth`      | `1`        | submodule suli (1-5)                           |
+| `gitIdSwitcher.includeIconInGitConfig` | `false` | sitelen li tawa Git config `user.name`         |
+
+#### sona `includeIconInGitConfig`
+
+`icon` li lon la, pali ni:
+
+| ijo | pali |
+|-----|------|
+| `false` (open) | `icon` li lon UI taso. `name` taso li tawa Git config |
+| `true` | `icon + name` li tawa Git config. sitelen li lon commit |
+
+example: `icon: "👤"`, `name: "jan pona"`
+
+| includeIconInGitConfig | Git config `user.name` | commit sitelen |
+|------------------------|------------------------|----------------|
+| `false` | `jan pona` | `jan pona <email>` |
+| `true` | `👤 jan pona` | `👤 jan pona <email>` |
+
+### sona: nasin lili (SSH ala)
+
+sina wile ala e SSH key ante la (example: GitHub account sama, commit nimi ante), o kepeken nasin lili:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "jan-pona",
+      "icon": "😊",
+      "name": "jan pona",
+      "email": "janpona@pona.example.com",
+      "description": "pali pona mi"
+    },
+    {
+      "id": "jan-lawa",
+      "icon": "👔",
+      "name": "jan lawa",
+      "email": "janlawa@lawa.example.com",
+      "description": "pali lawa"
+    }
+  ]
+}
+```
+
+ni li ante e `git config user.name` en `user.email` taso.
+
+---
+
+## nasin pali (How It Works)
+
+### Git Config linja (Git Config Layer Structure)
+
+Git config li jo e linja tu wan; anpa li ante e sewi:
+
+```text
+System (/etc/gitconfig)
+    ↓ ante
+Global (~/.gitconfig)
+    ↓ ante
+Local (.git/config)  ← suli
+```
+
+**Git ID Switcher li sitelen lon `--local` (repo local).**
+
+ni li tan:
+
+- nimi li lon repo ale `.git/config` file
+- repo ale li ken jo e nimi ante
+- global settings (`~/.gitconfig`) li ante ala
+
+### nimi ante pali (Identity Switching Behavior)
+
+nimi ante la, ilo li pali (nanpa):
+
+1. **Git Config** (lon): `git config --local user.name` en `user.email` li ante
+2. **SSH Key** (`sshKeyPath` li lon): ssh-agent li kama jo e key ni, weka e key ante
+3. **GPG Key** (`gpgKeyId` li lon): `git config --local user.signingkey` li ante, sitelen li open
+4. **Submodule** (open): submodule ale li kama jo e settings (open: linja wan)
+
+### submodule pana (Submodule Propagation Mechanism)
+
+local config li lon repo taso. submodule li kama jo ala.
+ni la ilo ni li pana e nimi tawa submodule (o lukin e "suli: Submodule").
+
+---
+
+## suli: Submodule (Advanced: Submodule Support)
+
+repo suli li jo e Git submodule la, nimi ante li ike. sina commit lon submodule la, Git li kepeken submodule local config; li lon ala la, global config li kama (email ike!).
+
+**Git ID Switcher** li alasa e submodule, li pana e nimi.
+
+```json
+{
+  "gitIdSwitcher.applyToSubmodules": true,
+  "gitIdSwitcher.submoduleDepth": 1
+}
+```
+
+- `applyToSubmodules`: ni li open/pini
+- `submoduleDepth`: suli?
+  - `1`: submodule open taso (mute)
+  - `2+`: submodule lon submodule
+
+ni la nimi sina li pona, repo suli anu vendor repo.
+
+---
+
+## ike en pona (Troubleshooting)
+
+### SSH key li ante ala?
+
+1. `ssh-agent` li pali:
+
+   ```bash
+   eval "$(ssh-agent -s)"
+   ```
+
+2. key nasin li pona:
+
+   ```bash
+   ls -la ~/.ssh/id_ed25519_*
+   ```
+
+3. macOS la, Keychain li kama jo:
+
+   ```bash
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_lawa
+   ```
+
+### push la, nimi ike?
+
+1. remote URL li kepeken host pona:
+
+   ```bash
+   git remote -v
+   # lawa repo la git@github-lawa:... li lon
+   ```
+
+2. o ante:
+
+   ```bash
+   git remote set-url origin git@github-lawa:lawa/repo.git
+   ```
+
+### GPG sitelen li pali ala?
+
+1. GPG key ID:
+
+   ```bash
+   gpg --list-secret-keys --keyid-format SHORT
+   ```
+
+2. sitelen test:
+
+   ```bash
+   echo "test" | gpg --clearsign
+   ```
+
+3. nimi email en GPG key email li sama.
+
+### nimi li lon ala?
+
+- sina lon Git repo
+- `settings.json` li jo ala e ike syntax
+- VS Code window reload (`Cmd+Shift+P` → "Reload Window")
+
+### `name` ijo li ike?
+
+`name` ijo li jo e sitelen ni la, ike li kama:
+
+`` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
+
+sina wile e nimi ilo la, o kepeken `service` ijo.
+
+```jsonc
+// IKE
+"name": "jan pona (pona)"
+
+// PONA
+"name": "jan pona",
+"service": "GitHub"
+```
+
+### settings sin li lon ala?
+
+ilo ante la, settings sin li lon ala lon settings.
+
+**pona**: o open sin e ilo ale.
+
+VS Code li jo e settings schema lon memory. "Reload Window" anu reinstall li ken ala.
+
+### open ijo (identities etc.) li lon ala?
+
+install sin la, example settings li lon ala la, **Settings Sync** li ken tan.
+
+tenpo pini la, settings ala li lon la, cloud sync li ante e open ijo.
+
+**pona:**
+
+1. o alasa e settings lon settings
+2. sitelen gear → "Reset Setting"
+3. Settings Sync (settings pini li weka lon cloud)
 
 ---
 

@@ -53,7 +53,7 @@ Ce n'est pas seulement du « support global » — c'est du « respect pour la d
 
 ## Démarrage rapide
 
-Une configuration typique pour gérer plusieurs comptes GitHub.
+Une configuration typique pour gérer un compte personnel et un compte professionnel (Enterprise Managed User).
 
 ### Étape 1 : Préparer les clés SSH
 
@@ -83,7 +83,7 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Compte GitHub travail
+# Compte GitHub travail (Enterprise Managed User fourni par l'entreprise)
 Host github-work
     HostName github.com
     User git
@@ -93,7 +93,7 @@ Host github-work
 
 ### Étape 3 : Configurer l'extension
 
-Ouvrez les paramètres VS Code (`Cmd+,` / `Ctrl+,`) → recherchez "Git ID Switcher" → cliquez sur "Modifier dans settings.json" :
+Ouvrez les paramètres de l'extension (`Cmd+,` / `Ctrl+,`) → recherchez "Git ID Switcher" → cliquez sur "Modifier dans settings.json" :
 
 ```json
 {
@@ -103,6 +103,7 @@ Ouvrez les paramètres VS Code (`Cmd+,` / `Ctrl+,`) → recherchez "Git ID Switc
       "icon": "🏠",
       "name": "Camille Dupont",
       "email": "camille.dupont@personal.example.com",
+      "service": "GitHub",
       "description": "Projets personnels",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
@@ -111,6 +112,7 @@ Ouvrez les paramètres VS Code (`Cmd+,` / `Ctrl+,`) → recherchez "Git ID Switc
       "icon": "💼",
       "name": "Camille Dupont",
       "email": "camille.dupont@company.example.com",
+      "service": "GitHub Pro",
       "description": "Compte professionnel",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -172,6 +174,7 @@ L'ID de clé est `ABCD1234`.
       "icon": "🏠",
       "name": "Camille Dupont",
       "email": "camille.dupont@personal.example.com",
+      "service": "GitHub",
       "description": "Projets personnels",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -201,18 +204,18 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Compte travail
+# Compte travail (Enterprise Managed User fourni par l'entreprise)
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Persona open source
-Host github-oss
-    HostName github.com
+# Compte Bitbucket
+Host bitbucket.org
+    HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_oss
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
     IdentitiesOnly yes
 ```
 
@@ -226,6 +229,7 @@ Host github-oss
       "icon": "🏠",
       "name": "Camille Dupont",
       "email": "camille.dupont@personal.example.com",
+      "service": "GitHub",
       "description": "Projets personnels",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
@@ -235,25 +239,28 @@ Host github-oss
       "icon": "💼",
       "name": "Camille Dupont",
       "email": "camille.dupont@company.example.com",
+      "service": "GitHub Pro",
       "description": "Compte professionnel",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
     },
     {
-      "id": "oss",
-      "icon": "🌟",
-      "name": "cdupont-oss",
-      "email": "cdupont.oss@example.com",
-      "description": "Contributions open source",
-      "sshKeyPath": "~/.ssh/id_ed25519_oss",
-      "sshHost": "github-oss"
+      "id": "bitbucket",
+      "icon": "🪣",
+      "name": "cdupont-bb",
+      "email": "cdupont.bb@example.com",
+      "service": "Bitbucket",
+      "description": "Projets Bitbucket",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
+      "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
       "icon": "🎯",
       "name": "Camille Dupont",
       "email": "camille.dupont@freelance.example.com",
+      "service": "GitLab",
       "description": "Projets freelance"
     }
   ],
@@ -276,22 +283,45 @@ Note : La dernière identité (`freelance`) n'a pas de SSH — elle ne change qu
 | `id`          | ✅     | Identifiant unique (ex: `"work"`, `"personal"`)            |
 | `name`        | ✅     | Git user.name - affiché dans les commits                   |
 | `email`       | ✅     | Git user.email - affiché dans les commits                  |
-| `icon`        |        | Emoji affiché dans la barre d'état (ex: `"💼"`)             |
+| `icon`        |        | Emoji affiché dans la barre d'état (un seul emoji)         |
+| `service`     |        | Nom du service (ex: `"GitHub"`, `"GitLab"`). Utilisé pour l'affichage UI |
 | `description` |        | Courte description affichée dans le sélecteur et l'info-bulle |
 | `sshKeyPath`  |        | Chemin vers la clé SSH privée (ex: `"~/.ssh/id_ed25519_work"`) |
 | `sshHost`     |        | Alias d'hôte SSH (ex: `"github-work"`)                     |
 | `gpgKeyId`    |        | ID de clé GPG pour la signature des commits                |
 
+#### Limitations d'affichage
+
+- **Barre d'état** : Le texte dépassant ~25 caractères sera tronqué avec `...`
+- **`icon`** : Un seul emoji (cluster de graphèmes) est autorisé. Les emojis multiples ou les chaînes longues ne sont pas supportés
+
 ### Paramètres globaux
 
-| Paramètre                         | Par défaut | Description                                    |
-| --------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`        | Voir exemple | Liste des configurations d'identités         |
-| `gitIdSwitcher.defaultIdentity`   | Voir exemple | ID de l'identité par défaut                  |
-| `gitIdSwitcher.autoSwitchSshKey`  | `true`     | Changer automatiquement la clé SSH            |
-| `gitIdSwitcher.showNotifications` | `true`     | Afficher une notification lors du changement  |
-| `gitIdSwitcher.applyToSubmodules` | `true`     | Propager l'identité aux sous-modules Git      |
-| `gitIdSwitcher.submoduleDepth`    | `1`        | Profondeur max pour les sous-modules imbriqués (1-5) |
+| Paramètre                              | Par défaut   | Description                                    |
+| -------------------------------------- | ------------ | ---------------------------------------------- |
+| `gitIdSwitcher.identities`             | Voir exemple | Liste des configurations d'identités           |
+| `gitIdSwitcher.defaultIdentity`        | Voir exemple | ID de l'identité par défaut                    |
+| `gitIdSwitcher.autoSwitchSshKey`       | `true`       | Changer automatiquement la clé SSH             |
+| `gitIdSwitcher.showNotifications`      | `true`       | Afficher une notification lors du changement   |
+| `gitIdSwitcher.applyToSubmodules`      | `true`       | Propager l'identité aux sous-modules Git       |
+| `gitIdSwitcher.submoduleDepth`         | `1`          | Profondeur max pour les sous-modules imbriqués (1-5) |
+| `gitIdSwitcher.includeIconInGitConfig` | `false`      | Inclure l'emoji icône dans le Git config `user.name` |
+
+#### À propos de `includeIconInGitConfig`
+
+Contrôle le comportement lorsque le champ `icon` est défini :
+
+| Valeur | Comportement |
+|--------|--------------|
+| `false` (par défaut) | `icon` est affiché uniquement dans l'interface de l'éditeur. Seul `name` est écrit dans Git config |
+| `true` | `icon + name` est écrit dans Git config. L'emoji apparaît dans l'historique des commits |
+
+Exemple : `icon: "👤"`, `name: "Camille Dupont"`
+
+| includeIconInGitConfig | Git config `user.name` | Signature de commit |
+|------------------------|------------------------|---------------------|
+| `false` | `Camille Dupont` | `Camille Dupont <email>` |
+| `true` | `👤 Camille Dupont` | `👤 Camille Dupont <email>` |
 
 ### Note : Configuration basique (sans SSH)
 
@@ -324,12 +354,39 @@ Cette configuration ne change que `git config user.name` et `user.email`.
 
 ## Fonctionnement
 
+### Structure des couches Git Config
+
+La configuration Git a trois couches, où les couches inférieures remplacent les couches supérieures :
+
+```text
+Système (/etc/gitconfig)
+    ↓ remplace
+Global (~/.gitconfig)
+    ↓ remplace
+Local (.git/config)  ← priorité la plus élevée
+```
+
+**Git ID Switcher écrit en `--local` (local au dépôt).**
+
+Cela signifie :
+
+- L'identité est sauvegardée dans le `.git/config` de chaque dépôt
+- Différentes identités peuvent être maintenues par dépôt
+- Les paramètres globaux (`~/.gitconfig`) ne sont pas modifiés
+
+### Lors du changement d'identité
+
 Lors du changement d'identité, l'extension effectue (dans l'ordre) :
 
 1. **Configuration Git** (toujours) : Définit `git config --local user.name` et `user.email`
 2. **Clé SSH** (si `sshKeyPath` défini) : Supprime les autres clés de ssh-agent, ajoute celle sélectionnée
 3. **Clé GPG** (si `gpgKeyId` défini) : Définit `git config --local user.signingkey` et active la signature
 4. **Sous-modules** (si activé) : Propage la configuration à tous les sous-modules (par défaut : profondeur 1)
+
+### Fonctionnement de la propagation aux sous-modules
+
+Les paramètres locaux sont par dépôt, ils ne s'appliquent donc pas automatiquement aux sous-modules.
+C'est pourquoi cette extension fournit la propagation aux sous-modules (voir « Avancé : Support des sous-modules » pour les détails).
 
 ---
 
@@ -413,6 +470,43 @@ Cela garantit que votre identité est toujours correcte, que vous commitiez dans
 - Assurez-vous d'être dans un dépôt Git
 - Vérifiez que `settings.json` n'a pas d'erreurs de syntaxe
 - Rechargez la fenêtre VS Code (`Cmd+Shift+P` → "Recharger la fenêtre")
+
+### Erreur avec le champ `name` ?
+
+Les caractères suivants dans le champ `name` causeront une erreur :
+
+`` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
+
+Utilisez le champ `service` si vous voulez inclure des informations de service.
+
+```jsonc
+// NG
+"name": "Camille Dupont (Perso)"
+
+// OK
+"name": "Camille Dupont",
+"service": "GitHub"
+```
+
+### Les nouveaux paramètres n'apparaissent pas ?
+
+Après la mise à jour de l'extension, les nouveaux paramètres peuvent ne pas apparaître dans l'interface des paramètres.
+
+**Solution :** Redémarrez complètement votre machine.
+
+Les éditeurs basés sur VS Code mettent en cache le schéma des paramètres en mémoire, et « Recharger la fenêtre » ou réinstaller l'extension peut ne pas suffire à le rafraîchir.
+
+### Les valeurs par défaut sont vides ?
+
+Si les exemples de paramètres n'apparaissent pas même après une nouvelle installation, **Settings Sync** peut en être la cause.
+
+Si vous avez précédemment sauvegardé des paramètres vides, ils peuvent avoir été synchronisés sur le cloud et écraser les valeurs par défaut lors des nouvelles installations.
+
+**Solution :**
+
+1. Trouvez le paramètre dans l'interface des paramètres
+2. Cliquez sur l'icône d'engrenage → « Réinitialiser le paramètre »
+3. Synchronisez avec Settings Sync (cela supprime les anciens paramètres du cloud)
 
 ---
 

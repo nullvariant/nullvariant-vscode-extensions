@@ -53,7 +53,7 @@
 
 ## 빠른 시작
 
-여러 GitHub 계정을 관리하기 위한 일반적인 설정입니다.
+개인 계정과 회사 발급 계정(Enterprise Managed User)을 관리하기 위한 일반적인 설정입니다.
 
 ### 1단계: SSH 키 준비
 
@@ -93,7 +93,7 @@ Host github-work
 
 ### 3단계: 확장 프로그램 설정
 
-VS Code 설정 열기(`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" 검색 → "settings.json에서 편집" 클릭:
+확장 프로그램 설정 열기(`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" 검색 → "settings.json에서 편집" 클릭:
 
 ```json
 {
@@ -102,6 +102,7 @@ VS Code 설정 열기(`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" 검색 → "sett
       "id": "personal",
       "icon": "🏠",
       "name": "김민",
+      "service": "GitHub",
       "email": "kim.min@personal.example.com",
       "description": "개인 프로젝트",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
@@ -110,8 +111,9 @@ VS Code 설정 열기(`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" 검색 → "sett
       "id": "work",
       "icon": "💼",
       "name": "김민",
+      "service": "GitHub 회사",
       "email": "kim.min@company.example.com",
-      "description": "업무 개발",
+      "description": "회사 개발 (Enterprise Managed User)",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
     }
@@ -171,6 +173,7 @@ uid         [ultimate] 김민 <kim.min@personal.example.com>
       "id": "personal",
       "icon": "🏠",
       "name": "김민",
+      "service": "GitHub",
       "email": "kim.min@personal.example.com",
       "description": "개인 프로젝트",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -201,18 +204,18 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# 업무 계정
+# 업무 계정 (회사 발급 Enterprise Managed User)
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# 오픈소스 활동 계정
-Host github-oss
-    HostName github.com
+# Bitbucket 계정
+Host bitbucket.org
+    HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_oss
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
     IdentitiesOnly yes
 ```
 
@@ -225,6 +228,7 @@ Host github-oss
       "id": "personal",
       "icon": "🏠",
       "name": "김민",
+      "service": "GitHub",
       "email": "kim.min@personal.example.com",
       "description": "개인 프로젝트",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
@@ -234,25 +238,28 @@ Host github-oss
       "id": "work",
       "icon": "💼",
       "name": "김민",
+      "service": "GitHub 회사",
       "email": "kim.min@company.example.com",
-      "description": "업무 개발",
+      "description": "회사 개발 (Enterprise Managed User)",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
     },
     {
-      "id": "oss",
-      "icon": "🌟",
-      "name": "kimmin-oss",
-      "email": "kimmin.oss@example.com",
-      "description": "오픈소스 기여",
-      "sshKeyPath": "~/.ssh/id_ed25519_oss",
-      "sshHost": "github-oss"
+      "id": "bitbucket",
+      "icon": "🪣",
+      "name": "김민",
+      "service": "Bitbucket",
+      "email": "kimmin@bitbucket.example.com",
+      "description": "Bitbucket 프로젝트",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
+      "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
       "icon": "🎯",
       "name": "김민",
+      "service": "GitLab",
       "email": "kim.min@freelance.example.com",
       "description": "프리랜서 프로젝트"
     }
@@ -276,22 +283,45 @@ Host github-oss
 | `id`          | ✅   | 고유 식별자 (예: `"work"`, `"personal"`)               |
 | `name`        | ✅   | Git user.name - 커밋에 표시됨                          |
 | `email`       | ✅   | Git user.email - 커밋에 표시됨                         |
-| `icon`        |      | 상태 표시줄에 표시되는 이모지 (예: `"💼"`)              |
+| `icon`        |      | 상태 표시줄에 표시되는 이모지 (예: `"💼"`). 단일 이모지만 허용 |
+| `service`     |      | 서비스 이름 (예: `"GitHub"`, `"GitLab"`). UI 표시에 사용 |
 | `description` |      | 선택기와 툴팁에 표시되는 짧은 설명                     |
 | `sshKeyPath`  |      | SSH 개인 키 경로 (예: `"~/.ssh/id_ed25519_work"`)      |
 | `sshHost`     |      | SSH 설정 호스트 별칭 (예: `"github-work"`)             |
 | `gpgKeyId`    |      | 커밋 서명용 GPG 키 ID                                  |
 
+#### 표시 제한
+
+- **상태 표시줄**: 약 25자를 초과하는 텍스트는 `...`으로 잘립니다
+- **`icon`**: 단일 이모지(자소 클러스터)만 허용됩니다. 여러 이모지나 긴 문자열은 지원되지 않습니다
+
 ### 전역 설정
 
-| 설정                              | 기본값     | 설명                                       |
-| --------------------------------- | ---------- | ------------------------------------------ |
-| `gitIdSwitcher.identities`        | 예시 참조  | ID 설정 목록                               |
-| `gitIdSwitcher.defaultIdentity`   | 예시 참조  | 기본으로 사용할 ID                         |
-| `gitIdSwitcher.autoSwitchSshKey`  | `true`     | ID 전환 시 SSH 키 자동 전환                |
-| `gitIdSwitcher.showNotifications` | `true`     | ID 전환 시 알림 표시                       |
-| `gitIdSwitcher.applyToSubmodules` | `true`     | Git 서브모듈에 ID 전파                     |
-| `gitIdSwitcher.submoduleDepth`    | `1`        | 중첩된 서브모듈 설정의 최대 깊이 (1-5)     |
+| 설정                                   | 기본값     | 설명                                           |
+| -------------------------------------- | ---------- | ---------------------------------------------- |
+| `gitIdSwitcher.identities`             | 예시 참조  | ID 설정 목록                                   |
+| `gitIdSwitcher.defaultIdentity`        | 예시 참조  | 기본으로 사용할 ID                             |
+| `gitIdSwitcher.autoSwitchSshKey`       | `true`     | ID 전환 시 SSH 키 자동 전환                    |
+| `gitIdSwitcher.showNotifications`      | `true`     | ID 전환 시 알림 표시                           |
+| `gitIdSwitcher.applyToSubmodules`      | `true`     | Git 서브모듈에 ID 전파                         |
+| `gitIdSwitcher.submoduleDepth`         | `1`        | 중첩된 서브모듈 설정의 최대 깊이 (1-5)         |
+| `gitIdSwitcher.includeIconInGitConfig` | `false`    | Git config `user.name`에 아이콘 이모지 포함    |
+
+#### `includeIconInGitConfig`에 대하여
+
+`icon` 필드 설정 시 동작을 제어합니다:
+
+| 값 | 동작 |
+|----|------|
+| `false` (기본값) | `icon`은 에디터 UI에만 표시. Git config에는 `name`만 기록 |
+| `true` | Git config에 `icon + name` 기록. 커밋 기록에 이모지가 표시됨 |
+
+예시: `icon: "👤"`, `name: "김민"`의 경우
+
+| includeIconInGitConfig | Git config `user.name` | 커밋 서명 |
+|------------------------|------------------------|-----------|
+| `false` | `김민` | `김민 <email>` |
+| `true` | `👤 김민` | `👤 김민 <email>` |
 
 ### 참고: 기본 설정 (SSH 없음)
 
@@ -324,12 +354,39 @@ SSH 키 전환이 필요 없는 경우 (예: 단일 GitHub 계정에서 다른 �
 
 ## 작동 방식
 
+### Git 설정 계층 구조
+
+Git 설정에는 세 개의 계층이 있으며, 하위 계층이 상위 계층을 덮어씁니다:
+
+```text
+시스템 (/etc/gitconfig)
+    ↓ 덮어씀
+전역 (~/.gitconfig)
+    ↓ 덮어씀
+로컬 (.git/config)  ← 최우선
+```
+
+**Git ID Switcher는 `--local`(저장소 로컬)에 기록합니다.**
+
+이것은:
+
+- ID가 각 저장소의 `.git/config`에 저장됨
+- 저장소마다 다른 ID를 유지할 수 있음
+- 전역 설정(`~/.gitconfig`)은 수정되지 않음
+
+### ID 전환 시
+
 ID를 전환하면, 확장 프로그램이 다음 순서로 실행합니다:
 
 1. **Git 설정** (항상): `git config --local user.name`과 `user.email` 설정
 2. **SSH 키** (`sshKeyPath`가 설정된 경우): ssh-agent에서 다른 키 제거, 선택한 키 추가
 3. **GPG 키** (`gpgKeyId`가 설정된 경우): `git config --local user.signingkey` 설정 및 서명 활성화
 4. **서브모듈** (활성화된 경우): 모든 서브모듈에 설정 전파 (기본값: 깊이 1)
+
+### 서브모듈 전파의 작동 방식
+
+로컬 설정은 저장소별로 독립적이므로 서브모듈에 자동으로 적용되지 않습니다.
+그래서 이 확장 프로그램은 서브모듈 전파 기능을 제공합니다 (자세한 내용은 "고급: 서브모듈 지원" 참조).
 
 ---
 
@@ -413,6 +470,43 @@ Git 서브모듈을 사용하는 복잡한 저장소의 경우, ID 관리는 종
 - Git 저장소 안에 있는지 확인
 - `settings.json`에 구문 오류가 없는지 확인
 - VS Code 창 새로고침 (`Cmd+Shift+P` → "창 새로고침")
+
+### `name` 필드에서 오류가 발생하나요?
+
+`name` 필드에 다음 문자가 포함되면 오류가 발생합니다:
+
+`` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
+
+서비스 정보를 포함하려면 `service` 필드를 사용하세요.
+
+```jsonc
+// NG
+"name": "김민 (개인)"
+
+// OK
+"name": "김민",
+"service": "GitHub"
+```
+
+### 새 설정이 표시되지 않나요?
+
+확장 프로그램을 업데이트한 후 새 설정 항목이 설정 UI에 나타나지 않을 수 있습니다.
+
+**해결 방법:** 컴퓨터를 완전히 재시작하세요.
+
+VS Code 등의 에디터는 설정 스키마를 메모리에 캐시하며, "창 새로고침"이나 확장 프로그램 재설치로는 갱신되지 않을 수 있습니다.
+
+### 기본값이 비어있나요?
+
+새로 설치해도 샘플 설정이 나타나지 않는다면, **Settings Sync**가 원인일 수 있습니다.
+
+이전에 빈 설정을 저장했다면 클라우드에 동기화되어 새 설치 시 기본값을 덮어쓸 수 있습니다.
+
+**해결 방법:**
+
+1. 설정 UI에서 해당 설정 항목 찾기
+2. 톱니바퀴 아이콘 → "설정 재설정" 클릭
+3. Settings Sync와 동기화 (클라우드에서 이전 설정 삭제)
 
 ---
 

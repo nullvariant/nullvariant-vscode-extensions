@@ -51,7 +51,9 @@ While many Git identity switchers sail the seven seas, **Git ID Switcher** solve
 
 ---
 
-## Quick Start, Ye Landlubber!
+## Quick Start, Ye Landlubber
+
+Typical setup fer managin' yer personal account and company account (Enterprise Managed User). The essential provisions fer any voyage!
 
 ### Step 1: Prepare Yer SSH Keys
 
@@ -63,27 +65,38 @@ ssh-keygen -t ed25519 -C "blackbeard@personal.example.com" -f ~/.ssh/id_ed25519_
 ssh-keygen -t ed25519 -C "blackbeard@merchant.example.com" -f ~/.ssh/id_ed25519_merchant
 ```
 
+After generatin' yer keys, register the public keys (`.pub`) to each service (GitHub, GitLab, Bitbucket, etc.). This be required, matey!
+
 ### Step 2: Configure Yer SSH
 
 Edit `~/.ssh/config`:
 
 ```ssh-config
-# Captain's Personal Account (default)
+# Captain's Personal Account (GitHub - default)
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_captain
     IdentitiesOnly yes
 
-# Merchant Account
+# Merchant Account (GitHub)
 Host github-merchant
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_merchant
     IdentitiesOnly yes
+
+# Tavern Account (Bitbucket)
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_tavern
+    IdentitiesOnly yes
 ```
 
 ### Step 3: Configure the Extension
+
+Open **Extension Settings** and configure yer identities in `gitIdSwitcher.identities`:
 
 ```json
 {
@@ -94,7 +107,8 @@ Host github-merchant
       "name": "Captain Blackbeard",
       "email": "blackbeard@personal.example.com",
       "description": "Plunderin' personal projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_captain"
+      "sshKeyPath": "~/.ssh/id_ed25519_captain",
+      "service": "github"
     },
     {
       "id": "merchant",
@@ -103,21 +117,24 @@ Host github-merchant
       "email": "blackbeard@merchant.example.com",
       "description": "Legitimate merchant business",
       "sshKeyPath": "~/.ssh/id_ed25519_merchant",
-      "sshHost": "github-merchant"
+      "sshHost": "github-merchant",
+      "service": "github"
     },
     {
       "id": "navy-spy",
       "icon": "🎭",
       "name": "Lieutenant Smith",
       "email": "smith@navy.example.com",
-      "description": "Undercover operations"
+      "description": "Undercover operations",
+      "service": "gitlab"
     },
     {
       "id": "tavern",
       "icon": "🍺",
       "name": "Jolly Roger",
       "email": "jolly@tavern.example.com",
-      "description": "Tavern side projects"
+      "description": "Tavern side projects",
+      "service": "bitbucket"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "captain",
@@ -126,11 +143,159 @@ Host github-merchant
 }
 ```
 
-### Step 4: Set Sail!
+### Step 4: Set Sail
 
 1. Click the identity icon in the status bar (bottom right, near the anchor)
 2. Pick yer identity
 3. Arrr! Yer Git config and SSH keys be switched!
+
+---
+
+## Optional: GPG Signin'
+
+If ye want to sign yer commits with GPG (like a proper pirate captain signs their letters o' marque):
+
+### Step 1: Find Yer GPG Key ID
+
+```bash
+gpg --list-secret-keys --keyid-format SHORT
+```
+
+Example output:
+
+```text
+sec   ed25519/ABCD1234 2024-01-01 [SC]
+      ...
+uid         [ultimate] Captain Blackbeard <blackbeard@personal.example.com>
+```
+
+Yer key ID be `ABCD1234`. Remember it well!
+
+### Step 2: Add GPG Key to Yer Identity
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "captain",
+      "icon": "🏴‍☠️",
+      "name": "Captain Blackbeard",
+      "service": "GitHub",
+      "email": "blackbeard@personal.example.com",
+      "description": "Plunderin' personal projects",
+      "sshKeyPath": "~/.ssh/id_ed25519_captain",
+      "gpgKeyId": "ABCD1234"
+    }
+  ]
+}
+```
+
+When ye switch to this identity, the extension sets:
+
+- `git config user.signingkey ABCD1234`
+- `git config commit.gpgsign true`
+
+Now yer commits be properly signed like a captain's decree!
+
+---
+
+## Full Example: 4 Accounts with SSH + GPG (Full Fleet)
+
+All the provisions combined! Here be the full example:
+
+### SSH Config (`~/.ssh/config`)
+
+```ssh-config
+# Captain's Personal Account (default)
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_captain
+    IdentitiesOnly yes
+
+# Merchant Account (Company EMU)
+Host github-merchant
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_merchant
+    IdentitiesOnly yes
+
+# Tavern Account (Bitbucket)
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_tavern
+    IdentitiesOnly yes
+```
+
+### Extension Config
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "captain",
+      "icon": "🏴‍☠️",
+      "name": "Captain Blackbeard",
+      "service": "GitHub",
+      "email": "blackbeard@personal.example.com",
+      "description": "Personal - Plunderin' projects",
+      "sshKeyPath": "~/.ssh/id_ed25519_captain",
+      "gpgKeyId": "CAPTAIN1"
+    },
+    {
+      "id": "merchant",
+      "icon": "⚓",
+      "name": "Edward Teach",
+      "service": "GitHub Company",
+      "email": "teach@company_blackbeard.example.com",
+      "description": "Company (EMU) - Merchant business",
+      "sshKeyPath": "~/.ssh/id_ed25519_merchant",
+      "sshHost": "github-merchant",
+      "gpgKeyId": "MERCHANT1"
+    },
+    {
+      "id": "tavern",
+      "icon": "🪣",
+      "name": "Jolly Roger",
+      "service": "Bitbucket",
+      "email": "jolly@tavern.example.com",
+      "description": "Bitbucket - Tavern projects",
+      "sshKeyPath": "~/.ssh/id_ed25519_tavern",
+      "sshHost": "bitbucket.org"
+    },
+    {
+      "id": "navy-spy",
+      "icon": "🎭",
+      "name": "Lieutenant Smith",
+      "service": "GitLab",
+      "email": "smith@freelance.example.com",
+      "description": "Freelance - Undercover operations"
+    }
+  ],
+  "gitIdSwitcher.defaultIdentity": "captain",
+  "gitIdSwitcher.autoSwitchSshKey": true,
+  "gitIdSwitcher.applyToSubmodules": true
+}
+```
+
+Note: The last identity (`navy-spy`) has no SSH. Ye can use this fer switchin' just Git config (like different committer info on the same account).
+
+---
+
+## Identity Properties
+
+| Property | Required | Description |
+|----------|----------|-------------|
+| `id` | ✅ | Unique identifier fer this identity |
+| `name` | ✅ | Git `user.name` (shows in commits) |
+| `email` | ✅ | Git `user.email` |
+| `icon` | ❌ | Single emoji fer status bar. EMOJI ONLY, no text! |
+| `description` | ❌ | Description (shows in dropdown) |
+| `sshKeyPath` | ❌ | Path to SSH private key |
+| `sshHost` | ❌ | SSH host alias (`Host` in ~/.ssh/config) |
+| `gpgKeyId` | ❌ | GPG key ID fer commit signin' |
+| `service` | ❌ | Git service: `github`, `gitlab`, `bitbucket`, `other` |
 
 ---
 
@@ -140,6 +305,123 @@ Host github-merchant
 | ------------------------------- | ----------------------------------- |
 | `Git ID: Select Identity`       | Open the identity picker, ye scurvy dog |
 | `Git ID: Show Current Identity` | Show current identity info          |
+
+---
+
+## Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `gitIdSwitcher.identities` | `[]` | List of identities in yer crew |
+| `gitIdSwitcher.defaultIdentity` | `""` | Default identity ID |
+| `gitIdSwitcher.autoSwitchSshKey` | `true` | Automatically switch SSH keys |
+| `gitIdSwitcher.applyToSubmodules` | `true` | Apply identity to submodules |
+| `gitIdSwitcher.includeIconInGitConfig` | `false` | Include emoji in Git config (see below) |
+
+---
+
+## Display Limitations
+
+- **`icon` property**: Single emoji only! No text like "🏴‍☠️ Captain". Just "🏴‍☠️".
+- **`includeIconInGitConfig`**: When disabled (default), emoji not added to Git config user.name.
+
+---
+
+## `includeIconInGitConfig` Setting
+
+This setting controls whether emoji be added to Git `user.name`.
+
+| Setting | Behavior |
+|---------|----------|
+| `false` (default) | Git config: `user.name = Captain Blackbeard` (no emoji in config) |
+| `true` | Git config: `user.name = 🏴‍☠️ Captain Blackbeard` (emoji in config) |
+
+> **Note**: Emoji always shows in status bar regardless of this setting! This only affects Git config, matey.
+
+---
+
+## Git Config Layer Structure
+
+### How Git Config Works
+
+Git config has 3 layers, like decks on a ship:
+
+```text
+SYSTEM (/etc/gitconfig)
+   ↓ overridden by
+GLOBAL (~/.gitconfig)
+   ↓ overridden by
+LOCAL (.git/config)  ← This extension writes here with `--local`
+```
+
+### Submodule Propagation
+
+Local settings be per-repository, so submodules don't automatically inherit 'em.
+That be why this extension has the propagation feature (see "Advanced: Submodule Support" section).
+
+---
+
+## Advanced: Submodule Support
+
+When ye have complex repositories with Git submodules, identity management can be treacherous. When ye commit inside a submodule, Git uses that submodule's local config, and if not set, it falls back to global config (wrong email address! Walk the plank!).
+
+**Git ID Switcher** automatically detects submodules and applies yer selected identity.
+
+```json
+{
+  "gitIdSwitcher.applyToSubmodules": true,
+  "gitIdSwitcher.submoduleDepth": 1
+}
+```
+
+- `applyToSubmodules`: Enable/disable this feature
+- `submoduleDepth`: How deep to sail?
+  - `1`: Only direct submodules (most common)
+  - `2+`: Nested submodules (submodules within submodules - like ships within ships!)
+
+This way, whether ye commit in the main repo or in a vendor library, yer identity be always correct. No more embarrassin' commits with the wrong flag!
+
+---
+
+## Troubleshootin'
+
+### "Name field is required" Error
+
+If ye see this error, check yer settings:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "captain",
+      "name": "Captain Blackbeard",  // ← This be required!
+      "email": "blackbeard@personal.example.com"  // ← This too!
+    }
+  ]
+}
+```
+
+Both `name` and `email` be required. Can't sail without 'em!
+
+### New Settings Not Showin'
+
+If new settings like `service` or `includeIconInGitConfig` not showin':
+
+1. **Reload Window**: Press `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
+2. **Type**: "Developer: Reload Window"
+3. **Press Enter**
+
+VS Code caches settin' schemas. Reload fixes it, arrr!
+
+### Settings Sync Conflicts
+
+If ye use VS Code Settings Sync and have different identities on different ships:
+
+1. **Option A**: Disable sync fer this extension's settings
+2. **Option B**: Use same identities on all ships
+3. **Option C**: Use workspace settings (`.vscode/settings.json`) instead
+
+> **Tip**: Workspace settings be per-project and don't sync. Good fer different identities across yer fleet!
 
 ---
 

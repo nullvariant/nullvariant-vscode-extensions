@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.3] - 2025-12-22
+
+### Changed
+
+- **i18n README Update (Phase 3)**: All 24 translated READMEs updated to match English v0.9.2
+  - Added EMU (Enterprise Managed User) mention in Quick Start
+  - Added `service` field to all configuration examples
+  - Changed OSS example from GitHub to Bitbucket (GitHub ToS compliance)
+  - Added "Display Limitations" section
+  - Added `includeIconInGitConfig` setting documentation
+  - Added "Git Config Layer Structure" section
+  - Added "When Switching Identities" section
+  - Added "How Submodule Propagation Works" section
+  - Added troubleshooting: name field shell metacharacters error
+  - Added troubleshooting: settings cache issue (machine restart)
+  - Added troubleshooting: Settings Sync overwriting defaults
+- **Icon Update**: Replaced icon.png with high-resolution version (270KB)
+
 ## [0.9.2] - 2025-12-21
 
 ### Changed
@@ -336,7 +354,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.1...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.3...HEAD
+[0.9.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.2...git-id-switcher-v0.9.3
+[0.9.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.1...git-id-switcher-v0.9.2
 [0.9.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.8.1...git-id-switcher-v0.9.1
 [0.8.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.8.0...git-id-switcher-v0.8.1
 [0.8.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.7.1...git-id-switcher-v0.8.0
