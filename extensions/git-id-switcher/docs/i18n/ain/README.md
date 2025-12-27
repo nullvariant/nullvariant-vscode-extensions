@@ -25,7 +25,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       シネㇷ゚ クリㇰ オロワ Git ID ウコイタㇰ ウタㇻ ホㇱキノ エトゥㇾ。GitHub アカウント、SSH キー、GPG サイン オロワノ ウコイタㇰ、<b>Git Submodule オロワノ ID ウコイタㇰ</b>。

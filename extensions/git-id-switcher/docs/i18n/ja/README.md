@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       ワンクリックで複数のGitプロフィールを切り替え。複数のGitHubアカウント、SSHキー、GPG署名を管理し、<b>Gitサブモジュールにも自動的にプロフィールを適用</b>します。
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/docs/i18n/ja/demo.png" width="600" alt="デモ">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-ja.png" width="600" alt="デモ">
 
 ## 機能
 

@@ -9,7 +9,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       sina ken ante e nimi sina lon Git. luka wan la, sina ante e nimi. ilo ni li pona tawa GitHub mute, SSH, GPG, en <b>Git Submodule</b>.

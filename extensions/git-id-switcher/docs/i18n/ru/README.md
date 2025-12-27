@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Переключайтесь между несколькими Git-идентификаторами одним кликом. Управляйте несколькими аккаунтами GitHub, SSH-ключами, GPG-подписью и <b>автоматически применяйте идентификатор к подмодулям Git</b>.
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/docs/i18n/ru/demo.png" width="600" alt="Демо">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-ru.png" width="600" alt="Демо">
 
 ## Возможности
 

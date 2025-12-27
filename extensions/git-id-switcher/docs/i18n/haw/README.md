@@ -23,7 +23,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       E hoʻololi i nā ID Git he nui me ke kaomi hoʻokahi. E hoʻoponopono i nā moʻokāki GitHub he nui, nā kī SSH, ke kākau inoa GPG, a <b>hoʻopili ʻia ka ID i nā Git Submodule</b>.

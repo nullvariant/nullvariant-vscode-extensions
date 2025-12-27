@@ -25,7 +25,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       ちゅーちゅクリックさーに Git ID 変えーいびーん。GitHub アカウント、SSH キー、GPG 署名、<b>Git Submodule んかい自動的にID適用</b>さびーん。

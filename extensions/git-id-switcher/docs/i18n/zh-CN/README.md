@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       一键切换多个Git身份。管理多个GitHub账户、SSH密钥、GPG签名，并<b>自动将身份应用到Git子模块</b>。
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://raw.githubusercontent.com/nullvariant/nullvariant-vscode-extensions/main/extensions/git-id-switcher/docs/i18n/zh-CN/demo.png" width="600" alt="演示">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-zh-CN.png" width="600" alt="演示">
 
 ## 功能特性
 
