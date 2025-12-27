@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.7] - 2025-12-27
+
+### Changed
+
+- **Images moved to CDN**: README images now served from `assets.nullvariant.com`
+  - Reduces VSIX package size
+  - Enables README view analytics
+
+### Removed
+
+- Demo images removed from repository (now hosted on CDN)
+
 ## [0.9.6] - 2025-12-22
 
 ### Fixed
@@ -389,7 +401,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.6...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.7...HEAD
+[0.9.7]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.6...git-id-switcher-v0.9.7
 [0.9.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.5...git-id-switcher-v0.9.6
 [0.9.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.4...git-id-switcher-v0.9.5
 [0.9.4]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.3...git-id-switcher-v0.9.4
