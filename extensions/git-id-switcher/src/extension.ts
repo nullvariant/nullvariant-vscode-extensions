@@ -74,10 +74,22 @@ export async function activate(
     })
   );
 
+  // Store initial configuration snapshot for change detection
+  securityLogger.storeConfigSnapshot();
+
   // Watch for configuration changes
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
       if (e.affectsConfiguration('gitIdSwitcher')) {
+        // Detect and log specific configuration changes
+        const newSnapshot = securityLogger.createConfigSnapshot();
+        const changes = securityLogger.detectConfigChanges(newSnapshot);
+        if (changes.length > 0) {
+          securityLogger.logConfigChanges(changes);
+        }
+        // Update snapshot for next change detection
+        securityLogger.storeConfigSnapshot();
+
         // Reset validation notification flag to allow re-notification if errors persist
         // This ensures users are notified again if they fix some issues but others remain
         resetValidationNotificationFlag();

@@ -117,6 +117,43 @@ export enum SecurityEventType {
 }
 
 /**
+ * Configuration keys that we track for changes
+ */
+export const CONFIG_KEYS = [
+  'identities',
+  'defaultIdentity',
+  'autoSwitchSshKey',
+  'showNotifications',
+  'applyToSubmodules',
+  'submoduleDepth',
+  'includeIconInGitConfig',
+] as const;
+
+export type ConfigKey = (typeof CONFIG_KEYS)[number];
+
+/**
+ * Configuration snapshot for change detection
+ */
+export interface ConfigSnapshot {
+  identities: unknown[];
+  defaultIdentity: string;
+  autoSwitchSshKey: boolean;
+  showNotifications: boolean;
+  applyToSubmodules: boolean;
+  submoduleDepth: number;
+  includeIconInGitConfig: boolean;
+}
+
+/**
+ * Configuration change details
+ */
+export interface ConfigChangeDetail {
+  key: ConfigKey;
+  previousValue: unknown;
+  newValue: unknown;
+}
+
+/**
  * Severity levels for security events
  */
 export type Severity = 'info' | 'warning' | 'error';
@@ -142,6 +179,11 @@ class SecurityLoggerImpl {
   private readonly channelName = 'Git ID Switcher Security';
 
   /**
+   * Current configuration snapshot for change detection
+   */
+  private configSnapshot: ConfigSnapshot | null = null;
+
+  /**
    * Initialize the output channel
    * Should be called during extension activation
    */
@@ -160,6 +202,8 @@ class SecurityLoggerImpl {
       this.outputChannel.dispose();
       this.outputChannel = null;
     }
+    // Clear configuration snapshot to prevent memory leaks
+    this.configSnapshot = null;
   }
 
   /**
@@ -307,7 +351,176 @@ class SecurityLoggerImpl {
   }
 
   /**
-   * Log configuration change
+   * Create a configuration snapshot from current VS Code configuration
+   */
+  createConfigSnapshot(): ConfigSnapshot {
+    const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+    return {
+      identities: config.get<unknown[]>('identities', []),
+      defaultIdentity: config.get<string>('defaultIdentity', ''),
+      autoSwitchSshKey: config.get<boolean>('autoSwitchSshKey', true),
+      showNotifications: config.get<boolean>('showNotifications', true),
+      applyToSubmodules: config.get<boolean>('applyToSubmodules', true),
+      submoduleDepth: config.get<number>('submoduleDepth', 1),
+      includeIconInGitConfig: config.get<boolean>('includeIconInGitConfig', false),
+    };
+  }
+
+  /**
+   * Store the current configuration snapshot
+   */
+  storeConfigSnapshot(): void {
+    this.configSnapshot = this.createConfigSnapshot();
+  }
+
+  /**
+   * Compare two values for equality (deep comparison for objects/arrays)
+   */
+  private valuesEqual(a: unknown, b: unknown): boolean {
+    if (a === b) return true;
+    if (typeof a !== typeof b) return false;
+    if (a === null || b === null) return a === b;
+
+    if (typeof a === 'object' && typeof b === 'object') {
+      try {
+        return JSON.stringify(a) === JSON.stringify(b);
+      } catch {
+        return false;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Detect which configuration keys changed
+   */
+  detectConfigChanges(newSnapshot: ConfigSnapshot): ConfigChangeDetail[] {
+    if (!this.configSnapshot) {
+      return [];
+    }
+
+    const changes: ConfigChangeDetail[] = [];
+
+    for (const key of CONFIG_KEYS) {
+      const previousValue = this.configSnapshot[key];
+      const newValue = newSnapshot[key];
+
+      if (!this.valuesEqual(previousValue, newValue)) {
+        changes.push({
+          key,
+          previousValue,
+          newValue,
+        });
+      }
+    }
+
+    return changes;
+  }
+
+  /**
+   * Summarize identity changes for logging
+   */
+  private summarizeIdentityChanges(
+    previousIdentities: unknown[],
+    newIdentities: unknown[]
+  ): Record<string, unknown> {
+    // Use raw IDs for comparison
+    const prevIds = this.extractIdentityIds(previousIdentities, false);
+    const newIds = this.extractIdentityIds(newIdentities, false);
+
+    const added = newIds.filter(id => !prevIds.includes(id));
+    const removed = prevIds.filter(id => !newIds.includes(id));
+    const modified = newIds.filter(id => {
+      if (!prevIds.includes(id)) return false;
+      const prevIdentity = previousIdentities.find(
+        i => this.getIdentityId(i) === id
+      );
+      const newIdentity = newIdentities.find(
+        i => this.getIdentityId(i) === id
+      );
+      return !this.valuesEqual(prevIdentity, newIdentity);
+    });
+
+    // Sanitize IDs for output
+    return {
+      previousCount: previousIdentities.length,
+      newCount: newIdentities.length,
+      added: added.length > 0 ? this.sanitizeIds(added) : undefined,
+      removed: removed.length > 0 ? this.sanitizeIds(removed) : undefined,
+      modified: modified.length > 0 ? this.sanitizeIds(modified) : undefined,
+    };
+  }
+
+  /**
+   * Sanitize an array of IDs for safe logging
+   */
+  private sanitizeIds(ids: string[]): string[] {
+    const maxIdLength = 64;
+    return ids.map(id =>
+      id.length > maxIdLength ? id.slice(0, maxIdLength) + '...' : id
+    );
+  }
+
+  /**
+   * Extract identity IDs from an identities array
+   * @param sanitize - Whether to truncate long IDs (default: true for external use)
+   */
+  private extractIdentityIds(identities: unknown[], sanitize = true): string[] {
+    const ids: string[] = [];
+    const maxItems = 100; // DoS protection
+    const maxIdLength = 64; // Match IDENTITY_SCHEMA.id.maxLength
+    let count = 0;
+
+    for (const identity of identities) {
+      if (count >= maxItems) break;
+      const id = this.getIdentityId(identity);
+      if (id) {
+        // Optionally truncate long IDs for safety
+        const safeId = sanitize && id.length > maxIdLength
+          ? id.slice(0, maxIdLength) + '...'
+          : id;
+        ids.push(safeId);
+      }
+      count++;
+    }
+
+    return ids;
+  }
+
+  /**
+   * Get the ID from an identity object
+   */
+  private getIdentityId(identity: unknown): string | null {
+    if (
+      typeof identity === 'object' &&
+      identity !== null &&
+      'id' in identity &&
+      typeof (identity as Record<string, unknown>).id === 'string'
+    ) {
+      return (identity as Record<string, unknown>).id as string;
+    }
+    return null;
+  }
+
+  /**
+   * Sanitize a configuration value for logging
+   */
+  private sanitizeConfigValue(key: ConfigKey, value: unknown): unknown {
+    // For identities, provide a summary instead of full details
+    if (key === 'identities' && Array.isArray(value)) {
+      return {
+        count: value.length,
+        ids: this.extractIdentityIds(value),
+      };
+    }
+
+    // For other values, use standard sanitization
+    return this.sanitizeValue(value);
+  }
+
+  /**
+   * Log configuration change with before/after values
    */
   logConfigChange(configKey: string): void {
     this.log({
@@ -317,6 +530,46 @@ class SecurityLoggerImpl {
         configKey,
       },
     });
+  }
+
+  /**
+   * Log detailed configuration changes with before/after values
+   */
+  logConfigChanges(changes: ConfigChangeDetail[]): void {
+    if (changes.length === 0) {
+      return;
+    }
+
+    for (const change of changes) {
+      // Special handling for identities array
+      if (change.key === 'identities') {
+        const prevIdentities = Array.isArray(change.previousValue)
+          ? change.previousValue
+          : [];
+        const newIdentities = Array.isArray(change.newValue)
+          ? change.newValue
+          : [];
+
+        this.log({
+          type: SecurityEventType.CONFIG_CHANGE,
+          severity: 'info',
+          details: {
+            configKey: change.key,
+            changes: this.summarizeIdentityChanges(prevIdentities, newIdentities),
+          },
+        });
+      } else {
+        this.log({
+          type: SecurityEventType.CONFIG_CHANGE,
+          severity: 'info',
+          details: {
+            configKey: change.key,
+            previousValue: this.sanitizeConfigValue(change.key, change.previousValue),
+            newValue: this.sanitizeConfigValue(change.key, change.newValue),
+          },
+        });
+      }
+    }
   }
 
   /**
@@ -450,13 +703,13 @@ class SecurityLoggerImpl {
     // Normalize path separators for consistent checking
     // SECURITY: Handle Windows UNC paths (\\server\share -> //server/share)
     // Preserve UNC prefix for proper detection
-    let normalizedPath = inputPath.replace(/\\/g, '/');
+    const normalizedPath = inputPath.replace(/\\/g, '/');
     // SECURITY: UNC paths start with // (but not ///)
     // For UNC paths, we should redact the server name for privacy
     const isUncPath = normalizedPath.startsWith('//') && !normalizedPath.startsWith('///');
     if (isUncPath) {
       // Redact UNC server name: //server/share -> //[REDACTED]/share
-      const uncMatch = normalizedPath.match(/^\/\/([^\/]+)(\/.*)?$/);
+      const uncMatch = normalizedPath.match(/^\/\/([^/]+)(\/.*)?$/);
       if (uncMatch) {
         return `//[REDACTED]${uncMatch[2] || ''}`;
       }
