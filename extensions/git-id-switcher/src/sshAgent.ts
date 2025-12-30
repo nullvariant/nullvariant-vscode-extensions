@@ -57,12 +57,16 @@ function expandPath(keyPath: string): string {
 function validateKeyPath(keyPath: string): void {
   // Use both legacy validation and new secure validation
   if (!isPathSafe(keyPath)) {
-    throw new Error(`Invalid SSH key path (legacy check): ${keyPath}`);
+    // SECURITY: Don't include the actual path in error message to prevent information leakage
+    // Only include the reason, not the potentially malicious input
+    throw new Error('Invalid SSH key path (legacy check failed)');
   }
 
   // Additional validation using pathUtils
   const result = normalizeAndValidatePath(keyPath);
   if (!result.valid) {
+    // SECURITY: Only include the reason, not the original path
+    // This prevents information leakage if an attacker sends malicious paths
     throw new Error(`Invalid SSH key path: ${result.reason}`);
   }
 }

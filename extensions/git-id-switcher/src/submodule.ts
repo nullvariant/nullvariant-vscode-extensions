@@ -8,9 +8,9 @@
  * @see https://owasp.org/www-community/attacks/Command_Injection
  */
 
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { gitExec } from './secureExec';
+import { validateSubmodulePath } from './pathUtils';
 
 export interface Submodule {
   /** Relative path from workspace root */
@@ -54,12 +54,21 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
         const initialized = status !== '-';
 
         if (initialized) {
-          submodules.push({
-            path: submodulePath,
-            absolutePath: path.join(workspacePath, submodulePath),
-            commitHash,
-            initialized,
-          });
+          // SECURITY: Validate and normalize submodule path to prevent path traversal
+          const pathResult = validateSubmodulePath(submodulePath, workspacePath);
+          if (pathResult.valid && pathResult.normalizedPath) {
+            submodules.push({
+              path: submodulePath,
+              absolutePath: pathResult.normalizedPath,
+              commitHash,
+              initialized,
+            });
+          } else {
+            // Log security violation but don't throw (fail gracefully)
+            console.warn(
+              `Security: Invalid submodule path rejected: ${submodulePath} - ${pathResult.reason}`
+            );
+          }
         }
       }
     }

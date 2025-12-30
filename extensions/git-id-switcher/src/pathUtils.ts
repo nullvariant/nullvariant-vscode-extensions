@@ -140,12 +140,30 @@ export function normalizeAndValidatePath(
   let expandedPath = expandTilde(inputPath);
 
   // Step 5: Resolve to absolute path if relative
-  if (!path.isAbsolute(expandedPath)) {
-    expandedPath = path.resolve(baseDir, expandedPath);
+  // SECURITY: Always resolve relative paths to absolute paths for consistency
+  // This prevents path traversal attacks and ensures consistent normalization
+  let resolvedAbsolutePath: string;
+  if (path.isAbsolute(expandedPath)) {
+    resolvedAbsolutePath = path.resolve(expandedPath);
+  } else {
+    resolvedAbsolutePath = path.resolve(baseDir, expandedPath);
   }
 
   // Step 6: Normalize the path (resolve ., .., //)
-  let normalizedPath = path.normalize(expandedPath);
+  // path.normalize() removes redundant separators and resolves . and ..
+  // path.resolve() already does this, but we normalize again for consistency
+  let normalizedPath = path.normalize(resolvedAbsolutePath);
+
+  // Step 6.5: Verify normalization consistency
+  // Double-check that path.resolve() and path.normalize() produce consistent results
+  // This is a defensive check to catch any edge cases
+  const doubleCheckResolved = path.resolve(normalizedPath);
+  const doubleCheckNormalized = path.normalize(doubleCheckResolved);
+  if (normalizedPath !== doubleCheckNormalized) {
+    // If they differ, use the double-checked version (more strict)
+    // This should rarely happen, but defensive programming
+    normalizedPath = doubleCheckNormalized;
+  }
 
   // Step 7: Post-normalization security check
   // This catches any traversal that survived normalization
@@ -196,11 +214,16 @@ export function normalizeAndValidatePath(
   }
 
   // Step 10: Optionally check file existence
+  // SECURITY NOTE: This check is subject to TOCTOU (Time-of-check-time-of-use) race conditions.
+  // The file might be created/deleted/modified between this check and actual use.
+  // However, this is acceptable for our use case as we're validating paths, not file contents.
+  // For critical operations, the caller should re-validate immediately before use.
   if (requireExists) {
     try {
       fs.accessSync(normalizedPath);
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code;
+      // SECURITY: Don't include the actual path in error message
       return {
         valid: false,
         originalPath: inputPath,
@@ -279,10 +302,18 @@ interface SymlinkResolutionResult {
  * Resolve symlinks securely with loop detection
  *
  * Uses fs.realpathSync.native() with error handling for:
- * - ELOOP: Symlink loop detected
+ * - ELOOP: Symlink loop detected (infinite loop attack)
  * - ENOENT: File/directory doesn't exist
  * - EACCES: Permission denied
  * - ENAMETOOLONG: Path too long
+ *
+ * SECURITY NOTES:
+ * - On Windows, fs.realpathSync.native() correctly handles:
+ *   - Symbolic links (created with mklink /D or mklink)
+ *   - Junctions (created with mklink /J)
+ *   - Hard links (created with mklink /H)
+ * - ELOOP detection prevents infinite symlink loops (e.g., /a -> /b -> /a)
+ * - ENOENT returns normalized input path (not raw) for consistency
  */
 function resolveSymlinksSecurely(inputPath: string): SymlinkResolutionResult {
   try {
@@ -314,10 +345,13 @@ function resolveSymlinksSecurely(inputPath: string): SymlinkResolutionResult {
         };
       case 'ENOENT':
         // File doesn't exist - this might be OK depending on use case
-        // Return the input path as-is, let caller decide
+        // SECURITY: inputPath is already normalized by normalizeAndValidatePath()
+        // before this function is called, but we normalize again for defensive programming
+        // This ensures consistency even if the function is called directly
+        // The caller can check requireExists if they need the file to exist
         return {
           valid: true,
-          resolvedPath: inputPath,
+          resolvedPath: path.normalize(inputPath), // Already normalized, but safe to normalize again (idempotent)
         };
       case 'EACCES':
         return {
@@ -347,14 +381,26 @@ function resolveSymlinksSecurely(inputPath: string): SymlinkResolutionResult {
  * Check if a path contains symlinks
  *
  * Useful for detecting potential symlink attacks without resolving them
+ *
+ * SECURITY: ELOOP errors are treated as symlinks detected (potential attack)
  */
 export function containsSymlinks(inputPath: string): boolean {
   try {
     const realPath = fs.realpathSync.native(inputPath);
     const normalPath = path.normalize(inputPath);
     return realPath !== normalPath;
-  } catch {
-    // If we can't resolve, assume no symlinks (or error will be caught later)
+  } catch (error) {
+    const nodeError = error as NodeJS.ErrnoException;
+    const code = nodeError.code;
+
+    // ELOOP indicates a symlink loop - treat as symlink detected (security concern)
+    if (code === 'ELOOP') {
+      return true;
+    }
+
+    // ENOENT means file doesn't exist - can't determine if symlink, return false
+    // Other errors (EACCES, etc.) - assume no symlinks for now
+    // The error will be caught later during actual path resolution if needed
     return false;
   }
 }
@@ -399,6 +445,75 @@ export function validateSshKeyPath(
   if (!isInAllowedLocation) {
     // Not an error, but worth noting - custom SSH key location
     // Could add logging here in the future
+  }
+
+  return result;
+}
+
+/**
+ * Validate a submodule path specifically
+ *
+ * Submodule paths come from git output and need special handling:
+ * - Must be relative to workspace root
+ * - Must not contain path traversal
+ * - Must be normalized before joining with workspace path
+ *
+ * @param submodulePath - Relative path from git submodule status
+ * @param workspacePath - Absolute path to workspace root
+ * @returns NormalizedPathResult with validation status
+ */
+export function validateSubmodulePath(
+  submodulePath: string,
+  workspacePath: string
+): NormalizedPathResult {
+  // First, validate the workspace path itself
+  const workspaceResult = normalizeAndValidatePath(workspacePath, {
+    resolveSymlinks: false, // Don't resolve workspace path symlinks
+    requireExists: true, // Workspace must exist
+  });
+
+  if (!workspaceResult.valid) {
+    return {
+      valid: false,
+      originalPath: submodulePath,
+      reason: `Invalid workspace path: ${workspaceResult.reason}`,
+    };
+  }
+
+  const normalizedWorkspace = workspaceResult.normalizedPath!;
+
+  // Validate the submodule path (relative path from git)
+  // Pre-check: submodule path should not be absolute
+  if (path.isAbsolute(submodulePath)) {
+    return {
+      valid: false,
+      originalPath: submodulePath,
+      reason: 'Submodule path must be relative to workspace root',
+    };
+  }
+
+  // Normalize and validate the submodule path relative to workspace
+  const result = normalizeAndValidatePath(submodulePath, {
+    resolveSymlinks: false, // Don't resolve symlinks for submodule paths (git manages them)
+    requireExists: false, // Submodule might not be initialized yet
+    baseDir: normalizedWorkspace,
+  });
+
+  if (!result.valid) {
+    return result;
+  }
+
+  const normalizedSubmodulePath = result.normalizedPath!;
+
+  // Security check: Ensure the normalized path is still within workspace
+  // This prevents path traversal attacks like "../../etc/passwd"
+  if (!normalizedSubmodulePath.startsWith(normalizedWorkspace + path.sep) &&
+      normalizedSubmodulePath !== normalizedWorkspace) {
+    return {
+      valid: false,
+      originalPath: submodulePath,
+      reason: 'Submodule path escapes workspace root after normalization',
+    };
   }
 
   return result;
