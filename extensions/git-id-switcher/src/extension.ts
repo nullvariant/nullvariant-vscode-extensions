@@ -42,7 +42,7 @@ let initializeCancellation: vscode.CancellationTokenSource | undefined;
 export async function activate(
   context: vscode.ExtensionContext
 ): Promise<void> {
-  console.log('Git ID Switcher is activating...');
+  console.log('[Git ID Switcher] Activating...');
 
   // Initialize security logger
   securityLogger.initialize();
@@ -128,7 +128,7 @@ export async function activate(
     })
   );
 
-  console.log('Git ID Switcher activated!');
+  console.log('[Git ID Switcher] Activated');
 }
 
 /**
@@ -143,7 +143,7 @@ export function deactivate(): void {
   }
   securityLogger.logDeactivation();
   securityLogger.dispose();
-  console.log('Git ID Switcher deactivated');
+  console.log('[Git ID Switcher] Deactivated');
 }
 
 /**
@@ -191,10 +191,12 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     // Try to detect from Git config (pass token to async functions)
     if (await isGitRepository(token)) {
       if (token.isCancellationRequested) {
+        console.debug('[Git ID Switcher] Initialization cancelled after isGitRepository');
         return;
       }
       const detectedIdentity = await detectCurrentIdentity(token);
       if (token.isCancellationRequested) {
+        console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentity');
         return;
       }
       if (detectedIdentity) {
@@ -208,6 +210,7 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     // Try to detect from SSH agent (pass token to async function)
     const sshIdentity = await detectCurrentIdentityFromSsh(token);
     if (token.isCancellationRequested) {
+      console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentityFromSsh');
       return;
     }
     if (sshIdentity) {
@@ -222,12 +225,13 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
   } catch (error) {
     // If cancelled, don't treat as error
     if (token.isCancellationRequested) {
+      console.debug('[Git ID Switcher] Initialization cancelled (caught in error handler)');
       return;
     }
 
     // SECURITY: Use getUserSafeMessage to prevent information leakage
     const safeMessage = getUserSafeMessage(error);
-    console.error('Failed to initialize Git ID Switcher:', safeMessage);
+    console.error('[Git ID Switcher] Failed to initialize:', safeMessage);
     statusBar.setNoIdentity();
 
     // Propagate fatal errors (security violations) - re-throw as-is to preserve category
@@ -335,11 +339,11 @@ async function switchToIdentity(
     // Show notification
     showIdentitySwitchedNotification(identity);
 
-    console.log(`Switched to identity: ${identity.id}`);
+    console.log(`[Git ID Switcher] Switched to identity: ${identity.id}`);
   } catch (error) {
     // SECURITY: Use getUserSafeMessage to prevent information leakage in console
     const safeMessage = getUserSafeMessage(error);
-    console.error(`Failed to switch identity: ${safeMessage}`);
+    console.error(`[Git ID Switcher] Failed to switch identity: ${safeMessage}`);
 
     // Revert status bar
     if (currentIdentity) {
@@ -348,6 +352,7 @@ async function switchToIdentity(
       statusBar.setNoIdentity();
     }
 
+    // Re-throw error for caller to handle (selectIdentityCommand will notify user)
     throw error;
   }
 }
