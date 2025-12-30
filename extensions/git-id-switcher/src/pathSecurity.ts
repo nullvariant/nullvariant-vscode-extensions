@@ -5,6 +5,7 @@
  * Prevents path traversal attacks and validates path safety.
  *
  * Separated from commandAllowlist for Single Responsibility Principle.
+ * Refactored using pipeline pattern for KISS compliance (Issue-00041).
  *
  * @see https://owasp.org/www-project-application-security-verification-standard/
  */
@@ -13,7 +14,6 @@ import { PATH_MAX } from './constants';
 import {
   CONTROL_CHAR_REGEX_STRICT,
   hasInvisibleUnicode,
-  hasPathTraversal,
   hasPathTraversalStrict,
   hasNullByte,
 } from './validators/common';
@@ -24,6 +24,346 @@ import {
 export interface SecurePathResult {
   valid: boolean;
   reason?: string;
+}
+
+/**
+ * Internal state for validation pipeline
+ */
+interface ValidationState {
+  valid: boolean;
+  path: string;
+  reason?: string;
+}
+
+/**
+ * Validator function type for pipeline pattern
+ */
+type Validator = (state: ValidationState) => ValidationState;
+
+// ============================================================================
+// Validator Factories (DRY pattern)
+// ============================================================================
+
+/**
+ * Creates a validator for control characters with custom error message suffix
+ */
+const createControlCharValidator = (suffix: string = ''): Validator => (state) => {
+  if (CONTROL_CHAR_REGEX_STRICT.test(state.path)) {
+    return { ...state, valid: false, reason: `Path contains control characters${suffix}` };
+  }
+  return state;
+};
+
+/**
+ * Creates a validator for invisible Unicode with custom error message suffix
+ */
+const createInvisibleUnicodeValidator = (suffix: string = ''): Validator => (state) => {
+  if (hasInvisibleUnicode(state.path)) {
+    return { ...state, valid: false, reason: `Path contains invisible Unicode characters${suffix}` };
+  }
+  return state;
+};
+
+// ============================================================================
+// Individual Validators (Single Responsibility)
+// ============================================================================
+
+/**
+ * Validates that path is not empty or undefined
+ */
+const validateNotEmpty: Validator = (state) => {
+  if (!state.path || state.path.length === 0) {
+    return { ...state, valid: false, reason: 'Path cannot be empty or undefined' };
+  }
+  return state;
+};
+
+/**
+ * Validates no leading/trailing whitespace (potential obfuscation)
+ */
+const validateNoWhitespace: Validator = (state) => {
+  if (state.path !== state.path.trim()) {
+    return { ...state, valid: false, reason: 'Path contains leading or trailing whitespace' };
+  }
+  return state;
+};
+
+/**
+ * Validates no null bytes (common attack vector)
+ */
+const validateNoNullBytes: Validator = (state) => {
+  if (hasNullByte(state.path)) {
+    return { ...state, valid: false, reason: 'Path contains null byte' };
+  }
+  return state;
+};
+
+/** Validates no control characters (pre-normalization) */
+const validateNoControlChars = createControlCharValidator();
+
+/** Validates no invisible Unicode characters (pre-normalization) */
+const validateNoInvisibleUnicode = createInvisibleUnicodeValidator();
+
+/**
+ * Normalizes Unicode to NFC for consistent comparison
+ */
+const normalizeUnicode: Validator = (state) => ({
+  ...state,
+  path: state.path.normalize('NFC'),
+});
+
+/**
+ * Re-validates control characters after normalization.
+ * NFC normalization can theoretically affect character composition,
+ * so we re-check as a security precaution.
+ */
+const validateNoControlCharsAfterNormalization = createControlCharValidator(' (after normalization)');
+
+/**
+ * Re-validates invisible Unicode after normalization.
+ * Security precaution for edge cases in Unicode normalization.
+ */
+const validateNoInvisibleUnicodeAfterNormalization = createInvisibleUnicodeValidator(' (after normalization)');
+
+/**
+ * Validates PATH_MAX length (in bytes for Unicode safety)
+ */
+const validatePathMaxLength: Validator = (state) => {
+  const byteLength = Buffer.byteLength(state.path, 'utf8');
+  if (byteLength > PATH_MAX) {
+    return {
+      ...state,
+      valid: false,
+      reason: `Path exceeds maximum length (${byteLength} > ${PATH_MAX} bytes)`,
+    };
+  }
+  return state;
+};
+
+/**
+ * Validates no path traversal patterns (..)
+ */
+const validateNoTraversal: Validator = (state) => {
+  if (hasPathTraversalStrict(state.path)) {
+    return { ...state, valid: false, reason: 'Path contains traversal pattern (..)' };
+  }
+  return state;
+};
+
+/**
+ * Validates no double forward slashes (potential path confusion)
+ * Note: Double backslashes (\\) are caught by validateNoBackslash
+ */
+const validateNoDoubleSlash: Validator = (state) => {
+  if (/\/\//.test(state.path)) {
+    return { ...state, valid: false, reason: 'Path contains double slashes' };
+  }
+  return state;
+};
+
+/**
+ * Validates no backslashes (cross-platform safety)
+ */
+const validateNoBackslash: Validator = (state) => {
+  if (state.path.includes('\\')) {
+    return {
+      ...state,
+      valid: false,
+      reason: 'Path contains backslash (use forward slashes for cross-platform compatibility)',
+    };
+  }
+  return state;
+};
+
+/**
+ * Validates tilde patterns: only ~/ is allowed, not ~user
+ */
+const validateTildePattern: Validator = (state) => {
+  if (state.path.startsWith('~')) {
+    // Allow '~' or '~/...', but reject '~user' patterns
+    if (state.path.length > 1 && !state.path.startsWith('~/')) {
+      return {
+        ...state,
+        valid: false,
+        reason: 'Tilde expansion to other users (~user) is not allowed, use ~/ only',
+      };
+    }
+  }
+  return state;
+};
+
+/**
+ * Validates no Windows absolute paths (drive letters)
+ */
+const validateNoWindowsAbsolutePath: Validator = (state) => {
+  if (/^[a-zA-Z]:/.test(state.path)) {
+    return {
+      ...state,
+      valid: false,
+      reason: 'Windows absolute paths (drive letters) are not allowed in this context',
+    };
+  }
+  return state;
+};
+
+/**
+ * Validates no UNC paths (\\server\share or \\?\)
+ */
+const validateNoUNCPath: Validator = (state) => {
+  if (/^[/\\]{2}/.test(state.path)) {
+    return {
+      ...state,
+      valid: false,
+      reason: 'UNC paths and Windows device paths are not allowed',
+    };
+  }
+  return state;
+};
+
+/**
+ * Validates no Windows device paths (\\.\COM1, etc.)
+ */
+const validateNoWindowsDevicePath: Validator = (state) => {
+  if (/^[/\\]{2}[.?\\]/.test(state.path)) {
+    return {
+      ...state,
+      valid: false,
+      reason: 'Windows device paths are not allowed',
+    };
+  }
+  return state;
+};
+
+/**
+ * Validates no trailing dots (cross-platform safety)
+ * Note: '.' itself is valid and allowed
+ */
+const validateNoTrailingDot: Validator = (state) => {
+  if (state.path !== '.' && state.path.endsWith('.')) {
+    return {
+      ...state,
+      valid: false,
+      reason: 'Path ends with dot (not allowed for cross-platform compatibility)',
+    };
+  }
+  return state;
+};
+
+/**
+ * Validates no trailing /./ or /../ patterns (edge cases)
+ */
+const validateNoTrailingDotSlash: Validator = (state) => {
+  if (state.path.endsWith('/.') || state.path.endsWith('/..')) {
+    return {
+      ...state,
+      valid: false,
+      reason: 'Path ends with /./ or /../ (not allowed)',
+    };
+  }
+  return state;
+};
+
+/**
+ * Validates no Windows reserved device names
+ */
+const validateNoWindowsReservedNames: Validator = (state) => {
+  const windowsReservedNames = /^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])([./\\]|$)/i;
+  const basename = state.path.split(/[/\\]/).pop() || '';
+  if (windowsReservedNames.test(basename)) {
+    return {
+      ...state,
+      valid: false,
+      reason: 'Windows reserved device names are not allowed',
+    };
+  }
+  return state;
+};
+
+/**
+ * Validates path starts with a recognized prefix
+ * Note: Traversal patterns (..) are already caught by validateNoTraversal,
+ * so we don't need to re-check here.
+ */
+const validatePrefix: Validator = (state) => {
+  const validPrefixes = [
+    '/',      // Absolute Unix path
+    '~/',     // Home directory
+    '~',      // Home directory (exact match)
+    '.',      // Current directory (but not ..)
+  ];
+
+  const startsWithValidPrefix = validPrefixes.some(prefix => {
+    if (prefix === '.') {
+      // Special handling for '.': must be exactly '.' or './'
+      return state.path === '.' || state.path.startsWith('./');
+    }
+    return state.path === prefix || state.path.startsWith(prefix);
+  });
+
+  if (!startsWithValidPrefix) {
+    return {
+      ...state,
+      valid: false,
+      reason: 'Path must start with / (absolute), ~/ (home), or ./ (current directory)',
+    };
+  }
+  return state;
+};
+
+// ============================================================================
+// Validation Pipeline
+// ============================================================================
+
+/**
+ * Pre-normalization validators
+ * Must run before Unicode normalization
+ */
+const preNormalizationValidators: Validator[] = [
+  validateNotEmpty,
+  validateNoWhitespace,
+  validateNoNullBytes,
+  validateNoControlChars,
+  validateNoInvisibleUnicode,
+];
+
+/**
+ * Post-normalization validators
+ * Run after Unicode normalization
+ */
+const postNormalizationValidators: Validator[] = [
+  validateNoControlCharsAfterNormalization,
+  validateNoInvisibleUnicodeAfterNormalization,
+  validatePathMaxLength,
+  validateNoTraversal,
+  // Backslash check before double slash to give specific error for '\\'
+  validateNoBackslash,
+  validateNoDoubleSlash,
+  validateTildePattern,
+  validateNoWindowsAbsolutePath,
+  // Device paths (\\.\, //./) must be checked before UNC for specific error messages
+  validateNoWindowsDevicePath,
+  validateNoUNCPath,
+  validateNoTrailingDot,
+  validateNoTrailingDotSlash,
+  validateNoWindowsReservedNames,
+  validatePrefix,
+];
+
+/**
+ * Runs validators through pipeline, short-circuiting on first failure
+ *
+ * @param state - Current validation state
+ * @param validators - Array of validators to run
+ * @returns Final validation state (invalid if any validator fails)
+ */
+function runValidators(state: ValidationState, validators: Validator[]): ValidationState {
+  for (const validator of validators) {
+    if (!state.valid) {
+      break; // Short-circuit on first failure
+    }
+    state = validator(state);
+  }
+  return state;
 }
 
 /**
@@ -45,223 +385,22 @@ export interface SecurePathResult {
  * isSecurePath('../etc/passwd')           // { valid: false, reason: '...' }
  */
 export function isSecurePath(path: string): SecurePathResult {
-  // Check for null/undefined/empty
-  if (!path || path.length === 0) {
-    return { valid: false, reason: 'Path is empty or undefined' };
+  // Initialize state
+  let state: ValidationState = { valid: true, path };
+
+  // Phase 1: Pre-normalization checks
+  state = runValidators(state, preNormalizationValidators);
+  if (!state.valid) {
+    return { valid: false, reason: state.reason };
   }
 
-  // CRITICAL: Check for leading/trailing whitespace (potential obfuscation)
-  // Whitespace can be used to hide malicious patterns
-  if (path !== path.trim()) {
-    return { valid: false, reason: 'Path contains leading or trailing whitespace' };
-  }
+  // Phase 2: Unicode normalization
+  state = normalizeUnicode(state);
 
-  // Check for null bytes (common attack vector) - must check BEFORE normalization
-  if (hasNullByte(path)) {
-    return { valid: false, reason: 'Path contains null byte' };
-  }
-
-  // Check for control characters (ASCII 0-31 except tab, newline)
-  // Note: null byte (\x00) is already checked above, but regex includes it for completeness
-  if (CONTROL_CHAR_REGEX_STRICT.test(path)) {
-    return { valid: false, reason: 'Path contains control characters' };
-  }
-
-  // Check for invisible/zero-width Unicode characters that could be used to
-  // obfuscate paths (homograph attacks, visual spoofing)
-  if (hasInvisibleUnicode(path)) {
-    return {
-      valid: false,
-      reason: 'Path contains invisible Unicode characters',
-    };
-  }
-
-  // Normalize Unicode to NFC for consistent comparison
-  // This must be done early to catch normalization-based attacks
-  const normalizedPath = path.normalize('NFC');
-
-  // CRITICAL: Re-check for control characters and invisible chars AFTER normalization
-  // Normalization can create new control characters in edge cases
-  if (CONTROL_CHAR_REGEX_STRICT.test(normalizedPath)) {
-    return { valid: false, reason: 'Path contains control characters (after normalization)' };
-  }
-  if (hasInvisibleUnicode(normalizedPath)) {
-    return {
-      valid: false,
-      reason: 'Path contains invisible Unicode characters (after normalization)',
-    };
-  }
-
-  // Check PATH_MAX length (in bytes for Unicode safety) - check AFTER normalization
-  // Normalization can change byte length (NFC/NFD conversion)
-  const normalizedByteLength = Buffer.byteLength(normalizedPath, 'utf8');
-  if (normalizedByteLength > PATH_MAX) {
-    return {
-      valid: false,
-      reason: `Path exceeds maximum length (${normalizedByteLength} > ${PATH_MAX} bytes)`,
-    };
-  }
-
-  // Check for path traversal patterns using comprehensive validation
-  if (hasPathTraversalStrict(normalizedPath)) {
-    return { valid: false, reason: 'Path contains traversal pattern (..)' };
-  }
-
-  // Check for double slashes (potential path confusion)
-  if (/\/\//.test(normalizedPath) || /\\\\/.test(normalizedPath)) {
-    // Exception: Windows UNC paths start with \\ but we reject those anyway
-    return { valid: false, reason: 'Path contains double slashes' };
-  }
-
-  // Check for backslashes in paths (cross-platform safety)
-  // On Windows, \ is a path separator; on Unix, it's a valid filename char
-  // To prevent cross-platform confusion attacks, reject paths with backslashes
-  // NOTE: This check comes AFTER UNC path checks, which already reject \\ patterns
-  // But we still need this to catch single backslashes and mixed separators
-  if (normalizedPath.includes('\\')) {
-    return {
-      valid: false,
-      reason: 'Path contains backslash (use forward slashes for cross-platform compatibility)',
-    };
-  }
-
-  // Check tilde patterns: only ~/ is allowed, not ~user
-  if (normalizedPath.startsWith('~')) {
-    // Allow: ~, ~/, ~/path
-    // Reject: ~user, ~user/path
-    if (normalizedPath !== '~' && !normalizedPath.startsWith('~/')) {
-      return {
-        valid: false,
-        reason: 'Tilde expansion to other users (~user) is not allowed, use ~/ only',
-      };
-    }
-  }
-
-  // Check for Windows absolute paths (security boundary)
-  // Reject: C:\, D:\, C:, D: (drive letter only), etc.
-  // CRITICAL: Must check for both C:\ and C: (without separator)
-  // CRITICAL: Also reject paths that start with drive letter followed by any content
-  if (/^[a-zA-Z]:/.test(normalizedPath)) {
-    return {
-      valid: false,
-      reason: 'Windows absolute paths (drive letters) are not allowed in this context',
-    };
-  }
-
-  // Check for Windows UNC paths: \\server\share or \\?\
-  // CRITICAL: Must check BEFORE backslash check to catch UNC paths
-  if (/^[/\\]{2}/.test(normalizedPath)) {
-    return {
-      valid: false,
-      reason: 'UNC paths and Windows device paths are not allowed',
-    };
-  }
-
-  // Check for Windows device paths: \\.\COM1, \\.\PhysicalDrive0, etc.
-  // Also check for //?/ and //./ patterns (forward slash variants)
-  // CRITICAL: This must come AFTER UNC check to avoid redundant checks
-  // But we need separate patterns for device paths vs UNC paths
-  if (/^[/\\]{2}[.?\\]/.test(normalizedPath)) {
-    return {
-      valid: false,
-      reason: 'Windows device paths are not allowed',
-    };
-  }
-
-  // CRITICAL: Check for paths ending with dots (Windows quirk)
-  // Windows doesn't allow paths ending with . or .. (except . and .. themselves)
-  // But we already reject .., so we only need to check for trailing single dot
-  // Example: /path/to/file. (trailing dot) - valid on Unix, invalid on Windows
-  // We reject for cross-platform safety
-  // CRITICAL: Also check for paths ending with /./ or /../
-  if (normalizedPath.length > 1) {
-    if (normalizedPath.endsWith('.')) {
-      // Exception: '.' itself is allowed (already checked in prefix validation)
-      if (normalizedPath !== '.') {
-        return {
-          valid: false,
-          reason: 'Path ends with dot (not allowed for cross-platform compatibility)',
-        };
-      }
-    }
-    // Defensive check: Paths ending with /./ or /../
-    // Note: Traversal check (line 106) should catch /../, but this explicit check
-    // for /./ provides additional safety for edge cases.
-    if (normalizedPath.endsWith('/.') || normalizedPath.endsWith('/..')) {
-      return {
-        valid: false,
-        reason: 'Path ends with /./ or /../ (not allowed)',
-      };
-    }
-  }
-
-  // Check for Windows reserved device names
-  const windowsReservedNames = /^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])([./\\]|$)/i;
-  const basename = normalizedPath.split(/[/\\]/).pop() || '';
-  if (windowsReservedNames.test(basename)) {
-    return {
-      valid: false,
-      reason: 'Windows reserved device names are not allowed',
-    };
-  }
-
-  // Path must start with a recognized prefix
-  // CRITICAL: Must validate AFTER all security checks to prevent bypass
-  const validPrefixes = [
-    '/',      // Absolute Unix path
-    '~/',     // Home directory
-    '~',      // Home directory (exact match)
-    '.',      // Current directory (but not ..)
-  ];
-
-  const startsWithValidPrefix = validPrefixes.some(prefix => {
-    if (prefix === '.') {
-      // Special handling for '.': must be exactly '.' or './'
-      // Note: Traversal check (line 106) should catch './../' patterns, but this
-      // additional check ensures './' is not followed by traversal for extra safety.
-      if (normalizedPath === '.' || normalizedPath.startsWith('./')) {
-        // Defensive check: ensure './' is not followed by traversal
-        if (normalizedPath.startsWith('./') && hasPathTraversal(normalizedPath)) {
-          return false;
-        }
-        return true;
-      }
-      return false;
-    }
-    return normalizedPath === prefix || normalizedPath.startsWith(prefix);
-  });
-
-  if (!startsWithValidPrefix) {
-    return {
-      valid: false,
-      reason: 'Path must be absolute (start with /) or relative to home (~/) or current directory (./)',
-    };
-  }
-
-  // Final validation: ensure no remaining security issues
-  // Defensive check: This should have been caught by hasPathTraversalStrict() above (line 106),
-  // but we check again after normalization to catch any edge cases where normalization
-  // might affect traversal pattern detection.
-  if (hasPathTraversal(normalizedPath)) {
-    return { valid: false, reason: 'Path contains traversal pattern' };
-  }
-
-  // Defensive check: Character length validation after normalization.
-  // Note: Byte length check (line 97-103) is the primary validation for PATH_MAX.
-  // This character length check provides an additional safety layer for edge cases
-  // where normalization might affect character count differently than byte count.
-  if (normalizedPath.length > PATH_MAX) {
-    return {
-      valid: false,
-      reason: `Path exceeds maximum character length (${normalizedPath.length} > ${PATH_MAX})`,
-    };
-  }
-
-  // Defensive check: Ensure normalized path doesn't contain leading/trailing whitespace.
-  // Note: This is checked before normalization (line 55-57), but we check again after
-  // normalization to catch any edge cases where normalization might introduce whitespace.
-  if (normalizedPath.length > 0 && (normalizedPath[0] === ' ' || normalizedPath[normalizedPath.length - 1] === ' ')) {
-    return { valid: false, reason: 'Path contains leading or trailing whitespace' };
+  // Phase 3: Post-normalization checks
+  state = runValidators(state, postNormalizationValidators);
+  if (!state.valid) {
+    return { valid: false, reason: state.reason };
   }
 
   return { valid: true };
