@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.10] - 2025-12-30
+
+### Fixed
+
+- **Name Validation Regression**: Allow semicolon (;) in identity names
+  - Fixes "Null;Variant" and similar names being incorrectly rejected
+  - Schema validation was stricter than intended (contradicted validation.ts comment)
+
 ## [0.9.9] - 2025-12-30
 
 ### Fixed
@@ -492,7 +500,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.9...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.10...HEAD
+[0.9.10]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.9...git-id-switcher-v0.9.10
 [0.9.9]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.8...git-id-switcher-v0.9.9
 [0.9.8]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.7...git-id-switcher-v0.9.8
 [0.9.7]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.6...git-id-switcher-v0.9.7

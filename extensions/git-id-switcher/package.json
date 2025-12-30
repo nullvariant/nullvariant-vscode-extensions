@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {

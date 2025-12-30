@@ -51,7 +51,8 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     minLength: 1,
     maxLength: 256,
     // Disallow control characters and shell metacharacters
-    pattern: '^[^\\x00-\\x1f\\x7f`$(){}|;&<>]+$',
+    // Note: Semicolon (;) is intentionally ALLOWED - valid in names like "Null;Variant"
+    pattern: '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$',
   },
   service: {
     type: 'string',
