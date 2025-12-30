@@ -13,6 +13,19 @@ import { getVSCode } from './vscodeLoader';
 import { MAX_ID_LENGTH } from './constants';
 import { sanitizePath } from './pathSanitizer';
 import { sanitizeValue, sanitizeDetails } from './sensitiveDataDetector';
+import { expandTilde } from './pathUtils';
+import { isSecurePath } from './pathSecurity';
+import {
+  LogLevel,
+  type StructuredLog,
+  type ILogWriter,
+  type FileLogConfig,
+  DEFAULT_FILE_LOG_CONFIG,
+  severityToLogLevel,
+  shouldLog,
+  parseLogLevel,
+} from './logTypes';
+import { FileLogWriter } from './fileLogWriter';
 
 // Re-export for backwards compatibility
 export { sanitizePath } from './pathSanitizer';
@@ -53,6 +66,9 @@ export interface SecurityEvent {
   details: Record<string, unknown>;
 }
 
+// Re-export LogLevel for external use
+export { LogLevel } from './logTypes';
+
 /**
  * Security Logger interface for dependency injection
  */
@@ -67,13 +83,48 @@ export interface ISecurityLogger {
 class SecurityLoggerImpl implements ISecurityLogger {
   private outputChannel: OutputChannel | null = null;
   private readonly channelName = 'Git ID Switcher Security';
+  private fileLogWriter: ILogWriter | null = null;
+  private minLogLevel: LogLevel = LogLevel.INFO;
 
   initialize(): void {
     if (!this.outputChannel) {
       const vscode = getVSCode();
       if (vscode) {
         this.outputChannel = vscode.window.createOutputChannel(this.channelName);
+        this.initializeFileLogging();
       }
+    }
+  }
+
+  private initializeFileLogging(): void {
+    const vscode = getVSCode();
+    if (!vscode) return;
+
+    const config = vscode.workspace.getConfiguration('gitIdSwitcher.logging');
+    const rawFilePath = config.get<string>('filePath', DEFAULT_FILE_LOG_CONFIG.filePath);
+    const expandedPath = rawFilePath ? expandTilde(rawFilePath) : '';
+    
+    // Validate file path for security
+    if (expandedPath) {
+      const pathResult = isSecurePath(expandedPath);
+      if (!pathResult.valid) {
+        console.error(`[Git ID Switcher] Invalid log file path: ${pathResult.reason}`);
+        return;
+      }
+    }
+    
+    const fileConfig: FileLogConfig = {
+      enabled: config.get<boolean>('fileEnabled', DEFAULT_FILE_LOG_CONFIG.enabled),
+      filePath: expandedPath,
+      maxFileSizeBytes: config.get<number>('maxFileSize', DEFAULT_FILE_LOG_CONFIG.maxFileSizeBytes),
+      maxFiles: config.get<number>('maxFiles', DEFAULT_FILE_LOG_CONFIG.maxFiles),
+    };
+
+    const levelStr = config.get<string>('level', 'INFO');
+    this.minLogLevel = parseLogLevel(levelStr, LogLevel.INFO);
+
+    if (fileConfig.enabled && fileConfig.filePath) {
+      this.fileLogWriter = new FileLogWriter(fileConfig);
     }
   }
 
@@ -82,40 +133,87 @@ class SecurityLoggerImpl implements ISecurityLogger {
       this.outputChannel.dispose();
       this.outputChannel = null;
     }
+    if (this.fileLogWriter) {
+      this.fileLogWriter.dispose();
+      this.fileLogWriter = null;
+    }
   }
 
   private log(event: Omit<SecurityEvent, 'timestamp'>): void {
     const sanitizedDetails = sanitizeDetails(event.details);
+    const timestamp = new Date().toISOString();
     const fullEvent: SecurityEvent = {
       ...event,
       details: sanitizedDetails,
-      timestamp: new Date().toISOString(),
+      timestamp,
     };
 
-    const severityIcon = { info: 'ℹ️', warning: '⚠️', error: '🚨' }[fullEvent.severity];
+    const logLevel = severityToLogLevel(event.severity);
+
+    // Write to file if enabled and meets minimum level
+    this.writeToFile(logLevel, timestamp, event.type, sanitizedDetails);
+
+    // Write to OutputChannel and console
+    this.writeToOutputChannel(fullEvent);
+
+    // Show notification for errors
+    if (fullEvent.severity === 'error') {
+      this.showErrorNotification(fullEvent.type);
+    }
+  }
+
+  /**
+   * Write structured log to file
+   */
+  private writeToFile(
+    logLevel: LogLevel,
+    timestamp: string,
+    eventType: SecurityEventType,
+    metadata: Record<string, unknown>
+  ): void {
+    if (this.fileLogWriter && shouldLog(logLevel, this.minLogLevel)) {
+      const structuredLog: StructuredLog = {
+        timestamp,
+        level: logLevel,
+        category: 'SECURITY',
+        message: eventType,
+        metadata,
+      };
+      this.fileLogWriter.write(structuredLog);
+    }
+  }
+
+  /**
+   * Write formatted message to OutputChannel and console
+   */
+  private writeToOutputChannel(event: SecurityEvent): void {
+    const severityIcon = { info: 'ℹ️', warning: '⚠️', error: '🚨' }[event.severity];
     const MAX_MESSAGE_SIZE = 10000;
     let message: string;
     try {
-      const jsonStr = JSON.stringify(fullEvent.details);
+      const jsonStr = JSON.stringify(event.details);
       message = jsonStr.length > MAX_MESSAGE_SIZE
-        ? `[${fullEvent.timestamp}] ${severityIcon} [${fullEvent.severity.toUpperCase()}] ${fullEvent.type}: ${jsonStr.slice(0, MAX_MESSAGE_SIZE)}...[truncated]`
-        : `[${fullEvent.timestamp}] ${severityIcon} [${fullEvent.severity.toUpperCase()}] ${fullEvent.type}: ${jsonStr}`;
+        ? `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: ${jsonStr.slice(0, MAX_MESSAGE_SIZE)}...[truncated]`
+        : `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: ${jsonStr}`;
     } catch (error) {
-      message = `[${fullEvent.timestamp}] ${severityIcon} [${fullEvent.severity.toUpperCase()}] ${fullEvent.type}: [Failed to serialize: ${String(error)}]`;
+      message = `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: [Failed to serialize: ${String(error)}]`;
     }
 
     if (this.outputChannel) {
       this.outputChannel.appendLine(message);
     }
     console.log(`[Git ID Switcher Security] ${message}`);
+  }
 
-    if (fullEvent.severity === 'error') {
-      const vscode = getVSCode();
-      if (vscode) {
-        vscode.window.showWarningMessage(
-          `Git ID Switcher Security: ${fullEvent.type} - Check Output panel for details`
-        );
-      }
+  /**
+   * Show error notification to user
+   */
+  private showErrorNotification(eventType: SecurityEventType): void {
+    const vscode = getVSCode();
+    if (vscode) {
+      vscode.window.showWarningMessage(
+        `Git ID Switcher Security: ${eventType} - Check Output panel for details`
+      );
     }
   }
 

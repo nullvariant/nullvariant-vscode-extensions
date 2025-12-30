@@ -22,5 +22,10 @@
   "config.submoduleDepth": "Максимална дълбочина за конфигурация на вложени подмодули (1 = само преки подмодули)",
   "config.includeIconInGitConfig": "Включване на емоджи икона в Git config user.name (засяга историята на комитите). Ако е false, иконата се показва само в интерфейса на редактора.",
   "config.commandTimeouts": "Персонализирани стойности за изчакване на команди (в милисекунди)",
-  "config.commandTimeouts.markdown": "Заменяне на времената за изчакване по подразбиране. Пример:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nСтойности по подразбиране: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, други=30000ms"
+  "config.commandTimeouts.markdown": "Заменяне на времената за изчакване по подразбиране. Пример:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nСтойности по подразбиране: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, други=30000ms",
+  "config.logging.fileEnabled": "Активиране на файлово логване за одитни следи за сигурност",
+  "config.logging.filePath": "Път до лог файла (напр: ~/.git-id-switcher/security.log)",
+  "config.logging.maxFileSize": "Максимален размер на лог файла преди ротация (байтове, по подразбиране: 10MB)",
+  "config.logging.maxFiles": "Максимален брой ротирани лог файлове за съхранение (по подразбиране: 5)",
+  "config.logging.level": "Минимално ниво на логване за записване (DEBUG, INFO, WARN, ERROR)"
 }

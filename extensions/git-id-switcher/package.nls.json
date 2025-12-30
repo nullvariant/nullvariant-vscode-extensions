@@ -22,5 +22,10 @@
   "config.submoduleDepth": "Maximum depth for nested submodule configuration (1 = direct submodules only)",
   "config.includeIconInGitConfig": "Include icon emoji in Git config user.name (affects commit history). When false, icon is only shown in the editor UI.",
   "config.commandTimeouts": "Custom timeout values for commands (in milliseconds)",
-  "config.commandTimeouts.markdown": "Override default command timeouts. Example:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nDefault values: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, others=30000ms"
+  "config.commandTimeouts.markdown": "Override default command timeouts. Example:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nDefault values: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, others=30000ms",
+  "config.logging.fileEnabled": "Enable file logging for security audit trails",
+  "config.logging.filePath": "Path to log file (e.g., ~/.git-id-switcher/security.log)",
+  "config.logging.maxFileSize": "Maximum log file size in bytes before rotation (default: 10MB)",
+  "config.logging.maxFiles": "Maximum number of rotated log files to keep (default: 5)",
+  "config.logging.level": "Minimum log level to record (DEBUG, INFO, WARN, ERROR)"
 }

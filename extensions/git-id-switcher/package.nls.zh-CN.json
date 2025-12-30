@@ -22,5 +22,10 @@
   "config.submoduleDepth": "嵌套子模块配置的最大深度（1 = 仅直接子模块）",
   "config.includeIconInGitConfig": "在 Git config user.name 中包含图标表情符号（影响提交历史）。设为 false 时，图标仅在编辑器界面中显示。",
   "config.commandTimeouts": "命令的自定义超时值（毫秒）",
-  "config.commandTimeouts.markdown": "覆盖默认命令超时。示例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n默认值：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、其他=30000ms"
+  "config.commandTimeouts.markdown": "覆盖默认命令超时。示例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n默认值：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、其他=30000ms",
+  "config.logging.fileEnabled": "启用安全审计日志的文件输出",
+  "config.logging.filePath": "日志文件路径（例如：~/.git-id-switcher/security.log）",
+  "config.logging.maxFileSize": "轮换前的最大日志文件大小（字节，默认：10MB）",
+  "config.logging.maxFiles": "保留的轮换日志文件最大数量（默认：5）",
+  "config.logging.level": "记录的最小日志级别（DEBUG、INFO、WARN、ERROR）"
 }

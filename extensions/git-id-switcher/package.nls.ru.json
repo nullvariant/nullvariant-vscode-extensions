@@ -22,5 +22,10 @@
   "config.submoduleDepth": "Максимальная глубина для конфигурации вложенных подмодулей (1 = только прямые подмодули)",
   "config.includeIconInGitConfig": "Включать эмодзи иконки в Git config user.name (влияет на историю коммитов). Если false, иконка отображается только в интерфейсе редактора.",
   "config.commandTimeouts": "Пользовательские значения тайм-аута для команд (в миллисекундах)",
-  "config.commandTimeouts.markdown": "Переопределить стандартные тайм-ауты команд. Пример:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nЗначения по умолчанию: git=10000мс, ssh-add=5000мс, ssh-keygen=5000мс, другие=30000мс"
+  "config.commandTimeouts.markdown": "Переопределить стандартные тайм-ауты команд. Пример:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nЗначения по умолчанию: git=10000мс, ssh-add=5000мс, ssh-keygen=5000мс, другие=30000мс",
+  "config.logging.fileEnabled": "Включить файловое логирование для аудита безопасности",
+  "config.logging.filePath": "Путь к файлу журнала (например: ~/.git-id-switcher/security.log)",
+  "config.logging.maxFileSize": "Максимальный размер файла журнала до ротации (байт, по умолчанию: 10МБ)",
+  "config.logging.maxFiles": "Максимальное количество ротируемых файлов журнала (по умолчанию: 5)",
+  "config.logging.level": "Минимальный уровень логирования (DEBUG, INFO, WARN, ERROR)"
 }

@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.9.10",
+  "version": "0.10.0",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -167,6 +167,36 @@
             "maximum": 300000
           },
           "markdownDescription": "%config.commandTimeouts.markdown%"
+        },
+        "gitIdSwitcher.logging.fileEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "%config.logging.fileEnabled%"
+        },
+        "gitIdSwitcher.logging.filePath": {
+          "type": "string",
+          "default": "",
+          "description": "%config.logging.filePath%"
+        },
+        "gitIdSwitcher.logging.maxFileSize": {
+          "type": "number",
+          "default": 10485760,
+          "minimum": 1048576,
+          "maximum": 104857600,
+          "description": "%config.logging.maxFileSize%"
+        },
+        "gitIdSwitcher.logging.maxFiles": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 20,
+          "description": "%config.logging.maxFiles%"
+        },
+        "gitIdSwitcher.logging.level": {
+          "type": "string",
+          "default": "INFO",
+          "enum": ["DEBUG", "INFO", "WARN", "ERROR", "SECURITY"],
+          "description": "%config.logging.level%"
         }
       }
     }

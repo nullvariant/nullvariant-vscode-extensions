@@ -22,5 +22,10 @@
   "config.submoduleDepth": "Beágyazott almodul konfiguráció maximális mélysége (1 = csak közvetlen almodulok)",
   "config.includeIconInGitConfig": "Ikon emoji beillesztése a Git config user.name-be (hatással van a commit előzményekre). Ha false, az ikon csak a szerkesztő felületén jelenik meg.",
   "config.commandTimeouts": "Egyéni időtúllépési értékek parancsokhoz (milliszekundumban)",
-  "config.commandTimeouts.markdown": "Alapértelmezett parancs időtúllépések felülírása. Példa:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nAlapértelmezett értékek: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, egyéb=30000ms"
+  "config.commandTimeouts.markdown": "Alapértelmezett parancs időtúllépések felülírása. Példa:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nAlapértelmezett értékek: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, egyéb=30000ms",
+  "config.logging.fileEnabled": "Fájl naplózás engedélyezése biztonsági audit nyomokhoz",
+  "config.logging.filePath": "Naplófájl elérési útja (pl: ~/.git-id-switcher/security.log)",
+  "config.logging.maxFileSize": "Maximális naplófájl méret rotáció előtt (bájt, alapértelmezett: 10MB)",
+  "config.logging.maxFiles": "Megtartandó rotált naplófájlok maximális száma (alapértelmezett: 5)",
+  "config.logging.level": "Rögzítendő minimális naplószint (DEBUG, INFO, WARN, ERROR)"
 }

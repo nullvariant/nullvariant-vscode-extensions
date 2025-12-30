@@ -22,5 +22,10 @@
   "config.submoduleDepth": "Profondità massima per la configurazione dei sottomoduli annidati (1 = solo sottomoduli diretti)",
   "config.includeIconInGitConfig": "Includi l'emoji dell'icona in Git config user.name (influisce sulla cronologia dei commit). Se false, l'icona viene mostrata solo nell'interfaccia dell'editor.",
   "config.commandTimeouts": "Valori di timeout personalizzati per i comandi (in millisecondi)",
-  "config.commandTimeouts.markdown": "Sovrascrivi i timeout predefiniti dei comandi. Esempio:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValori predefiniti: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, altri=30000ms"
+  "config.commandTimeouts.markdown": "Sovrascrivi i timeout predefiniti dei comandi. Esempio:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValori predefiniti: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, altri=30000ms",
+  "config.logging.fileEnabled": "Abilita la registrazione su file per le tracce di audit di sicurezza",
+  "config.logging.filePath": "Percorso del file di log (es: ~/.git-id-switcher/security.log)",
+  "config.logging.maxFileSize": "Dimensione massima del file di log prima della rotazione (byte, predefinito: 10MB)",
+  "config.logging.maxFiles": "Numero massimo di file di log ruotati da conservare (predefinito: 5)",
+  "config.logging.level": "Livello minimo di log da registrare (DEBUG, INFO, WARN, ERROR)"
 }

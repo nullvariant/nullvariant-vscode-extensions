@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2025-12-31
+
+### Added
+
+- **Structured Logging System**: New logging infrastructure for audit trails
+  - `LogLevel` enum: DEBUG, INFO, WARN, ERROR, SECURITY
+  - `StructuredLog` interface for consistent log format
+  - `ILogWriter` interface for dependency injection
+  - `FileLogWriter` class for file-based log persistence with rotation
+- **File Logging Settings**: New configuration options
+  - `gitIdSwitcher.logging.fileEnabled`: Enable file logging (default: false)
+  - `gitIdSwitcher.logging.filePath`: Log file path (e.g., `~/.git-id-switcher/security.log`)
+  - `gitIdSwitcher.logging.maxFileSize`: Max file size before rotation (default: 10MB)
+  - `gitIdSwitcher.logging.maxFiles`: Max rotated files to keep (default: 5)
+  - `gitIdSwitcher.logging.level`: Minimum log level (DEBUG, INFO, WARN, ERROR, SECURITY)
+- **Log Rotation**: Automatic log file rotation when size limit reached
+  - Configurable max file size and retention count
+  - Timestamp-based rotated file naming
+  - Retry limit (3) to prevent infinite rotation loops
+
+### Security
+
+- **Path Validation**: File log paths validated with `isSecurePath()` for security
+- **Circular Reference Handling**: `WeakSet`-based detection in JSON serialization
+- **SECURITY Level Always Logged**: Security events bypass minimum level filter
+
+### Changed
+
+- **SecurityLogger Refactored**: Split into focused methods (SRP)
+  - `writeToFile()`: Structured log file output
+  - `writeToOutputChannel()`: VS Code Output Channel
+  - `showErrorNotification()`: Error notifications
+- **Type-Safe Log Level Parsing**: Added `parseLogLevel()` function
+
 ## [0.9.10] - 2025-12-30
 
 ### Fixed
@@ -500,7 +534,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.10...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.0...HEAD
+[0.10.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.10...git-id-switcher-v0.10.0
 [0.9.10]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.9...git-id-switcher-v0.9.10
 [0.9.9]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.8...git-id-switcher-v0.9.9
 [0.9.8]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.7...git-id-switcher-v0.9.8

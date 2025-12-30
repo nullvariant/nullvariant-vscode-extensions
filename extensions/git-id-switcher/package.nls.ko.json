@@ -22,5 +22,10 @@
   "config.submoduleDepth": "중첩 서브모듈 구성의 최대 깊이 (1 = 직접 서브모듈만)",
   "config.includeIconInGitConfig": "Git config user.name에 아이콘 이모지를 포함합니다 (커밋 기록에 영향). false인 경우 아이콘은 에디터 UI에서만 표시됩니다.",
   "config.commandTimeouts": "명령의 사용자 지정 시간 초과 값 (밀리초)",
-  "config.commandTimeouts.markdown": "기본 명령 시간 초과를 재정의합니다. 예:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n기본값: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, 기타=30000ms"
+  "config.commandTimeouts.markdown": "기본 명령 시간 초과를 재정의합니다. 예:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n기본값: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, 기타=30000ms",
+  "config.logging.fileEnabled": "보안 감사 로그의 파일 출력 활성화",
+  "config.logging.filePath": "로그 파일 경로 (예: ~/.git-id-switcher/security.log)",
+  "config.logging.maxFileSize": "로테이션 전 최대 로그 파일 크기 (바이트, 기본값: 10MB)",
+  "config.logging.maxFiles": "유지할 로테이션 로그 파일의 최대 수 (기본값: 5)",
+  "config.logging.level": "기록할 최소 로그 레벨 (DEBUG, INFO, WARN, ERROR)"
 }

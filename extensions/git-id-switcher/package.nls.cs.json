@@ -22,5 +22,10 @@
   "config.submoduleDepth": "Maximální hloubka pro konfiguraci vnořených submodulů (1 = pouze přímé submoduly)",
   "config.includeIconInGitConfig": "Zahrnout emoji ikony do Git config user.name (ovlivňuje historii commitů). Pokud je false, ikona se zobrazuje pouze v rozhraní editoru.",
   "config.commandTimeouts": "Vlastní hodnoty časového limitu pro příkazy (v milisekundách)",
-  "config.commandTimeouts.markdown": "Přepsat výchozí časové limity příkazů. Příklad:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVýchozí hodnoty: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, ostatní=30000ms"
+  "config.commandTimeouts.markdown": "Přepsat výchozí časové limity příkazů. Příklad:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVýchozí hodnoty: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, ostatní=30000ms",
+  "config.logging.fileEnabled": "Povolit protokolování do souboru pro bezpečnostní auditní záznamy",
+  "config.logging.filePath": "Cesta k souboru protokolu (např: ~/.git-id-switcher/security.log)",
+  "config.logging.maxFileSize": "Maximální velikost souboru protokolu před rotací (bajty, výchozí: 10MB)",
+  "config.logging.maxFiles": "Maximální počet rotovaných souborů protokolu k uchování (výchozí: 5)",
+  "config.logging.level": "Minimální úroveň protokolování k záznamu (DEBUG, INFO, WARN, ERROR)"
 }

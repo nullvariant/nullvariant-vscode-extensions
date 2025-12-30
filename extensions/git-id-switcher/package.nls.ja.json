@@ -22,5 +22,10 @@
   "config.submoduleDepth": "ネストされたサブモジュール設定の最大深度（1 = 直接のサブモジュールのみ）",
   "config.includeIconInGitConfig": "Git configのuser.nameにアイコン絵文字を含める（コミット履歴に影響）。falseの場合、アイコンはエディタUIのみに表示されます。",
   "config.commandTimeouts": "コマンドのカスタムタイムアウト値（ミリ秒単位）",
-  "config.commandTimeouts.markdown": "デフォルトのコマンドタイムアウトを上書きします。例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nデフォルト値：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、その他=30000ms"
+  "config.commandTimeouts.markdown": "デフォルトのコマンドタイムアウトを上書きします。例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nデフォルト値：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、その他=30000ms",
+  "config.logging.fileEnabled": "セキュリティ監査ログのファイル出力を有効化",
+  "config.logging.filePath": "ログファイルのパス（例：~/.git-id-switcher/security.log）",
+  "config.logging.maxFileSize": "ローテーション前の最大ログファイルサイズ（バイト単位、デフォルト：10MB）",
+  "config.logging.maxFiles": "保持するローテーションログファイルの最大数（デフォルト：5）",
+  "config.logging.level": "記録する最小ログレベル（DEBUG、INFO、WARN、ERROR）"
 }

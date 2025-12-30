@@ -22,5 +22,10 @@
   "config.submoduleDepth": "İç içe alt modül yapılandırması için maksimum derinlik (1 = yalnızca doğrudan alt modüller)",
   "config.includeIconInGitConfig": "Git config user.name'e simge emojisi ekle (commit geçmişini etkiler). false ise simge yalnızca editör arayüzünde gösterilir.",
   "config.commandTimeouts": "Komutlar için özel zaman aşımı değerleri (milisaniye)",
-  "config.commandTimeouts.markdown": "Varsayılan komut zaman aşımlarını geçersiz kıl. Örnek:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVarsayılan değerler: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, diğerleri=30000ms"
+  "config.commandTimeouts.markdown": "Varsayılan komut zaman aşımlarını geçersiz kıl. Örnek:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVarsayılan değerler: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, diğerleri=30000ms",
+  "config.logging.fileEnabled": "Güvenlik denetim izleri için dosya günlüğünü etkinleştir",
+  "config.logging.filePath": "Günlük dosyası yolu (örn: ~/.git-id-switcher/security.log)",
+  "config.logging.maxFileSize": "Rotasyondan önce maksimum günlük dosyası boyutu (bayt, varsayılan: 10MB)",
+  "config.logging.maxFiles": "Saklanacak maksimum rotasyonlu günlük dosyası sayısı (varsayılan: 5)",
+  "config.logging.level": "Kaydedilecek minimum günlük seviyesi (DEBUG, INFO, WARN, ERROR)"
 }
