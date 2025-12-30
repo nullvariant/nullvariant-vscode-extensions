@@ -8,8 +8,6 @@
  * - Unicode normalization attacks
  * - Null byte injection
  * - PATH_MAX length attacks
- *
- * @see Issue-00029: パストラバーサル脆弱性の修正
  */
 
 import * as assert from 'assert';
@@ -40,6 +38,14 @@ function testPathTraversalAttacks(): void {
     // Windows style
     '..\\etc\\passwd',
     '/home/user\\..\\..\\etc\\passwd',
+    // Relative path with traversal
+    './../etc/passwd',
+    './../../etc/passwd',
+    '.././etc/passwd',
+    // Multiple dots (obfuscation attempt)
+    '.../etc/passwd',
+    '..../etc/passwd',
+    '/home/.../etc/passwd',
   ];
   // Note: URL encoded paths (%2e%2e) are handled at the HTTP layer, not here
 
@@ -358,6 +364,93 @@ function testEmptyPaths(): void {
 }
 
 /**
+ * Test whitespace obfuscation prevention
+ */
+function testWhitespaceObfuscation(): void {
+  console.log('Testing whitespace obfuscation prevention...');
+
+  const whitespaceAttacks = [
+    ' /home/user/.ssh/id_rsa',      // Leading space
+    '/home/user/.ssh/id_rsa ',      // Trailing space
+    '  /home/user/.ssh/id_rsa  ',   // Both
+    '\t/home/user/.ssh/id_rsa',     // Leading tab
+    '/home/user/.ssh/id_rsa\t',     // Trailing tab
+    ' ../etc/passwd',               // Leading space with traversal
+    '../etc/passwd ',               // Trailing space with traversal
+  ];
+
+  for (const attack of whitespaceAttacks) {
+    const result = isSecurePath(attack);
+    assert.strictEqual(
+      result.valid,
+      false,
+      `Whitespace obfuscation should be blocked: "${JSON.stringify(attack)}"`
+    );
+    assert.ok(
+      result.reason?.includes('whitespace'),
+      `Should mention whitespace in reason for: "${JSON.stringify(attack)}"`
+    );
+  }
+
+  console.log('✅ Whitespace obfuscation blocked!');
+}
+
+/**
+ * Test trailing dot prevention
+ */
+function testTrailingDot(): void {
+  console.log('Testing trailing dot prevention...');
+
+  const trailingDotAttacks = [
+    '/home/user/file.',      // Trailing dot
+    '~/.ssh/id_rsa.',        // Trailing dot in home path
+    './file.',               // Trailing dot in relative path
+    '/path/to/file.txt.',    // Trailing dot after extension
+  ];
+
+  for (const attack of trailingDotAttacks) {
+    const result = isSecurePath(attack);
+    assert.strictEqual(
+      result.valid,
+      false,
+      `Trailing dot should be blocked: "${attack}"`
+    );
+    assert.ok(
+      result.reason?.includes('ends with dot'),
+      `Should mention trailing dot in reason for: "${attack}"`
+    );
+  }
+
+  // '.' itself should be allowed (already tested in testValidPaths)
+  const validDot = isSecurePath('.');
+  assert.strictEqual(validDot.valid, true, 'Single dot should be allowed');
+
+  console.log('✅ Trailing dot blocked, single dot allowed!');
+}
+
+/**
+ * Test isPathArgument with whitespace and Windows paths
+ */
+function testIsPathArgumentEdgeCases(): void {
+  console.log('Testing isPathArgument edge cases...');
+
+  // Should be recognized as paths (including whitespace obfuscation)
+  const pathArgsWithWhitespace = [
+    ' /home/user',
+    '/home/user ',
+    ' ~/.ssh',
+    'C:',
+    'C:\\Windows',
+    '\\\\server\\share',
+  ];
+  for (const arg of pathArgsWithWhitespace) {
+    assert.strictEqual(isPathArgument(arg), true, `Should be path: "${JSON.stringify(arg)}"`);
+  }
+
+  console.log('✅ isPathArgument edge cases handled!');
+}
+
+/**
  * Test valid paths are allowed
  */
 function testValidPaths(): void {
@@ -452,10 +545,61 @@ function testCommandAllowedIntegration(): void {
 }
 
 /**
+ * Test Windows drive letter only paths
+ */
+function testWindowsDriveLetterOnly(): void {
+  console.log('Testing Windows drive letter only prevention...');
+
+  const driveLetterAttacks = [
+    'C:',
+    'D:',
+    'Z:',
+    'c:',
+    'C:/',
+    'D:\\',
+  ];
+
+  for (const attack of driveLetterAttacks) {
+    const result = isSecurePath(attack);
+    assert.strictEqual(
+      result.valid,
+      false,
+      `Drive letter only should be blocked: "${attack}"`
+    );
+  }
+
+  console.log('✅ Windows drive letter only blocked!');
+}
+
+/**
+ * Test absolute path with relative traversal
+ */
+function testAbsolutePathWithRelativeTraversal(): void {
+  console.log('Testing absolute path with relative traversal...');
+
+  const absoluteTraversalAttacks = [
+    '/path/./../etc/passwd',
+    '/home/../etc/passwd',
+    '/usr/./../etc/passwd',
+  ];
+
+  for (const attack of absoluteTraversalAttacks) {
+    const result = isSecurePath(attack);
+    assert.strictEqual(
+      result.valid,
+      false,
+      `Absolute path with relative traversal should be blocked: "${attack}"`
+    );
+  }
+
+  console.log('✅ Absolute path with relative traversal blocked!');
+}
+
+/**
  * Run all path security tests
  */
 export async function runPathSecurityTests(): Promise<void> {
-  console.log('\n=== Path Security Tests (Issue-00029) ===\n');
+  console.log('\n=== Path Security Tests ===\n');
 
   try {
     testPathTraversalAttacks();
@@ -469,8 +613,13 @@ export async function runPathSecurityTests(): Promise<void> {
     testInvisibleCharacters();
     testPathMaxLength();
     testEmptyPaths();
+    testWhitespaceObfuscation();
+    testTrailingDot();
+    testWindowsDriveLetterOnly();
+    testAbsolutePathWithRelativeTraversal();
     testValidPaths();
     testIsPathArgument();
+    testIsPathArgumentEdgeCases();
     testCommandAllowedIntegration();
 
     console.log('\n✅ All path security tests passed!\n');

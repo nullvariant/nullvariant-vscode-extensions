@@ -20,7 +20,7 @@ async function main(): Promise<void> {
     // Run secure execution tests (async)
     await runSecureExecTests();
 
-    // Run path security tests (Issue-00029)
+    // Run path security tests
     await runPathSecurityTests();
 
     console.log('╔════════════════════════════════════════════╗');

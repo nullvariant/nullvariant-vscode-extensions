@@ -46,21 +46,19 @@ export function isSecurePath(path: string): SecurePathResult {
     return { valid: false, reason: 'Path is empty or undefined' };
   }
 
-  // Check PATH_MAX length (in bytes for Unicode safety)
-  const byteLength = Buffer.byteLength(path, 'utf8');
-  if (byteLength > PATH_MAX) {
-    return {
-      valid: false,
-      reason: `Path exceeds maximum length (${byteLength} > ${PATH_MAX} bytes)`,
-    };
+  // CRITICAL: Check for leading/trailing whitespace (potential obfuscation)
+  // Whitespace can be used to hide malicious patterns
+  if (path !== path.trim()) {
+    return { valid: false, reason: 'Path contains leading or trailing whitespace' };
   }
 
-  // Check for null bytes (common attack vector)
+  // Check for null bytes (common attack vector) - must check BEFORE normalization
   if (path.includes('\0')) {
     return { valid: false, reason: 'Path contains null byte' };
   }
 
   // Check for control characters (ASCII 0-31 except tab, newline)
+  // Note: null byte (\x00) is already checked above, but regex includes it for completeness
   // eslint-disable-next-line no-control-regex
   const controlCharRegex = /[\x00-\x08\x0b\x0c\x0e-\x1f]/;
   if (controlCharRegex.test(path)) {
@@ -93,16 +91,49 @@ export function isSecurePath(path: string): SecurePathResult {
   }
 
   // Normalize Unicode to NFC for consistent comparison
+  // This must be done early to catch normalization-based attacks
   const normalizedPath = path.normalize('NFC');
+
+  // CRITICAL: Re-check for control characters and invisible chars AFTER normalization
+  // Normalization can create new control characters in edge cases
+  // eslint-disable-next-line no-control-regex
+  if (controlCharRegex.test(normalizedPath)) {
+    return { valid: false, reason: 'Path contains control characters (after normalization)' };
+  }
+  for (const char of invisibleChars) {
+    if (normalizedPath.includes(char)) {
+      return {
+        valid: false,
+        reason: 'Path contains invisible Unicode characters (after normalization)',
+      };
+    }
+  }
+
+  // Check PATH_MAX length (in bytes for Unicode safety) - check AFTER normalization
+  // Normalization can change byte length (NFC/NFD conversion)
+  const normalizedByteLength = Buffer.byteLength(normalizedPath, 'utf8');
+  if (normalizedByteLength > PATH_MAX) {
+    return {
+      valid: false,
+      reason: `Path exceeds maximum length (${normalizedByteLength} > ${PATH_MAX} bytes)`,
+    };
+  }
 
   // Check for path traversal patterns
   // Matches: .., /.., ../, /../, standalone ..
+  // CRITICAL: Also check for ./../ and .../ patterns (3+ dots)
+  // CRITICAL: Check for /./../ and /path/./../ patterns (absolute paths with relative traversal)
   const traversalPatterns = [
     /\.\.[/\\]/, // ../ or ..\
     /[/\\]\.\.$/, // ends with /.. or \..
     /[/\\]\.\.[/\\]/, // /../ or \..\
     /^\.\.[/\\]/, // starts with ../ or ..\
     /^\.\.$/,     // exactly ".."
+    /\.\/\.\./,   // ./../ pattern (relative path with traversal)
+    /\.\.\/\./,   // .././ pattern
+    /\.{3,}/,     // 3+ consecutive dots (potential obfuscation)
+    /\/\.\/\.\./, // /./../ pattern (absolute path with relative traversal)
+    /\/\.\.\/\./, // /.././ pattern
   ];
 
   for (const pattern of traversalPatterns) {
@@ -120,6 +151,8 @@ export function isSecurePath(path: string): SecurePathResult {
   // Check for backslashes in paths (cross-platform safety)
   // On Windows, \ is a path separator; on Unix, it's a valid filename char
   // To prevent cross-platform confusion attacks, reject paths with backslashes
+  // NOTE: This check comes AFTER UNC path checks, which already reject \\ patterns
+  // But we still need this to catch single backslashes and mixed separators
   if (normalizedPath.includes('\\')) {
     return {
       valid: false,
@@ -140,8 +173,10 @@ export function isSecurePath(path: string): SecurePathResult {
   }
 
   // Check for Windows absolute paths (security boundary)
-  // Reject: C:\, D:\, etc.
-  if (/^[a-zA-Z]:[/\\]/.test(normalizedPath)) {
+  // Reject: C:\, D:\, C:, D: (drive letter only), etc.
+  // CRITICAL: Must check for both C:\ and C: (without separator)
+  // CRITICAL: Also reject paths that start with drive letter followed by any content
+  if (/^[a-zA-Z]:/.test(normalizedPath)) {
     return {
       valid: false,
       reason: 'Windows absolute paths (drive letters) are not allowed in this context',
@@ -149,6 +184,7 @@ export function isSecurePath(path: string): SecurePathResult {
   }
 
   // Check for Windows UNC paths: \\server\share or \\?\
+  // CRITICAL: Must check BEFORE backslash check to catch UNC paths
   if (/^[/\\]{2}/.test(normalizedPath)) {
     return {
       valid: false,
@@ -157,11 +193,50 @@ export function isSecurePath(path: string): SecurePathResult {
   }
 
   // Check for Windows device paths: \\.\COM1, \\.\PhysicalDrive0, etc.
-  if (/^[/\\]{2}[./\\]/.test(normalizedPath)) {
+  // Also check for //?/ and //./ patterns (forward slash variants)
+  // CRITICAL: This must come AFTER UNC check to avoid redundant checks
+  // But we need separate patterns for device paths vs UNC paths
+  if (/^[/\\]{2}[.?\\]/.test(normalizedPath)) {
     return {
       valid: false,
       reason: 'Windows device paths are not allowed',
     };
+  }
+
+  // Check for Windows long path prefix: \\?\ (must be caught by UNC check above)
+  // Additional check for forward slash variant: //?/
+  // CRITICAL: This is redundant with UNC check, but explicit for clarity
+  // UNC check at line 176 should catch this, but defensive check
+  if (/^\/\/\?\/?/.test(normalizedPath)) {
+    return {
+      valid: false,
+      reason: 'Windows long path prefixes are not allowed',
+    };
+  }
+
+  // CRITICAL: Check for paths ending with dots (Windows quirk)
+  // Windows doesn't allow paths ending with . or .. (except . and .. themselves)
+  // But we already reject .., so we only need to check for trailing single dot
+  // Example: /path/to/file. (trailing dot) - valid on Unix, invalid on Windows
+  // We reject for cross-platform safety
+  // CRITICAL: Also check for paths ending with /./ or /../
+  if (normalizedPath.length > 1) {
+    if (normalizedPath.endsWith('.')) {
+      // Exception: '.' itself is allowed (already checked in prefix validation)
+      if (normalizedPath !== '.') {
+        return {
+          valid: false,
+          reason: 'Path ends with dot (not allowed for cross-platform compatibility)',
+        };
+      }
+    }
+    // Check for paths ending with /./ or /../ (should be caught by traversal check, but defensive)
+    if (normalizedPath.endsWith('/.') || normalizedPath.endsWith('/..')) {
+      return {
+        valid: false,
+        reason: 'Path ends with /./ or /../ (not allowed)',
+      };
+    }
   }
 
   // Check for Windows reserved device names
@@ -175,6 +250,7 @@ export function isSecurePath(path: string): SecurePathResult {
   }
 
   // Path must start with a recognized prefix
+  // CRITICAL: Must validate AFTER all security checks to prevent bypass
   const validPrefixes = [
     '/',      // Absolute Unix path
     '~/',     // Home directory
@@ -185,7 +261,15 @@ export function isSecurePath(path: string): SecurePathResult {
   const startsWithValidPrefix = validPrefixes.some(prefix => {
     if (prefix === '.') {
       // Special handling for '.': must be exactly '.' or './'
-      return normalizedPath === '.' || normalizedPath.startsWith('./');
+      // CRITICAL: Must NOT allow './../' or './..' (already caught by traversal check)
+      if (normalizedPath === '.' || normalizedPath.startsWith('./')) {
+        // Additional check: ensure './' is not followed by traversal
+        if (normalizedPath.startsWith('./') && normalizedPath.includes('../')) {
+          return false; // Will be caught by traversal check, but defensive
+        }
+        return true;
+      }
+      return false;
     }
     return normalizedPath === prefix || normalizedPath.startsWith(prefix);
   });
@@ -197,6 +281,31 @@ export function isSecurePath(path: string): SecurePathResult {
     };
   }
 
+  // Final validation: ensure no remaining security issues
+  // This is a defensive check to catch any edge cases
+  // Double-check that normalized path doesn't contain any dangerous patterns
+  if (normalizedPath.includes('..')) {
+    // This should have been caught by traversal patterns, but defensive check
+    return { valid: false, reason: 'Path contains traversal pattern (defensive check)' };
+  }
+
+  // CRITICAL: Final check for normalized path length (defensive)
+  // Normalization can theoretically change length, but we already checked above
+  // This is a redundant check for extra safety
+  if (normalizedPath.length > PATH_MAX) {
+    // This should have been caught by byte length check, but character length check too
+    return {
+      valid: false,
+      reason: `Path exceeds maximum character length (${normalizedPath.length} > ${PATH_MAX})`,
+    };
+  }
+
+  // CRITICAL: Ensure normalized path doesn't start with whitespace (after trim check)
+  // This is redundant but defensive
+  if (normalizedPath.length > 0 && (normalizedPath[0] === ' ' || normalizedPath[normalizedPath.length - 1] === ' ')) {
+    return { valid: false, reason: 'Path contains leading or trailing whitespace (after normalization)' };
+  }
+
   return { valid: true };
 }
 
@@ -205,21 +314,37 @@ export function isSecurePath(path: string): SecurePathResult {
  * Used to determine if path validation should be applied
  *
  * This catches both valid and potentially malicious paths for validation.
+ * CRITICAL: This function must be conservative - it's better to validate
+ * a non-path as a path than to miss a malicious path.
  */
 export function isPathArgument(arg: string): boolean {
   if (!arg || arg.length === 0) {
     return false;
   }
 
+  // CRITICAL: Check for leading/trailing whitespace (potential obfuscation)
+  // If arg has whitespace, it might be a path with obfuscation
+  const trimmedArg = arg.trim();
+  if (trimmedArg !== arg) {
+    // Has whitespace - could be obfuscated path, so treat as path for validation
+    // The validation function will reject it, but we need to catch it here
+    return true;
+  }
+
   // Check if it looks like a path (starts with /, ~, ., or contains path separators)
   // We intentionally catch ../ here so it can be validated and rejected
+  // CRITICAL: Also check for Windows drive letters (C:, D:, etc.)
   return (
     arg.startsWith('/') ||
     arg.startsWith('~') ||
     arg.startsWith('./') ||
     arg.startsWith('../') ||
     arg === '.' ||
-    arg === '..'
+    arg === '..' ||
+    // Windows drive letter pattern (C:, D:, etc.)
+    /^[a-zA-Z]:/.test(arg) ||
+    // Windows UNC path pattern (\\server, //server)
+    /^[/\\]{2}/.test(arg)
   );
 }
 
