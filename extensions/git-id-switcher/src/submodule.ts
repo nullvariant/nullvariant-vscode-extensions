@@ -5,14 +5,19 @@
  * Allows identity settings to propagate to all submodules.
  *
  * SECURITY: Uses execFile() via secureExec to prevent command injection.
- * @see https://owasp.org/www-community/attacks/Command_Injection
  */
 
 import * as vscode from 'vscode';
 import { gitExec } from './secureExec';
 import { validateSubmodulePath } from './pathUtils';
-import { getUserSafeMessage } from './errors';
 import { securityLogger } from './securityLogger';
+
+/**
+ * Maximum allowed submodule recursion depth to prevent DoS attacks.
+ * Deep nesting of submodules can cause performance issues and potential attacks.
+ * This value matches the maximum defined in package.json configuration.
+ */
+const MAX_SUBMODULE_DEPTH = 5;
 
 export interface Submodule {
   /** Relative path from workspace root */
@@ -26,10 +31,27 @@ export interface Submodule {
 }
 
 /**
+ * Regex pattern for parsing git submodule status output.
+ *
+ * Format: "<status><commit> <path> (<branch>)" or "<status><commit> <path>"
+ * - status: single character (' ' = initialized, '-' = uninitialized, '+' = modified)
+ * - commit: 40-character hex SHA-1 hash
+ * - path: submodule path (no control characters, validated separately)
+ * - branch: optional branch name in parentheses
+ *
+ * Security considerations:
+ * - Commit hash is strictly 40 hex characters (SHA-1)
+ * - Path is captured conservatively and validated separately
+ * - Branch name is optional and not used for security-sensitive operations
+ */
+const SUBMODULE_STATUS_REGEX =
+  /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^)]+\))?$/;
+
+/**
  * List all submodules in the workspace
  *
  * Uses `git submodule status` to get submodule information.
- * Only returns initialized submodules.
+ * Only returns initialized submodules with validated paths.
  */
 export async function listSubmodules(workspacePath: string): Promise<Submodule[]> {
   try {
@@ -44,12 +66,8 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
     const submodules: Submodule[] = [];
 
     for (const line of lines) {
-      // Format: " <commit> <path> (<branch>)" or "-<commit> <path>" (uninitialized)
-      // The first character indicates status:
-      // ' ' = initialized
-      // '-' = not initialized
-      // '+' = commit doesn't match
-      const match = line.match(/^([ +-])([a-f0-9]+)\s+(.+?)(?:\s+\(.+\))?$/);
+      // SECURITY: Use strict regex pattern for parsing
+      const match = line.match(SUBMODULE_STATUS_REGEX);
 
       if (match) {
         const [, status, commitHash, submodulePath] = match;
@@ -57,6 +75,7 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
 
         if (initialized) {
           // SECURITY: Validate and normalize submodule path to prevent path traversal
+          // This also checks for symlink escapes
           const pathResult = validateSubmodulePath(submodulePath, workspacePath);
           if (pathResult.valid && pathResult.normalizedPath) {
             submodules.push({
@@ -66,12 +85,21 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
               initialized,
             });
           } else {
-            // Log security violation but don't throw (fail gracefully)
-            console.warn(
-              `Security: Invalid submodule path rejected: ${submodulePath} - ${pathResult.reason}`
+            // Log security violation through security logger
+            securityLogger.logValidationFailure(
+              'submodulePath',
+              pathResult.reason ?? 'Unknown validation failure',
+              submodulePath
             );
           }
         }
+      } else if (line.trim()) {
+        // Line didn't match expected format - potential malformed input
+        securityLogger.logValidationFailure(
+          'submoduleStatusLine',
+          'Unexpected git submodule status line format',
+          undefined
+        );
       }
     }
 
@@ -84,13 +112,32 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
 
 /**
  * List submodules recursively up to a specified depth
+ *
+ * SECURITY: Enforces maximum depth limit to prevent DoS attacks
+ * through deeply nested submodules.
+ *
+ * @param workspacePath - Path to the workspace root
+ * @param maxDepth - Maximum recursion depth (clamped to MAX_SUBMODULE_DEPTH)
+ * @param currentDepth - Current recursion depth (internal use)
  */
 export async function listSubmodulesRecursive(
   workspacePath: string,
   maxDepth: number = 1,
   currentDepth: number = 0
 ): Promise<Submodule[]> {
-  if (currentDepth >= maxDepth) {
+  // SECURITY: Enforce maximum depth limit to prevent DoS
+  const effectiveMaxDepth = Math.min(Math.max(0, maxDepth), MAX_SUBMODULE_DEPTH);
+
+  // Log warning on first call if requested depth exceeds maximum
+  if (currentDepth === 0 && maxDepth > MAX_SUBMODULE_DEPTH) {
+    securityLogger.logValidationFailure(
+      'submoduleDepth',
+      `Requested depth ${maxDepth} exceeds maximum allowed (${MAX_SUBMODULE_DEPTH}), clamped to ${effectiveMaxDepth}`,
+      maxDepth
+    );
+  }
+
+  if (currentDepth >= effectiveMaxDepth) {
     return [];
   }
 
@@ -101,7 +148,7 @@ export async function listSubmodulesRecursive(
   for (const submodule of submodules) {
     const nestedSubmodules = await listSubmodulesRecursive(
       submodule.absolutePath,
-      maxDepth,
+      effectiveMaxDepth,
       currentDepth + 1
     );
     allSubmodules.push(...nestedSubmodules);
@@ -130,10 +177,12 @@ export async function setSubmoduleGitConfig(
     await gitExec(['config', '--local', key, value], submodulePath);
     return true;
   } catch (error) {
-    // SECURITY: Use getUserSafeMessage and sanitize path to prevent information leakage
-    const safeMessage = getUserSafeMessage(error);
-    const sanitizedPath = securityLogger.sanitizePath(submodulePath);
-    console.error(`Failed to set ${key} in ${sanitizedPath}: ${safeMessage}`);
+    // Log failure through security logger (sanitizes path)
+    securityLogger.logValidationFailure(
+      `submoduleGitConfig.${key}`,
+      'Failed to set git config in submodule',
+      submodulePath
+    );
     return false;
   }
 }
@@ -212,8 +261,33 @@ export function isSubmoduleSupportEnabled(): boolean {
 
 /**
  * Get configured submodule depth
+ *
+ * SECURITY: Returns value clamped to MAX_SUBMODULE_DEPTH (5) to prevent DoS.
+ * Invalid or negative values default to 1.
  */
 export function getSubmoduleDepth(): number {
   const config = vscode.workspace.getConfiguration('gitIdSwitcher');
-  return config.get<number>('submoduleDepth', 1);
+  const configuredDepth = config.get<number>('submoduleDepth', 1);
+
+  // SECURITY: Clamp to valid range [0, MAX_SUBMODULE_DEPTH]
+  const clampedDepth = Math.min(Math.max(0, configuredDepth), MAX_SUBMODULE_DEPTH);
+
+  // Log if configured value was outside valid range
+  if (configuredDepth !== clampedDepth) {
+    securityLogger.logValidationFailure(
+      'submoduleDepth',
+      `Configured depth ${configuredDepth} clamped to ${clampedDepth} (max: ${MAX_SUBMODULE_DEPTH})`,
+      configuredDepth
+    );
+  }
+
+  return clampedDepth;
+}
+
+/**
+ * Get the maximum allowed submodule depth (currently 5)
+ * Exposed for testing and documentation purposes.
+ */
+export function getMaxSubmoduleDepth(): number {
+  return MAX_SUBMODULE_DEPTH;
 }

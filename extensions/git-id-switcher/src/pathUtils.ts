@@ -451,21 +451,43 @@ export function validateSshKeyPath(
 }
 
 /**
+ * Options for submodule path validation
+ */
+export interface ValidateSubmodulePathOptions {
+  /**
+   * Whether to verify symlinks don't escape workspace
+   * Default: true (security-first)
+   */
+  verifySymlinks?: boolean;
+
+  /**
+   * Whether to require the submodule directory to exist
+   * Default: false (submodule might not be initialized yet)
+   */
+  requireExists?: boolean;
+}
+
+/**
  * Validate a submodule path specifically
  *
  * Submodule paths come from git output and need special handling:
  * - Must be relative to workspace root
  * - Must not contain path traversal
  * - Must be normalized before joining with workspace path
+ * - Symlinks must not escape workspace (if verifySymlinks is true)
  *
  * @param submodulePath - Relative path from git submodule status
  * @param workspacePath - Absolute path to workspace root
+ * @param options - Validation options
  * @returns NormalizedPathResult with validation status
  */
 export function validateSubmodulePath(
   submodulePath: string,
-  workspacePath: string
+  workspacePath: string,
+  options: ValidateSubmodulePathOptions = {}
 ): NormalizedPathResult {
+  const { verifySymlinks = true, requireExists = false } = options;
+
   // First, validate the workspace path itself
   const workspaceResult = normalizeAndValidatePath(workspacePath, {
     resolveSymlinks: false, // Don't resolve workspace path symlinks
@@ -492,9 +514,19 @@ export function validateSubmodulePath(
     };
   }
 
+  // Pre-check: submodule path should not contain control characters
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1f\x7f]/.test(submodulePath)) {
+    return {
+      valid: false,
+      originalPath: submodulePath,
+      reason: 'Submodule path contains control characters',
+    };
+  }
+
   // Normalize and validate the submodule path relative to workspace
   const result = normalizeAndValidatePath(submodulePath, {
-    resolveSymlinks: false, // Don't resolve symlinks for submodule paths (git manages them)
+    resolveSymlinks: false, // First pass: don't resolve symlinks
     requireExists: false, // Submodule might not be initialized yet
     baseDir: normalizedWorkspace,
   });
@@ -507,13 +539,79 @@ export function validateSubmodulePath(
 
   // Security check: Ensure the normalized path is still within workspace
   // This prevents path traversal attacks like "../../etc/passwd"
-  if (!normalizedSubmodulePath.startsWith(normalizedWorkspace + path.sep) &&
-      normalizedSubmodulePath !== normalizedWorkspace) {
+  if (
+    !normalizedSubmodulePath.startsWith(normalizedWorkspace + path.sep) &&
+    normalizedSubmodulePath !== normalizedWorkspace
+  ) {
     return {
       valid: false,
       originalPath: submodulePath,
       reason: 'Submodule path escapes workspace root after normalization',
     };
+  }
+
+  // Verify symlinks don't escape workspace (if enabled and path exists)
+  if (verifySymlinks) {
+    try {
+      // Check if the path exists before trying to resolve symlinks
+      fs.accessSync(normalizedSubmodulePath);
+
+      // Resolve symlinks and re-check workspace boundary
+      const symlinkResult = normalizeAndValidatePath(normalizedSubmodulePath, {
+        resolveSymlinks: true,
+        requireExists: true,
+      });
+
+      if (!symlinkResult.valid) {
+        return {
+          valid: false,
+          originalPath: submodulePath,
+          reason: `Symlink resolution failed: ${symlinkResult.reason}`,
+          symlinksResolved: true,
+        };
+      }
+
+      const resolvedPath = symlinkResult.normalizedPath!;
+
+      // Re-check workspace boundary after symlink resolution
+      if (
+        !resolvedPath.startsWith(normalizedWorkspace + path.sep) &&
+        resolvedPath !== normalizedWorkspace
+      ) {
+        return {
+          valid: false,
+          originalPath: submodulePath,
+          reason: 'Submodule symlink target escapes workspace root',
+          symlinksResolved: true,
+        };
+      }
+
+      // Return the symlink-resolved path for maximum security
+      return {
+        valid: true,
+        originalPath: submodulePath,
+        normalizedPath: resolvedPath,
+        symlinksResolved: true,
+      };
+    } catch {
+      // Path doesn't exist - that's OK, submodule might not be initialized
+      // Return the normalized (non-resolved) path
+    }
+  }
+
+  // Optionally check if path exists
+  if (requireExists) {
+    try {
+      fs.accessSync(normalizedSubmodulePath);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      return {
+        valid: false,
+        originalPath: submodulePath,
+        normalizedPath: normalizedSubmodulePath,
+        reason: `Submodule path does not exist: ${code}`,
+      };
+    }
   }
 
   return result;
