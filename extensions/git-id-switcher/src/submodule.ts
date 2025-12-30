@@ -9,7 +9,7 @@
 
 import * as vscode from 'vscode';
 import { gitExec } from './secureExec';
-import { validateSubmodulePath } from './pathUtils';
+import { validateSubmodulePath, normalizeAndValidatePath } from './pathUtils';
 import { securityLogger } from './securityLogger';
 
 /**
@@ -40,12 +40,14 @@ export interface Submodule {
  * - branch: optional branch name in parentheses
  *
  * Security considerations:
- * - Commit hash is strictly 40 hex characters (SHA-1)
- * - Path is captured conservatively and validated separately
+ * - Commit hash is strictly 40 hex characters (SHA-1), lowercase only
+ * - Path is captured conservatively (non-greedy) and validated separately
  * - Branch name is optional and not used for security-sensitive operations
+ * - Path must be at least 1 character (non-empty)
+ * - Branch name (if present) must not contain newlines or control characters
  */
 const SUBMODULE_STATUS_REGEX =
-  /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^)]+\))?$/;
+  /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^\x00-\x1f\x7f)]+\))?$/;
 
 /**
  * List all submodules in the workspace
@@ -54,9 +56,27 @@ const SUBMODULE_STATUS_REGEX =
  * Only returns initialized submodules with validated paths.
  */
 export async function listSubmodules(workspacePath: string): Promise<Submodule[]> {
+  // SECURITY: Validate workspace path before use
+  // This prevents path traversal if workspacePath itself is malicious
+  const workspaceValidation = normalizeAndValidatePath(workspacePath, {
+    resolveSymlinks: false, // Don't resolve workspace symlinks (performance)
+    requireExists: true, // Workspace must exist
+  });
+
+  if (!workspaceValidation.valid || !workspaceValidation.normalizedPath) {
+    securityLogger.logValidationFailure(
+      'submoduleWorkspace',
+      workspaceValidation.reason ?? 'Invalid workspace path',
+      undefined
+    );
+    return [];
+  }
+
+  const validatedWorkspacePath = workspaceValidation.normalizedPath;
+
   try {
     // SECURITY: Using gitExec with array args
-    const stdout = await gitExec(['submodule', 'status'], workspacePath);
+    const stdout = await gitExec(['submodule', 'status'], validatedWorkspacePath);
 
     if (!stdout.trim()) {
       return [];
@@ -73,10 +93,22 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
         const [, status, commitHash, submodulePath] = match;
         const initialized = status !== '-';
 
+        // SECURITY: Double-check commit hash length (regex already validates, but defensive)
+        // This prevents potential regex bypass or malformed input
+        if (commitHash.length !== 40) {
+          securityLogger.logValidationFailure(
+            'submoduleCommitHash',
+            `Invalid commit hash length: ${commitHash.length} (expected 40)`,
+            commitHash
+          );
+          continue;
+        }
+
         if (initialized) {
           // SECURITY: Validate and normalize submodule path to prevent path traversal
           // This also checks for symlink escapes
-          const pathResult = validateSubmodulePath(submodulePath, workspacePath);
+          // Use validated workspace path (not original) for consistency
+          const pathResult = validateSubmodulePath(submodulePath, validatedWorkspacePath);
           if (pathResult.valid && pathResult.normalizedPath) {
             submodules.push({
               path: submodulePath,
@@ -105,7 +137,18 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
 
     return submodules;
   } catch (error) {
-    // Not a git repository or no submodules
+    // SECURITY: Log unexpected errors for security auditing
+    // Don't expose full error details to prevent information leakage
+    const errorCode = (error as NodeJS.ErrnoException).code;
+    if (errorCode !== 'ENOENT' && errorCode !== undefined) {
+      // Only log non-ENOENT errors (ENOENT is expected for non-git directories)
+      securityLogger.logValidationFailure(
+        'submoduleList',
+        `Failed to list submodules: ${errorCode}`,
+        undefined
+      );
+    }
+    // Not a git repository or no submodules - return empty array
     return [];
   }
 }
@@ -126,15 +169,24 @@ export async function listSubmodulesRecursive(
   currentDepth: number = 0
 ): Promise<Submodule[]> {
   // SECURITY: Enforce maximum depth limit to prevent DoS
+  // Clamp maxDepth to valid range [0, MAX_SUBMODULE_DEPTH]
   const effectiveMaxDepth = Math.min(Math.max(0, maxDepth), MAX_SUBMODULE_DEPTH);
 
-  // Log warning on first call if requested depth exceeds maximum
-  if (currentDepth === 0 && maxDepth > MAX_SUBMODULE_DEPTH) {
-    securityLogger.logValidationFailure(
-      'submoduleDepth',
-      `Requested depth ${maxDepth} exceeds maximum allowed (${MAX_SUBMODULE_DEPTH}), clamped to ${effectiveMaxDepth}`,
-      maxDepth
-    );
+  // Log warning on first call if requested depth is outside valid range
+  if (currentDepth === 0) {
+    if (maxDepth > MAX_SUBMODULE_DEPTH) {
+      securityLogger.logValidationFailure(
+        'submoduleDepth',
+        `Requested depth ${maxDepth} exceeds maximum allowed (${MAX_SUBMODULE_DEPTH}), clamped to ${effectiveMaxDepth}`,
+        maxDepth
+      );
+    } else if (maxDepth < 0) {
+      securityLogger.logValidationFailure(
+        'submoduleDepth',
+        `Requested depth ${maxDepth} is negative, clamped to ${effectiveMaxDepth}`,
+        maxDepth
+      );
+    }
   }
 
   if (currentDepth >= effectiveMaxDepth) {

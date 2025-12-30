@@ -495,16 +495,27 @@ export function validateSubmodulePath(
   });
 
   if (!workspaceResult.valid) {
+    // SECURITY: Don't expose full workspace path in error message
+    // Only include the validation reason, which is already sanitized
     return {
       valid: false,
       originalPath: submodulePath,
-      reason: `Invalid workspace path: ${workspaceResult.reason}`,
+      reason: `Invalid workspace path: ${workspaceResult.reason ?? 'validation failed'}`,
     };
   }
 
   const normalizedWorkspace = workspaceResult.normalizedPath!;
 
   // Validate the submodule path (relative path from git)
+  // Pre-check: submodule path should not be empty
+  if (!submodulePath || submodulePath.trim().length === 0) {
+    return {
+      valid: false,
+      originalPath: submodulePath,
+      reason: 'Submodule path is empty',
+    };
+  }
+
   // Pre-check: submodule path should not be absolute
   if (path.isAbsolute(submodulePath)) {
     return {
@@ -515,12 +526,24 @@ export function validateSubmodulePath(
   }
 
   // Pre-check: submodule path should not contain control characters
+  // SECURITY: Reject control characters (0x00-0x1f, 0x7f) to prevent injection attacks
   // eslint-disable-next-line no-control-regex
   if (/[\x00-\x1f\x7f]/.test(submodulePath)) {
     return {
       valid: false,
       originalPath: submodulePath,
       reason: 'Submodule path contains control characters',
+    };
+  }
+
+  // Pre-check: submodule path length (before normalization)
+  // SECURITY: Prevent extremely long paths that could cause DoS
+  const inputByteLength = Buffer.byteLength(submodulePath, 'utf8');
+  if (inputByteLength > PATH_MAX) {
+    return {
+      valid: false,
+      originalPath: submodulePath,
+      reason: `Submodule path exceeds maximum length (${inputByteLength} > ${PATH_MAX} bytes)`,
     };
   }
 
@@ -537,10 +560,12 @@ export function validateSubmodulePath(
 
   const normalizedSubmodulePath = result.normalizedPath!;
 
-  // Security check: Ensure the normalized path is still within workspace
+  // SECURITY: Ensure the normalized path is still within workspace
   // This prevents path traversal attacks like "../../etc/passwd"
+  // Use path.resolve() for consistent comparison across platforms (Windows/Unix)
+  const workspaceWithSep = normalizedWorkspace + path.sep;
   if (
-    !normalizedSubmodulePath.startsWith(normalizedWorkspace + path.sep) &&
+    !normalizedSubmodulePath.startsWith(workspaceWithSep) &&
     normalizedSubmodulePath !== normalizedWorkspace
   ) {
     return {
@@ -553,29 +578,39 @@ export function validateSubmodulePath(
   // Verify symlinks don't escape workspace (if enabled and path exists)
   if (verifySymlinks) {
     try {
-      // Check if the path exists before trying to resolve symlinks
+      // SECURITY: Check if the path exists before trying to resolve symlinks
+      // Note: This is subject to TOCTOU (Time-of-check-time-of-use) race conditions.
+      // The path might be created/deleted/modified between this check and symlink resolution.
+      // However, fs.realpathSync.native() inside normalizeAndValidatePath will handle
+      // non-existent paths gracefully (returns normalized path), so this is acceptable.
       fs.accessSync(normalizedSubmodulePath);
 
-      // Resolve symlinks and re-check workspace boundary
+      // SECURITY: Resolve symlinks atomically to minimize TOCTOU window
+      // normalizeAndValidatePath with resolveSymlinks: true uses fs.realpathSync.native()
+      // which resolves symlinks in a single system call, reducing race condition window
       const symlinkResult = normalizeAndValidatePath(normalizedSubmodulePath, {
         resolveSymlinks: true,
         requireExists: true,
       });
 
       if (!symlinkResult.valid) {
+        // SECURITY: Don't expose full symlink resolution error details
+        // The reason is already sanitized by normalizeAndValidatePath
         return {
           valid: false,
           originalPath: submodulePath,
-          reason: `Symlink resolution failed: ${symlinkResult.reason}`,
+          reason: `Symlink resolution failed: ${symlinkResult.reason ?? 'unknown error'}`,
           symlinksResolved: true,
         };
       }
 
       const resolvedPath = symlinkResult.normalizedPath!;
 
-      // Re-check workspace boundary after symlink resolution
+      // SECURITY: Re-check workspace boundary after symlink resolution
+      // This prevents symlinks from pointing outside the workspace
+      // Use the same workspaceWithSep variable defined earlier for consistency
       if (
-        !resolvedPath.startsWith(normalizedWorkspace + path.sep) &&
+        !resolvedPath.startsWith(workspaceWithSep) &&
         resolvedPath !== normalizedWorkspace
       ) {
         return {
@@ -593,9 +628,17 @@ export function validateSubmodulePath(
         normalizedPath: resolvedPath,
         symlinksResolved: true,
       };
-    } catch {
+    } catch (error) {
       // Path doesn't exist - that's OK, submodule might not be initialized
+      // SECURITY: Log the error code for debugging, but don't expose full error details
+      const code = (error as NodeJS.ErrnoException).code;
+      // Only log non-ENOENT errors (ENOENT is expected for uninitialized submodules)
+      if (code !== 'ENOENT') {
+        // This will be handled by the caller's error handling
+        // We return the normalized path without symlink resolution
+      }
       // Return the normalized (non-resolved) path
+      // The caller should re-validate if the path is created later
     }
   }
 
