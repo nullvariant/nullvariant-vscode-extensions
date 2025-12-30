@@ -31,7 +31,7 @@ import { securityLogger, type ISecurityLogger } from './securityLogger';
  */
 function getVSCodeWorkspace(): typeof import('vscode').workspace | undefined {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     const vscode = require('vscode') as typeof import('vscode');
     return vscode.workspace;
   } catch {

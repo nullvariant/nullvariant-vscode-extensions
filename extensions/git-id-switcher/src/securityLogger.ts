@@ -23,7 +23,7 @@ import type { OutputChannel } from 'vscode';
  */
 function getVSCode(): typeof import('vscode') | undefined {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     return require('vscode') as typeof import('vscode');
   } catch {
     // VS Code API not available (e.g., in tests)

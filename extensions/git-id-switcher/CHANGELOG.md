@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.9] - 2025-12-30
+
+### Fixed
+
+- **ESLint Rule Compatibility**: Add `@typescript-eslint/no-var-requires` to eslint-disable comments
+  - Fixes lint errors in CI/CD pipeline
+  - Corrects incomplete eslint-disable annotations for dynamic require()
+
 ## [0.9.8] - 2025-12-30
 
 ### Security
@@ -484,7 +492,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.8...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.9...HEAD
+[0.9.9]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.8...git-id-switcher-v0.9.9
 [0.9.8]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.7...git-id-switcher-v0.9.8
 [0.9.7]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.6...git-id-switcher-v0.9.7
 [0.9.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.5...git-id-switcher-v0.9.6
