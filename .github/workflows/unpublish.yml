@@ -1,0 +1,84 @@
+name: Unpublish Old Versions
+
+on:
+  workflow_dispatch:
+    inputs:
+      versions:
+        description: 'Space-separated list of versions to unpublish (e.g., "0.9.7 0.9.6 0.9.5")'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (show what would be deleted without actually deleting)'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  unpublish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: extensions/git-id-switcher
+
+      - name: Unpublish from VS Code Marketplace
+        if: ${{ vars.PUBLISH_TO_MARKETPLACE == 'true' }}
+        working-directory: extensions/git-id-switcher
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          for version in ${{ inputs.versions }}; do
+            echo "Processing version: $version"
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "  [DRY RUN] Would unpublish nullvariant.git-id-switcher@$version from VS Code Marketplace"
+            else
+              echo "  Unpublishing nullvariant.git-id-switcher@$version from VS Code Marketplace..."
+              npx vsce unpublish "nullvariant.git-id-switcher@$version" -p "$VSCE_PAT" -f || echo "  Failed to unpublish $version (may not exist)"
+            fi
+          done
+
+      - name: Unpublish from Open VSX
+        if: ${{ vars.PUBLISH_TO_OPENVSX == 'true' }}
+        working-directory: extensions/git-id-switcher
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          for version in ${{ inputs.versions }}; do
+            echo "Processing version: $version"
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "  [DRY RUN] Would unpublish nullvariant.git-id-switcher $version from Open VSX"
+            else
+              echo "  Unpublishing nullvariant.git-id-switcher $version from Open VSX..."
+              # Open VSX uses REST API for deletion
+              curl -X DELETE \
+                -H "Authorization: Bearer $OVSX_PAT" \
+                "https://open-vsx.org/api/-/namespace/nullvariant/extension/git-id-switcher/version/$version" \
+                || echo "  Failed to unpublish $version (may not exist)"
+            fi
+          done
+
+      - name: Summary
+        run: |
+          echo "## Unpublish Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "**Mode:** Dry Run (no actual deletions)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Mode:** Live Run" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Versions processed:**" >> $GITHUB_STEP_SUMMARY
+          for version in ${{ inputs.versions }}; do
+            echo "- $version" >> $GITHUB_STEP_SUMMARY
+          done
