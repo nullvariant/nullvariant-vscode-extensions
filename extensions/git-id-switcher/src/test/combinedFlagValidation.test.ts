@@ -11,10 +11,8 @@
  */
 
 import * as assert from 'assert';
-import {
-  validateCombinedFlags,
-  isCommandAllowed,
-} from '../commandAllowlist';
+import { validateCombinedFlags } from '../flagValidator';
+import { isCommandAllowed } from '../commandAllowlist';
 
 /**
  * Test basic combined flag validation

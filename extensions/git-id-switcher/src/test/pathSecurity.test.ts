@@ -14,8 +14,8 @@ import * as assert from 'assert';
 import {
   isSecurePath,
   isPathArgument,
-  isCommandAllowed,
-} from '../commandAllowlist';
+} from '../pathSecurity';
+import { isCommandAllowed } from '../commandAllowlist';
 
 /**
  * Test path traversal attack prevention

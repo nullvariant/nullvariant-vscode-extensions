@@ -10,7 +10,7 @@
  * - Stack traces are controlled to prevent file structure leakage
  */
 
-import { securityLogger } from './securityLogger';
+import { securityLogger, sanitizeValue } from './securityLogger';
 
 /**
  * Error category for classification and handling
@@ -128,7 +128,7 @@ export class SecurityError extends Error {
       const reason = this.userMessage;
 
       // SECURITY: Sanitize value before logging to prevent information leakage
-      const sanitizedValue = securityLogger.sanitizeValue(this.internalDetails.value);
+      const sanitizedValue = sanitizeValue(this.internalDetails.value);
 
       // Log all security-relevant errors
       // SECURITY, VALIDATION, CONFIG, and SYSTEM errors are all logged

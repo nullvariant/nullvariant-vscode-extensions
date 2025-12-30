@@ -8,7 +8,7 @@
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
-import { isSecurePath, SecurePathResult } from './commandAllowlist';
+import { isSecurePath, SecurePathResult } from './pathSecurity';
 import { PATH_MAX } from './constants';
 import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasPathTraversal } from './validators/common';
 
