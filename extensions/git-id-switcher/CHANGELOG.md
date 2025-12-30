@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-This release includes comprehensive security hardening through 10 security issues (Issue-00029 to Issue-00038).
+This release includes comprehensive security hardening across multiple areas.
 
 #### Path & File Security
 
@@ -83,6 +83,12 @@ This release includes comprehensive security hardening through 10 security issue
   - SRP: Extracted `ConfigChangeDetector` class from `SecurityLogger`
   - DIP: Added `ISecurityLogger` interface for dependency injection
   - OCP: Timeout configuration externalized to VS Code settings
+
+### Fixed
+
+- **VS Code Module Lazy Loading**: Use dynamic `require()` for vscode module
+  - Allows security tests to run outside VS Code extension host
+  - Fixes `Cannot find module 'vscode'` error in CI/CD environments
 
 ## [0.9.7] - 2025-12-27
 
