@@ -8,6 +8,7 @@
  * @see https://owasp.org/www-community/attacks/Command_Injection
  */
 
+import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { Identity, getIdentitiesWithValidation } from './identity';
@@ -18,6 +19,48 @@ import {
   validateSshKeyPath,
 } from './pathUtils';
 import { createSecurityViolationError, wrapError } from './errors';
+import { securityLogger } from './securityLogger';
+
+/**
+ * Maximum allowed SSH key file size (1MB)
+ * SSH private keys are typically small (1-4KB).
+ * 1MB is a generous limit that catches DoS attacks while allowing for edge cases.
+ */
+const MAX_SSH_KEY_FILE_SIZE = 1024 * 1024;
+
+/**
+ * Minimum SSH key file size (10 bytes)
+ * Even the smallest valid SSH key would be larger than this.
+ * This catches empty files and trivially invalid files.
+ */
+const MIN_SSH_KEY_FILE_SIZE = 10;
+
+/**
+ * Unix permission bits that should NOT be set on SSH key files
+ * Combines group and others read/write/execute bits
+ */
+const INSECURE_PERMISSION_BITS = 0o077;
+
+/**
+ * Valid SSH private key format headers
+ * These are the standard formats supported by ssh-add
+ */
+const VALID_SSH_KEY_HEADERS = [
+  '-----BEGIN OPENSSH PRIVATE KEY-----',      // OpenSSH format (modern)
+  '-----BEGIN RSA PRIVATE KEY-----',          // RSA PEM format
+  '-----BEGIN DSA PRIVATE KEY-----',          // DSA PEM format
+  '-----BEGIN EC PRIVATE KEY-----',           // EC PEM format
+  '-----BEGIN PRIVATE KEY-----',              // PKCS#8 unencrypted
+  '-----BEGIN ENCRYPTED PRIVATE KEY-----',    // PKCS#8 encrypted
+  'PuTTY-User-Key-File-2:',                   // PuTTY PPK v2
+  'PuTTY-User-Key-File-3:',                   // PuTTY PPK v3
+] as const;
+
+/**
+ * Maximum bytes to read for format validation
+ * SSH key headers are typically within the first 50 bytes
+ */
+const FORMAT_CHECK_BYTES = 64;
 
 export interface SshKeyInfo {
   fingerprint: string;
@@ -117,13 +160,30 @@ export async function listSshKeys(): Promise<SshKeyInfo[]> {
  *
  * Uses --apple-use-keychain for macOS Keychain integration
  *
- * SECURITY: Path is validated before use
+ * SECURITY: Path is validated before use including:
+ * - Path format and traversal prevention
+ * - File existence check
+ * - File type validation (must be regular file)
+ * - File size limit (DoS prevention)
+ * - File permissions check (Unix only)
  */
 export async function addSshKey(keyPath: string): Promise<void> {
-  // SECURITY: Validate path before use
+  // SECURITY: Validate path format before use
   validateKeyPath(keyPath);
 
   const expandedPath = expandPath(keyPath);
+
+  // SECURITY: Validate file before passing to ssh-add
+  const fileValidation = await validateKeyFileForSshAdd(expandedPath);
+  if (!fileValidation.valid) {
+    throw createSecurityViolationError(
+      vscode.l10n.t('SSH key file validation failed'),
+      {
+        field: 'sshKeyPath',
+        context: { reason: fileValidation.reason },
+      }
+    );
+  }
 
   // Check platform for appropriate ssh-add flags
   const platform = process.platform;
@@ -270,11 +330,166 @@ export async function keyFileExists(keyPath: string): Promise<boolean> {
   const expandedPath = expandPath(keyPath);
 
   try {
-    // Cross-platform file existence check
-    const fs = await import('fs/promises');
     await fs.access(expandedPath);
     return true;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Validation result for SSH key file
+ */
+export interface KeyFileValidationResult {
+  valid: boolean;
+  reason?: string;
+}
+
+/**
+ * Check if file content starts with a valid SSH private key header
+ *
+ * Reads only the first few bytes to validate the format efficiently.
+ * Supports OpenSSH, PEM (RSA/DSA/EC), PKCS#8, and PuTTY formats.
+ *
+ * @param filePath - Path to the SSH key file
+ * @returns true if the file has a valid SSH key header
+ */
+async function isValidSshKeyFormat(filePath: string): Promise<boolean> {
+  let fileHandle: Awaited<ReturnType<typeof fs.open>> | null = null;
+  try {
+    fileHandle = await fs.open(filePath, 'r');
+    const buffer = Buffer.alloc(FORMAT_CHECK_BYTES);
+    const { bytesRead } = await fileHandle.read(buffer, 0, FORMAT_CHECK_BYTES, 0);
+
+    if (bytesRead === 0) {
+      return false;
+    }
+
+    // Convert to string and trim whitespace (some keys have leading newlines)
+    const header = buffer.subarray(0, bytesRead).toString('utf8').trimStart();
+
+    // Check if the file starts with any valid SSH key header
+    return VALID_SSH_KEY_HEADERS.some(validHeader =>
+      header.startsWith(validHeader)
+    );
+  } catch {
+    // If we can't read the file, it's not a valid key
+    return false;
+  } finally {
+    if (fileHandle) {
+      await fileHandle.close();
+    }
+  }
+}
+
+/**
+ * Validate SSH key file for ssh-add operation
+ *
+ * Performs comprehensive security checks:
+ * - File existence
+ * - File type (must be regular file, not directory/device)
+ * - File size limits (prevents DoS and catches empty files)
+ * - File permissions (Unix only: checks for insecure permissions)
+ * - File format validation (must start with valid SSH key header)
+ *
+ * Note: Symlinks are already resolved by expandPath/validateSshKeyPath,
+ * so we use fs.stat here which follows symlinks.
+ *
+ * @param expandedPath - Already expanded and validated path (symlinks resolved)
+ * @returns Validation result
+ */
+async function validateKeyFileForSshAdd(
+  expandedPath: string
+): Promise<KeyFileValidationResult> {
+  try {
+    // Get file stats (using stat because symlinks are already resolved by expandPath)
+    let stats: Awaited<ReturnType<typeof fs.stat>>;
+    try {
+      stats = await fs.stat(expandedPath);
+    } catch {
+      // File does not exist or not accessible
+      securityLogger.logValidationFailure(
+        'ssh-key-file',
+        'File does not exist or is not accessible',
+        undefined
+      );
+      return { valid: false, reason: 'file_not_found' };
+    }
+
+    // Check file type - must be regular file
+    if (!stats.isFile()) {
+      if (stats.isDirectory()) {
+        securityLogger.logValidationFailure(
+          'ssh-key-file',
+          'Path points to a directory, not a file',
+          undefined
+        );
+        return { valid: false, reason: 'is_directory' };
+      }
+      // Could be block device, character device, FIFO, socket, etc.
+      securityLogger.logValidationFailure(
+        'ssh-key-file',
+        'Path is not a regular file',
+        undefined
+      );
+      return { valid: false, reason: 'not_regular_file' };
+    }
+
+    // Check minimum file size (empty/trivially small files are not valid SSH keys)
+    if (stats.size < MIN_SSH_KEY_FILE_SIZE) {
+      securityLogger.logValidationFailure(
+        'ssh-key-file',
+        `File size ${stats.size} is below minimum ${MIN_SSH_KEY_FILE_SIZE}`,
+        undefined
+      );
+      return { valid: false, reason: 'file_too_small' };
+    }
+
+    // Check maximum file size (DoS prevention)
+    if (stats.size > MAX_SSH_KEY_FILE_SIZE) {
+      securityLogger.logValidationFailure(
+        'ssh-key-file',
+        `File size ${stats.size} exceeds maximum ${MAX_SSH_KEY_FILE_SIZE}`,
+        undefined
+      );
+      return { valid: false, reason: 'file_too_large' };
+    }
+
+    // Check file permissions (Unix only)
+    // Windows uses ACL-based permissions, skip this check there
+    if (process.platform !== 'win32') {
+      const mode = stats.mode;
+      // Check if group or others have any permissions
+      if ((mode & INSECURE_PERMISSION_BITS) !== 0) {
+        securityLogger.logValidationFailure(
+          'ssh-key-file',
+          `Insecure permissions: ${(mode & 0o777).toString(8)}`,
+          undefined
+        );
+        return { valid: false, reason: 'insecure_permissions' };
+      }
+    }
+
+    // Validate SSH key file format
+    // Check that the file starts with a valid SSH private key header
+    const isValidFormat = await isValidSshKeyFormat(expandedPath);
+    if (!isValidFormat) {
+      securityLogger.logValidationFailure(
+        'ssh-key-file',
+        'File does not have a valid SSH private key format',
+        undefined
+      );
+      return { valid: false, reason: 'invalid_format' };
+    }
+
+    return { valid: true };
+  } catch {
+    // Unexpected error during validation
+    securityLogger.logValidationFailure(
+      'ssh-key-file',
+      'Unexpected error during validation',
+      undefined
+    );
+    return { valid: false, reason: 'validation_error' };
   }
 }

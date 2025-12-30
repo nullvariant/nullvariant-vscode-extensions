@@ -157,19 +157,22 @@ export function getIdentitiesWithValidation(): Identity[] {
 
     // Fire and forget: notification is non-blocking
     // User can dismiss or open settings as needed
+    // Note: VS Code's Thenable doesn't have .catch(), so we use .then(onFulfilled, onRejected)
     vscode.window.showWarningMessage(message, vscode.l10n.t('Open Settings'))
-      .then(action => {
-        if (action) {
-          vscode.commands.executeCommand(
-            'workbench.action.openSettings',
-            'gitIdSwitcher.identities'
-          );
+      .then(
+        action => {
+          if (action) {
+            vscode.commands.executeCommand(
+              'workbench.action.openSettings',
+              'gitIdSwitcher.identities'
+            );
+          }
+        },
+        () => {
+          // SECURITY: Don't let notification errors affect validation flow
+          // Silently ignore notification errors
         }
-      })
-      .catch(() => {
-        // SECURITY: Don't let notification errors affect validation flow
-        // Silently ignore notification errors
-      });
+      );
   }
 
   return validIdentities;
