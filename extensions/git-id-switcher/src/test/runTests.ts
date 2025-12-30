@@ -7,6 +7,7 @@
 import { runSecurityTests } from './validation.test';
 import { runSecureExecTests } from './secureExec.test';
 import { runPathSecurityTests } from './pathSecurity.test';
+import { runPathUtilsTests } from './pathUtils.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -22,6 +23,9 @@ async function main(): Promise<void> {
 
     // Run path security tests
     await runPathSecurityTests();
+
+    // Run path utils tests
+    await runPathUtilsTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');

@@ -8,11 +8,14 @@
  * @see https://owasp.org/www-community/attacks/Command_Injection
  */
 
-import * as os from 'os';
 import * as path from 'path';
 import { Identity, getIdentities } from './identity';
 import { sshAgentExec, sshKeygenExec } from './secureExec';
 import { isPathSafe } from './validation';
+import {
+  normalizeAndValidatePath,
+  validateSshKeyPath,
+} from './pathUtils';
 
 export interface SshKeyInfo {
   fingerprint: string;
@@ -21,13 +24,29 @@ export interface SshKeyInfo {
 }
 
 /**
- * Expand ~ to home directory
+ * Expand and validate SSH key path securely
+ *
+ * Uses pathUtils for:
+ * - Tilde expansion (~/ to home directory)
+ * - Path normalization
+ * - Symlink resolution
+ * - Security validation
+ *
+ * @param keyPath - The SSH key path to expand
+ * @returns Normalized absolute path
+ * @throws Error if path is invalid or insecure
  */
 function expandPath(keyPath: string): string {
-  if (keyPath.startsWith('~')) {
-    return path.join(os.homedir(), keyPath.slice(1));
+  const result = validateSshKeyPath(keyPath, {
+    resolveSymlinks: true,
+    requireExists: false, // Don't require existence for all operations
+  });
+
+  if (!result.valid) {
+    throw new Error(`Invalid SSH key path: ${result.reason}`);
   }
-  return keyPath;
+
+  return result.normalizedPath!;
 }
 
 /**
@@ -36,8 +55,15 @@ function expandPath(keyPath: string): string {
  * @throws Error if path is potentially dangerous
  */
 function validateKeyPath(keyPath: string): void {
+  // Use both legacy validation and new secure validation
   if (!isPathSafe(keyPath)) {
-    throw new Error(`Invalid SSH key path: ${keyPath}`);
+    throw new Error(`Invalid SSH key path (legacy check): ${keyPath}`);
+  }
+
+  // Additional validation using pathUtils
+  const result = normalizeAndValidatePath(keyPath);
+  if (!result.valid) {
+    throw new Error(`Invalid SSH key path: ${result.reason}`);
   }
 }
 
