@@ -501,26 +501,104 @@ export function validateCombinedFlags(
     return { valid: false, reason: 'Flag is empty' };
   }
 
-  // Must start with single dash (not double dash for long options)
-  if (!flag.startsWith('-') || flag.startsWith('--')) {
-    // Long options (--option) should be checked via exact match, not here
-    return { valid: true }; // Let caller handle non-combined flags
+  // CRITICAL: Check for leading/trailing whitespace (potential obfuscation)
+  if (flag !== flag.trim()) {
+    return { valid: false, reason: 'Flag contains leading or trailing whitespace' };
   }
 
-  // Length limit for DoS protection
-  if (flag.length > MAX_FLAG_LENGTH) {
+  // CRITICAL: Check for null bytes (common attack vector)
+  if (flag.includes('\0')) {
+    return { valid: false, reason: 'Flag contains null byte' };
+  }
+
+  // CRITICAL: Check for control characters (ASCII 0-31 except tab, newline)
+  // eslint-disable-next-line no-control-regex
+  const controlCharRegex = /[\x00-\x08\x0b\x0c\x0e-\x1f]/;
+  if (controlCharRegex.test(flag)) {
+    return { valid: false, reason: 'Flag contains control characters' };
+  }
+
+  // CRITICAL: Check for invisible/zero-width Unicode characters
+  const invisibleChars = [
+    '\u200B', // Zero-width space
+    '\u200C', // Zero-width non-joiner
+    '\u200D', // Zero-width joiner
+    '\u200E', // Left-to-right mark
+    '\u200F', // Right-to-left mark
+    '\u2060', // Word joiner
+    '\u2061', // Function application
+    '\u2062', // Invisible times
+    '\u2063', // Invisible separator
+    '\u2064', // Invisible plus
+    '\uFEFF', // Byte order mark (BOM)
+    '\u00AD', // Soft hyphen
+  ];
+  for (const char of invisibleChars) {
+    if (flag.includes(char)) {
+      return { valid: false, reason: 'Flag contains invisible Unicode characters' };
+    }
+  }
+
+  // CRITICAL: Normalize Unicode to NFC for consistent comparison
+  // This prevents normalization-based attacks (e.g., combining characters)
+  const normalizedFlag = flag.normalize('NFC');
+
+  // CRITICAL: Re-check for control characters and invisible chars AFTER normalization
+  // eslint-disable-next-line no-control-regex
+  if (controlCharRegex.test(normalizedFlag)) {
+    return { valid: false, reason: 'Flag contains control characters (after normalization)' };
+  }
+  for (const char of invisibleChars) {
+    if (normalizedFlag.includes(char)) {
+      return { valid: false, reason: 'Flag contains invisible Unicode characters (after normalization)' };
+    }
+  }
+
+  // Must start with single dash (not double dash for long options)
+  if (!normalizedFlag.startsWith('-')) {
+    // Non-flag argument - let caller handle
+    return { valid: true };
+  }
+
+  // CRITICAL: Long options (--option) should be checked via exact match, not here
+  // Return early to let caller handle long options explicitly
+  if (normalizedFlag.startsWith('--')) {
+    return { valid: true }; // Let caller handle long options via exact match
+  }
+
+  // Length limit for DoS protection (check normalized length)
+  if (normalizedFlag.length > MAX_FLAG_LENGTH) {
     return {
       valid: false,
-      reason: `Flag exceeds maximum length (${flag.length} > ${MAX_FLAG_LENGTH})`,
+      reason: `Flag exceeds maximum length`,
     };
   }
 
   // Extract flag characters (remove leading dash)
-  const flagChars = flag.slice(1);
+  const flagChars = normalizedFlag.slice(1);
 
   // Empty after removing dash
   if (flagChars.length === 0) {
     return { valid: false, reason: 'Flag contains only dash' };
+  }
+
+  // CRITICAL: Check for flag-value concatenation (e.g., -f/path, -lfile, -fpath)
+  // Some commands allow flags and values to be concatenated, but we reject this
+  // for security to ensure clear separation between flags and values
+  // This prevents obfuscation attacks where a flag is hidden in a path-like string
+  // Check if flagChars contains path-like patterns (starts with /, ~, ., or contains path separators)
+  if (
+    flagChars.startsWith('/') ||
+    flagChars.startsWith('~') ||
+    flagChars.startsWith('./') ||
+    flagChars.startsWith('../') ||
+    flagChars.includes('/') ||
+    flagChars.includes('\\')
+  ) {
+    return {
+      valid: false,
+      reason: 'Flag contains path-like pattern. Flags and values must be separate arguments.',
+    };
   }
 
   // Check for invalid characters in flag
@@ -528,10 +606,9 @@ export function validateCombinedFlags(
   // Numbers and special characters are not valid in combined short flags
   const invalidCharRegex = /[^a-zA-Z]/;
   if (invalidCharRegex.test(flagChars)) {
-    const invalidMatch = flagChars.match(invalidCharRegex);
     return {
       valid: false,
-      reason: `Invalid character '${invalidMatch?.[0]}' in flag '${flag}'. Only ASCII letters allowed.`,
+      reason: 'Flag contains invalid characters. Only ASCII letters allowed.',
     };
   }
 
@@ -543,7 +620,7 @@ export function validateCombinedFlags(
     }
     return {
       valid: false,
-      reason: `Flag '${singleFlag}' is not in allowlist`,
+      reason: 'Flag is not in allowlist',
     };
   }
 
@@ -552,7 +629,7 @@ export function validateCombinedFlags(
   if (flagChars.length > MAX_COMBINED_FLAG_CHARS) {
     return {
       valid: false,
-      reason: `Combined flag has too many characters (${flagChars.length} > ${MAX_COMBINED_FLAG_CHARS})`,
+      reason: 'Combined flag has too many characters',
     };
   }
 
@@ -562,7 +639,7 @@ export function validateCombinedFlags(
     if (charSet.has(char)) {
       return {
         valid: false,
-        reason: `Duplicate flag character '${char}' in combined flag`,
+        reason: 'Duplicate flag character in combined flag',
       };
     }
     charSet.add(char);
@@ -611,7 +688,7 @@ export function validateCombinedFlags(
   if (unknownChars.length > 0) {
     return {
       valid: false,
-      reason: `Unknown flag character(s) '${unknownChars.join('')}' in combined flag '${flag}'`,
+      reason: 'Unknown flag character(s) in combined flag',
     };
   }
 
@@ -621,7 +698,7 @@ export function validateCombinedFlags(
   // This prevents unexpected flag combinations from being silently allowed
   return {
     valid: false,
-    reason: `Combined flag '${flag}' is not explicitly allowed for '${command}'. Use separate flags instead.`,
+    reason: 'Combined flag is not explicitly allowed. Use separate flags instead.',
   };
 }
 
@@ -699,7 +776,7 @@ export function isCommandAllowed(
   if (args.length > MAX_ARGS_COUNT) {
     return {
       allowed: false,
-      reason: `Too many arguments (${args.length} > ${MAX_ARGS_COUNT})`,
+      reason: 'Too many arguments',
     };
   }
 
@@ -708,7 +785,7 @@ export function isCommandAllowed(
     if (!isPathArgument(arg) && arg.length > MAX_ARG_LENGTH) {
       return {
         allowed: false,
-        reason: `Argument exceeds maximum length (${arg.length} > ${MAX_ARG_LENGTH})`,
+        reason: 'Argument exceeds maximum length',
       };
     }
     // Check if argument looks like a file path
@@ -718,7 +795,7 @@ export function isCommandAllowed(
       if (!pathResult.valid) {
         return {
           allowed: false,
-          reason: `Path argument rejected: ${pathResult.reason}`,
+          reason: 'Path argument rejected',
         };
       }
       // Path is valid, continue to next argument
@@ -737,7 +814,7 @@ export function isCommandAllowed(
       if (!flagResult.valid) {
         return {
           allowed: false,
-          reason: flagResult.reason || `Argument '${arg}' is not allowed for command '${command}'`,
+          reason: flagResult.reason || 'Argument is not allowed for this command',
         };
       }
       continue;
@@ -748,7 +825,7 @@ export function isCommandAllowed(
     if (!allowedArgs.includes(arg)) {
       return {
         allowed: false,
-        reason: `Argument '${arg}' is not allowed for command '${command}'`,
+        reason: 'Argument is not allowed for this command',
       };
     }
   }
