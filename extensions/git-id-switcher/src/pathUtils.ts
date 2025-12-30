@@ -9,11 +9,8 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { isSecurePath, SecurePathResult } from './commandAllowlist';
-
-/**
- * Security constants
- */
-const PATH_MAX = 4096; // POSIX PATH_MAX
+import { PATH_MAX } from './constants';
+import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasPathTraversal } from './validators/common';
 
 /**
  * Options for path normalization
@@ -253,13 +250,13 @@ function isSecurePathAfterNormalization(
   originalPath: string
 ): SecurePathResult {
   // Check for null bytes (should never appear after normalization)
-  if (normalizedPath.includes('\0')) {
+  if (hasNullByte(normalizedPath)) {
     return { valid: false, reason: 'Normalized path contains null byte' };
   }
 
   // Normalized absolute paths should not contain .. or .
   // path.normalize should have resolved these
-  if (normalizedPath.includes('..')) {
+  if (hasPathTraversal(normalizedPath)) {
     return {
       valid: false,
       reason: 'Normalized path still contains traversal pattern (..)',
@@ -527,8 +524,7 @@ export function validateSubmodulePath(
 
   // Pre-check: submodule path should not contain control characters
   // SECURITY: Reject control characters (0x00-0x1f, 0x7f) to prevent injection attacks
-  // eslint-disable-next-line no-control-regex
-  if (/[\x00-\x1f\x7f]/.test(submodulePath)) {
+  if (CONTROL_CHAR_REGEX_ALL.test(submodulePath)) {
     return {
       valid: false,
       originalPath: submodulePath,

@@ -18,27 +18,7 @@ import { execFile, ExecFileException } from 'child_process';
 import { promisify } from 'util';
 import { isCommandAllowed } from './commandAllowlist';
 import { securityLogger, type ISecurityLogger } from './securityLogger';
-
-/**
- * Lazy-loaded VS Code API reference
- *
- * IMPORTANT: VS Code module is loaded lazily to support testing.
- * In test environments (outside VS Code extension host), the vscode
- * module is not available. By using lazy loading, we can run tests
- * without the vscode dependency.
- *
- * @returns VS Code workspace API or undefined if not available
- */
-function getVSCodeWorkspace(): typeof import('vscode').workspace | undefined {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-    const vscode = require('vscode') as typeof import('vscode');
-    return vscode.workspace;
-  } catch {
-    // VS Code API not available (e.g., in tests)
-    return undefined;
-  }
-}
+import { getWorkspace } from './vscodeLoader';
 
 const execFilePromise = promisify(execFile);
 
@@ -173,7 +153,7 @@ function isValidCommandName(cmd: string): boolean {
  */
 function getUserConfiguredTimeouts(): Record<string, number> {
   try {
-    const workspace = getVSCodeWorkspace();
+    const workspace = getWorkspace();
     if (!workspace) {
       // VS Code API not available (e.g., in tests)
       return {};

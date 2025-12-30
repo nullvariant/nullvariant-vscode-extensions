@@ -9,6 +9,8 @@ import { runSecureExecTests } from './secureExec.test';
 import { runPathSecurityTests } from './pathSecurity.test';
 import { runPathUtilsTests } from './pathUtils.test';
 import { runSshKeyFormatTests } from './sshKeyFormat.test';
+import { runValidatorsCommonTests } from './validatorsCommon.test';
+import { runVSCodeLoaderTests } from './vscodeLoader.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -30,6 +32,12 @@ async function main(): Promise<void> {
 
     // Run SSH key format validation tests
     await runSshKeyFormatTests();
+
+    // Run common validators tests
+    runValidatorsCommonTests();
+
+    // Run VS Code loader tests
+    runVSCodeLoaderTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');

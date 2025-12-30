@@ -9,6 +9,7 @@
  */
 
 import { Identity } from './identity';
+import { EMAIL_REGEX, hasPathTraversal } from './validators/common';
 
 export interface ValidationResult {
   valid: boolean;
@@ -31,12 +32,6 @@ const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; description: string }> = [
   // eslint-disable-next-line no-control-regex
   { pattern: /\0/, description: 'null bytes' },
 ];
-
-/**
- * Email validation regex (simplified RFC 5322)
- * Allows most valid email addresses while rejecting obvious invalid ones
- */
-const EMAIL_REGEX = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 
 /**
  * GPG Key ID pattern (8-40 hex characters)
@@ -107,7 +102,7 @@ function validateSshKeyPath(
   }
 
   // No path traversal
-  if (sshKeyPath.includes('..')) {
+  if (hasPathTraversal(sshKeyPath)) {
     errors.push('sshKeyPath: path traversal (..) is not allowed');
   }
 
@@ -255,7 +250,7 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
  */
 export function isPathSafe(path: string): boolean {
   // No path traversal
-  if (path.includes('..')) {
+  if (hasPathTraversal(path)) {
     return false;
   }
 

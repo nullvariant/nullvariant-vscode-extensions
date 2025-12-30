@@ -9,10 +9,14 @@
  * @see https://owasp.org/www-project-application-security-verification-standard/
  */
 
-/**
- * Security constants for path validation
- */
-const PATH_MAX = 4096; // POSIX PATH_MAX
+import { PATH_MAX } from './constants';
+import {
+  CONTROL_CHAR_REGEX_STRICT,
+  hasInvisibleUnicode,
+  hasPathTraversal,
+  hasPathTraversalStrict,
+  hasNullByte,
+} from './validators/common';
 
 /**
  * Security constants for flag validation
@@ -61,41 +65,23 @@ export function isSecurePath(path: string): SecurePathResult {
   }
 
   // Check for null bytes (common attack vector) - must check BEFORE normalization
-  if (path.includes('\0')) {
+  if (hasNullByte(path)) {
     return { valid: false, reason: 'Path contains null byte' };
   }
 
   // Check for control characters (ASCII 0-31 except tab, newline)
   // Note: null byte (\x00) is already checked above, but regex includes it for completeness
-  // eslint-disable-next-line no-control-regex
-  const controlCharRegex = /[\x00-\x08\x0b\x0c\x0e-\x1f]/;
-  if (controlCharRegex.test(path)) {
+  if (CONTROL_CHAR_REGEX_STRICT.test(path)) {
     return { valid: false, reason: 'Path contains control characters' };
   }
 
   // Check for invisible/zero-width Unicode characters that could be used to
   // obfuscate paths (homograph attacks, visual spoofing)
-  const invisibleChars = [
-    '\u200B', // Zero-width space
-    '\u200C', // Zero-width non-joiner
-    '\u200D', // Zero-width joiner
-    '\u200E', // Left-to-right mark
-    '\u200F', // Right-to-left mark
-    '\u2060', // Word joiner
-    '\u2061', // Function application
-    '\u2062', // Invisible times
-    '\u2063', // Invisible separator
-    '\u2064', // Invisible plus
-    '\uFEFF', // Byte order mark (BOM)
-    '\u00AD', // Soft hyphen
-  ];
-  for (const char of invisibleChars) {
-    if (path.includes(char)) {
-      return {
-        valid: false,
-        reason: 'Path contains invisible Unicode characters',
-      };
-    }
+  if (hasInvisibleUnicode(path)) {
+    return {
+      valid: false,
+      reason: 'Path contains invisible Unicode characters',
+    };
   }
 
   // Normalize Unicode to NFC for consistent comparison
@@ -104,17 +90,14 @@ export function isSecurePath(path: string): SecurePathResult {
 
   // CRITICAL: Re-check for control characters and invisible chars AFTER normalization
   // Normalization can create new control characters in edge cases
-  // eslint-disable-next-line no-control-regex
-  if (controlCharRegex.test(normalizedPath)) {
+  if (CONTROL_CHAR_REGEX_STRICT.test(normalizedPath)) {
     return { valid: false, reason: 'Path contains control characters (after normalization)' };
   }
-  for (const char of invisibleChars) {
-    if (normalizedPath.includes(char)) {
-      return {
-        valid: false,
-        reason: 'Path contains invisible Unicode characters (after normalization)',
-      };
-    }
+  if (hasInvisibleUnicode(normalizedPath)) {
+    return {
+      valid: false,
+      reason: 'Path contains invisible Unicode characters (after normalization)',
+    };
   }
 
   // Check PATH_MAX length (in bytes for Unicode safety) - check AFTER normalization
@@ -127,27 +110,9 @@ export function isSecurePath(path: string): SecurePathResult {
     };
   }
 
-  // Check for path traversal patterns
-  // Matches: .., /.., ../, /../, standalone ..
-  // CRITICAL: Also check for ./../ and .../ patterns (3+ dots)
-  // CRITICAL: Check for /./../ and /path/./../ patterns (absolute paths with relative traversal)
-  const traversalPatterns = [
-    /\.\.[/\\]/, // ../ or ..\
-    /[/\\]\.\.$/, // ends with /.. or \..
-    /[/\\]\.\.[/\\]/, // /../ or \..\
-    /^\.\.[/\\]/, // starts with ../ or ..\
-    /^\.\.$/,     // exactly ".."
-    /\.\/\.\./,   // ./../ pattern (relative path with traversal)
-    /\.\.\/\./,   // .././ pattern
-    /\.{3,}/,     // 3+ consecutive dots (potential obfuscation)
-    /\/\.\/\.\./, // /./../ pattern (absolute path with relative traversal)
-    /\/\.\.\/\./, // /.././ pattern
-  ];
-
-  for (const pattern of traversalPatterns) {
-    if (pattern.test(normalizedPath)) {
-      return { valid: false, reason: 'Path contains traversal pattern (..)' };
-    }
+  // Check for path traversal patterns using comprehensive validation
+  if (hasPathTraversalStrict(normalizedPath)) {
+    return { valid: false, reason: 'Path contains traversal pattern (..)' };
   }
 
   // Check for double slashes (potential path confusion)
@@ -272,7 +237,7 @@ export function isSecurePath(path: string): SecurePathResult {
       // CRITICAL: Must NOT allow './../' or './..' (already caught by traversal check)
       if (normalizedPath === '.' || normalizedPath.startsWith('./')) {
         // Additional check: ensure './' is not followed by traversal
-        if (normalizedPath.startsWith('./') && normalizedPath.includes('../')) {
+        if (normalizedPath.startsWith('./') && hasPathTraversal(normalizedPath)) {
           return false; // Will be caught by traversal check, but defensive
         }
         return true;
@@ -292,7 +257,7 @@ export function isSecurePath(path: string): SecurePathResult {
   // Final validation: ensure no remaining security issues
   // This is a defensive check to catch any edge cases
   // Double-check that normalized path doesn't contain any dangerous patterns
-  if (normalizedPath.includes('..')) {
+  if (hasPathTraversal(normalizedPath)) {
     // This should have been caught by traversal patterns, but defensive check
     return { valid: false, reason: 'Path contains traversal pattern (defensive check)' };
   }
@@ -507,36 +472,18 @@ export function validateCombinedFlags(
   }
 
   // CRITICAL: Check for null bytes (common attack vector)
-  if (flag.includes('\0')) {
+  if (hasNullByte(flag)) {
     return { valid: false, reason: 'Flag contains null byte' };
   }
 
   // CRITICAL: Check for control characters (ASCII 0-31 except tab, newline)
-  // eslint-disable-next-line no-control-regex
-  const controlCharRegex = /[\x00-\x08\x0b\x0c\x0e-\x1f]/;
-  if (controlCharRegex.test(flag)) {
+  if (CONTROL_CHAR_REGEX_STRICT.test(flag)) {
     return { valid: false, reason: 'Flag contains control characters' };
   }
 
   // CRITICAL: Check for invisible/zero-width Unicode characters
-  const invisibleChars = [
-    '\u200B', // Zero-width space
-    '\u200C', // Zero-width non-joiner
-    '\u200D', // Zero-width joiner
-    '\u200E', // Left-to-right mark
-    '\u200F', // Right-to-left mark
-    '\u2060', // Word joiner
-    '\u2061', // Function application
-    '\u2062', // Invisible times
-    '\u2063', // Invisible separator
-    '\u2064', // Invisible plus
-    '\uFEFF', // Byte order mark (BOM)
-    '\u00AD', // Soft hyphen
-  ];
-  for (const char of invisibleChars) {
-    if (flag.includes(char)) {
-      return { valid: false, reason: 'Flag contains invisible Unicode characters' };
-    }
+  if (hasInvisibleUnicode(flag)) {
+    return { valid: false, reason: 'Flag contains invisible Unicode characters' };
   }
 
   // CRITICAL: Normalize Unicode to NFC for consistent comparison
@@ -544,14 +491,11 @@ export function validateCombinedFlags(
   const normalizedFlag = flag.normalize('NFC');
 
   // CRITICAL: Re-check for control characters and invisible chars AFTER normalization
-  // eslint-disable-next-line no-control-regex
-  if (controlCharRegex.test(normalizedFlag)) {
+  if (CONTROL_CHAR_REGEX_STRICT.test(normalizedFlag)) {
     return { valid: false, reason: 'Flag contains control characters (after normalization)' };
   }
-  for (const char of invisibleChars) {
-    if (normalizedFlag.includes(char)) {
-      return { valid: false, reason: 'Flag contains invisible Unicode characters (after normalization)' };
-    }
+  if (hasInvisibleUnicode(normalizedFlag)) {
+    return { valid: false, reason: 'Flag contains invisible Unicode characters (after normalization)' };
   }
 
   // Must start with single dash (not double dash for long options)

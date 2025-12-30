@@ -5,25 +5,8 @@
  * Separated from SecurityLogger for Single Responsibility Principle.
  */
 
-/**
- * Lazy-loaded VS Code workspace API
- *
- * IMPORTANT: VS Code module is loaded lazily to support testing.
- * In test environments (outside VS Code extension host), the vscode
- * module is not available.
- *
- * @returns VS Code workspace API or undefined if not available
- */
-function getVSCodeWorkspace(): typeof import('vscode').workspace | undefined {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-    const vscode = require('vscode') as typeof import('vscode');
-    return vscode.workspace;
-  } catch {
-    // VS Code API not available (e.g., in tests)
-    return undefined;
-  }
-}
+import { getWorkspace } from './vscodeLoader';
+import { MAX_IDENTITIES } from './constants';
 
 /**
  * Configuration keys that we track for changes
@@ -68,7 +51,6 @@ export interface ConfigChangeDetail {
  * Security limits for DoS protection
  */
 const LIMITS = {
-  MAX_IDENTITIES: 1000,
   MAX_STRINGIFY_SIZE: 100000, // 100KB
 } as const;
 
@@ -84,7 +66,7 @@ export class ConfigChangeDetector {
    * Create a configuration snapshot from current VS Code configuration
    */
   createSnapshot(): ConfigSnapshot {
-    const workspace = getVSCodeWorkspace();
+    const workspace = getWorkspace();
     if (!workspace) {
       // Return default snapshot when VS Code API is not available (e.g., in tests)
       return {
@@ -103,8 +85,8 @@ export class ConfigChangeDetector {
 
     // Limit identities array size to prevent DoS attacks
     const limitedIdentities =
-      Array.isArray(identities) && identities.length > LIMITS.MAX_IDENTITIES
-        ? identities.slice(0, LIMITS.MAX_IDENTITIES)
+      Array.isArray(identities) && identities.length > MAX_IDENTITIES
+        ? identities.slice(0, MAX_IDENTITIES)
         : identities;
 
     return {

@@ -10,43 +10,28 @@
 import * as path from 'path';
 // Type-only import (stripped at compile time, no runtime dependency)
 import type { OutputChannel } from 'vscode';
-
-/**
- * Lazy-loaded VS Code API reference
- *
- * IMPORTANT: VS Code module is loaded lazily to support testing.
- * In test environments (outside VS Code extension host), the vscode
- * module is not available. By using lazy loading, we can run tests
- * without the vscode dependency.
- *
- * @returns VS Code API or undefined if not available
- */
-function getVSCode(): typeof import('vscode') | undefined {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-    return require('vscode') as typeof import('vscode');
-  } catch {
-    // VS Code API not available (e.g., in tests)
-    return undefined;
-  }
-}
+import { getVSCode } from './vscodeLoader';
+import {
+  PATH_MAX,
+  MAX_PATTERN_CHECK_LENGTH,
+  MAX_LOG_STRING_LENGTH,
+  MIN_SECRET_LENGTH,
+  MAX_SECRET_LENGTH,
+  MAX_ID_LENGTH,
+} from './constants';
+import { CONTROL_CHAR_REGEX_ALL } from './validators/common';
 
 /**
  * Security limits to prevent DoS attacks
+ * Re-exported for backwards compatibility
  */
 const SECURITY_LIMITS = {
-  /** Maximum path length to process */
-  MAX_PATH_LENGTH: 4096,
-  /** Maximum string length for pattern matching */
-  MAX_PATTERN_CHECK_LENGTH: 1000,
-  /** Maximum string length to log (truncate longer) */
-  MAX_LOG_STRING_LENGTH: 50,
-  /** Minimum length for secret-like string detection */
-  MIN_SECRET_LENGTH: 32,
-  /** Maximum length for secret-like string detection */
-  MAX_SECRET_LENGTH: 256,
-  /** Maximum identity ID length (matches IDENTITY_SCHEMA.id.maxLength) */
-  MAX_ID_LENGTH: 64,
+  MAX_PATH_LENGTH: PATH_MAX,
+  MAX_PATTERN_CHECK_LENGTH,
+  MAX_LOG_STRING_LENGTH,
+  MIN_SECRET_LENGTH,
+  MAX_SECRET_LENGTH,
+  MAX_ID_LENGTH,
 } as const;
 
 /**
@@ -760,8 +745,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
     }
 
     // SECURITY: Check for control characters (potential injection attack)
-    // eslint-disable-next-line no-control-regex
-    if (/[\x00-\x1f\x7f]/.test(inputPath)) {
+    if (CONTROL_CHAR_REGEX_ALL.test(inputPath)) {
       return '[REDACTED:CONTROL_CHARS]';
     }
 

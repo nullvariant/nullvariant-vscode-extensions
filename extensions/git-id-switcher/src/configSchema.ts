@@ -8,6 +8,8 @@
  */
 
 import { isSingleGrapheme } from './displayLimits';
+import { isValidEmail, isValidHex } from './validators/common';
+import { PATH_MAX } from './constants';
 
 /**
  * Property schema definition
@@ -76,7 +78,7 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
   sshKeyPath: {
     type: 'string',
     description: 'Path to SSH private key',
-    maxLength: 4096, // PATH_MAX on most systems
+    maxLength: PATH_MAX, // PATH_MAX on most systems
     // Must be absolute path or start with ~, no dangerous chars
     pattern: '^[~/][^\\x00-\\x1f\\x7f`$(){}|;&<>]*$',
   },
@@ -111,23 +113,6 @@ export interface SchemaError {
   field: string;
   message: string;
   value?: unknown;
-}
-
-/**
- * Simple email format validation
- */
-function isValidEmail(email: string): boolean {
-  // Simplified email regex - catches most invalid emails
-  // while allowing legitimate international characters
-  const emailRegex = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
-  return emailRegex.test(email);
-}
-
-/**
- * Hex format validation
- */
-function isValidHex(value: string): boolean {
-  return /^[A-Fa-f0-9]+$/.test(value);
 }
 
 /**

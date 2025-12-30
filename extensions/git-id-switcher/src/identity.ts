@@ -8,6 +8,7 @@
 import * as vscode from 'vscode';
 import { validateIdentitySchema } from './configSchema';
 import { securityLogger } from './securityLogger';
+import { MAX_IDENTITIES } from './constants';
 
 /**
  * Session-level flag to prevent multiple validation error notifications.
@@ -86,7 +87,6 @@ export function getIdentitiesWithValidation(): Identity[] {
 
   // SECURITY: Limit array size to prevent DoS attacks via excessive validation
   // VS Code settings should enforce this, but defense-in-depth requires explicit check
-  const MAX_IDENTITIES = 1000;
   if (rawIdentities.length > MAX_IDENTITIES) {
     securityLogger.logValidationFailure(
       'identities',
