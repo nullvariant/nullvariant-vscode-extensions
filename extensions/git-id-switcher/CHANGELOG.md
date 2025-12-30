@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.2] - 2025-12-31
+
+### Security
+
+- **Command Allowlist Hardening**: Fix critical vulnerabilities in argument validation
+  - **[CRITICAL] Subcommand Bypass Fix**: Subcommand arguments are now validated instead of immediately returning `allowed: true`
+  - **[HIGH] Path Argument Bypass Fix**: Path-like arguments no longer unconditionally bypass allowlist
+  - **[HIGH] Submodule Command Restriction**: Block dangerous commands like `git submodule update/init/add/foreach`
+
+### Added
+
+- **`allowPathPositionals` Option**: New restrictive option for path-only positional arguments
+  - More secure than `allowAnyPositional` for commands like `git submodule status <path>`
+  - Prevents non-path strings (e.g., 'update', 'init') from bypassing allowlist
+- **`allowedOptionsWithValues` Option**: Explicit control over which options accept arbitrary values
+  - Used for `git config user.name`, `git config user.email`, etc.
+  - Values following these options are allowed but flag injection is blocked
+- **Command Allowlist Tests**: New test suite for comprehensive allowlist validation
+
+### Changed
+
+- **Strict Flag Validation**: Flags must be explicitly in `allowedArgs` or valid combined flags
+- **Enhanced Path Detection**: Arguments containing `/` are now checked by `isSecurePath()`
+- **Improved Error Messages**: More descriptive rejection reasons including path validation details
+
 ## [0.10.1] - 2025-12-31
 
 ### Fixed
