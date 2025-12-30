@@ -96,7 +96,58 @@ const TIMEOUT_LIMITS = {
 } as const;
 
 /**
+ * Security limits for command name validation
+ */
+const COMMAND_NAME_LIMITS = {
+  MAX_LENGTH: 64, // Maximum command name length (DoS protection)
+  MAX_ENTRIES: 100, // Maximum number of timeout entries (DoS protection)
+} as const;
+
+/**
+ * Validate command name for security
+ *
+ * @param cmd - Command name to validate
+ * @returns true if command name is valid
+ */
+function isValidCommandName(cmd: string): boolean {
+  // Check for null/undefined/empty
+  if (!cmd || typeof cmd !== 'string' || cmd.length === 0) {
+    return false;
+  }
+
+  // DoS protection: limit length
+  if (cmd.length > COMMAND_NAME_LIMITS.MAX_LENGTH) {
+    return false;
+  }
+
+  // SECURITY: Only allow ASCII alphanumeric, hyphen, underscore, and dot
+  // This prevents injection attacks via command names
+  // Valid characters: a-z, A-Z, 0-9, -, _, .
+  const validCommandNameRegex = /^[a-zA-Z0-9._-]+$/;
+  if (!validCommandNameRegex.test(cmd)) {
+    return false;
+  }
+
+  // SECURITY: Reject command names that start with special characters
+  // (even though regex should catch this, defensive check)
+  if (cmd.startsWith('.') || cmd.startsWith('-') || cmd.startsWith('_')) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Get user-configured command timeouts from VS Code settings
+ *
+ * SECURITY: Validates all user-provided values to prevent:
+ * - DoS attacks (too many entries, invalid values)
+ * - Injection attacks (malicious command names)
+ * - Resource exhaustion (NaN, Infinity, extreme values)
+ *
+ * PERFORMANCE: This function is called on every command execution.
+ * VS Code's getConfiguration() is lightweight, so caching is not necessary.
+ * If performance becomes an issue, consider caching with config change detection.
  *
  * @returns User-configured timeouts or empty object
  */
@@ -105,16 +156,90 @@ function getUserConfiguredTimeouts(): Record<string, number> {
     const config = vscode.workspace.getConfiguration('gitIdSwitcher');
     const userTimeouts = config.get<Record<string, number>>('commandTimeouts', {});
 
+    // SECURITY: Limit number of entries to prevent DoS
+    const entries = Object.entries(userTimeouts);
+    if (entries.length > COMMAND_NAME_LIMITS.MAX_ENTRIES) {
+      // Log but don't throw - just use first MAX_ENTRIES
+      // SECURITY: Use securityLogger if available, otherwise console.warn
+      try {
+        securityLogger.logValidationFailure(
+          'commandTimeouts',
+          `Too many timeout entries (${entries.length}), limiting to ${COMMAND_NAME_LIMITS.MAX_ENTRIES}`,
+          entries.length
+        );
+      } catch {
+        // Fallback to console if logger not available
+        console.warn(
+          `[Security] Too many timeout entries (${entries.length}), limiting to ${COMMAND_NAME_LIMITS.MAX_ENTRIES}`
+        );
+      }
+    }
+
     // Validate and sanitize user-provided values
     const sanitized: Record<string, number> = {};
-    for (const [cmd, timeout] of Object.entries(userTimeouts)) {
-      if (
-        typeof timeout === 'number' &&
-        timeout >= TIMEOUT_LIMITS.MIN &&
-        timeout <= TIMEOUT_LIMITS.MAX
-      ) {
-        sanitized[cmd] = timeout;
+    let count = 0;
+    for (const [cmd, timeout] of entries) {
+      // DoS protection: limit number of entries processed
+      if (count >= COMMAND_NAME_LIMITS.MAX_ENTRIES) {
+        break;
       }
+
+      // SECURITY: Validate command name
+      if (!isValidCommandName(cmd)) {
+        // Skip invalid command names (log for debugging)
+        try {
+          securityLogger.logValidationFailure(
+            'commandTimeouts',
+            'Invalid command name in timeout config',
+            cmd
+          );
+        } catch {
+          console.warn(`[Security] Invalid command name in timeout config: ${cmd}`);
+        }
+        continue;
+      }
+
+      // SECURITY: Validate timeout value
+      if (
+        typeof timeout !== 'number' ||
+        !Number.isFinite(timeout) || // Rejects NaN and Infinity
+        timeout < TIMEOUT_LIMITS.MIN ||
+        timeout > TIMEOUT_LIMITS.MAX
+      ) {
+        // Skip invalid timeout values (log for debugging)
+        try {
+          securityLogger.logValidationFailure(
+            'commandTimeouts',
+            `Invalid timeout value (must be ${TIMEOUT_LIMITS.MIN}-${TIMEOUT_LIMITS.MAX}ms)`,
+            { command: cmd, timeout }
+          );
+        } catch {
+          console.warn(
+            `[Security] Invalid timeout value for command '${cmd}': ${timeout} (must be ${TIMEOUT_LIMITS.MIN}-${TIMEOUT_LIMITS.MAX}ms)`
+          );
+        }
+        continue;
+      }
+
+      // SECURITY: Ensure timeout is an integer (prevent precision attacks)
+      const timeoutInt = Math.floor(timeout);
+      if (timeoutInt !== timeout) {
+        // Round to nearest integer (log for debugging)
+        try {
+          securityLogger.logValidationFailure(
+            'commandTimeouts',
+            'Timeout value is not an integer, rounding',
+            { command: cmd, original: timeout, rounded: timeoutInt }
+          );
+        } catch {
+          console.warn(
+            `[Security] Timeout value for command '${cmd}' is not an integer, rounding: ${timeout} -> ${timeoutInt}`
+          );
+        }
+      }
+
+      sanitized[cmd] = timeoutInt;
+      count++;
     }
     return sanitized;
   } catch {
@@ -127,7 +252,7 @@ function getUserConfiguredTimeouts(): Record<string, number> {
  * Get the appropriate timeout for a command
  *
  * Priority order:
- * 1. Function argument override (if > 0)
+ * 1. Function argument override (if > 0 and valid)
  * 2. User-configured timeout from VS Code settings
  * 3. Built-in command-specific timeout from COMMAND_TIMEOUTS map
  * 4. DEFAULT_TIMEOUT (30 seconds)
@@ -135,22 +260,70 @@ function getUserConfiguredTimeouts(): Record<string, number> {
  * Note: An override of 0 or negative is treated as "use default" behavior.
  * This prevents accidentally disabling timeouts entirely.
  *
+ * SECURITY: All timeout values are validated to prevent:
+ * - NaN and Infinity values
+ * - Values outside acceptable range
+ * - Non-integer values (rounded)
+ *
  * @param command - The command to get timeout for
  * @param overrideTimeout - Optional override from ExecOptions (must be > 0 to be used)
- * @returns Timeout in milliseconds (always positive)
+ * @returns Timeout in milliseconds (always positive and finite)
  */
 export function getCommandTimeout(
   command: string,
   overrideTimeout?: number
 ): number {
-  // Function argument override takes highest precedence (must be positive)
-  if (overrideTimeout !== undefined && overrideTimeout > 0) {
-    return overrideTimeout;
+  // SECURITY: Validate override timeout if provided
+  if (overrideTimeout !== undefined) {
+    // Check for positive value
+    if (overrideTimeout > 0) {
+      // SECURITY: Validate that timeout is finite (rejects NaN and Infinity)
+      if (!Number.isFinite(overrideTimeout)) {
+        // Log validation failure (use securityLogger if available)
+        try {
+          securityLogger.logValidationFailure(
+            'commandTimeout',
+            'Invalid override timeout (not finite)',
+            overrideTimeout
+          );
+        } catch {
+          console.warn(
+            `[Security] Invalid override timeout (${overrideTimeout}), using default`
+          );
+        }
+        // Fall through to default behavior
+      } else {
+        // SECURITY: Validate range
+        if (
+          overrideTimeout >= TIMEOUT_LIMITS.MIN &&
+          overrideTimeout <= TIMEOUT_LIMITS.MAX
+        ) {
+          // SECURITY: Ensure integer (prevent precision attacks)
+          return Math.floor(overrideTimeout);
+        } else {
+          // Log validation failure (use securityLogger if available)
+          try {
+            securityLogger.logValidationFailure(
+              'commandTimeout',
+              `Override timeout out of range (must be ${TIMEOUT_LIMITS.MIN}-${TIMEOUT_LIMITS.MAX}ms)`,
+              overrideTimeout
+            );
+          } catch {
+            console.warn(
+              `[Security] Override timeout (${overrideTimeout}) out of range, using default`
+            );
+          }
+          // Fall through to default behavior
+        }
+      }
+    }
+    // If overrideTimeout is 0 or negative, fall through to default behavior
   }
 
   // Check user-configured timeouts from VS Code settings
   const userTimeouts = getUserConfiguredTimeouts();
   if (userTimeouts[command] !== undefined) {
+    // User timeouts are already validated in getUserConfiguredTimeouts()
     return userTimeouts[command];
   }
 
@@ -165,6 +338,9 @@ export function getCommandTimeout(
  * - Our custom TimeoutError class
  * - Node.js execFile timeout errors (killed=true, signal=SIGTERM)
  *
+ * SECURITY: Validates error structure to prevent false positives.
+ * Only accepts errors that definitively indicate a timeout.
+ *
  * @param error - The error to check
  * @returns true if the error indicates a timeout occurred
  */
@@ -176,9 +352,19 @@ function isTimeoutError(error: unknown): error is TimeoutError | ExecFileExcepti
 
   // Node.js execFile timeout error
   // When execFile times out, it kills the process with SIGTERM
+  // SECURITY: Must check both killed and signal to prevent false positives
   if (error instanceof Error) {
     const execError = error as ExecFileException;
-    return execError.killed === true && execError.signal === 'SIGTERM';
+    // SECURITY: Both conditions must be true for timeout detection
+    // killed=true alone is not sufficient (could be manual kill)
+    // signal='SIGTERM' alone is not sufficient (could be other signal)
+    // Only accept if both are present and match timeout pattern
+    if (
+      execError.killed === true &&
+      execError.signal === 'SIGTERM'
+    ) {
+      return true;
+    }
   }
 
   return false;
@@ -244,14 +430,21 @@ export async function secureExec(
   } catch (error: unknown) {
     // Handle timeout errors specifically
     if (isTimeoutError(error)) {
-      // Log timeout event for debugging
+      // SECURITY: Log timeout event for debugging and audit trail
+      // This helps identify performance issues and potential DoS attacks
       logger.logCommandTimeout(command, args, timeout, options.cwd);
 
-      // Throw our custom TimeoutError for better handling upstream
+      // SECURITY: Throw our custom TimeoutError for better handling upstream
+      // Note: We create a new TimeoutError rather than re-throwing the original
+      // because the original error may contain sensitive information in its
+      // message or stack trace. Our TimeoutError is sanitized.
       throw new TimeoutError(command, args, timeout);
     }
 
-    // Re-throw other errors as-is
+    // SECURITY: Re-throw other errors as-is
+    // These are typically command execution failures (e.g., command not found,
+    // permission denied, etc.) and should be handled by the caller.
+    // We don't log them here to avoid information leakage.
     throw error;
   }
 }
