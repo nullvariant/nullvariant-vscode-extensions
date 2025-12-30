@@ -214,9 +214,9 @@ function testRegexPatternStrictness(): void {
   console.log('Testing regex pattern strictness...');
 
   // Copy of the regex from submodule.ts for testing
+  // Control characters are intentionally excluded for security
   // eslint-disable-next-line no-control-regex
-  const SUBMODULE_STATUS_REGEX =
-    /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^)]+\))?$/;
+  const SUBMODULE_STATUS_REGEX = /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^)]+\))?$/;
 
   // Valid cases
   const validCases = [

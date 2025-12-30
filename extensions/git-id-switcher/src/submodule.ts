@@ -46,8 +46,9 @@ export interface Submodule {
  * - Path must be at least 1 character (non-empty)
  * - Branch name (if present) must not contain newlines or control characters
  */
-const SUBMODULE_STATUS_REGEX =
-  /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^\x00-\x1f\x7f)]+\))?$/;
+// Control characters are intentionally excluded for security
+// eslint-disable-next-line no-control-regex
+const SUBMODULE_STATUS_REGEX = /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^\x00-\x1f\x7f)]+\))?$/;
 
 /**
  * List all submodules in the workspace

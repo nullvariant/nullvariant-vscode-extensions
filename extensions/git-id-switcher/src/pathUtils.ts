@@ -137,7 +137,7 @@ export function normalizeAndValidatePath(
   }
 
   // Step 4: Expand tilde
-  let expandedPath = expandTilde(inputPath);
+  const expandedPath = expandTilde(inputPath);
 
   // Step 5: Resolve to absolute path if relative
   // SECURITY: Always resolve relative paths to absolute paths for consistency
