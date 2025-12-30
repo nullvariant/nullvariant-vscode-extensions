@@ -11,6 +11,7 @@ import { runPathUtilsTests } from './pathUtils.test';
 import { runSshKeyFormatTests } from './sshKeyFormat.test';
 import { runValidatorsCommonTests } from './validatorsCommon.test';
 import { runVSCodeLoaderTests } from './vscodeLoader.test';
+import { runFileLogWriterTests } from './fileLogWriter.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -38,6 +39,9 @@ async function main(): Promise<void> {
 
     // Run VS Code loader tests
     runVSCodeLoaderTests();
+
+    // Run FileLogWriter tests
+    await runFileLogWriterTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');

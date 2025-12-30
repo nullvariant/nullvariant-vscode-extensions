@@ -131,37 +131,63 @@ export class FileLogWriter implements ILogWriter {
   }
 
   /**
-   * Format log entry as single line
+   * Serialize metadata with circular reference handling
    * 
    * Attempts to serialize metadata, falling back to partial serialization
    * if full serialization fails (e.g., circular references).
+   * 
+   * Separated from formatLogLine() for Single Responsibility Principle.
    */
-  private formatLogLine(log: StructuredLog): string {
-    let metadataStr = '';
-    if (log.metadata) {
+  private serializeMetadata(metadata: Record<string, unknown>): string {
+    try {
+      return ` ${JSON.stringify(metadata)}`;
+    } catch (error) {
+      // Try to serialize with replacer to handle circular references
       try {
-        metadataStr = ` ${JSON.stringify(log.metadata)}`;
-      } catch (error) {
-        // Try to serialize with replacer to handle circular references
-        try {
-          const seen = new WeakSet();
-          metadataStr = ` ${JSON.stringify(log.metadata, (_key, value) => {
-            if (typeof value === 'object' && value !== null) {
-              if (seen.has(value)) {
-                return '[Circular]';
-              }
-              seen.add(value);
+        const seen = new WeakSet();
+        return ` ${JSON.stringify(metadata, (_key, value) => {
+          if (typeof value === 'object' && value !== null) {
+            if (seen.has(value)) {
+              return '[Circular]';
             }
-            return value;
-          })}`;
-        } catch {
-          // If all serialization attempts fail, include at least the keys
-          const keys = Object.keys(log.metadata);
-          metadataStr = ` [metadata serialization failed: ${keys.length} keys, error: ${String(error)}]`;
-        }
+            seen.add(value);
+          }
+          return value;
+        })}`;
+      } catch {
+        // If all serialization attempts fail, include at least the keys
+        const keys = Object.keys(metadata);
+        return ` [metadata serialization failed: ${keys.length} keys, error: ${String(error)}]`;
       }
     }
+  }
+
+  /**
+   * Format log entry as single line
+   */
+  private formatLogLine(log: StructuredLog): string {
+    const metadataStr = log.metadata ? this.serializeMetadata(log.metadata) : '';
     return `[${log.timestamp}] [${log.level}] [${log.category}] ${log.message}${metadataStr}\n`;
+  }
+
+  /**
+   * Perform log file rotation
+   * 
+   * Separated from rotate() for Single Responsibility Principle.
+   * Handles the actual file rotation operation.
+   */
+  private performRotation(): string | null {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const ext = path.extname(this.currentFilePath);
+    const base = path.basename(this.currentFilePath, ext);
+    const dir = path.dirname(this.currentFilePath);
+    const rotatedPath = path.join(dir, `${base}.${timestamp}${ext}`);
+
+    if (fs.existsSync(this.currentFilePath)) {
+      fs.renameSync(this.currentFilePath, rotatedPath);
+    }
+
+    return dir;
   }
 
   /**
@@ -186,17 +212,13 @@ export class FileLogWriter implements ILogWriter {
       this.writeStream.end();
       this.writeStream = null;
 
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const ext = path.extname(this.currentFilePath);
-      const base = path.basename(this.currentFilePath, ext);
-      const dir = path.dirname(this.currentFilePath);
-      const rotatedPath = path.join(dir, `${base}.${timestamp}${ext}`);
-
-      if (fs.existsSync(this.currentFilePath)) {
-        fs.renameSync(this.currentFilePath, rotatedPath);
+      const dir = this.performRotation();
+      if (dir) {
+        const ext = path.extname(this.currentFilePath);
+        const base = path.basename(this.currentFilePath, ext);
+        this.cleanupOldFiles(dir, base, ext);
       }
 
-      this.cleanupOldFiles(dir, base, ext);
       this.openWriteStream();
       this.rotationRetryCount = 0; // Reset on success
       // currentFileSize is reset in openWriteStream() by reading file stats
