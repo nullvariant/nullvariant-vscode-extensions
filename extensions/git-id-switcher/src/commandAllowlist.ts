@@ -15,6 +15,14 @@
 const PATH_MAX = 4096; // POSIX PATH_MAX
 
 /**
+ * Security constants for flag validation
+ */
+const MAX_FLAG_LENGTH = 50; // Maximum length for a single flag argument
+const MAX_COMBINED_FLAG_CHARS = 10; // Maximum individual flag characters in combined form
+const MAX_ARGS_COUNT = 20; // Maximum number of arguments allowed
+const MAX_ARG_LENGTH = 256; // Maximum length for a single non-path argument
+
+/**
  * Result of secure path validation
  */
 export interface SecurePathResult {
@@ -443,6 +451,181 @@ export interface AllowlistCheckResult {
 }
 
 /**
+ * Result of combined flag validation
+ */
+export interface CombinedFlagResult {
+  valid: boolean;
+  reason?: string;
+}
+
+/**
+ * Definition for allowed combined flag patterns
+ */
+interface AllowedCombinedPattern {
+  pattern: string; // e.g., 'lf' for -lf
+  ordered: boolean; // true if order matters (e.g., -lf !== -fl)
+}
+
+/**
+ * Allowed combined flag patterns per command
+ * Only explicitly listed combinations are allowed.
+ */
+const ALLOWED_COMBINED_PATTERNS: Record<string, AllowedCombinedPattern[]> = {
+  'ssh-keygen': [
+    { pattern: 'lf', ordered: true }, // -lf (list fingerprint of file) - order matters
+  ],
+};
+
+/**
+ * Validate a combined flag argument (e.g., -lf, -abc)
+ *
+ * Security checks performed:
+ * 1. Length limit to prevent DoS attacks
+ * 2. Duplicate flag detection (e.g., -ll is rejected)
+ * 3. Unknown flag detection (each character must be in allowlist)
+ * 4. Order-sensitive validation for specific commands
+ * 5. Only explicitly allowed combinations are permitted
+ *
+ * @param flag - The flag to validate (e.g., '-lf', '-abc')
+ * @param command - The command being executed (e.g., 'ssh-keygen')
+ * @param allowedArgs - Array of allowed individual flags
+ * @returns CombinedFlagResult indicating if the flag is valid
+ */
+export function validateCombinedFlags(
+  flag: string,
+  command: string,
+  allowedArgs: readonly string[]
+): CombinedFlagResult {
+  // Basic validation
+  if (!flag || flag.length === 0) {
+    return { valid: false, reason: 'Flag is empty' };
+  }
+
+  // Must start with single dash (not double dash for long options)
+  if (!flag.startsWith('-') || flag.startsWith('--')) {
+    // Long options (--option) should be checked via exact match, not here
+    return { valid: true }; // Let caller handle non-combined flags
+  }
+
+  // Length limit for DoS protection
+  if (flag.length > MAX_FLAG_LENGTH) {
+    return {
+      valid: false,
+      reason: `Flag exceeds maximum length (${flag.length} > ${MAX_FLAG_LENGTH})`,
+    };
+  }
+
+  // Extract flag characters (remove leading dash)
+  const flagChars = flag.slice(1);
+
+  // Empty after removing dash
+  if (flagChars.length === 0) {
+    return { valid: false, reason: 'Flag contains only dash' };
+  }
+
+  // Check for invalid characters in flag
+  // Valid flag characters are ASCII letters only (a-z, A-Z)
+  // Numbers and special characters are not valid in combined short flags
+  const invalidCharRegex = /[^a-zA-Z]/;
+  if (invalidCharRegex.test(flagChars)) {
+    const invalidMatch = flagChars.match(invalidCharRegex);
+    return {
+      valid: false,
+      reason: `Invalid character '${invalidMatch?.[0]}' in flag '${flag}'. Only ASCII letters allowed.`,
+    };
+  }
+
+  // Single character flag - check directly against allowlist
+  if (flagChars.length === 1) {
+    const singleFlag = `-${flagChars}`;
+    if (allowedArgs.includes(singleFlag)) {
+      return { valid: true };
+    }
+    return {
+      valid: false,
+      reason: `Flag '${singleFlag}' is not in allowlist`,
+    };
+  }
+
+  // Combined flag validation (2+ characters)
+  // Check for maximum combined flag characters
+  if (flagChars.length > MAX_COMBINED_FLAG_CHARS) {
+    return {
+      valid: false,
+      reason: `Combined flag has too many characters (${flagChars.length} > ${MAX_COMBINED_FLAG_CHARS})`,
+    };
+  }
+
+  // Check for duplicate characters (e.g., -ll)
+  const charSet = new Set<string>();
+  for (const char of flagChars) {
+    if (charSet.has(char)) {
+      return {
+        valid: false,
+        reason: `Duplicate flag character '${char}' in combined flag`,
+      };
+    }
+    charSet.add(char);
+  }
+
+  // Check if this command has allowed combined patterns
+  const commandPatterns = ALLOWED_COMBINED_PATTERNS[command];
+
+  if (commandPatterns) {
+    // Check against explicitly allowed patterns
+    for (const pattern of commandPatterns) {
+      if (pattern.ordered) {
+        // Exact match required for ordered patterns
+        if (flagChars === pattern.pattern) {
+          return { valid: true };
+        }
+      } else {
+        // For unordered patterns, check if same characters (sorted)
+        const sortedFlag = [...flagChars].sort().join('');
+        const sortedPattern = [...pattern.pattern].sort().join('');
+        if (sortedFlag === sortedPattern) {
+          return { valid: true };
+        }
+      }
+    }
+  }
+
+  // If no explicit pattern matched, check each character individually
+  // All characters must be valid individual flags
+  const allowedSingleChars = new Set<string>();
+  for (const allowed of allowedArgs) {
+    // Extract single-char flags (e.g., -l, -f, -d)
+    if (allowed.startsWith('-') && !allowed.startsWith('--') && allowed.length === 2) {
+      allowedSingleChars.add(allowed[1]);
+    }
+  }
+
+  // Check each character in the combined flag
+  const unknownChars: string[] = [];
+  for (const char of flagChars) {
+    if (!allowedSingleChars.has(char)) {
+      unknownChars.push(char);
+    }
+  }
+
+  if (unknownChars.length > 0) {
+    return {
+      valid: false,
+      reason: `Unknown flag character(s) '${unknownChars.join('')}' in combined flag '${flag}'`,
+    };
+  }
+
+  // All characters are valid individual flags
+  // But for security, we require explicit pattern definitions for combined flags
+  // If no patterns are defined, reject the combined flag
+  // This prevents unexpected flag combinations from being silently allowed
+  return {
+    valid: false,
+    reason: `Combined flag '${flag}' is not explicitly allowed for '${command}'. Use separate flags instead.`,
+  };
+}
+
+/**
  * Check if a command is in the allowlist
  *
  * @param command - The command to execute (e.g., 'git', 'ssh-add')
@@ -512,7 +695,22 @@ export function isCommandAllowed(
   // File paths must pass security validation, flags must be in allowlist
   const allowedArgs = commandConfig.allowedArgs || [];
 
+  // Check args count limit (DoS protection)
+  if (args.length > MAX_ARGS_COUNT) {
+    return {
+      allowed: false,
+      reason: `Too many arguments (${args.length} > ${MAX_ARGS_COUNT})`,
+    };
+  }
+
   for (const arg of args) {
+    // Check individual argument length (except paths which have their own limit)
+    if (!isPathArgument(arg) && arg.length > MAX_ARG_LENGTH) {
+      return {
+        allowed: false,
+        reason: `Argument exceeds maximum length (${arg.length} > ${MAX_ARG_LENGTH})`,
+      };
+    }
     // Check if argument looks like a file path
     if (isPathArgument(arg)) {
       // Validate path for security (path traversal, etc.)
@@ -527,20 +725,27 @@ export function isCommandAllowed(
       continue;
     }
 
-    // Check if arg is in allowed list
-    const isAllowedArg = allowedArgs.some(allowed => {
-      // Exact match
-      if (arg === allowed) {
-        return true;
+    // Check if arg is a flag (starts with -)
+    if (arg.startsWith('-')) {
+      // First, check for exact match in allowlist
+      if (allowedArgs.includes(arg)) {
+        continue;
       }
-      // For combined args like '-lf', check if components are allowed
-      if (arg.startsWith('-') && allowed.startsWith('-')) {
-        return arg.includes(allowed.replace('-', ''));
-      }
-      return false;
-    });
 
-    if (!isAllowedArg && arg.startsWith('-')) {
+      // Use secure combined flag validation
+      const flagResult = validateCombinedFlags(arg, command, allowedArgs);
+      if (!flagResult.valid) {
+        return {
+          allowed: false,
+          reason: flagResult.reason || `Argument '${arg}' is not allowed for command '${command}'`,
+        };
+      }
+      continue;
+    }
+
+    // Non-flag, non-path argument - reject for security
+    // Only explicitly allowed non-flag values should be accepted
+    if (!allowedArgs.includes(arg)) {
       return {
         allowed: false,
         reason: `Argument '${arg}' is not allowed for command '${command}'`,
