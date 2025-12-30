@@ -102,10 +102,11 @@ class SecurityLoggerImpl {
     // Also log to console for development
     console.log(`[Git ID Switcher Security] ${message}`);
 
-    // Show notification for errors
+    // Show notification for errors (without sensitive details)
     if (fullEvent.severity === 'error') {
+      // SECURITY: Only show event type, not details which may contain sensitive info
       vscode.window.showWarningMessage(
-        `Git ID Switcher Security: ${fullEvent.type} - ${JSON.stringify(fullEvent.details)}`
+        `Git ID Switcher Security: ${fullEvent.type} - Check Output panel for details`
       );
     }
   }
@@ -231,14 +232,44 @@ class SecurityLoggerImpl {
 
   /**
    * Sanitize path for logging (don't expose full path structure)
+   * This method is public so other modules can use it for consistent sanitization.
    */
-  private sanitizePath(path: string): string {
+  sanitizePath(inputPath: string): string {
     // Replace home directory with ~
     const home = process.env.HOME || process.env.USERPROFILE || '';
-    if (home && path.startsWith(home)) {
-      return '~' + path.slice(home.length);
+    if (home && inputPath.startsWith(home)) {
+      return '~' + inputPath.slice(home.length);
     }
-    return path;
+    return inputPath;
+  }
+
+  /**
+   * Sanitize a value for safe logging
+   * Removes or masks potentially sensitive information.
+   */
+  sanitizeValue(value: unknown): unknown {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      // Sanitize paths
+      if (value.startsWith('/') || value.startsWith('~') || /^[A-Za-z]:/.test(value)) {
+        return this.sanitizePath(value);
+      }
+      // Truncate long strings
+      if (value.length > 100) {
+        return value.slice(0, 100) + '...[truncated]';
+      }
+      return value;
+    }
+
+    if (typeof value === 'object') {
+      // Don't log complex objects - just indicate their type
+      return `[${Array.isArray(value) ? 'Array' : 'Object'}]`;
+    }
+
+    return value;
   }
 
   /**

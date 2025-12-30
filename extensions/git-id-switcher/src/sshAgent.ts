@@ -16,6 +16,7 @@ import {
   normalizeAndValidatePath,
   validateSshKeyPath,
 } from './pathUtils';
+import { createSecurityViolationError, wrapError } from './errors';
 
 export interface SshKeyInfo {
   fingerprint: string;
@@ -43,7 +44,11 @@ function expandPath(keyPath: string): string {
   });
 
   if (!result.valid) {
-    throw new Error(`Invalid SSH key path: ${result.reason}`);
+    // SECURITY: Don't expose the actual path or detailed reason to users
+    throw createSecurityViolationError('Invalid SSH key path', {
+      field: 'sshKeyPath',
+      context: { reason: result.reason },
+    });
   }
 
   return result.normalizedPath!;
@@ -58,16 +63,20 @@ function validateKeyPath(keyPath: string): void {
   // Use both legacy validation and new secure validation
   if (!isPathSafe(keyPath)) {
     // SECURITY: Don't include the actual path in error message to prevent information leakage
-    // Only include the reason, not the potentially malicious input
-    throw new Error('Invalid SSH key path (legacy check failed)');
+    throw createSecurityViolationError('Invalid SSH key path', {
+      field: 'sshKeyPath',
+      context: { check: 'legacy' },
+    });
   }
 
   // Additional validation using pathUtils
   const result = normalizeAndValidatePath(keyPath);
   if (!result.valid) {
-    // SECURITY: Only include the reason, not the original path
-    // This prevents information leakage if an attacker sends malicious paths
-    throw new Error(`Invalid SSH key path: ${result.reason}`);
+    // SECURITY: Only log the reason internally, don't expose to users
+    throw createSecurityViolationError('Invalid SSH key path', {
+      field: 'sshKeyPath',
+      context: { reason: result.reason },
+    });
   }
 }
 
@@ -129,8 +138,11 @@ export async function addSshKey(keyPath: string): Promise<void> {
       await sshAgentExec([expandedPath]);
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    throw new Error(`Failed to add SSH key: ${message}`);
+    // SECURITY: Wrap error to hide internal details from users
+    throw wrapError(error, 'Failed to add SSH key', {
+      field: 'sshKeyPath',
+      context: { platform },
+    });
   }
 }
 

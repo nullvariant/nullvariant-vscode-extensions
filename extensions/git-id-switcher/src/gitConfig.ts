@@ -19,6 +19,7 @@ import {
   isSubmoduleSupportEnabled,
   getSubmoduleDepth,
 } from './submodule';
+import { createValidationError, createConfigError } from './errors';
 
 /**
  * Check if icon should be included in Git config user.name
@@ -54,7 +55,7 @@ export interface GitConfig {
 async function execGitInWorkspace(args: string[]): Promise<string> {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
   if (!workspaceFolder) {
-    throw new Error('No workspace folder open');
+    throw createConfigError('No workspace folder open');
   }
 
   const cwd = workspaceFolder.uri.fsPath;
@@ -89,19 +90,23 @@ export async function getCurrentGitConfig(): Promise<GitConfig> {
 export async function setGitConfigForIdentity(identity: Identity): Promise<void> {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
   if (!workspaceFolder) {
-    throw new Error('No workspace folder open');
+    throw createConfigError('No workspace folder open');
   }
 
   // SECURITY: Validate identity before use
   const validation = validateIdentity(identity);
   if (!validation.valid) {
-    throw new Error(`Invalid identity configuration: ${validation.errors.join(', ')}`);
+    // SECURITY: Don't expose validation details to users
+    throw createValidationError('Invalid identity configuration', {
+      field: 'identity',
+      context: { errorCount: validation.errors.length },
+    });
   }
 
   // Check if we're in a git repository
   const isGitRepo = await execGitInWorkspace(['rev-parse', '--is-inside-work-tree']);
   if (isGitRepo !== 'true') {
-    throw new Error('Not in a Git repository');
+    throw createConfigError('Not in a Git repository');
   }
 
   const cwd = workspaceFolder.uri.fsPath;
