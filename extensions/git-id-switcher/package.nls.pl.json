@@ -20,5 +20,7 @@
   "config.showNotifications": "Pokaż powiadomienia przy przełączaniu tożsamości",
   "config.applyToSubmodules": "Automatycznie stosuj tożsamość do podmodułów Git przy przełączaniu",
   "config.submoduleDepth": "Maksymalna głębokość konfiguracji zagnieżdżonych podmodułów (1 = tylko bezpośrednie podmoduły)",
-  "config.includeIconInGitConfig": "Dołącz emoji ikony do Git config user.name (wpływa na historię commitów). Jeśli false, ikona jest wyświetlana tylko w interfejsie edytora."
+  "config.includeIconInGitConfig": "Dołącz emoji ikony do Git config user.name (wpływa na historię commitów). Jeśli false, ikona jest wyświetlana tylko w interfejsie edytora.",
+  "config.commandTimeouts": "Niestandardowe wartości limitu czasu dla poleceń (w milisekundach)",
+  "config.commandTimeouts.markdown": "Zastąp domyślne limity czasu poleceń. Przykład:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nWartości domyślne: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, inne=30000ms"
 }

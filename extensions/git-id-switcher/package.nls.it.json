@@ -20,5 +20,7 @@
   "config.showNotifications": "Mostra notifiche quando si cambia identità",
   "config.applyToSubmodules": "Applica automaticamente l'identità ai sottomoduli Git quando si cambia",
   "config.submoduleDepth": "Profondità massima per la configurazione dei sottomoduli annidati (1 = solo sottomoduli diretti)",
-  "config.includeIconInGitConfig": "Includi l'emoji dell'icona in Git config user.name (influisce sulla cronologia dei commit). Se false, l'icona viene mostrata solo nell'interfaccia dell'editor."
+  "config.includeIconInGitConfig": "Includi l'emoji dell'icona in Git config user.name (influisce sulla cronologia dei commit). Se false, l'icona viene mostrata solo nell'interfaccia dell'editor.",
+  "config.commandTimeouts": "Valori di timeout personalizzati per i comandi (in millisecondi)",
+  "config.commandTimeouts.markdown": "Sovrascrivi i timeout predefiniti dei comandi. Esempio:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValori predefiniti: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, altri=30000ms"
 }

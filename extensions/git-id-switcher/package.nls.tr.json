@@ -20,5 +20,7 @@
   "config.showNotifications": "Kimlik değiştirirken bildirimleri göster",
   "config.applyToSubmodules": "Değiştirirken kimliği Git alt modüllerine otomatik uygula",
   "config.submoduleDepth": "İç içe alt modül yapılandırması için maksimum derinlik (1 = yalnızca doğrudan alt modüller)",
-  "config.includeIconInGitConfig": "Git config user.name'e simge emojisi ekle (commit geçmişini etkiler). false ise simge yalnızca editör arayüzünde gösterilir."
+  "config.includeIconInGitConfig": "Git config user.name'e simge emojisi ekle (commit geçmişini etkiler). false ise simge yalnızca editör arayüzünde gösterilir.",
+  "config.commandTimeouts": "Komutlar için özel zaman aşımı değerleri (milisaniye)",
+  "config.commandTimeouts.markdown": "Varsayılan komut zaman aşımlarını geçersiz kıl. Örnek:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVarsayılan değerler: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, diğerleri=30000ms"
 }

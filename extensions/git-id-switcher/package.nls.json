@@ -20,5 +20,7 @@
   "config.showNotifications": "Show notifications when switching identities",
   "config.applyToSubmodules": "Automatically apply identity to Git submodules when switching",
   "config.submoduleDepth": "Maximum depth for nested submodule configuration (1 = direct submodules only)",
-  "config.includeIconInGitConfig": "Include icon emoji in Git config user.name (affects commit history). When false, icon is only shown in the editor UI."
+  "config.includeIconInGitConfig": "Include icon emoji in Git config user.name (affects commit history). When false, icon is only shown in the editor UI.",
+  "config.commandTimeouts": "Custom timeout values for commands (in milliseconds)",
+  "config.commandTimeouts.markdown": "Override default command timeouts. Example:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nDefault values: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, others=30000ms"
 }

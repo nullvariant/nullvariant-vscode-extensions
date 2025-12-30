@@ -24,6 +24,8 @@ const SECURITY_LIMITS = {
   MIN_SECRET_LENGTH: 32,
   /** Maximum length for secret-like string detection */
   MAX_SECRET_LENGTH: 256,
+  /** Maximum identity ID length (matches IDENTITY_SCHEMA.id.maxLength) */
+  MAX_ID_LENGTH: 64,
 } as const;
 
 /**
@@ -95,6 +97,20 @@ const SENSITIVE_PATTERNS = [
 ] as const;
 
 /**
+ * Keywords that indicate sensitive data in string values
+ */
+const SENSITIVE_KEYWORDS = [
+  /api[_-]?key/i,
+  /secret/i,
+  /password/i,
+  /token/i,
+  /bearer/i,
+  /authorization/i,
+  /credential/i,
+  /private/i,
+] as const;
+
+/**
  * Security event types
  */
 export enum SecurityEventType {
@@ -108,6 +124,8 @@ export enum SecurityEventType {
   VALIDATION_FAILURE = 'VALIDATION_FAILURE',
   /** Command was blocked by allowlist */
   COMMAND_BLOCKED = 'COMMAND_BLOCKED',
+  /** Command execution timed out */
+  COMMAND_TIMEOUT = 'COMMAND_TIMEOUT',
   /** Configuration was changed */
   CONFIG_CHANGE = 'CONFIG_CHANGE',
   /** Extension was activated */
@@ -116,42 +134,19 @@ export enum SecurityEventType {
   EXTENSION_DEACTIVATE = 'EXTENSION_DEACTIVATE',
 }
 
-/**
- * Configuration keys that we track for changes
- */
-export const CONFIG_KEYS = [
-  'identities',
-  'defaultIdentity',
-  'autoSwitchSshKey',
-  'showNotifications',
-  'applyToSubmodules',
-  'submoduleDepth',
-  'includeIconInGitConfig',
-] as const;
+// Re-export types from configChangeDetector for backwards compatibility
+export {
+  CONFIG_KEYS,
+  type ConfigKey,
+  type ConfigSnapshot,
+  type ConfigChangeDetail,
+} from './configChangeDetector';
 
-export type ConfigKey = (typeof CONFIG_KEYS)[number];
-
-/**
- * Configuration snapshot for change detection
- */
-export interface ConfigSnapshot {
-  identities: unknown[];
-  defaultIdentity: string;
-  autoSwitchSshKey: boolean;
-  showNotifications: boolean;
-  applyToSubmodules: boolean;
-  submoduleDepth: number;
-  includeIconInGitConfig: boolean;
-}
-
-/**
- * Configuration change details
- */
-export interface ConfigChangeDetail {
-  key: ConfigKey;
-  previousValue: unknown;
-  newValue: unknown;
-}
+// Internal imports
+import {
+  configChangeDetector,
+} from './configChangeDetector';
+import type { ConfigKey, ConfigSnapshot, ConfigChangeDetail } from './configChangeDetector';
 
 /**
  * Severity levels for security events
@@ -169,19 +164,32 @@ export interface SecurityEvent {
 }
 
 /**
+ * Security Logger interface for dependency injection
+ *
+ * Defines the contract for security logging operations.
+ * Allows for easy testing by providing mock implementations.
+ */
+export interface ISecurityLogger {
+  /** Log command timeout event */
+  logCommandTimeout(
+    command: string,
+    args: string[],
+    timeoutMs: number,
+    cwd?: string
+  ): void;
+  /** Log command blocked event */
+  logCommandBlocked(command: string, args: string[], reason: string): void;
+}
+
+/**
  * Security Logger class
  *
  * Manages security event logging to VS Code Output Channel.
  * Singleton pattern ensures consistent logging across the extension.
  */
-class SecurityLoggerImpl {
+class SecurityLoggerImpl implements ISecurityLogger {
   private outputChannel: vscode.OutputChannel | null = null;
   private readonly channelName = 'Git ID Switcher Security';
-
-  /**
-   * Current configuration snapshot for change detection
-   */
-  private configSnapshot: ConfigSnapshot | null = null;
 
   /**
    * Initialize the output channel
@@ -202,8 +210,7 @@ class SecurityLoggerImpl {
       this.outputChannel.dispose();
       this.outputChannel = null;
     }
-    // Clear configuration snapshot to prevent memory leaks
-    this.configSnapshot = null;
+    // ConfigChangeDetector cleanup is handled by its own singleton
   }
 
   /**
@@ -338,11 +345,10 @@ class SecurityLoggerImpl {
   }
 
   /**
-   * Log blocked command
+   * Build sanitized args details for logging
+   * Shows first 3 args (sanitized) to balance security and debugging needs
    */
-  logCommandBlocked(command: string, args: string[], reason: string): void {
-    // SECURITY: Sanitize args but show first few for debugging
-    // Only show first 3 args (sanitized) to balance security and debugging needs
+  private buildArgsDetails(args: string[]): Record<string, unknown> {
     const sanitizedArgs = args.slice(0, 3).map(arg => this.sanitizeValue(arg));
     const argsDetails: Record<string, unknown> = {
       count: args.length,
@@ -351,136 +357,76 @@ class SecurityLoggerImpl {
     if (args.length > 3) {
       argsDetails.more = `... and ${args.length - 3} more`;
     }
+    return argsDetails;
+  }
 
+  /**
+   * Log blocked command
+   */
+  logCommandBlocked(command: string, args: string[], reason: string): void {
     this.log({
       type: SecurityEventType.COMMAND_BLOCKED,
       severity: 'error',
       details: {
         // Sanitize command in case it contains sensitive data (e.g., in path)
         command: this.sanitizeValue(command),
-        args: argsDetails,
+        args: this.buildArgsDetails(args),
         reason,
       },
     });
   }
 
   /**
+   * Log command timeout event
+   *
+   * Records when a command execution exceeds its timeout limit.
+   * Useful for debugging performance issues and detecting potential hangs.
+   */
+  logCommandTimeout(
+    command: string,
+    args: string[],
+    timeoutMs: number,
+    cwd?: string
+  ): void {
+    this.log({
+      type: SecurityEventType.COMMAND_TIMEOUT,
+      severity: 'warning',
+      details: {
+        command: this.sanitizeValue(command),
+        args: this.buildArgsDetails(args),
+        timeoutMs,
+        cwd: cwd ? this.sanitizePath(cwd) : undefined,
+      },
+    });
+  }
+
+  /**
    * Create a configuration snapshot from current VS Code configuration
-   * SECURITY: Limits array size to prevent DoS attacks
+   * Delegates to ConfigChangeDetector
    */
   createConfigSnapshot(): ConfigSnapshot {
-    const config = vscode.workspace.getConfiguration('gitIdSwitcher');
-    const identities = config.get<unknown[]>('identities', []);
-    
-    // SECURITY: Limit identities array size to prevent DoS attacks
-    // This prevents maliciously large configuration from causing performance issues
-    const MAX_IDENTITIES = 1000;
-    const limitedIdentities = Array.isArray(identities) && identities.length > MAX_IDENTITIES
-      ? identities.slice(0, MAX_IDENTITIES)
-      : identities;
-    
-    return {
-      identities: limitedIdentities,
-      defaultIdentity: config.get<string>('defaultIdentity', ''),
-      autoSwitchSshKey: config.get<boolean>('autoSwitchSshKey', true),
-      showNotifications: config.get<boolean>('showNotifications', true),
-      applyToSubmodules: config.get<boolean>('applyToSubmodules', true),
-      submoduleDepth: config.get<number>('submoduleDepth', 1),
-      includeIconInGitConfig: config.get<boolean>('includeIconInGitConfig', false),
-    };
+    return configChangeDetector.createSnapshot();
   }
 
   /**
    * Store the current configuration snapshot
-   * SECURITY: Wrapped in try-catch to prevent errors from breaking the extension
+   * Delegates to ConfigChangeDetector
    */
   storeConfigSnapshot(): void {
-    try {
-      this.configSnapshot = this.createConfigSnapshot();
-    } catch (error) {
-      // SECURITY: Log error but don't break the extension
-      // This prevents malicious configuration from causing DoS
-      console.error('[Git ID Switcher Security] Error storing config snapshot:', error);
-      // Keep previous snapshot to prevent state corruption
-      // (null check in detectConfigChanges will handle this)
-    }
-  }
-
-  /**
-   * Compare two values for equality (deep comparison for objects/arrays)
-   * SECURITY: Limits depth and size to prevent DoS attacks
-   */
-  private valuesEqual(a: unknown, b: unknown): boolean {
-    if (a === b) return true;
-    if (typeof a !== typeof b) return false;
-    if (a === null || b === null) return a === b;
-
-    if (typeof a === 'object' && typeof b === 'object') {
-      try {
-        // SECURITY: Limit comparison depth to prevent DoS from deeply nested objects
-        const MAX_DEPTH = 10;
-        // SECURITY: Limit stringified size to prevent DoS from large objects
-        const MAX_STRINGIFY_SIZE = 100000; // 100KB
-        
-        // Quick size check: estimate size by converting to string with size limit
-        const aStr = JSON.stringify(a);
-        const bStr = JSON.stringify(b);
-        
-        // SECURITY: If strings are too large, use length-based comparison as fallback
-        if (aStr.length > MAX_STRINGIFY_SIZE || bStr.length > MAX_STRINGIFY_SIZE) {
-          // For very large objects, compare lengths and types only
-          // This prevents DoS but may miss some changes (acceptable trade-off)
-          return aStr.length === bStr.length && typeof a === typeof b;
-        }
-        
-        return aStr === bStr;
-      } catch {
-        // SECURITY: On error (e.g., circular reference), return false
-        // This is safe: we'll detect a change even if values are actually equal
-        // Better to log a false positive than to crash
-        return false;
-      }
-    }
-
-    return false;
+    configChangeDetector.storeSnapshot();
   }
 
   /**
    * Detect which configuration keys changed
-   * SECURITY: Wrapped in try-catch to prevent errors from breaking the extension
+   * Delegates to ConfigChangeDetector
    */
   detectConfigChanges(newSnapshot: ConfigSnapshot): ConfigChangeDetail[] {
-    if (!this.configSnapshot) {
-      return [];
-    }
-
-    try {
-      const changes: ConfigChangeDetail[] = [];
-
-      for (const key of CONFIG_KEYS) {
-        const previousValue = this.configSnapshot[key];
-        const newValue = newSnapshot[key];
-
-        if (!this.valuesEqual(previousValue, newValue)) {
-          changes.push({
-            key,
-            previousValue,
-            newValue,
-          });
-        }
-      }
-
-      return changes;
-    } catch (error) {
-      // SECURITY: Log error but don't break the extension
-      // This prevents malicious configuration from causing DoS
-      console.error('[Git ID Switcher Security] Error detecting config changes:', error);
-      return [];
-    }
+    return configChangeDetector.detectChanges(newSnapshot);
   }
 
   /**
    * Summarize identity changes for logging
+   * Delegates core comparison to ConfigChangeDetector, adds security-specific concerns
    * SECURITY: Wrapped in try-catch and limits processing to prevent DoS
    */
   private summarizeIdentityChanges(
@@ -497,30 +443,19 @@ class SecurityLoggerImpl {
         ? newIdentities.slice(0, MAX_IDENTITIES_TO_PROCESS)
         : [];
 
-      // Use raw IDs for comparison
-      const prevIds = this.extractIdentityIds(prevLimited, false);
-      const newIds = this.extractIdentityIds(newLimited, false);
-
-      const added = newIds.filter(id => !prevIds.includes(id));
-      const removed = prevIds.filter(id => !newIds.includes(id));
-      const modified = newIds.filter(id => {
-        if (!prevIds.includes(id)) return false;
-        const prevIdentity = prevLimited.find(
-          i => this.getIdentityId(i) === id
-        );
-        const newIdentity = newLimited.find(
-          i => this.getIdentityId(i) === id
-        );
-        return !this.valuesEqual(prevIdentity, newIdentity);
-      });
+      // Delegate core comparison logic to ConfigChangeDetector
+      const summary = configChangeDetector.summarizeIdentityChanges(
+        prevLimited,
+        newLimited
+      );
 
       // Sanitize IDs for output
       return {
         previousCount: previousIdentities.length,
         newCount: newIdentities.length,
-        added: added.length > 0 ? this.sanitizeIds(added) : undefined,
-        removed: removed.length > 0 ? this.sanitizeIds(removed) : undefined,
-        modified: modified.length > 0 ? this.sanitizeIds(modified) : undefined,
+        added: summary.added.length > 0 ? this.sanitizeIds(summary.added) : undefined,
+        removed: summary.removed.length > 0 ? this.sanitizeIds(summary.removed) : undefined,
+        modified: summary.modified.length > 0 ? this.sanitizeIds(summary.modified) : undefined,
         // SECURITY: Indicate if arrays were truncated
         truncated: previousIdentities.length > MAX_IDENTITIES_TO_PROCESS ||
           newIdentities.length > MAX_IDENTITIES_TO_PROCESS,
@@ -537,13 +472,19 @@ class SecurityLoggerImpl {
   }
 
   /**
+   * Truncate an ID if it exceeds the maximum length
+   */
+  private truncateId(id: string): string {
+    return id.length > SECURITY_LIMITS.MAX_ID_LENGTH
+      ? id.slice(0, SECURITY_LIMITS.MAX_ID_LENGTH) + '...'
+      : id;
+  }
+
+  /**
    * Sanitize an array of IDs for safe logging
    */
   private sanitizeIds(ids: string[]): string[] {
-    const maxIdLength = 64;
-    return ids.map(id =>
-      id.length > maxIdLength ? id.slice(0, maxIdLength) + '...' : id
-    );
+    return ids.map(id => this.truncateId(id));
   }
 
   /**
@@ -553,18 +494,13 @@ class SecurityLoggerImpl {
   private extractIdentityIds(identities: unknown[], sanitize = true): string[] {
     const ids: string[] = [];
     const maxItems = 100; // DoS protection
-    const maxIdLength = 64; // Match IDENTITY_SCHEMA.id.maxLength
     let count = 0;
 
     for (const identity of identities) {
       if (count >= maxItems) break;
       const id = this.getIdentityId(identity);
       if (id) {
-        // Optionally truncate long IDs for safety
-        const safeId = sanitize && id.length > maxIdLength
-          ? id.slice(0, maxIdLength) + '...'
-          : id;
-        ids.push(safeId);
+        ids.push(sanitize ? this.truncateId(id) : id);
       }
       count++;
     }
@@ -875,18 +811,7 @@ class SecurityLoggerImpl {
         ? value.slice(0, SECURITY_LIMITS.MAX_PATTERN_CHECK_LENGTH)
         : value;
 
-    const sensitiveKeywords = [
-      /api[_-]?key/i,
-      /secret/i,
-      /password/i,
-      /token/i,
-      /bearer/i,
-      /authorization/i,
-      /credential/i,
-      /private/i,
-    ];
-
-    for (const keyword of sensitiveKeywords) {
+    for (const keyword of SENSITIVE_KEYWORDS) {
       if (keyword.test(checkValue)) {
         return true;
       }

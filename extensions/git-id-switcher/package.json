@@ -156,6 +156,17 @@
           "type": "boolean",
           "default": false,
           "description": "%config.includeIconInGitConfig%"
+        },
+        "gitIdSwitcher.commandTimeouts": {
+          "type": "object",
+          "default": {},
+          "description": "%config.commandTimeouts%",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 1000,
+            "maximum": 300000
+          },
+          "markdownDescription": "%config.commandTimeouts.markdown%"
         }
       }
     }

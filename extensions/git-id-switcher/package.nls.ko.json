@@ -20,5 +20,7 @@
   "config.showNotifications": "ID 전환 시 알림 표시",
   "config.applyToSubmodules": "전환 시 Git 서브모듈에 자동으로 ID 적용",
   "config.submoduleDepth": "중첩 서브모듈 구성의 최대 깊이 (1 = 직접 서브모듈만)",
-  "config.includeIconInGitConfig": "Git config user.name에 아이콘 이모지를 포함합니다 (커밋 기록에 영향). false인 경우 아이콘은 에디터 UI에서만 표시됩니다."
+  "config.includeIconInGitConfig": "Git config user.name에 아이콘 이모지를 포함합니다 (커밋 기록에 영향). false인 경우 아이콘은 에디터 UI에서만 표시됩니다.",
+  "config.commandTimeouts": "명령의 사용자 지정 시간 초과 값 (밀리초)",
+  "config.commandTimeouts.markdown": "기본 명령 시간 초과를 재정의합니다. 예:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n기본값: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, 기타=30000ms"
 }

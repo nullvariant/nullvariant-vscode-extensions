@@ -20,5 +20,7 @@
   "config.showNotifications": "Zobrazovat oznámení při přepínání identit",
   "config.applyToSubmodules": "Automaticky aplikovat identitu na Git submoduly při přepínání",
   "config.submoduleDepth": "Maximální hloubka pro konfiguraci vnořených submodulů (1 = pouze přímé submoduly)",
-  "config.includeIconInGitConfig": "Zahrnout emoji ikony do Git config user.name (ovlivňuje historii commitů). Pokud je false, ikona se zobrazuje pouze v rozhraní editoru."
+  "config.includeIconInGitConfig": "Zahrnout emoji ikony do Git config user.name (ovlivňuje historii commitů). Pokud je false, ikona se zobrazuje pouze v rozhraní editoru.",
+  "config.commandTimeouts": "Vlastní hodnoty časového limitu pro příkazy (v milisekundách)",
+  "config.commandTimeouts.markdown": "Přepsat výchozí časové limity příkazů. Příklad:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVýchozí hodnoty: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, ostatní=30000ms"
 }
