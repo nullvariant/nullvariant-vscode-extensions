@@ -132,11 +132,23 @@ function validateKeyPath(keyPath: string): void {
 
 /**
  * List all keys currently in ssh-agent
+ * @param token Optional cancellation token for aborting the operation
  */
-export async function listSshKeys(): Promise<SshKeyInfo[]> {
+export async function listSshKeys(
+  token?: vscode.CancellationToken
+): Promise<SshKeyInfo[]> {
+  if (token?.isCancellationRequested) {
+    return [];
+  }
+
   try {
     // SECURITY: Using sshAgentExec with array args
     const { stdout } = await sshAgentExec(['-l']);
+
+    if (token?.isCancellationRequested) {
+      return [];
+    }
+
     const lines = stdout.trim().split('\n').filter(line => line.length > 0);
 
     return lines.map(line => {
@@ -297,7 +309,7 @@ export async function detectCurrentIdentityFromSsh(
     return undefined;
   }
 
-  const keys = await listSshKeys();
+  const keys = await listSshKeys(token);
 
   if (token?.isCancellationRequested) {
     return undefined;

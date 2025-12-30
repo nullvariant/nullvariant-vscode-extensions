@@ -64,13 +64,24 @@ async function execGitInWorkspace(args: string[]): Promise<string> {
 
 /**
  * Get current Git configuration
+ * @param token Optional cancellation token for aborting the operation
  */
-export async function getCurrentGitConfig(): Promise<GitConfig> {
+export async function getCurrentGitConfig(
+  token?: vscode.CancellationToken
+): Promise<GitConfig> {
+  if (token?.isCancellationRequested) {
+    return { userName: undefined, userEmail: undefined, signingKey: undefined };
+  }
+
   const [userName, userEmail, signingKey] = await Promise.all([
     execGitInWorkspace(['config', 'user.name']),
     execGitInWorkspace(['config', 'user.email']),
     execGitInWorkspace(['config', 'user.signingkey']),
   ]);
+
+  if (token?.isCancellationRequested) {
+    return { userName: undefined, userEmail: undefined, signingKey: undefined };
+  }
 
   return {
     userName: userName || undefined,
@@ -180,7 +191,7 @@ export async function detectCurrentIdentity(
     return undefined;
   }
 
-  const config = await getCurrentGitConfig();
+  const config = await getCurrentGitConfig(token);
 
   if (token?.isCancellationRequested) {
     return undefined;
@@ -227,5 +238,10 @@ export async function isGitRepository(
   }
 
   const result = await execGitInWorkspace(['rev-parse', '--is-inside-work-tree']);
+
+  if (token?.isCancellationRequested) {
+    return false;
+  }
+
   return result === 'true';
 }
