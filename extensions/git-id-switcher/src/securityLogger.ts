@@ -283,14 +283,24 @@ class SecurityLoggerImpl {
    * Log blocked command
    */
   logCommandBlocked(command: string, args: string[], reason: string): void {
+    // SECURITY: Sanitize args but show first few for debugging
+    // Only show first 3 args (sanitized) to balance security and debugging needs
+    const sanitizedArgs = args.slice(0, 3).map(arg => this.sanitizeValue(arg));
+    const argsDetails: Record<string, unknown> = {
+      count: args.length,
+      firstFew: sanitizedArgs,
+    };
+    if (args.length > 3) {
+      argsDetails.more = `... and ${args.length - 3} more`;
+    }
+
     this.log({
       type: SecurityEventType.COMMAND_BLOCKED,
       severity: 'error',
       details: {
         // Sanitize command in case it contains sensitive data (e.g., in path)
         command: this.sanitizeValue(command),
-        // Only show args count for security
-        argsCount: args.length,
+        args: argsDetails,
         reason,
       },
     });
@@ -345,6 +355,9 @@ class SecurityLoggerImpl {
   /**
    * Check if a path contains sensitive directory patterns
    * The input path should already be normalized (forward slashes only)
+   *
+   * SECURITY: Uses path component boundary checking to prevent false positives
+   * (e.g., `.ssh-backup` should not match `.ssh`)
    */
   private containsSensitiveDir(normalizedPath: string): boolean {
     // DoS protection: limit iterations for very long paths
@@ -358,20 +371,31 @@ class SecurityLoggerImpl {
     // Path is already normalized to forward slashes
     const pathToCheck = isWindows ? normalizedPath.toLowerCase() : normalizedPath;
 
+    // Split path into components for accurate boundary checking
+    const pathComponents = pathToCheck.split('/').filter(c => c.length > 0);
+
     for (const sensitiveDir of sensitiveDirs) {
       // Normalize the sensitive dir pattern to forward slashes
       const normalizedSensitive = isWindows
         ? sensitiveDir.replace(/\\/g, '/').toLowerCase()
         : sensitiveDir;
 
-      // Check if path contains the sensitive directory as a component
-      if (
-        pathToCheck.includes(`/${normalizedSensitive}/`) ||
-        pathToCheck.endsWith(`/${normalizedSensitive}`) ||
-        pathToCheck === normalizedSensitive ||
-        pathToCheck.startsWith(`${normalizedSensitive}/`)
-      ) {
-        return true;
+      // Split sensitive dir into components (may contain multiple levels like '.config/gcloud')
+      const sensitiveComponents = normalizedSensitive.split('/').filter(c => c.length > 0);
+
+      // Check if path components contain the sensitive directory components as a sequence
+      // This ensures we match whole directory names, not substrings
+      for (let i = 0; i <= pathComponents.length - sensitiveComponents.length; i++) {
+        let matches = true;
+        for (let j = 0; j < sensitiveComponents.length; j++) {
+          if (pathComponents[i + j] !== sensitiveComponents[j]) {
+            matches = false;
+            break;
+          }
+        }
+        if (matches) {
+          return true;
+        }
       }
     }
 
@@ -412,13 +436,31 @@ class SecurityLoggerImpl {
       return '[INVALID_PATH]';
     }
 
+    // SECURITY: Check for control characters (potential injection attack)
+    // eslint-disable-next-line no-control-regex
+    if (/[\x00-\x1f\x7f]/.test(inputPath)) {
+      return '[REDACTED:CONTROL_CHARS]';
+    }
+
     // DoS protection: limit path length
     if (inputPath.length > SECURITY_LIMITS.MAX_PATH_LENGTH) {
       return '[REDACTED:PATH_TOO_LONG]';
     }
 
     // Normalize path separators for consistent checking
-    const normalizedPath = inputPath.replace(/\\/g, '/');
+    // SECURITY: Handle Windows UNC paths (\\server\share -> //server/share)
+    // Preserve UNC prefix for proper detection
+    let normalizedPath = inputPath.replace(/\\/g, '/');
+    // SECURITY: UNC paths start with // (but not ///)
+    // For UNC paths, we should redact the server name for privacy
+    const isUncPath = normalizedPath.startsWith('//') && !normalizedPath.startsWith('///');
+    if (isUncPath) {
+      // Redact UNC server name: //server/share -> //[REDACTED]/share
+      const uncMatch = normalizedPath.match(/^\/\/([^\/]+)(\/.*)?$/);
+      if (uncMatch) {
+        return `//[REDACTED]${uncMatch[2] || ''}`;
+      }
+    }
 
     // Check for sensitive patterns first (highest priority)
     if (this.matchesSensitivePattern(normalizedPath)) {
@@ -431,15 +473,36 @@ class SecurityLoggerImpl {
     }
 
     // Replace home directory with ~ for privacy
-    const home = process.env.HOME || process.env.USERPROFILE || '';
+    // SECURITY: Handle Windows HOMEDRIVE + HOMEPATH combination
+    let home = '';
+    if (process.platform === 'win32') {
+      // Windows: HOMEDRIVE + HOMEPATH (e.g., C: + \Users\username)
+      const homeDrive = process.env.HOMEDRIVE || '';
+      const homePath = process.env.HOMEPATH || '';
+      if (homeDrive && homePath) {
+        home = homeDrive + homePath;
+      } else {
+        home = process.env.USERPROFILE || '';
+      }
+    } else {
+      home = process.env.HOME || '';
+    }
+
     if (home) {
       const normalizedHome = home.replace(/\\/g, '/');
-      if (normalizedPath.startsWith(normalizedHome)) {
+      // SECURITY: Ensure we match at path component boundary
+      // Check exact match or match followed by /
+      if (
+        normalizedPath === normalizedHome ||
+        normalizedPath.startsWith(normalizedHome + '/')
+      ) {
         return '~' + normalizedPath.slice(normalizedHome.length);
       }
     }
 
-    return inputPath;
+    // SECURITY: Return normalized path (not original) for consistency
+    // This ensures path separators are consistent in logs
+    return normalizedPath;
   }
 
   /**
@@ -470,13 +533,31 @@ class SecurityLoggerImpl {
     }
 
     // Check for patterns that look like secrets (base64, hex, etc.)
+    // SECURITY: More strict detection to reduce false positives
     // Only check if string is within reasonable length to avoid ReDoS
     if (
       checkValue.length >= SECURITY_LIMITS.MIN_SECRET_LENGTH &&
       checkValue.length <= SECURITY_LIMITS.MAX_SECRET_LENGTH
     ) {
-      if (/^[A-Za-z0-9+/=_-]+$/.test(checkValue)) {
-        return true;
+      // Base64-like strings typically have:
+      // - High entropy (mix of uppercase, lowercase, numbers)
+      // - Padding with = at the end
+      // - Length multiple of 4 (for base64)
+      const base64Pattern = /^[A-Za-z0-9+/]+=*$/;
+      if (base64Pattern.test(checkValue)) {
+        // Additional check: base64 strings usually have high character diversity
+        // Count unique character types (uppercase, lowercase, numbers, special)
+        const hasUpper = /[A-Z]/.test(checkValue);
+        const hasLower = /[a-z]/.test(checkValue);
+        const hasNumbers = /[0-9]/.test(checkValue);
+        const hasSpecial = /[+/=]/.test(checkValue);
+        const typeCount = [hasUpper, hasLower, hasNumbers, hasSpecial].filter(Boolean).length;
+
+        // Require at least 3 character types to reduce false positives
+        // (e.g., "12345678901234567890123456789012" should not match)
+        if (typeCount >= 3) {
+          return true;
+        }
       }
     }
 
@@ -505,7 +586,13 @@ class SecurityLoggerImpl {
       }
 
       // Sanitize paths first
-      if (value.startsWith('/') || value.startsWith('~') || /^[A-Za-z]:/.test(value)) {
+      // SECURITY: Check for Windows UNC paths (\\server\share) and drive letters
+      if (
+        value.startsWith('/') ||
+        value.startsWith('~') ||
+        /^[A-Za-z]:/.test(value) ||
+        /^\\\\/.test(value)
+      ) {
         return this.sanitizePath(value);
       }
 
@@ -530,13 +617,27 @@ class SecurityLoggerImpl {
     }
 
     if (typeof value === 'object') {
-      // For arrays, show length only
+      // For arrays, show length only (contents might be sensitive)
       if (Array.isArray(value)) {
         return `[Array(${value.length})]`;
       }
-      // For objects, show key count only
+      // For objects, sanitize keys and show key count
+      // SECURITY: Sanitize object keys to prevent information leakage
+      // SECURITY: Do not recursively sanitize nested objects to prevent
+      // infinite recursion and performance issues. Nested objects are abstracted.
       const keys = Object.keys(value);
-      return `[Object(${keys.length} keys)]`;
+      const sanitizedKeys = keys.map(key =>
+        this.looksLikeSensitiveData(key) ? '[REDACTED_KEY]' : key
+      );
+      // Show sanitized key names if they're safe, otherwise just count
+      const safeKeys = sanitizedKeys.filter(k => k !== '[REDACTED_KEY]');
+      if (safeKeys.length === keys.length) {
+        // All keys are safe, show them (limited to 5 for readability)
+        return `[Object(${keys.length} keys: ${safeKeys.slice(0, 5).join(', ')}${safeKeys.length > 5 ? '...' : ''})]`;
+      } else {
+        // Some keys are sensitive, only show count
+        return `[Object(${keys.length} keys)]`;
+      }
     }
 
     // For functions and symbols, just show type
