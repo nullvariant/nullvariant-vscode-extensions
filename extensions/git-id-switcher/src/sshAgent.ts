@@ -42,6 +42,12 @@ const MIN_SSH_KEY_FILE_SIZE = 10;
 const INSECURE_PERMISSION_BITS = 0o077;
 
 /**
+ * Owner execute bit that should NOT be set on SSH key files
+ * SSH private keys should not be executable (security best practice)
+ */
+const OWNER_EXECUTE_BIT = 0o100;
+
+/**
  * Valid SSH private key format headers
  * These are the standard formats supported by ssh-add
  */
@@ -351,6 +357,8 @@ export interface KeyFileValidationResult {
  * Reads only the first few bytes to validate the format efficiently.
  * Supports OpenSSH, PEM (RSA/DSA/EC), PKCS#8, and PuTTY formats.
  *
+ * SECURITY: File handle is always closed, even on error.
+ *
  * @param filePath - Path to the SSH key file
  * @returns true if the file has a valid SSH key header
  */
@@ -365,19 +373,43 @@ async function isValidSshKeyFormat(filePath: string): Promise<boolean> {
       return false;
     }
 
-    // Convert to string and trim whitespace (some keys have leading newlines)
-    const header = buffer.subarray(0, bytesRead).toString('utf8').trimStart();
+    // SECURITY: Try UTF-8 first (most common), then fallback to Latin-1 for binary formats
+    // PuTTY format headers are ASCII-compatible, so UTF-8 should work
+    let header: string;
+    try {
+      header = buffer.subarray(0, bytesRead).toString('utf8').trimStart();
+    } catch {
+      // Fallback to Latin-1 if UTF-8 decoding fails (shouldn't happen for valid SSH keys)
+      header = buffer.subarray(0, bytesRead).toString('latin1').trimStart();
+    }
 
     // Check if the file starts with any valid SSH key header
+    // Note: PuTTY format headers are ASCII, so UTF-8 decoding works fine
     return VALID_SSH_KEY_HEADERS.some(validHeader =>
       header.startsWith(validHeader)
     );
-  } catch {
+  } catch (error) {
+    // SECURITY: Log read errors for security audit
     // If we can't read the file, it's not a valid key
+    securityLogger.logValidationFailure(
+      'ssh-key-format',
+      'Failed to read file for format validation',
+      error instanceof Error ? error.name : 'unknown'
+    );
     return false;
   } finally {
+    // SECURITY: Always close file handle to prevent resource leaks
     if (fileHandle) {
-      await fileHandle.close();
+      try {
+        await fileHandle.close();
+      } catch (closeError) {
+        // Log but don't throw - we're in cleanup
+        securityLogger.logValidationFailure(
+          'ssh-key-format',
+          'Failed to close file handle',
+          closeError instanceof Error ? closeError.name : 'unknown'
+        );
+      }
     }
   }
 }
@@ -406,14 +438,33 @@ async function validateKeyFileForSshAdd(
     let stats: Awaited<ReturnType<typeof fs.stat>>;
     try {
       stats = await fs.stat(expandedPath);
-    } catch {
-      // File does not exist or not accessible
-      securityLogger.logValidationFailure(
-        'ssh-key-file',
-        'File does not exist or is not accessible',
-        undefined
-      );
-      return { valid: false, reason: 'file_not_found' };
+    } catch (error) {
+      // SECURITY: Distinguish between different error types for better audit trail
+      const errorName = error instanceof Error ? error.name : 'unknown';
+      const errorCode = (error as NodeJS.ErrnoException)?.code;
+
+      if (errorCode === 'ENOENT') {
+        securityLogger.logValidationFailure(
+          'ssh-key-file',
+          'File does not exist',
+          undefined
+        );
+        return { valid: false, reason: 'file_not_found' };
+      } else if (errorCode === 'EACCES' || errorCode === 'EPERM') {
+        securityLogger.logValidationFailure(
+          'ssh-key-file',
+          'File access denied',
+          undefined
+        );
+        return { valid: false, reason: 'access_denied' };
+      } else {
+        securityLogger.logValidationFailure(
+          'ssh-key-file',
+          `File stat failed: ${errorName} (${errorCode ?? 'unknown'})`,
+          undefined
+        );
+        return { valid: false, reason: 'stat_error' };
+      }
     }
 
     // Check file type - must be regular file
@@ -459,11 +510,20 @@ async function validateKeyFileForSshAdd(
     // Windows uses ACL-based permissions, skip this check there
     if (process.platform !== 'win32') {
       const mode = stats.mode;
-      // Check if group or others have any permissions
+      // Check if group or others have any permissions (0o077 = group+others bits)
       if ((mode & INSECURE_PERMISSION_BITS) !== 0) {
         securityLogger.logValidationFailure(
           'ssh-key-file',
-          `Insecure permissions: ${(mode & 0o777).toString(8)}`,
+          `Insecure permissions: ${(mode & 0o777).toString(8)} (group/others have access)`,
+          undefined
+        );
+        return { valid: false, reason: 'insecure_permissions' };
+      }
+      // SECURITY: Check if owner execute bit is set (SSH keys should not be executable)
+      if ((mode & OWNER_EXECUTE_BIT) !== 0) {
+        securityLogger.logValidationFailure(
+          'ssh-key-file',
+          `Insecure permissions: ${(mode & 0o777).toString(8)} (owner execute bit set)`,
           undefined
         );
         return { valid: false, reason: 'insecure_permissions' };
@@ -483,12 +543,14 @@ async function validateKeyFileForSshAdd(
     }
 
     return { valid: true };
-  } catch {
-    // Unexpected error during validation
+  } catch (error) {
+    // SECURITY: Log unexpected errors with details for security audit
+    const errorName = error instanceof Error ? error.name : 'unknown';
+    const errorMessage = error instanceof Error ? error.message : String(error);
     securityLogger.logValidationFailure(
       'ssh-key-file',
-      'Unexpected error during validation',
-      undefined
+      `Unexpected error during validation: ${errorName}`,
+      errorMessage.length > 100 ? errorMessage.slice(0, 100) + '...[truncated]' : errorMessage
     );
     return { valid: false, reason: 'validation_error' };
   }
