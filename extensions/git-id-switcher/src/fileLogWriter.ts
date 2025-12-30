@@ -145,7 +145,7 @@ export class FileLogWriter implements ILogWriter {
         // Try to serialize with replacer to handle circular references
         try {
           const seen = new WeakSet();
-          metadataStr = ` ${JSON.stringify(log.metadata, (key, value) => {
+          metadataStr = ` ${JSON.stringify(log.metadata, (_key, value) => {
             if (typeof value === 'object' && value !== null) {
               if (seen.has(value)) {
                 return '[Circular]';
