@@ -28,6 +28,7 @@ import {
   showErrorNotification,
 } from './quickPick';
 import { securityLogger } from './securityLogger';
+import { getUserSafeMessage } from './errors';
 
 // Global state
 let statusBar: IdentityStatusBar;
@@ -148,7 +149,9 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     // No identity detected, show selection prompt
     statusBar.setNoIdentity();
   } catch (error) {
-    console.error('Failed to initialize Git ID Switcher:', error);
+    // SECURITY: Use getUserSafeMessage to prevent information leakage
+    const safeMessage = getUserSafeMessage(error);
+    console.error('Failed to initialize Git ID Switcher:', safeMessage);
     statusBar.setNoIdentity();
   }
 }
@@ -179,9 +182,10 @@ async function selectIdentityCommand(
     // Switch to selected identity
     await switchToIdentity(selectedIdentity, context);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    showErrorNotification(vscode.l10n.t('Failed to select identity: {0}', message));
-    statusBar.setError(message);
+    // SECURITY: Use getUserSafeMessage to prevent information leakage
+    const safeMessage = getUserSafeMessage(error);
+    showErrorNotification(vscode.l10n.t('Failed to select identity: {0}', safeMessage));
+    statusBar.setError(safeMessage);
   }
 }
 
@@ -241,8 +245,9 @@ async function switchToIdentity(
 
     console.log(`Switched to identity: ${identity.id}`);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`Failed to switch identity: ${message}`);
+    // SECURITY: Use getUserSafeMessage to prevent information leakage in console
+    const safeMessage = getUserSafeMessage(error);
+    console.error(`Failed to switch identity: ${safeMessage}`);
 
     // Revert status bar
     if (currentIdentity) {

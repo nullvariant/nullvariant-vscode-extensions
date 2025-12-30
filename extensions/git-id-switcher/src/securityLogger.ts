@@ -156,13 +156,17 @@ class SecurityLoggerImpl {
    * Log validation failure
    */
   logValidationFailure(field: string, reason: string, value?: unknown): void {
+    // SECURITY: Sanitize value before logging to prevent information leakage
+    const sanitizedValue = value !== undefined ? this.sanitizeValue(value) : undefined;
+
     this.log({
       type: SecurityEventType.VALIDATION_FAILURE,
       severity: 'warning',
       details: {
         field,
         reason,
-        // Don't log actual value if it might contain sensitive data
+        // Log sanitized value for debugging (safe for audit trail)
+        value: sanitizedValue,
         valueType: typeof value,
       },
     });

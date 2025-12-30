@@ -9,6 +9,7 @@
  */
 
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { Identity, getIdentities } from './identity';
 import { sshAgentExec, sshKeygenExec } from './secureExec';
 import { isPathSafe } from './validation';
@@ -45,7 +46,7 @@ function expandPath(keyPath: string): string {
 
   if (!result.valid) {
     // SECURITY: Don't expose the actual path or detailed reason to users
-    throw createSecurityViolationError('Invalid SSH key path', {
+    throw createSecurityViolationError(vscode.l10n.t('Invalid SSH key path'), {
       field: 'sshKeyPath',
       context: { reason: result.reason },
     });
@@ -63,7 +64,7 @@ function validateKeyPath(keyPath: string): void {
   // Use both legacy validation and new secure validation
   if (!isPathSafe(keyPath)) {
     // SECURITY: Don't include the actual path in error message to prevent information leakage
-    throw createSecurityViolationError('Invalid SSH key path', {
+    throw createSecurityViolationError(vscode.l10n.t('Invalid SSH key path'), {
       field: 'sshKeyPath',
       context: { check: 'legacy' },
     });
@@ -73,7 +74,7 @@ function validateKeyPath(keyPath: string): void {
   const result = normalizeAndValidatePath(keyPath);
   if (!result.valid) {
     // SECURITY: Only log the reason internally, don't expose to users
-    throw createSecurityViolationError('Invalid SSH key path', {
+    throw createSecurityViolationError(vscode.l10n.t('Invalid SSH key path'), {
       field: 'sshKeyPath',
       context: { reason: result.reason },
     });
@@ -139,7 +140,7 @@ export async function addSshKey(keyPath: string): Promise<void> {
     }
   } catch (error) {
     // SECURITY: Wrap error to hide internal details from users
-    throw wrapError(error, 'Failed to add SSH key', {
+    throw wrapError(error, vscode.l10n.t('Failed to add SSH key'), {
       field: 'sshKeyPath',
       context: { platform },
     });

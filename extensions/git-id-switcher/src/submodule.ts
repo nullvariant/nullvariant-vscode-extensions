@@ -11,6 +11,8 @@
 import * as vscode from 'vscode';
 import { gitExec } from './secureExec';
 import { validateSubmodulePath } from './pathUtils';
+import { getUserSafeMessage } from './errors';
+import { securityLogger } from './securityLogger';
 
 export interface Submodule {
   /** Relative path from workspace root */
@@ -128,7 +130,10 @@ export async function setSubmoduleGitConfig(
     await gitExec(['config', '--local', key, value], submodulePath);
     return true;
   } catch (error) {
-    console.error(`Failed to set ${key} in ${submodulePath}:`, error);
+    // SECURITY: Use getUserSafeMessage and sanitize path to prevent information leakage
+    const safeMessage = getUserSafeMessage(error);
+    const sanitizedPath = securityLogger.sanitizePath(submodulePath);
+    console.error(`Failed to set ${key} in ${sanitizedPath}: ${safeMessage}`);
     return false;
   }
 }

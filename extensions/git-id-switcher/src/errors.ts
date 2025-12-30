@@ -92,6 +92,13 @@ export class SecurityError extends Error {
       Error.captureStackTrace(this, SecurityError);
     }
 
+    // SECURITY: Override stack property to return sanitized stack by default
+    // This prevents information leakage even if stack is accessed directly
+    Object.defineProperty(this, 'stack', {
+      get: () => this.getSafeStack() || '',
+      configurable: true,
+    });
+
     // Auto-log if enabled (default: true)
     if (options.autoLog !== false) {
       this.logError();
@@ -120,12 +127,15 @@ export class SecurityError extends Error {
       const field = this.internalDetails.field ?? 'unknown';
       const reason = this.userMessage;
 
+      // SECURITY: Sanitize value before logging to prevent information leakage
+      const sanitizedValue = securityLogger.sanitizeValue(this.internalDetails.value);
+
       // Log all security-relevant errors
       // SECURITY, VALIDATION, CONFIG, and SYSTEM errors are all logged
       securityLogger.logValidationFailure(
         `[${this.category}] ${field}`,
         reason,
-        this.internalDetails.value
+        sanitizedValue
       );
     } catch {
       // SECURITY: Don't let logging failures prevent error propagation
@@ -147,14 +157,20 @@ export class SecurityError extends Error {
       // Replace full paths with relative indicators
       // macOS: /Users/username/...
       // Linux: /home/username/...
-      // Windows: C:\Users\username\...
+      // Windows: C:\Users\username\... or \\?\C:\Users\...
+      // Windows UNC: \\server\share\...
       // WSL: /mnt/c/Users/username/...
+      // Windows drive letters: D:\...
       return line
         .replace(/\/Users\/[^/\s:]+/g, '~')
         .replace(/\/home\/[^/\s:]+/g, '~')
         .replace(/C:\\Users\\[^\\\s:]+/gi, '~')
+        .replace(/[A-Z]:\\Users\\[^\\\s:]+/gi, '~')
+        .replace(/\\\\\?\\[A-Z]:\\Users\\[^\\\s:]+/gi, '~')
+        .replace(/\\\\[^\\]+\\[^\\]+/g, '\\\\server\\share')
         .replace(/\/mnt\/[a-z]\/Users\/[^/\s:]+/gi, '~')
-        .replace(/\/var\/folders\/[^/]+\/[^/]+/g, '/tmp');
+        .replace(/\/var\/folders\/[^/]+\/[^/]+/g, '/tmp')
+        .replace(/\/private\/var\/folders\/[^/]+\/[^/]+/g, '/tmp');
     });
 
     return safeLines.join('\n');
