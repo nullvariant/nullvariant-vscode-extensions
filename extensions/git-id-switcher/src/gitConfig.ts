@@ -10,7 +10,7 @@
  */
 
 import * as vscode from 'vscode';
-import { Identity, formatGitAuthor, getIdentities } from './identity';
+import { Identity, formatGitAuthor, getIdentitiesWithValidation } from './identity';
 import { gitExec, secureExec } from './secureExec';
 import { validateIdentity } from './validation';
 import {
@@ -180,7 +180,7 @@ export async function detectCurrentIdentity(): Promise<Identity | undefined> {
   }
 
   // Match by email (most reliable)
-  const identities = getIdentities();
+  const identities = getIdentitiesWithValidation();
   return identities.find(i => i.email === config.userEmail);
 }
 

@@ -10,7 +10,7 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { Identity, getIdentities } from './identity';
+import { Identity, getIdentitiesWithValidation } from './identity';
 import { sshAgentExec, sshKeygenExec } from './secureExec';
 import { isPathSafe } from './validation';
 import {
@@ -172,7 +172,7 @@ export async function removeSshKey(keyPath: string): Promise<void> {
  * This removes all keys for configured identities, leaving other keys intact
  */
 export async function removeAllIdentityKeys(): Promise<void> {
-  const identities = getIdentities();
+  const identities = getIdentitiesWithValidation();
   const removePromises = identities
     .filter(identity => identity.sshKeyPath)
     .map(identity =>
@@ -225,7 +225,7 @@ export async function isKeyLoaded(keyPath: string): Promise<boolean> {
  */
 export async function detectCurrentIdentityFromSsh(): Promise<Identity | undefined> {
   const keys = await listSshKeys();
-  const identities = getIdentities();
+  const identities = getIdentitiesWithValidation();
 
   for (const identity of identities) {
     if (!identity.sshKeyPath) {

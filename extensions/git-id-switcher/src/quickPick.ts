@@ -7,7 +7,7 @@
 import * as vscode from 'vscode';
 import {
   Identity,
-  getIdentities,
+  getIdentitiesWithValidation,
   getIdentityLabel,
   getIdentityDetail,
 } from './identity';
@@ -25,7 +25,7 @@ interface IdentityQuickPickItem extends vscode.QuickPickItem {
 function createQuickPickItems(
   currentIdentity?: Identity
 ): IdentityQuickPickItem[] {
-  const identities = getIdentities();
+  const identities = getIdentitiesWithValidation();
 
   return identities.map(identity => {
     const isCurrent = currentIdentity?.id === identity.id;

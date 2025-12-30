@@ -11,7 +11,7 @@
 import * as vscode from 'vscode';
 import {
   Identity,
-  getIdentities,
+  getIdentitiesWithValidation,
   getIdentityById,
   getIdentityLabel,
 } from './identity';
@@ -99,7 +99,7 @@ export function deactivate(): void {
  */
 async function initializeState(context: vscode.ExtensionContext): Promise<void> {
   try {
-    const identities = getIdentities();
+    const identities = getIdentitiesWithValidation();
 
     // No identities configured
     if (identities.length === 0) {
