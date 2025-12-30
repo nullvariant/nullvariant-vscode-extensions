@@ -81,14 +81,27 @@ export async function activate(
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
       if (e.affectsConfiguration('gitIdSwitcher')) {
-        // Detect and log specific configuration changes
-        const newSnapshot = securityLogger.createConfigSnapshot();
-        const changes = securityLogger.detectConfigChanges(newSnapshot);
-        if (changes.length > 0) {
-          securityLogger.logConfigChanges(changes);
+        try {
+          // Detect and log specific configuration changes
+          const newSnapshot = securityLogger.createConfigSnapshot();
+          const changes = securityLogger.detectConfigChanges(newSnapshot);
+          if (changes.length > 0) {
+            securityLogger.logConfigChanges(changes);
+          }
+          // Update snapshot for next change detection
+          // SECURITY: Always update snapshot even if logging fails
+          securityLogger.storeConfigSnapshot();
+        } catch (error) {
+          // SECURITY: Log error but don't break the extension
+          // This prevents malicious configuration from causing DoS
+          console.error('[Git ID Switcher] Error handling config change:', error);
+          // Still update snapshot to prevent state corruption
+          try {
+            securityLogger.storeConfigSnapshot();
+          } catch (snapshotError) {
+            console.error('[Git ID Switcher] Error storing config snapshot:', snapshotError);
+          }
         }
-        // Update snapshot for next change detection
-        securityLogger.storeConfigSnapshot();
 
         // Reset validation notification flag to allow re-notification if errors persist
         // This ensures users are notified again if they fix some issues but others remain

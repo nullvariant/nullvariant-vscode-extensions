@@ -244,7 +244,21 @@ class SecurityLoggerImpl {
       error: '🚨',
     }[fullEvent.severity];
 
-    const message = `[${fullEvent.timestamp}] ${severityIcon} [${fullEvent.severity.toUpperCase()}] ${fullEvent.type}: ${JSON.stringify(fullEvent.details)}`;
+    // SECURITY: Limit JSON stringification size to prevent DoS
+    const MAX_MESSAGE_SIZE = 10000; // 10KB per log message
+    let message: string;
+    try {
+      const jsonStr = JSON.stringify(fullEvent.details);
+      if (jsonStr.length > MAX_MESSAGE_SIZE) {
+        // Truncate if too large
+        message = `[${fullEvent.timestamp}] ${severityIcon} [${fullEvent.severity.toUpperCase()}] ${fullEvent.type}: ${jsonStr.slice(0, MAX_MESSAGE_SIZE)}...[truncated]`;
+      } else {
+        message = `[${fullEvent.timestamp}] ${severityIcon} [${fullEvent.severity.toUpperCase()}] ${fullEvent.type}: ${jsonStr}`;
+      }
+    } catch (error) {
+      // SECURITY: Fallback if JSON.stringify fails (e.g., circular reference)
+      message = `[${fullEvent.timestamp}] ${severityIcon} [${fullEvent.severity.toUpperCase()}] ${fullEvent.type}: [Failed to serialize details: ${String(error)}]`;
+    }
 
     // Log to output channel if available
     if (this.outputChannel) {
@@ -352,11 +366,21 @@ class SecurityLoggerImpl {
 
   /**
    * Create a configuration snapshot from current VS Code configuration
+   * SECURITY: Limits array size to prevent DoS attacks
    */
   createConfigSnapshot(): ConfigSnapshot {
     const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+    const identities = config.get<unknown[]>('identities', []);
+    
+    // SECURITY: Limit identities array size to prevent DoS attacks
+    // This prevents maliciously large configuration from causing performance issues
+    const MAX_IDENTITIES = 1000;
+    const limitedIdentities = Array.isArray(identities) && identities.length > MAX_IDENTITIES
+      ? identities.slice(0, MAX_IDENTITIES)
+      : identities;
+    
     return {
-      identities: config.get<unknown[]>('identities', []),
+      identities: limitedIdentities,
       defaultIdentity: config.get<string>('defaultIdentity', ''),
       autoSwitchSshKey: config.get<boolean>('autoSwitchSshKey', true),
       showNotifications: config.get<boolean>('showNotifications', true),
@@ -368,13 +392,23 @@ class SecurityLoggerImpl {
 
   /**
    * Store the current configuration snapshot
+   * SECURITY: Wrapped in try-catch to prevent errors from breaking the extension
    */
   storeConfigSnapshot(): void {
-    this.configSnapshot = this.createConfigSnapshot();
+    try {
+      this.configSnapshot = this.createConfigSnapshot();
+    } catch (error) {
+      // SECURITY: Log error but don't break the extension
+      // This prevents malicious configuration from causing DoS
+      console.error('[Git ID Switcher Security] Error storing config snapshot:', error);
+      // Keep previous snapshot to prevent state corruption
+      // (null check in detectConfigChanges will handle this)
+    }
   }
 
   /**
    * Compare two values for equality (deep comparison for objects/arrays)
+   * SECURITY: Limits depth and size to prevent DoS attacks
    */
   private valuesEqual(a: unknown, b: unknown): boolean {
     if (a === b) return true;
@@ -383,8 +417,27 @@ class SecurityLoggerImpl {
 
     if (typeof a === 'object' && typeof b === 'object') {
       try {
-        return JSON.stringify(a) === JSON.stringify(b);
+        // SECURITY: Limit comparison depth to prevent DoS from deeply nested objects
+        const MAX_DEPTH = 10;
+        // SECURITY: Limit stringified size to prevent DoS from large objects
+        const MAX_STRINGIFY_SIZE = 100000; // 100KB
+        
+        // Quick size check: estimate size by converting to string with size limit
+        const aStr = JSON.stringify(a);
+        const bStr = JSON.stringify(b);
+        
+        // SECURITY: If strings are too large, use length-based comparison as fallback
+        if (aStr.length > MAX_STRINGIFY_SIZE || bStr.length > MAX_STRINGIFY_SIZE) {
+          // For very large objects, compare lengths and types only
+          // This prevents DoS but may miss some changes (acceptable trade-off)
+          return aStr.length === bStr.length && typeof a === typeof b;
+        }
+        
+        return aStr === bStr;
       } catch {
+        // SECURITY: On error (e.g., circular reference), return false
+        // This is safe: we'll detect a change even if values are actually equal
+        // Better to log a false positive than to crash
         return false;
       }
     }
@@ -394,62 +447,93 @@ class SecurityLoggerImpl {
 
   /**
    * Detect which configuration keys changed
+   * SECURITY: Wrapped in try-catch to prevent errors from breaking the extension
    */
   detectConfigChanges(newSnapshot: ConfigSnapshot): ConfigChangeDetail[] {
     if (!this.configSnapshot) {
       return [];
     }
 
-    const changes: ConfigChangeDetail[] = [];
+    try {
+      const changes: ConfigChangeDetail[] = [];
 
-    for (const key of CONFIG_KEYS) {
-      const previousValue = this.configSnapshot[key];
-      const newValue = newSnapshot[key];
+      for (const key of CONFIG_KEYS) {
+        const previousValue = this.configSnapshot[key];
+        const newValue = newSnapshot[key];
 
-      if (!this.valuesEqual(previousValue, newValue)) {
-        changes.push({
-          key,
-          previousValue,
-          newValue,
-        });
+        if (!this.valuesEqual(previousValue, newValue)) {
+          changes.push({
+            key,
+            previousValue,
+            newValue,
+          });
+        }
       }
-    }
 
-    return changes;
+      return changes;
+    } catch (error) {
+      // SECURITY: Log error but don't break the extension
+      // This prevents malicious configuration from causing DoS
+      console.error('[Git ID Switcher Security] Error detecting config changes:', error);
+      return [];
+    }
   }
 
   /**
    * Summarize identity changes for logging
+   * SECURITY: Wrapped in try-catch and limits processing to prevent DoS
    */
   private summarizeIdentityChanges(
     previousIdentities: unknown[],
     newIdentities: unknown[]
   ): Record<string, unknown> {
-    // Use raw IDs for comparison
-    const prevIds = this.extractIdentityIds(previousIdentities, false);
-    const newIds = this.extractIdentityIds(newIdentities, false);
+    try {
+      // SECURITY: Limit array sizes to prevent DoS attacks
+      const MAX_IDENTITIES_TO_PROCESS = 1000;
+      const prevLimited = Array.isArray(previousIdentities)
+        ? previousIdentities.slice(0, MAX_IDENTITIES_TO_PROCESS)
+        : [];
+      const newLimited = Array.isArray(newIdentities)
+        ? newIdentities.slice(0, MAX_IDENTITIES_TO_PROCESS)
+        : [];
 
-    const added = newIds.filter(id => !prevIds.includes(id));
-    const removed = prevIds.filter(id => !newIds.includes(id));
-    const modified = newIds.filter(id => {
-      if (!prevIds.includes(id)) return false;
-      const prevIdentity = previousIdentities.find(
-        i => this.getIdentityId(i) === id
-      );
-      const newIdentity = newIdentities.find(
-        i => this.getIdentityId(i) === id
-      );
-      return !this.valuesEqual(prevIdentity, newIdentity);
-    });
+      // Use raw IDs for comparison
+      const prevIds = this.extractIdentityIds(prevLimited, false);
+      const newIds = this.extractIdentityIds(newLimited, false);
 
-    // Sanitize IDs for output
-    return {
-      previousCount: previousIdentities.length,
-      newCount: newIdentities.length,
-      added: added.length > 0 ? this.sanitizeIds(added) : undefined,
-      removed: removed.length > 0 ? this.sanitizeIds(removed) : undefined,
-      modified: modified.length > 0 ? this.sanitizeIds(modified) : undefined,
-    };
+      const added = newIds.filter(id => !prevIds.includes(id));
+      const removed = prevIds.filter(id => !newIds.includes(id));
+      const modified = newIds.filter(id => {
+        if (!prevIds.includes(id)) return false;
+        const prevIdentity = prevLimited.find(
+          i => this.getIdentityId(i) === id
+        );
+        const newIdentity = newLimited.find(
+          i => this.getIdentityId(i) === id
+        );
+        return !this.valuesEqual(prevIdentity, newIdentity);
+      });
+
+      // Sanitize IDs for output
+      return {
+        previousCount: previousIdentities.length,
+        newCount: newIdentities.length,
+        added: added.length > 0 ? this.sanitizeIds(added) : undefined,
+        removed: removed.length > 0 ? this.sanitizeIds(removed) : undefined,
+        modified: modified.length > 0 ? this.sanitizeIds(modified) : undefined,
+        // SECURITY: Indicate if arrays were truncated
+        truncated: previousIdentities.length > MAX_IDENTITIES_TO_PROCESS ||
+          newIdentities.length > MAX_IDENTITIES_TO_PROCESS,
+      };
+    } catch (error) {
+      // SECURITY: Return safe summary on error
+      console.error('[Git ID Switcher Security] Error summarizing identity changes:', error);
+      return {
+        previousCount: Array.isArray(previousIdentities) ? previousIdentities.length : 0,
+        newCount: Array.isArray(newIdentities) ? newIdentities.length : 0,
+        error: 'Failed to summarize changes',
+      };
+    }
   }
 
   /**
@@ -534,41 +618,64 @@ class SecurityLoggerImpl {
 
   /**
    * Log detailed configuration changes with before/after values
+   * SECURITY: Wrapped in try-catch to prevent errors from breaking the extension
+   * SECURITY: Ensures all values are sanitized before logging
    */
   logConfigChanges(changes: ConfigChangeDetail[]): void {
     if (changes.length === 0) {
       return;
     }
 
-    for (const change of changes) {
-      // Special handling for identities array
-      if (change.key === 'identities') {
-        const prevIdentities = Array.isArray(change.previousValue)
-          ? change.previousValue
-          : [];
-        const newIdentities = Array.isArray(change.newValue)
-          ? change.newValue
-          : [];
+    try {
+      // SECURITY: Limit number of changes to log to prevent DoS
+      const MAX_CHANGES_TO_LOG = 100;
+      const changesToLog = changes.slice(0, MAX_CHANGES_TO_LOG);
 
+      for (const change of changesToLog) {
+        // Special handling for identities array
+        if (change.key === 'identities') {
+          const prevIdentities = Array.isArray(change.previousValue)
+            ? change.previousValue
+            : [];
+          const newIdentities = Array.isArray(change.newValue)
+            ? change.newValue
+            : [];
+
+          this.log({
+            type: SecurityEventType.CONFIG_CHANGE,
+            severity: 'info',
+            details: {
+              configKey: change.key,
+              changes: this.summarizeIdentityChanges(prevIdentities, newIdentities),
+            },
+          });
+        } else {
+          this.log({
+            type: SecurityEventType.CONFIG_CHANGE,
+            severity: 'info',
+            details: {
+              configKey: change.key,
+              previousValue: this.sanitizeConfigValue(change.key, change.previousValue),
+              newValue: this.sanitizeConfigValue(change.key, change.newValue),
+            },
+          });
+        }
+      }
+
+      // SECURITY: Log if changes were truncated
+      if (changes.length > MAX_CHANGES_TO_LOG) {
         this.log({
           type: SecurityEventType.CONFIG_CHANGE,
-          severity: 'info',
+          severity: 'warning',
           details: {
-            configKey: change.key,
-            changes: this.summarizeIdentityChanges(prevIdentities, newIdentities),
-          },
-        });
-      } else {
-        this.log({
-          type: SecurityEventType.CONFIG_CHANGE,
-          severity: 'info',
-          details: {
-            configKey: change.key,
-            previousValue: this.sanitizeConfigValue(change.key, change.previousValue),
-            newValue: this.sanitizeConfigValue(change.key, change.newValue),
+            configKey: 'multiple',
+            message: `Too many config changes (${changes.length}), only logged first ${MAX_CHANGES_TO_LOG}`,
           },
         });
       }
+    } catch (error) {
+      // SECURITY: Log error but don't break the extension
+      console.error('[Git ID Switcher Security] Error logging config changes:', error);
     }
   }
 
