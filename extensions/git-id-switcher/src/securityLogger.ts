@@ -7,8 +7,29 @@
  * @see https://owasp.org/www-project-application-security-verification-standard/
  */
 
-import * as vscode from 'vscode';
 import * as path from 'path';
+// Type-only import (stripped at compile time, no runtime dependency)
+import type { OutputChannel } from 'vscode';
+
+/**
+ * Lazy-loaded VS Code API reference
+ *
+ * IMPORTANT: VS Code module is loaded lazily to support testing.
+ * In test environments (outside VS Code extension host), the vscode
+ * module is not available. By using lazy loading, we can run tests
+ * without the vscode dependency.
+ *
+ * @returns VS Code API or undefined if not available
+ */
+function getVSCode(): typeof import('vscode') | undefined {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('vscode') as typeof import('vscode');
+  } catch {
+    // VS Code API not available (e.g., in tests)
+    return undefined;
+  }
+}
 
 /**
  * Security limits to prevent DoS attacks
@@ -188,7 +209,7 @@ export interface ISecurityLogger {
  * Singleton pattern ensures consistent logging across the extension.
  */
 class SecurityLoggerImpl implements ISecurityLogger {
-  private outputChannel: vscode.OutputChannel | null = null;
+  private outputChannel: OutputChannel | null = null;
   private readonly channelName = 'Git ID Switcher Security';
 
   /**
@@ -197,7 +218,10 @@ class SecurityLoggerImpl implements ISecurityLogger {
    */
   initialize(): void {
     if (!this.outputChannel) {
-      this.outputChannel = vscode.window.createOutputChannel(this.channelName);
+      const vscode = getVSCode();
+      if (vscode) {
+        this.outputChannel = vscode.window.createOutputChannel(this.channelName);
+      }
     }
   }
 
@@ -277,9 +301,12 @@ class SecurityLoggerImpl implements ISecurityLogger {
 
     // Show notification for errors (without sensitive details)
     if (fullEvent.severity === 'error') {
-      vscode.window.showWarningMessage(
-        `Git ID Switcher Security: ${fullEvent.type} - Check Output panel for details`
-      );
+      const vscode = getVSCode();
+      if (vscode) {
+        vscode.window.showWarningMessage(
+          `Git ID Switcher Security: ${fullEvent.type} - Check Output panel for details`
+        );
+      }
     }
   }
 
@@ -934,6 +961,10 @@ class SecurityLoggerImpl implements ISecurityLogger {
    */
   private getExtensionVersion(): string {
     try {
+      const vscode = getVSCode();
+      if (!vscode) {
+        return 'unknown';
+      }
       const ext = vscode.extensions.getExtension('nullvariant.git-id-switcher');
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       return (ext?.packageJSON?.version as string) || 'unknown';

@@ -5,7 +5,25 @@
  * Separated from SecurityLogger for Single Responsibility Principle.
  */
 
-import * as vscode from 'vscode';
+/**
+ * Lazy-loaded VS Code workspace API
+ *
+ * IMPORTANT: VS Code module is loaded lazily to support testing.
+ * In test environments (outside VS Code extension host), the vscode
+ * module is not available.
+ *
+ * @returns VS Code workspace API or undefined if not available
+ */
+function getVSCodeWorkspace(): typeof import('vscode').workspace | undefined {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const vscode = require('vscode') as typeof import('vscode');
+    return vscode.workspace;
+  } catch {
+    // VS Code API not available (e.g., in tests)
+    return undefined;
+  }
+}
 
 /**
  * Configuration keys that we track for changes
@@ -66,7 +84,21 @@ export class ConfigChangeDetector {
    * Create a configuration snapshot from current VS Code configuration
    */
   createSnapshot(): ConfigSnapshot {
-    const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+    const workspace = getVSCodeWorkspace();
+    if (!workspace) {
+      // Return default snapshot when VS Code API is not available (e.g., in tests)
+      return {
+        identities: [],
+        defaultIdentity: '',
+        autoSwitchSshKey: true,
+        showNotifications: true,
+        applyToSubmodules: true,
+        submoduleDepth: 1,
+        includeIconInGitConfig: false,
+        commandTimeouts: {},
+      };
+    }
+    const config = workspace.getConfiguration('gitIdSwitcher');
     const identities = config.get<unknown[]>('identities', []);
 
     // Limit identities array size to prevent DoS attacks
