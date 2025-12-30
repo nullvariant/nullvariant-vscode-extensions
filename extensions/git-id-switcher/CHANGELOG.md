@@ -7,6 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.8] - 2025-12-30
+
+### Security
+
+This release includes comprehensive security hardening through 10 security issues (Issue-00029 to Issue-00038).
+
+#### Path & File Security
+
+- **Path Traversal Prevention**: Added `isSecurePath()` with comprehensive attack detection
+  - Unicode normalization timing attacks
+  - Control/invisible character obfuscation
+  - Windows UNC paths, device paths, reserved names
+  - Trailing dot attacks, whitespace obfuscation
+- **Secure Path Normalization**: Added `pathUtils.ts` with symlink resolution
+  - ELOOP detection for symlink loops
+  - PATH_MAX enforcement (4096 bytes)
+  - Home directory escape prevention
+- **SSH Key File Validation**: Added multi-layer validation before `ssh-add`
+  - File existence, type, and size limits (10B - 1MB)
+  - Unix permission check (reject group/others access)
+  - SSH key format validation (OpenSSH, PEM, PKCS#8, PuTTY)
+
+#### Input Validation
+
+- **Identity Validation on Load**: `getIdentitiesWithValidation()` validates at startup
+  - Invalid identities filtered and logged
+  - Duplicate ID detection
+  - DoS protection with array/field count limits
+- **Submodule Path Validation**: Strengthened path security
+  - Symlink escape detection after resolution
+  - Control character rejection
+  - Depth clamping with MAX_SUBMODULE_DEPTH=5
+- **Combined Flag Validation**: Enhanced command allowlist security
+  - Unicode normalization (NFC) for combining characters
+  - Invisible Unicode character detection
+  - Flag-value concatenation detection (e.g., `-f/path`)
+
+#### Error Handling & Logging
+
+- **SecurityError Class**: Prevent information leakage through errors
+  - Separate user-visible messages from internal details
+  - Stack trace sanitization (macOS, Linux, Windows, WSL paths)
+  - Safe error message internationalization with `vscode.l10n.t()`
+- **Log Sanitization**: Comprehensive sensitive data protection
+  - Platform-specific sensitive directory patterns
+  - Secret-like string detection (API keys, tokens, base64)
+  - Windows UNC path server name masking
+  - Control character detection and masking
+- **Config Change Audit Logging**: Track configuration changes
+  - CONFIG_KEYS tracking with before/after values
+  - Identity array change summarization
+  - DoS protection (max 1000 identities, max 100 changes)
+
+#### Command Execution
+
+- **Command-Specific Timeouts**: Prevent resource exhaustion
+  - git: 10s, ssh-add: 5s, ssh-keygen: 5s, default: 30s
+  - User-configurable via `gitIdSwitcher.commandTimeouts` setting
+  - TimeoutError class with ETIMEDOUT code
+- **Enhanced Timeout Validation**: Additional security checks
+  - Command name validation (DoS protection, character restrictions)
+  - NaN/Infinity checks for timeout values
+  - Integer validation to prevent precision attacks
+
+### Added
+
+- **New Setting**: `gitIdSwitcher.commandTimeouts` for custom command timeouts
+  - Supports per-command timeout configuration
+  - Validation: 1s minimum, 5m maximum
+
+### Changed
+
+- **Architecture Improvements** (SOLID principles):
+  - SRP: Extracted `ConfigChangeDetector` class from `SecurityLogger`
+  - DIP: Added `ISecurityLogger` interface for dependency injection
+  - OCP: Timeout configuration externalized to VS Code settings
+
 ## [0.9.7] - 2025-12-27
 
 ### Changed
@@ -401,7 +478,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.7...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.8...HEAD
+[0.9.8]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.7...git-id-switcher-v0.9.8
 [0.9.7]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.6...git-id-switcher-v0.9.7
 [0.9.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.5...git-id-switcher-v0.9.6
 [0.9.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.4...git-id-switcher-v0.9.5
