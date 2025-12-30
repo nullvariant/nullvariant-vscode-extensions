@@ -288,12 +288,28 @@ export async function isKeyLoaded(keyPath: string): Promise<boolean> {
 
 /**
  * Detect which identity's key is currently loaded
+ * @param token Optional cancellation token for aborting the operation
  */
-export async function detectCurrentIdentityFromSsh(): Promise<Identity | undefined> {
+export async function detectCurrentIdentityFromSsh(
+  token?: vscode.CancellationToken
+): Promise<Identity | undefined> {
+  if (token?.isCancellationRequested) {
+    return undefined;
+  }
+
   const keys = await listSshKeys();
+
+  if (token?.isCancellationRequested) {
+    return undefined;
+  }
+
   const identities = getIdentitiesWithValidation();
 
   for (const identity of identities) {
+    if (token?.isCancellationRequested) {
+      return undefined;
+    }
+
     if (!identity.sshKeyPath) {
       continue;
     }

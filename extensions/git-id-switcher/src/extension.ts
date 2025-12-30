@@ -188,12 +188,12 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
       }
     }
 
-    // Try to detect from Git config (check cancellation after async operations)
-    if (await isGitRepository()) {
+    // Try to detect from Git config (pass token to async functions)
+    if (await isGitRepository(token)) {
       if (token.isCancellationRequested) {
         return;
       }
-      const detectedIdentity = await detectCurrentIdentity();
+      const detectedIdentity = await detectCurrentIdentity(token);
       if (token.isCancellationRequested) {
         return;
       }
@@ -205,8 +205,8 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
       }
     }
 
-    // Try to detect from SSH agent
-    const sshIdentity = await detectCurrentIdentityFromSsh();
+    // Try to detect from SSH agent (pass token to async function)
+    const sshIdentity = await detectCurrentIdentityFromSsh(token);
     if (token.isCancellationRequested) {
       return;
     }
@@ -220,6 +220,11 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     // No identity detected, show selection prompt
     statusBar.setNoIdentity();
   } catch (error) {
+    // If cancelled, don't treat as error
+    if (token.isCancellationRequested) {
+      return;
+    }
+
     // SECURITY: Use getUserSafeMessage to prevent information leakage
     const safeMessage = getUserSafeMessage(error);
     console.error('Failed to initialize Git ID Switcher:', safeMessage);
@@ -268,6 +273,11 @@ async function selectIdentityCommand(
     const safeMessage = getUserSafeMessage(error);
     showErrorNotification(vscode.l10n.t('Failed to select identity: {0}', safeMessage));
     statusBar.setError(safeMessage);
+
+    // Propagate fatal errors (security violations)
+    if (isFatalError(error)) {
+      throw error;
+    }
   }
 }
 

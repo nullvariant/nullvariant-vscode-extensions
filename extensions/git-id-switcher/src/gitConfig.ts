@@ -171,9 +171,20 @@ async function propagateToSubmodules(
 
 /**
  * Detect current identity from Git config
+ * @param token Optional cancellation token for aborting the operation
  */
-export async function detectCurrentIdentity(): Promise<Identity | undefined> {
+export async function detectCurrentIdentity(
+  token?: vscode.CancellationToken
+): Promise<Identity | undefined> {
+  if (token?.isCancellationRequested) {
+    return undefined;
+  }
+
   const config = await getCurrentGitConfig();
+
+  if (token?.isCancellationRequested) {
+    return undefined;
+  }
 
   if (!config.userEmail) {
     return undefined;
@@ -206,8 +217,15 @@ export async function isGitAvailable(): Promise<boolean> {
 
 /**
  * Check if current directory is a Git repository
+ * @param token Optional cancellation token for aborting the operation
  */
-export async function isGitRepository(): Promise<boolean> {
+export async function isGitRepository(
+  token?: vscode.CancellationToken
+): Promise<boolean> {
+  if (token?.isCancellationRequested) {
+    return false;
+  }
+
   const result = await execGitInWorkspace(['rev-parse', '--is-inside-work-tree']);
   return result === 'true';
 }
