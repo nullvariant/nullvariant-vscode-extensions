@@ -270,6 +270,19 @@ export function isSecurityError(error: unknown): error is SecurityError {
 }
 
 /**
+ * Check if an error is fatal and should be propagated
+ *
+ * Fatal errors are those that indicate a security issue or
+ * a critical system failure that cannot be recovered from.
+ */
+export function isFatalError(error: unknown): boolean {
+  if (isSecurityError(error)) {
+    return error.category === ErrorCategory.SECURITY;
+  }
+  return false;
+}
+
+/**
  * Get user-safe message from any error
  */
 export function getUserSafeMessage(error: unknown): string {

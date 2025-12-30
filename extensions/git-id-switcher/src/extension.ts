@@ -29,11 +29,12 @@ import {
   showErrorNotification,
 } from './quickPick';
 import { securityLogger } from './securityLogger';
-import { getUserSafeMessage } from './errors';
+import { getUserSafeMessage, isFatalError } from './errors';
 
 // Global state
 let statusBar: IdentityStatusBar;
 let currentIdentity: Identity | undefined;
+let initializeCancellation: vscode.CancellationTokenSource | undefined;
 
 /**
  * Extension activation
@@ -70,7 +71,15 @@ export async function activate(
   // Watch for workspace changes
   context.subscriptions.push(
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
-      initializeState(context);
+      initializeState(context).catch(error => {
+        const safeMessage = getUserSafeMessage(error);
+        console.error('[Git ID Switcher] Failed to initialize after workspace change:', safeMessage);
+        if (isFatalError(error)) {
+          vscode.window.showErrorMessage(
+            vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
+          );
+        }
+      });
     })
   );
 
@@ -106,7 +115,15 @@ export async function activate(
         // Reset validation notification flag to allow re-notification if errors persist
         // This ensures users are notified again if they fix some issues but others remain
         resetValidationNotificationFlag();
-        initializeState(context);
+        initializeState(context).catch(error => {
+          const safeMessage = getUserSafeMessage(error);
+          console.error('[Git ID Switcher] Failed to initialize after config change:', safeMessage);
+          if (isFatalError(error)) {
+            vscode.window.showErrorMessage(
+              vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
+            );
+          }
+        });
       }
     })
   );
@@ -118,6 +135,12 @@ export async function activate(
  * Extension deactivation
  */
 export function deactivate(): void {
+  // Cancel any in-progress initialization
+  if (initializeCancellation) {
+    initializeCancellation.cancel();
+    initializeCancellation.dispose();
+    initializeCancellation = undefined;
+  }
   securityLogger.logDeactivation();
   securityLogger.dispose();
   console.log('Git ID Switcher deactivated');
@@ -127,6 +150,16 @@ export function deactivate(): void {
  * Initialize state from saved settings and current Git config
  */
 async function initializeState(context: vscode.ExtensionContext): Promise<void> {
+  // Cancel any existing initialization
+  if (initializeCancellation) {
+    initializeCancellation.cancel();
+    initializeCancellation.dispose();
+  }
+
+  const tokenSource = new vscode.CancellationTokenSource();
+  initializeCancellation = tokenSource;
+  const token = tokenSource.token;
+
   try {
     const identities = getIdentitiesWithValidation();
 
@@ -155,9 +188,15 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
       }
     }
 
-    // Try to detect from Git config
+    // Try to detect from Git config (check cancellation after async operations)
     if (await isGitRepository()) {
+      if (token.isCancellationRequested) {
+        return;
+      }
       const detectedIdentity = await detectCurrentIdentity();
+      if (token.isCancellationRequested) {
+        return;
+      }
       if (detectedIdentity) {
         currentIdentity = detectedIdentity;
         statusBar.setIdentity(detectedIdentity);
@@ -168,6 +207,9 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
 
     // Try to detect from SSH agent
     const sshIdentity = await detectCurrentIdentityFromSsh();
+    if (token.isCancellationRequested) {
+      return;
+    }
     if (sshIdentity) {
       currentIdentity = sshIdentity;
       statusBar.setIdentity(sshIdentity);
@@ -182,6 +224,17 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     const safeMessage = getUserSafeMessage(error);
     console.error('Failed to initialize Git ID Switcher:', safeMessage);
     statusBar.setNoIdentity();
+
+    // Propagate fatal errors (security violations) - re-throw as-is to preserve category
+    if (isFatalError(error)) {
+      throw error;
+    }
+  } finally {
+    // Clean up cancellation token if this is still the current one
+    if (initializeCancellation === tokenSource) {
+      initializeCancellation = undefined;
+    }
+    tokenSource.dispose();
   }
 }
 
