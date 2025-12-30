@@ -68,8 +68,32 @@ export function getIdentitiesWithValidation(): Identity[] {
   const config = vscode.workspace.getConfiguration('gitIdSwitcher');
   const rawIdentities = config.get<unknown[]>('identities', []);
 
-  // Early return for empty array
-  if (!Array.isArray(rawIdentities) || rawIdentities.length === 0) {
+  // Type check: must be an array
+  if (!Array.isArray(rawIdentities)) {
+    // Log type error but don't show notification (configuration might be in transition)
+    securityLogger.logValidationFailure(
+      'identities',
+      'Configuration must be an array',
+      typeof rawIdentities
+    );
+    return [];
+  }
+
+  // Early return for empty array (valid state)
+  if (rawIdentities.length === 0) {
+    return [];
+  }
+
+  // SECURITY: Limit array size to prevent DoS attacks via excessive validation
+  // VS Code settings should enforce this, but defense-in-depth requires explicit check
+  const MAX_IDENTITIES = 1000;
+  if (rawIdentities.length > MAX_IDENTITIES) {
+    securityLogger.logValidationFailure(
+      'identities',
+      `Array length exceeds maximum (${MAX_IDENTITIES})`,
+      rawIdentities.length
+    );
+    // Return empty array to fail securely
     return [];
   }
 
@@ -95,8 +119,12 @@ export function getIdentitiesWithValidation(): Identity[] {
       continue;
     }
 
-    // Check for duplicate IDs
-    const id = (identity as Identity).id;
+    // Type assertion is safe here because validateIdentitySchema() ensures
+    // the object matches the Identity schema structure
+    const validatedIdentity = identity as Identity;
+
+    // Check for duplicate IDs (defense-in-depth: schema validation also checks this)
+    const id = validatedIdentity.id;
     if (seenIds.has(id)) {
       invalidIndices.push(i);
       securityLogger.logValidationFailure(
@@ -108,11 +136,14 @@ export function getIdentitiesWithValidation(): Identity[] {
     }
 
     seenIds.add(id);
-    validIdentities.push(identity as Identity);
+    validIdentities.push(validatedIdentity);
   }
 
   // Show one-time notification if there are invalid identities
+  // SECURITY: Set flag before async operation to prevent race conditions
+  // Multiple concurrent validations won't trigger duplicate notifications
   if (invalidIndices.length > 0 && !hasShownValidationError) {
+    // Set flag immediately to prevent concurrent notifications
     hasShownValidationError = true;
 
     const message = invalidIndices.length === 1
@@ -124,6 +155,8 @@ export function getIdentitiesWithValidation(): Identity[] {
           invalidIndices.length
         );
 
+    // Fire and forget: notification is non-blocking
+    // User can dismiss or open settings as needed
     vscode.window.showWarningMessage(message, vscode.l10n.t('Open Settings'))
       .then(action => {
         if (action) {
@@ -132,6 +165,10 @@ export function getIdentitiesWithValidation(): Identity[] {
             'gitIdSwitcher.identities'
           );
         }
+      })
+      .catch(() => {
+        // SECURITY: Don't let notification errors affect validation flow
+        // Silently ignore notification errors
       });
   }
 
@@ -139,7 +176,10 @@ export function getIdentitiesWithValidation(): Identity[] {
 }
 
 /**
- * Reset the validation error notification flag (for testing)
+ * Reset the validation error notification flag
+ * 
+ * Used when configuration changes to allow re-notification of validation errors.
+ * Also exposed for testing purposes.
  */
 export function resetValidationNotificationFlag(): void {
   hasShownValidationError = false;

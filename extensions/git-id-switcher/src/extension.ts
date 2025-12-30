@@ -14,6 +14,7 @@ import {
   getIdentitiesWithValidation,
   getIdentityById,
   getIdentityLabel,
+  resetValidationNotificationFlag,
 } from './identity';
 import { createStatusBar, IdentityStatusBar } from './statusBar';
 import {
@@ -77,6 +78,9 @@ export async function activate(
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
       if (e.affectsConfiguration('gitIdSwitcher')) {
+        // Reset validation notification flag to allow re-notification if errors persist
+        // This ensures users are notified again if they fix some issues but others remain
+        resetValidationNotificationFlag();
         initializeState(context);
       }
     })
