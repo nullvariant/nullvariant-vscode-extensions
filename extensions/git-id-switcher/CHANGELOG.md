@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.4] - 2025-12-31
+
+### Fixed
+
+- **Notification Localization**: Add missing `l10n` field to package.json
+  - Notification messages (e.g., "Switched to {identity}") were always displayed in English
+  - Now properly loads translation bundles from `l10n/` directory
+  - All 17 supported languages now work for runtime messages
+
 ## [0.10.3] - 2025-12-31
 
 ### Changed
