@@ -58,148 +58,188 @@
         "title": "%command.showCurrentIdentity%"
       }
     ],
-    "configuration": {
-      "title": "%config.title%",
-      "properties": {
-        "gitIdSwitcher.identities": {
-          "type": "array",
-          "default": [
-            {
-              "id": "example",
-              "icon": "👤",
-              "name": "Your Name",
-              "service": "",
-              "email": "you@example.com",
-              "description": "Edit this or add your own identity",
-              "sshKeyPath": "",
-              "sshHost": "",
-              "gpgKeyId": ""
-            }
-          ],
-          "description": "%config.identities%",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "%config.identities.id%"
-              },
-              "icon": {
-                "type": "string",
-                "description": "%config.identities.icon%"
-              },
-              "name": {
-                "type": "string",
-                "description": "%config.identities.name%"
-              },
-              "service": {
-                "type": "string",
-                "description": "%config.identities.service%"
-              },
-              "email": {
-                "type": "string",
-                "description": "%config.identities.email%"
-              },
-              "description": {
-                "type": "string",
-                "description": "%config.identities.description%"
-              },
-              "sshKeyPath": {
-                "type": "string",
-                "description": "%config.identities.sshKeyPath%"
-              },
-              "sshHost": {
-                "type": "string",
-                "description": "%config.identities.sshHost%"
-              },
-              "gpgKeyId": {
-                "type": "string",
-                "description": "%config.identities.gpgKeyId%"
+    "configuration": [
+      {
+        "title": "%config.category.identity%",
+        "order": 1,
+        "properties": {
+          "gitIdSwitcher.identities": {
+            "order": 1,
+            "type": "array",
+            "default": [
+              {
+                "id": "example",
+                "icon": "👤",
+                "name": "Your Name",
+                "service": "",
+                "email": "you@example.com",
+                "description": "Edit this or add your own identity",
+                "sshKeyPath": "",
+                "sshHost": "",
+                "gpgKeyId": ""
               }
+            ],
+            "description": "%config.identities%",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "%config.identities.id%"
+                },
+                "icon": {
+                  "type": "string",
+                  "description": "%config.identities.icon%"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "%config.identities.name%"
+                },
+                "service": {
+                  "type": "string",
+                  "description": "%config.identities.service%"
+                },
+                "email": {
+                  "type": "string",
+                  "description": "%config.identities.email%"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "%config.identities.description%"
+                },
+                "sshKeyPath": {
+                  "type": "string",
+                  "description": "%config.identities.sshKeyPath%"
+                },
+                "sshHost": {
+                  "type": "string",
+                  "description": "%config.identities.sshHost%"
+                },
+                "gpgKeyId": {
+                  "type": "string",
+                  "description": "%config.identities.gpgKeyId%"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "email"
+              ]
             },
-            "required": [
-              "id",
-              "name",
-              "email"
-            ]
+            "markdownDescription": "%config.identities.markdown%"
           },
-          "markdownDescription": "%config.identities.markdown%"
-        },
-        "gitIdSwitcher.defaultIdentity": {
-          "type": "string",
-          "default": "",
-          "description": "%config.defaultIdentity%"
-        },
-        "gitIdSwitcher.autoSwitchSshKey": {
-          "type": "boolean",
-          "default": true,
-          "description": "%config.autoSwitchSshKey%"
-        },
-        "gitIdSwitcher.showNotifications": {
-          "type": "boolean",
-          "default": true,
-          "description": "%config.showNotifications%"
-        },
-        "gitIdSwitcher.applyToSubmodules": {
-          "type": "boolean",
-          "default": true,
-          "description": "%config.applyToSubmodules%"
-        },
-        "gitIdSwitcher.submoduleDepth": {
-          "type": "number",
-          "default": 1,
-          "minimum": 1,
-          "maximum": 5,
-          "description": "%config.submoduleDepth%"
-        },
-        "gitIdSwitcher.includeIconInGitConfig": {
-          "type": "boolean",
-          "default": false,
-          "description": "%config.includeIconInGitConfig%"
-        },
-        "gitIdSwitcher.commandTimeouts": {
-          "type": "object",
-          "default": {},
-          "description": "%config.commandTimeouts%",
-          "additionalProperties": {
+          "gitIdSwitcher.defaultIdentity": {
+            "order": 2,
+            "type": "string",
+            "default": "",
+            "description": "%config.defaultIdentity%"
+          },
+          "gitIdSwitcher.autoSwitchSshKey": {
+            "order": 3,
+            "type": "boolean",
+            "default": true,
+            "description": "%config.autoSwitchSshKey%"
+          }
+        }
+      },
+      {
+        "title": "%config.category.submodule%",
+        "order": 2,
+        "properties": {
+          "gitIdSwitcher.applyToSubmodules": {
+            "order": 1,
+            "type": "boolean",
+            "default": true,
+            "description": "%config.applyToSubmodules%"
+          },
+          "gitIdSwitcher.submoduleDepth": {
+            "order": 2,
             "type": "number",
-            "minimum": 1000,
-            "maximum": 300000
+            "default": 1,
+            "minimum": 1,
+            "maximum": 5,
+            "description": "%config.submoduleDepth%"
+          }
+        }
+      },
+      {
+        "title": "%config.category.display%",
+        "order": 3,
+        "properties": {
+          "gitIdSwitcher.showNotifications": {
+            "order": 1,
+            "type": "boolean",
+            "default": true,
+            "description": "%config.showNotifications%"
           },
-          "markdownDescription": "%config.commandTimeouts.markdown%"
-        },
-        "gitIdSwitcher.logging.fileEnabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "%config.logging.fileEnabled%"
-        },
-        "gitIdSwitcher.logging.filePath": {
-          "type": "string",
-          "default": "",
-          "description": "%config.logging.filePath%"
-        },
-        "gitIdSwitcher.logging.maxFileSize": {
-          "type": "number",
-          "default": 10485760,
-          "minimum": 1048576,
-          "maximum": 104857600,
-          "description": "%config.logging.maxFileSize%"
-        },
-        "gitIdSwitcher.logging.maxFiles": {
-          "type": "number",
-          "default": 5,
-          "minimum": 1,
-          "maximum": 20,
-          "description": "%config.logging.maxFiles%"
-        },
-        "gitIdSwitcher.logging.level": {
-          "type": "string",
-          "default": "INFO",
-          "enum": ["DEBUG", "INFO", "WARN", "ERROR", "SECURITY"],
-          "description": "%config.logging.level%"
+          "gitIdSwitcher.includeIconInGitConfig": {
+            "order": 2,
+            "type": "boolean",
+            "default": false,
+            "description": "%config.includeIconInGitConfig%"
+          }
+        }
+      },
+      {
+        "title": "%config.category.logging%",
+        "order": 4,
+        "properties": {
+          "gitIdSwitcher.logging.fileEnabled": {
+            "order": 1,
+            "type": "boolean",
+            "default": false,
+            "description": "%config.logging.fileEnabled%"
+          },
+          "gitIdSwitcher.logging.level": {
+            "order": 2,
+            "type": "string",
+            "default": "INFO",
+            "enum": ["DEBUG", "INFO", "WARN", "ERROR", "SECURITY"],
+            "description": "%config.logging.level%"
+          },
+          "gitIdSwitcher.logging.filePath": {
+            "order": 3,
+            "type": "string",
+            "default": "",
+            "description": "%config.logging.filePath%"
+          },
+          "gitIdSwitcher.logging.maxFileSize": {
+            "order": 4,
+            "type": "number",
+            "default": 10485760,
+            "minimum": 1048576,
+            "maximum": 104857600,
+            "description": "%config.logging.maxFileSize%"
+          },
+          "gitIdSwitcher.logging.maxFiles": {
+            "order": 5,
+            "type": "number",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 20,
+            "description": "%config.logging.maxFiles%"
+          }
+        }
+      },
+      {
+        "title": "%config.category.advanced%",
+        "order": 5,
+        "properties": {
+          "gitIdSwitcher.commandTimeouts": {
+            "order": 1,
+            "type": "object",
+            "default": {},
+            "description": "%config.commandTimeouts%",
+            "additionalProperties": {
+              "type": "number",
+              "minimum": 1000,
+              "maximum": 300000
+            },
+            "markdownDescription": "%config.commandTimeouts.markdown%"
+          }
         }
       }
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
