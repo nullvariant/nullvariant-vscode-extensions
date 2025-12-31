@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.3] - 2025-12-31
+
+### Changed
+
+- **Settings Categorization**: Reorganized settings into 5 logical categories for better UX
+  - Identity: Core settings (identities, defaultIdentity, autoSwitchSshKey)
+  - Submodule: Submodule-related settings (applyToSubmodules, submoduleDepth)
+  - Notifications: Display/notification settings (showNotifications, includeIconInGitConfig)
+  - Debugging: Log settings (logging.*)
+  - Other: Advanced settings (commandTimeouts)
+- Settings now use `order` property for consistent display order
+- Category names localized for all 17 supported languages
+
 ## [0.10.2] - 2025-12-31
 
 ### Security
@@ -567,7 +580,9 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.1...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.3...HEAD
+[0.10.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.2...git-id-switcher-v0.10.3
+[0.10.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.1...git-id-switcher-v0.10.2
 [0.10.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.0...git-id-switcher-v0.10.1
 [0.10.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.10...git-id-switcher-v0.10.0
 [0.9.10]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.9.9...git-id-switcher-v0.9.10
