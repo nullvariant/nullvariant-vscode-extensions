@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.13] - 2026-01-01
+
+### Changed
+
+- **Multilingual Description Improvements**: Improved setting descriptions for 11 languages
+  - Languages updated: French (fr), Spanish (es), Italian (it), Portuguese-BR (pt-BR), Russian (ru), Polish (pl), Czech (cs), Hungarian (hu), Bulgarian (bg), Ukrainian (uk), Turkish (tr)
+  - `config.logging.fileEnabled`: Clarified what is recorded (identity switches, SSH key operations, etc.)
+  - `config.logging.level`: Clarified threshold-based logging (records selected level and above)
+  - All translations now match the improved English/Japanese descriptions from v0.10.10
+
 ## [0.10.12] - 2026-01-01
 
 ### Removed
@@ -678,7 +688,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.12...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.13...HEAD
+[0.10.13]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.12...git-id-switcher-v0.10.13
 [0.10.12]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.11...git-id-switcher-v0.10.12
 [0.10.11]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.10...git-id-switcher-v0.10.11
 [0.10.10]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.9...git-id-switcher-v0.10.10
