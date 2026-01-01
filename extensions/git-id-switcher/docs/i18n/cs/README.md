@@ -305,6 +305,12 @@ Poznámka: Poslední identita (`freelance`) nemá SSH — pouze přepíná Git k
 | `gitIdSwitcher.applyToSubmodules`      | `true`      | Aplikovat identitu na Git submoduly            |
 | `gitIdSwitcher.submoduleDepth`         | `1`         | Max. hloubka pro vnořené submoduly (1-5)       |
 | `gitIdSwitcher.includeIconInGitConfig` | `false`     | Zahrnout emoji ikonu do Git config `user.name` |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Zapnout auditní logování (změny identity, operace SSH, atd.) |
+| `gitIdSwitcher.logging.filePath` | `""` | Cesta k souboru logu (např.: `~/.git-id-switcher/security.log`). Prázdné = výchozí umístění |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max. velikost souboru před rotací (bajty, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | Max. počet rotovaných log souborů (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | Úroveň logování: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Zaznamenává vybranou úroveň a vyšší |
+| `gitIdSwitcher.commandTimeouts` | `{}` | Vlastní timeout pro příkaz (ms, 1sek-5min). Např.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### O nastavení `includeIconInGitConfig`
 

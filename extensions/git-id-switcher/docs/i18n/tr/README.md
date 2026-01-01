@@ -306,6 +306,12 @@ Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını deği
 | `gitIdSwitcher.applyToSubmodules` | `true`     | Kimliği Git alt modüllerine uygula             |
 | `gitIdSwitcher.submoduleDepth`    | `1`        | İç içe alt modüller için maks. derinlik (1-5)  |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Emoji ikonunu Git config `user.name`'e yaz     |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Denetim günlüğünü etkinleştir (kimlik değişiklikleri, SSH işlemleri, vb.) |
+| `gitIdSwitcher.logging.filePath` | `""` | Günlük dosyası yolu (örn.: `~/.git-id-switcher/security.log`). Boş = varsayılan konum |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Döndürmeden önce maks. dosya boyutu (bayt, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | Döndürülen günlük dosyası maks. sayısı (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | Günlük düzeyi: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Seçilen düzey ve üstünü kaydeder |
+| `gitIdSwitcher.commandTimeouts` | `{}` | Komut başına özel zaman aşımı (ms, 1sn-5dk). Örn.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig` Hakkında
 

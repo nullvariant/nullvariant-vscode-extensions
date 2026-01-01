@@ -306,6 +306,12 @@ Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-k
 | `gitIdSwitcher.applyToSubmodules` | `true`          | Azonosító alkalmazása Git-almodulokra          |
 | `gitIdSwitcher.submoduleDepth`    | `1`             | Max. mélység beágyazott almodulokhoz (1-5)     |
 | `gitIdSwitcher.includeIconInGitConfig` | `false`    | Ikon emoji beírása a Git config `user.name`-be |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Audit naplózás engedélyezése (azonosítóváltások, SSH műveletek, stb.) |
+| `gitIdSwitcher.logging.filePath` | `""` | Naplófájl elérési útja (pl.: `~/.git-id-switcher/security.log`). Üres = alapértelmezett hely |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max. fájlméret forgatás előtt (bájt, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | Forgatott naplófájlok max. száma (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | Naplózási szint: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. A kiválasztott szint és felette rögzít |
+| `gitIdSwitcher.commandTimeouts` | `{}` | Egyedi időtúllépés parancsonként (ms, 1mp-5perc). Pl.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### Az `includeIconInGitConfig` beállításról
 

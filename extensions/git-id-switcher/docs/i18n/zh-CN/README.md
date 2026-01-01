@@ -306,6 +306,12 @@ Host bitbucket.org
 | `gitIdSwitcher.applyToSubmodules`      | `true`     | 将身份传播到 Git 子模块                        |
 | `gitIdSwitcher.submoduleDepth`         | `1`        | 嵌套子模块配置的最大深度（1-5）                |
 | `gitIdSwitcher.includeIconInGitConfig` | `false`    | 在 Git config `user.name` 中包含图标表情符号  |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | 启用审计日志（身份切换、SSH 操作等记录） |
+| `gitIdSwitcher.logging.filePath` | `""` | 日志文件路径（如：`~/.git-id-switcher/security.log`）。为空则使用默认位置 |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | 轮换前的最大文件大小（字节，1MB-100MB） |
+| `gitIdSwitcher.logging.maxFiles` | `5` | 保留的轮换日志文件最大数量（1-20） |
+| `gitIdSwitcher.logging.level` | `"INFO"` | 日志级别：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。记录选定级别及以上 |
+| `gitIdSwitcher.commandTimeouts` | `{}` | 每个命令的自定义超时值（毫秒，1秒-5分钟）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### 关于 `includeIconInGitConfig`
 

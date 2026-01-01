@@ -306,6 +306,12 @@ Host bitbucket.org
 | `gitIdSwitcher.applyToSubmodules` | `true`           | Застосовувати ідентифікатор до підмодулів Git  |
 | `gitIdSwitcher.submoduleDepth`    | `1`              | Макс. глибина для вкладених підмодулів (1-5)   |
 | `gitIdSwitcher.includeIconInGitConfig` | `false`     | Записувати емодзі іконки в Git config `user.name` |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Увімкнути журнал аудиту (перемикання ідентифікаторів, операції SSH, тощо) |
+| `gitIdSwitcher.logging.filePath` | `""` | Шлях до файлу журналу (напр.: `~/.git-id-switcher/security.log`). Порожньо = шлях за замовчуванням |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Макс. розмір файлу до ротації (байти, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | Макс. кількість файлів журналу в ротації (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | Рівень логування: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Записує вибраний рівень і вище |
+| `gitIdSwitcher.commandTimeouts` | `{}` | Користувацький таймаут для команд (мс, 1сек-5хв). Напр.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### Про `includeIconInGitConfig`
 

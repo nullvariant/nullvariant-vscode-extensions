@@ -306,6 +306,12 @@ Host bitbucket.org
 | `gitIdSwitcher.applyToSubmodules`      | `true`     | Git 서브모듈에 ID 전파                         |
 | `gitIdSwitcher.submoduleDepth`         | `1`        | 중첩된 서브모듈 설정의 최대 깊이 (1-5)         |
 | `gitIdSwitcher.includeIconInGitConfig` | `false`    | Git config `user.name`에 아이콘 이모지 포함    |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | 감사 로그 활성화 (ID 전환, SSH 작업 등 기록) |
+| `gitIdSwitcher.logging.filePath` | `""` | 로그 파일 경로 (예: `~/.git-id-switcher/security.log`). 비어 있으면 기본 위치 사용 |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | 로테이션 전 최대 파일 크기 (바이트, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | 보관할 로테이션 로그 파일 최대 수 (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | 로그 수준: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. 선택한 수준 이상 기록 |
+| `gitIdSwitcher.commandTimeouts` | `{}` | 명령별 사용자 정의 타임아웃 (밀리초, 1초-5분). 예: `{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig`에 대하여
 

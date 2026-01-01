@@ -306,6 +306,12 @@ Nota: L'ultima identità (`freelance`) non ha SSH — cambia solo la configurazi
 | `gitIdSwitcher.applyToSubmodules`      | `true`       | Propaga identità ai sottomoduli Git            |
 | `gitIdSwitcher.submoduleDepth`         | `1`          | Profondità max per sottomoduli annidati (1-5)  |
 | `gitIdSwitcher.includeIconInGitConfig` | `false`      | Includi emoji icona nel Git config `user.name` |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Abilita log di audit (cambio identità, operazioni SSH, ecc.) |
+| `gitIdSwitcher.logging.filePath` | `""` | Percorso file di log (es.: `~/.git-id-switcher/security.log`). Vuoto = posizione predefinita |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Dimensione max file prima della rotazione (byte, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | Num. max file di log in rotazione (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | Livello log: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Registra il livello selezionato e superiori |
+| `gitIdSwitcher.commandTimeouts` | `{}` | Timeout personalizzato per comando (ms, 1sec-5min). Es.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### Informazioni su `includeIconInGitConfig`
 

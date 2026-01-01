@@ -306,6 +306,12 @@ Host bitbucket.org
 | `gitIdSwitcher.applyToSubmodules` | `true`          | Прилагане на самоличността към Git подмодули   |
 | `gitIdSwitcher.submoduleDepth`    | `1`             | Макс. дълбочина за вложени подмодули (1-5)     |
 | `gitIdSwitcher.includeIconInGitConfig` | `false`    | Записване на емоджи иконата в Git config `user.name` |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Включване на одитен журнал (превключвания на самоличност, SSH операции, и др.) |
+| `gitIdSwitcher.logging.filePath` | `""` | Път до файла на журнала (напр.: `~/.git-id-switcher/security.log`). Празно = местоположение по подразбиране |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Макс. размер на файла преди ротация (байтове, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | Макс. брой ротирани файлове на журнала (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | Ниво на логване: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Записва избраното ниво и по-високите |
+| `gitIdSwitcher.commandTimeouts` | `{}` | Персонализиран таймаут за команди (ms, 1сек-5мин). Напр.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### За `includeIconInGitConfig`
 

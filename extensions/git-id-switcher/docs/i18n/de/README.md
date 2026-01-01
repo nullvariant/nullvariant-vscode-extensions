@@ -306,6 +306,12 @@ Hinweis: Die letzte Identität (`freelance`) hat kein SSH — sie wechselt nur d
 | `gitIdSwitcher.applyToSubmodules`      | `true`         | Identität auf Git-Submodule übertragen                 |
 | `gitIdSwitcher.submoduleDepth`         | `1`            | Maximale Tiefe für verschachtelte Submodul-Konfiguration (1-5) |
 | `gitIdSwitcher.includeIconInGitConfig` | `false`        | Icon-Emoji in Git config `user.name` einschließen      |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Audit-Protokollierung aktivieren (Identitätswechsel, SSH-Operationen usw.) |
+| `gitIdSwitcher.logging.filePath` | `""` | Protokolldateipfad (z.B. `~/.git-id-switcher/security.log`). Leer = Standardort |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Maximale Dateigröße vor Rotation (Bytes, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | Maximale Anzahl rotierter Protokolldateien (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | Protokollebene: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Zeichnet ausgewählte Ebene und höher auf |
+| `gitIdSwitcher.commandTimeouts` | `{}` | Benutzerdefiniertes Timeout pro Befehl (ms, 1Sek-5Min). Z.B. `{"git": 15000, "ssh-add": 10000}` |
 
 #### Über `includeIconInGitConfig`
 
