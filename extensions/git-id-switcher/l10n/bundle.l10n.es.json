@@ -1,6 +1,6 @@
 {
-  "Click to select a Git identity": "Haga clic para seleccionar una identidad de Git",
-  "*Click to switch identity*": "*Haga clic para cambiar de identidad*",
+  "Click to select a Git identity": "Haga clic para seleccionar una identidad Git (perfil)",
+  "*Click to switch identity*": "*Haga clic para cambiar de perfil*",
   "Select Identity": "Seleccionar identidad",
   "Select Git Identity": "Seleccionar identidad de Git",
   "Search identities...": "Buscar identidades...",
@@ -10,7 +10,7 @@
   "Switched to {0}": "Cambiado a {0}",
   "Already using {0}": "Ya está usando {0}",
   "Current identity: {0} ({1})": "Identidad actual: {0} ({1})",
-  "No identity selected. Click the status bar to select one.": "No hay identidad seleccionada. Haga clic en la barra de estado para seleccionar una.",
+  "No identity selected. Click the status bar to select one.": "No hay identidad seleccionada. Haga clic en la barra de estado para seleccionar.",
   "**Email:** {0}": "**Correo electrónico:** {0}",
   "**SSH Host:** {0}": "**Host SSH:** {0}",
   "**SSH Key:** {0}": "**Clave SSH:** {0}",
@@ -18,7 +18,7 @@
   "Identity Error": "Error de identidad",
   "Failed to select identity: {0}": "Error al seleccionar identidad: {0}",
   "Failed to switch identity: {0}": "Error al cambiar de identidad: {0}",
-  "No identities configured. Add identities in settings: {0}": "No hay identidades configuradas. Agregue identidades en la configuración: {0}",
+  "No identities configured. Add identities in settings: {0}": "No hay identidades configuradas. Agregue en configuración: {0}",
   "Welcome to Git ID Switcher! Configure your identities to get started.": "¡Bienvenido a Git ID Switcher! Configure sus identidades para comenzar.",
   "Open Settings": "Abrir configuración",
   "Git ID Switcher: {0}": "Git ID Switcher: {0}"
