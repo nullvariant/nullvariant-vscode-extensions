@@ -10,7 +10,7 @@
   "config.category.logging": "Git ID Switcher: デバッグ",
   "config.category.advanced": "Git ID Switcher: その他",
   "config.identities": "切り替えるGit IDのリスト",
-  "config.identities.markdown": "Git ID（プロフィール）のリスト。各IDには以下を設定できます：\n- `id`: 一意の識別子（重複不可・必須）\n- `name`: Git user.name（必須）\n- `service`: Gitホスティングサービス（GitHub、GitLabなど）\n- `email`: Git user.email（必須）\n- `icon`: ステータスバーに表示する絵文字\n- `description`: このIDのメモ（例: 会社用、個人用）\n- `sshKeyPath`: SSH秘密鍵へのパス\n- `sshHost`: SSH設定のホストエイリアス（マルチアカウント設定用）\n- `gpgKeyId`: コミット署名用のGPGキーID",
+  "config.identities.markdown": "Git ID（プロフィール）のリスト。各IDには以下を設定できます：\n- `id`: 一意の識別子（重複不可・必須）\n- `name`: Git user.name（必須）\n- `service`: Gitホスティングサービス（GitHub、GitLabなど）\n- `email`: Git user.email（必須）\n- `icon`: ステータスバーに表示する絵文字（例: 🏠, 💼）\n- `description`: このIDのメモ（例: 会社用、個人用）\n- `sshKeyPath`: SSH秘密鍵へのパス\n- `sshHost`: SSH設定のホストエイリアス（マルチアカウント設定用）\n- `gpgKeyId`: コミット署名用のGPGキーID",
   "config.identities.id": "一意の識別子（重複不可・必須）",
   "config.identities.name": "Git user.name（必須）",
   "config.identities.service": "Gitホスティングサービス（GitHub、GitLabなど）",
