@@ -21,23 +21,23 @@
 
 <img src="https://assets.nullvariant.com/git-id-switcher/demo-it.png" width="600" alt="Demo">
 
-## Funzionalità
-
-- **Cambio identità con un clic**: Cambia Git user.name e user.email istantaneamente
-- **Gestione chiavi SSH**: Cambia automaticamente le chiavi SSH in ssh-agent
-- **Supporto firma GPG**: Configura la chiave GPG per firmare i commit (opzionale)
-- **Supporto sottomoduli**: Propaga automaticamente l'identità ai sottomoduli Git
-- **Integrazione barra di stato**: Visualizza sempre la tua identità corrente a colpo d'occhio
-- **Tooltip dettagliati**: Informazioni complete con descrizione e host SSH
-- **Multipiattaforma**: Funziona su macOS, Linux e Windows
-- **Multilingue**: Supporta 17 lingue
-
-## 🚀 Perché questa estensione?
+## 🎯 Perché Git ID Switcher?
 
 Sebbene esistano molti strumenti per cambiare identità Git, **Git ID Switcher** risolve problemi complessi che altri spesso ignorano:
 
 1. **L'incubo dei sottomoduli**: Quando si lavora con repository che hanno sottomoduli (temi Hugo, librerie vendor, ecc.), di solito bisogna configurare `git config user.name` manualmente per *ogni* sottomodulo. Questa estensione lo gestisce elegantemente applicando ricorsivamente la tua identità a tutti i sottomoduli attivi.
 2. **Gestione SSH e GPG**: Non cambia solo il tuo nome; scambia anche le tue chiavi SSH nell'agent e configura la firma GPG in modo che tu non faccia mai commit con la firma sbagliata.
+
+## Funzionalità
+
+- **Supporto sottomoduli**: Propaga automaticamente l'identità ai sottomoduli Git
+- **Gestione chiavi SSH**: Cambia automaticamente le chiavi SSH in ssh-agent
+- **Supporto firma GPG**: Configura la chiave GPG per firmare i commit (opzionale)
+- **Cambio identità con un clic**: Cambia Git user.name e user.email istantaneamente
+- **Integrazione barra di stato**: Visualizza sempre la tua identità corrente a colpo d'occhio
+- **Tooltip dettagliati**: Informazioni complete con descrizione e host SSH
+- **Multipiattaforma**: Funziona su macOS, Linux e Windows
+- **Multilingue**: Supporta 17 lingue
 
 ## 🌏 Una nota sul supporto multilingue
 
@@ -283,7 +283,7 @@ Nota: L'ultima identità (`freelance`) non ha SSH — cambia solo la configurazi
 | `id`          | ✅        | Identificatore unico (es: `"work"`, `"personal"`)          |
 | `name`        | ✅        | Git user.name - mostrato nei commit                        |
 | `email`       | ✅        | Git user.email - mostrato nei commit                       |
-| `icon`        |           | Emoji mostrato nella barra di stato (solo un emoji)        |
+| `icon`        |           | Emoji mostrato nella barra di stato (es.: `"🏠"`). Solo un emoji |
 | `service`     |           | Nome del servizio (es: `"GitHub"`, `"GitLab"`). Usato per la visualizzazione UI |
 | `description` |           | Breve descrizione mostrata nel selettore e tooltip         |
 | `sshKeyPath`  |           | Percorso della chiave SSH privata (es: `"~/.ssh/id_ed25519_work"`) |

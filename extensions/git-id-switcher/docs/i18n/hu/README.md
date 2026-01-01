@@ -21,23 +21,23 @@
 
 <img src="https://assets.nullvariant.com/git-id-switcher/demo-hu.png" width="600" alt="Demo">
 
-## Funkciók
-
-- **Egykattintásos azonosítóváltás**: Git user.name és user.email azonnali módosítása
-- **SSH-kulcs kezelés**: SSH-kulcsok automatikus váltása az ssh-agent-ben
-- **GPG-aláírás támogatás**: GPG-kulcs konfigurálása commit aláíráshoz (opcionális)
-- **Almodul-támogatás**: Azonosító automatikus propagálása Git-almodulokba
-- **Állapotsáv-integráció**: Mindig lássa az aktuális azonosítóját
-- **Részletes tooltipek**: Teljes körű információ leírással és SSH-hosttal
-- **Platformfüggetlen**: Működik macOS, Linux és Windows rendszeren
-- **Többnyelvű**: 17 nyelvet támogat
-
-## 🚀 Miért ez a bővítmény?
+## 🎯 Miért a Git ID Switcher?
 
 Bár sok Git-azonosító váltó létezik, a **Git ID Switcher** olyan összetett problémákat old meg, amelyeket mások gyakran figyelmen kívül hagynak:
 
 1. **Az almodulok rémálma**: Almodulokat tartalmazó tárolókkal (Hugo témák, vendor könyvtárak stb.) dolgozva általában manuálisan kell beállítani a `git config user.name`-et *minden* almodulhoz. Ez a bővítmény elegánsan megoldja ezt az azonosító rekurzív alkalmazásával az összes aktív almodulra.
 2. **SSH és GPG kezelés**: Nem csak a nevét változtatja meg; az SSH-kulcsokat is cseréli az agentben és konfigurálja a GPG-aláírást, így soha nem fog rossz aláírással commitolni.
+
+## Funkciók
+
+- **Almodul-támogatás**: Azonosító automatikus propagálása Git-almodulokba
+- **SSH-kulcs kezelés**: SSH-kulcsok automatikus váltása az ssh-agent-ben
+- **GPG-aláírás támogatás**: GPG-kulcs konfigurálása commit aláíráshoz (opcionális)
+- **Egykattintásos azonosítóváltás**: Git user.name és user.email azonnali módosítása
+- **Állapotsáv-integráció**: Mindig lássa az aktuális azonosítóját
+- **Részletes tooltipek**: Teljes körű információ leírással és SSH-hosttal
+- **Platformfüggetlen**: Működik macOS, Linux és Windows rendszeren
+- **Többnyelvű**: 17 nyelvet támogat
 
 ## 🌏 Megjegyzés a többnyelvű támogatásról
 

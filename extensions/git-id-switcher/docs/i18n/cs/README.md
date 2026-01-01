@@ -21,23 +21,23 @@
 
 <img src="https://assets.nullvariant.com/git-id-switcher/demo-cs.png" width="600" alt="Demo">
 
-## Funkce
-
-- **Přepnutí identity jedním klikem**: Okamžitá změna Git user.name a user.email
-- **Správa SSH klíčů**: Automatické přepínání SSH klíčů v ssh-agent
-- **Podpora GPG podepisování**: Konfigurace GPG klíče pro podepisování commitů (volitelné)
-- **Podpora submodulů**: Automatická propagace identity do Git submodulů
-- **Integrace do stavového řádku**: Vždy vidíte aktuální identitu
-- **Podrobné nápovědy**: Kompletní informace s popisem a SSH hostem
-- **Multiplatformní**: Funguje na macOS, Linux a Windows
-- **Vícejazyčný**: Podporuje 17 jazyků
-
-## 🚀 Proč toto rozšíření?
+## 🎯 Proč Git ID Switcher?
 
 I když existuje mnoho nástrojů pro přepínání Git identity, **Git ID Switcher** řeší složité problémy, které jiné často ignorují:
 
 1. **Noční můra submodulů**: Při práci s repozitáři obsahujícími submoduly (Hugo témata, vendor knihovny atd.) je obvykle nutné ručně nastavit `git config user.name` pro *každý* submodul. Toto rozšíření to elegantně řeší rekurzivní aplikací vaší identity na všechny aktivní submoduly.
 2. **Zpracování SSH a GPG**: Nemění jen vaše jméno; také vyměňuje SSH klíče v agentovi a konfiguruje GPG podepisování, takže nikdy neuděláte commit s nesprávným podpisem.
+
+## Funkce
+
+- **Podpora submodulů**: Automatická propagace identity do Git submodulů
+- **Správa SSH klíčů**: Automatické přepínání SSH klíčů v ssh-agent
+- **Podpora GPG podepisování**: Konfigurace GPG klíče pro podepisování commitů (volitelné)
+- **Přepnutí identity jedním klikem**: Okamžitá změna Git user.name a user.email
+- **Integrace do stavového řádku**: Vždy vidíte aktuální identitu
+- **Podrobné nápovědy**: Kompletní informace s popisem a SSH hostem
+- **Multiplatformní**: Funguje na macOS, Linux a Windows
+- **Vícejazyčný**: Podporuje 17 jazyků
 
 ## 🌏 Poznámka k vícejazyčné podpoře
 

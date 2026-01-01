@@ -21,23 +21,23 @@
 
 <img src="https://assets.nullvariant.com/git-id-switcher/demo-de.png" width="600" alt="Demo">
 
-## Funktionen
-
-- **Ein-Klick-Identitätswechsel**: Git user.name und user.email sofort ändern
-- **SSH-Schlüsselverwaltung**: SSH-Schlüssel automatisch im ssh-agent wechseln
-- **GPG-Signierungsunterstützung**: GPG-Schlüssel für Commit-Signierung konfigurieren (optional)
-- **Submodul-Unterstützung**: Identität automatisch auf Git-Submodule übertragen
-- **Statusleisten-Integration**: Aktuelle Identität immer im Blick
-- **Reichhaltige Tooltips**: Detaillierte Identitätsinformationen mit Beschreibung und SSH-Host
-- **Plattformübergreifend**: Funktioniert auf macOS, Linux und Windows
-- **Mehrsprachig**: Unterstützt 17 Sprachen
-
-## 🚀 Warum diese Erweiterung?
+## 🎯 Warum Git ID Switcher?
 
 Obwohl es viele Git-Identitätswechsler gibt, löst **Git ID Switcher** komplexe Probleme, die andere oft ignorieren:
 
 1. **Das Submodul-Problem**: Bei der Arbeit mit Repositories mit Submodulen (z.B. Hugo-Themes, Vendor-Bibliotheken) muss man normalerweise `git config user.name` für *jedes* Submodul manuell setzen. Diese Erweiterung löst das elegant, indem sie Ihre Identität rekursiv auf alle aktiven Submodule anwendet.
 2. **SSH- und GPG-Handling**: Es ändert nicht nur Ihren Namen; es tauscht Ihre SSH-Schlüssel im Agent aus und konfiguriert die GPG-Signierung, damit Sie nie mit der falschen Signatur committen.
+
+## Funktionen
+
+- **Submodul-Unterstützung**: Identität automatisch auf Git-Submodule übertragen
+- **SSH-Schlüsselverwaltung**: SSH-Schlüssel automatisch im ssh-agent wechseln
+- **GPG-Signierungsunterstützung**: GPG-Schlüssel für Commit-Signierung konfigurieren (optional)
+- **Ein-Klick-Identitätswechsel**: Git user.name und user.email sofort ändern
+- **Statusleisten-Integration**: Aktuelle Identität immer im Blick
+- **Reichhaltige Tooltips**: Detaillierte Identitätsinformationen mit Beschreibung und SSH-Host
+- **Plattformübergreifend**: Funktioniert auf macOS, Linux und Windows
+- **Mehrsprachig**: Unterstützt 17 Sprachen
 
 ## 🌏 Ein Wort zur Mehrsprachigkeit
 

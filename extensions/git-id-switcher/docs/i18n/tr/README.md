@@ -21,23 +21,23 @@
 
 <img src="https://assets.nullvariant.com/git-id-switcher/demo-tr.png" width="600" alt="Demo">
 
-## Özellikler
-
-- **Tek Tıkla Kimlik Değiştirme**: Git user.name ve user.email'i anında değiştirin
-- **SSH Anahtar Yönetimi**: ssh-agent'ta SSH anahtarlarını otomatik olarak değiştirin
-- **GPG İmzalama Desteği**: Commit imzalamak için GPG anahtarını yapılandırın (isteğe bağlı)
-- **Alt Modül Desteği**: Kimliği Git alt modüllerine otomatik olarak yayın
-- **Durum Çubuğu Entegrasyonu**: Mevcut kimliğinizi her zaman bir bakışta görün
-- **Zengin Araç İpuçları**: Açıklama ve SSH hostu içeren ayrıntılı kimlik bilgileri
-- **Çapraz Platform**: macOS, Linux ve Windows'ta çalışır
-- **Çok Dilli**: 17 dili destekler
-
-## 🚀 Neden Bu Eklenti?
+## 🎯 Neden Git ID Switcher?
 
 Birçok Git kimlik değiştirici olmasına rağmen, **Git ID Switcher** diğerlerinin genellikle görmezden geldiği karmaşık sorunları çözer:
 
 1. **Alt Modül Kabusu**: Alt modülleri olan depolarla (Hugo temaları, vendor kütüphaneleri vb.) çalışırken, genellikle *her* alt modül için `git config user.name`'i manuel olarak ayarlamanız gerekir. Bu eklenti, kimliğinizi tüm aktif alt modüllere özyinelemeli olarak uygulayarak bunu zarif bir şekilde çözer.
 2. **SSH ve GPG İşleme**: Sadece adınızı değiştirmez; aynı zamanda agent'taki SSH anahtarlarınızı değiştirir ve GPG imzalamayı yapılandırır, böylece asla yanlış imzayla commit yapmazsınız.
+
+## Özellikler
+
+- **Alt Modül Desteği**: Kimliği Git alt modüllerine otomatik olarak yayın
+- **SSH Anahtar Yönetimi**: ssh-agent'ta SSH anahtarlarını otomatik olarak değiştirin
+- **GPG İmzalama Desteği**: Commit imzalamak için GPG anahtarını yapılandırın (isteğe bağlı)
+- **Tek Tıkla Kimlik Değiştirme**: Git user.name ve user.email'i anında değiştirin
+- **Durum Çubuğu Entegrasyonu**: Mevcut kimliğinizi her zaman bir bakışta görün
+- **Zengin Araç İpuçları**: Açıklama ve SSH hostu içeren ayrıntılı kimlik bilgileri
+- **Çapraz Platform**: macOS, Linux ve Windows'ta çalışır
+- **Çok Dilli**: 17 dili destekler
 
 ## 🌏 Çok Dilli Destek Hakkında Bir Not
 

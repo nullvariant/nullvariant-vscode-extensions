@@ -21,23 +21,23 @@
 
 <img src="https://assets.nullvariant.com/git-id-switcher/demo-pl.png" width="600" alt="Demo">
 
-## Funkcje
-
-- **Przełączanie tożsamości jednym kliknięciem**: Natychmiastowa zmiana Git user.name i user.email
-- **Zarządzanie kluczami SSH**: Automatyczne przełączanie kluczy SSH w ssh-agent
-- **Obsługa podpisów GPG**: Konfiguracja klucza GPG do podpisywania commitów (opcjonalne)
-- **Obsługa submodułów**: Automatyczne propagowanie tożsamości do submodułów Git
-- **Integracja z paskiem stanu**: Zawsze widzisz bieżącą tożsamość
-- **Szczegółowe podpowiedzi**: Pełne informacje z opisem i hostem SSH
-- **Wieloplatformowość**: Działa na macOS, Linux i Windows
-- **Wielojęzyczność**: Obsługuje 17 języków
-
-## 🚀 Dlaczego to rozszerzenie?
+## 🎯 Dlaczego Git ID Switcher?
 
 Chociaż istnieje wiele narzędzi do przełączania tożsamości Git, **Git ID Switcher** rozwiązuje złożone problemy, które inne często ignorują:
 
 1. **Koszmar submodułów**: Pracując z repozytoriami zawierającymi submoduły (motywy Hugo, biblioteki vendor itp.), zwykle trzeba ręcznie ustawiać `git config user.name` dla *każdego* submodułu. To rozszerzenie elegancko rozwiązuje problem, rekurencyjnie stosując tożsamość do wszystkich aktywnych submodułów.
 2. **Obsługa SSH i GPG**: Nie tylko zmienia nazwę; również wymienia klucze SSH w agencie i konfiguruje podpis GPG, więc nigdy nie zrobisz commita z niewłaściwym podpisem.
+
+## Funkcje
+
+- **Obsługa submodułów**: Automatyczne propagowanie tożsamości do submodułów Git
+- **Zarządzanie kluczami SSH**: Automatyczne przełączanie kluczy SSH w ssh-agent
+- **Obsługa podpisów GPG**: Konfiguracja klucza GPG do podpisywania commitów (opcjonalne)
+- **Przełączanie tożsamości jednym kliknięciem**: Natychmiastowa zmiana Git user.name i user.email
+- **Integracja z paskiem stanu**: Zawsze widzisz bieżącą tożsamość
+- **Szczegółowe podpowiedzi**: Pełne informacje z opisem i hostem SSH
+- **Wieloplatformowość**: Działa na macOS, Linux i Windows
+- **Wielojęzyczność**: Obsługuje 17 języków
 
 ## 🌏 Słowo o wsparciu wielojęzycznym
 

@@ -21,23 +21,23 @@
 
 <img src="https://assets.nullvariant.com/git-id-switcher/demo-fr.png" width="600" alt="Démo">
 
-## Fonctionnalités
-
-- **Changement d'identité en un clic** : Modifiez instantanément Git user.name et user.email
-- **Gestion des clés SSH** : Basculez automatiquement les clés SSH dans ssh-agent
-- **Support de signature GPG** : Configurez la clé GPG pour signer les commits (optionnel)
-- **Support des sous-modules** : Propagez automatiquement l'identité aux sous-modules Git
-- **Intégration à la barre d'état** : Voyez toujours votre identité actuelle d'un coup d'œil
-- **Info-bulles enrichies** : Informations détaillées avec description et hôte SSH
-- **Multi-plateforme** : Fonctionne sur macOS, Linux et Windows
-- **Multilingue** : Supporte 17 langues
-
-## 🚀 Pourquoi cette extension ?
+## 🎯 Pourquoi Git ID Switcher ?
 
 Bien qu'il existe de nombreux outils de changement d'identité Git, **Git ID Switcher** résout les problèmes complexes que les autres ignorent souvent :
 
 1. **Le cauchemar des sous-modules** : Lorsque vous travaillez avec des dépôts contenant des sous-modules (thèmes Hugo, bibliothèques vendor, etc.), vous devez généralement définir `git config user.name` manuellement pour *chaque* sous-module. Cette extension gère cela élégamment en appliquant récursivement votre identité à tous les sous-modules actifs.
 2. **Gestion SSH et GPG** : Elle ne fait pas que changer votre nom ; elle échange vos clés SSH dans l'agent et configure la signature GPG pour que vous ne committiez jamais avec la mauvaise signature.
+
+## Fonctionnalités
+
+- **Support des sous-modules** : Propagez automatiquement l'identité aux sous-modules Git
+- **Gestion des clés SSH** : Basculez automatiquement les clés SSH dans ssh-agent
+- **Support de signature GPG** : Configurez la clé GPG pour signer les commits (optionnel)
+- **Changement d'identité en un clic** : Modifiez instantanément Git user.name et user.email
+- **Intégration à la barre d'état** : Voyez toujours votre identité actuelle d'un coup d'œil
+- **Info-bulles enrichies** : Informations détaillées avec description et hôte SSH
+- **Multi-plateforme** : Fonctionne sur macOS, Linux et Windows
+- **Multilingue** : Supporte 17 langues
 
 ## 🌏 Un mot sur le support multilingue
 
@@ -283,7 +283,7 @@ Note : La dernière identité (`freelance`) n'a pas de SSH — elle ne change qu
 | `id`          | ✅     | Identifiant unique (ex: `"work"`, `"personal"`)            |
 | `name`        | ✅     | Git user.name - affiché dans les commits                   |
 | `email`       | ✅     | Git user.email - affiché dans les commits                  |
-| `icon`        |        | Emoji affiché dans la barre d'état (un seul emoji)         |
+| `icon`        |        | Emoji affiché dans la barre d'état (ex. : `"🏠"`). Un seul emoji |
 | `service`     |        | Nom du service (ex: `"GitHub"`, `"GitLab"`). Utilisé pour l'affichage UI |
 | `description` |        | Courte description affichée dans le sélecteur et l'info-bulle |
 | `sshKeyPath`  |        | Chemin vers la clé SSH privée (ex: `"~/.ssh/id_ed25519_work"`) |
