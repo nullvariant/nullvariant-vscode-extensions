@@ -47,7 +47,7 @@
 
 - **ちゅーちゅクリックさーにID切り替え**: Git user.name とぅ user.email ふぃっちー変えーいびーん
 - **SSH鍵管理**: ssh-agentぬSSH鍵自動的に切り替え
-- **GPG署名対応**: コミット署名用ぬGPGキー設定（オプション）
+- **GPG署名対応**: コミット署名用ぬGPG鍵設定（オプション）
 - **サブモジュール対応**: Gitサブモジュールんかいも自動的にID適用
 - **ステータスバー**: 今ぬIDいちなん分かいびーん
 - **リッチなツールチップ**: IDぬ詳細情報
@@ -170,7 +170,7 @@ git clone git@github.com:tarou/repo.git
 
 GPGんかいコミット署名すーる場合:
 
-### ステップ 1: GPGキーID探すん
+### ステップ 1: GPG鍵ID探すん
 
 ```bash
 gpg --list-secret-keys --keyid-format SHORT
@@ -186,7 +186,7 @@ uid         [ultimate] 比嘉太郎 <tarou@personal.example.com>
 
 キーIDや`ABCD1234`やいびーん。
 
-### ステップ 2: GPGキーばIDんかい追加
+### ステップ 2: GPG鍵ばIDんかい追加
 
 ```json
 {
@@ -310,7 +310,7 @@ Host bitbucket.org
 | `description` |       | ピッカーとぅツールチップんかい表示すーる短い説明           |
 | `sshKeyPath`  |       | SSH秘密鍵ぬパス（例：`"~/.ssh/id_ed25519_work"`）          |
 | `sshHost`     |       | SSH configホストエイリアス（例：`"github-work"`）          |
-| `gpgKeyId`    |       | コミット署名用GPGキーID                                    |
+| `gpgKeyId`    |       | コミット署名用GPG鍵ID                                    |
 
 #### 表示制限
 
@@ -402,7 +402,7 @@ ID切り替える時、拡張機能やくぬ順番んかい実行さびーん:
 
 1. **Git Config**（常に）: `git config --local user.name`とぅ`user.email`設定
 2. **SSH鍵**（`sshKeyPath`設定時）: ssh-agentから他ぬキー削除、選んだん追加
-3. **GPGキー**（`gpgKeyId`設定時）: `git config --local user.signingkey`設定、署名有効化
+3. **GPG鍵**（`gpgKeyId`設定時）: `git config --local user.signingkey`設定、署名有効化
 4. **サブモジュール**（有効時）: 全サブモジュールんかい設定伝播（デフォルト: 深度1）
 
 ### サブモジュール伝播メカニズム
@@ -473,7 +473,7 @@ Gitサブモジュール持っちょーる複雑なリポジトリんかい、ID
 
 ### GPG署名動かん?
 
-1. GPGキーID確認:
+1. GPG鍵ID確認:
 
    ```bash
    gpg --list-secret-keys --keyid-format SHORT
@@ -485,7 +485,7 @@ Gitサブモジュール持っちょーる複雑なリポジトリんかい、ID
    echo "test" | gpg --clearsign
    ```
 
-3. IDぬメールがGPGキーぬメールとぅ一致しちょーる確認。
+3. IDぬメールがGPG鍵ぬメールとぅ一致しちょーる確認。
 
 ### ID検出さらん?
 

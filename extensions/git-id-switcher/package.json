@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.10.11",
+  "version": "0.10.12",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -67,7 +67,6 @@
           "gitIdSwitcher.identities": {
             "order": 1,
             "type": "array",
-            "title": "%config.identities.title%",
             "default": [
               {
                 "id": "example",
@@ -134,14 +133,12 @@
             "order": 2,
             "type": "string",
             "default": "",
-            "title": "%config.defaultIdentity.title%",
             "description": "%config.defaultIdentity%"
           },
           "gitIdSwitcher.autoSwitchSshKey": {
             "order": 3,
             "type": "boolean",
             "default": true,
-            "title": "%config.autoSwitchSshKey.title%",
             "description": "%config.autoSwitchSshKey%"
           }
         }
@@ -154,7 +151,6 @@
             "order": 1,
             "type": "boolean",
             "default": true,
-            "title": "%config.applyToSubmodules.title%",
             "description": "%config.applyToSubmodules%"
           },
           "gitIdSwitcher.submoduleDepth": {
@@ -163,7 +159,6 @@
             "default": 1,
             "minimum": 1,
             "maximum": 5,
-            "title": "%config.submoduleDepth.title%",
             "description": "%config.submoduleDepth%"
           }
         }
@@ -176,14 +171,12 @@
             "order": 1,
             "type": "boolean",
             "default": true,
-            "title": "%config.showNotifications.title%",
             "description": "%config.showNotifications%"
           },
           "gitIdSwitcher.includeIconInGitConfig": {
             "order": 2,
             "type": "boolean",
             "default": false,
-            "title": "%config.includeIconInGitConfig.title%",
             "description": "%config.includeIconInGitConfig%"
           }
         }
@@ -196,7 +189,6 @@
             "order": 1,
             "type": "boolean",
             "default": false,
-            "title": "%config.logging.fileEnabled.title%",
             "description": "%config.logging.fileEnabled%"
           },
           "gitIdSwitcher.logging.level": {
@@ -204,14 +196,12 @@
             "type": "string",
             "default": "INFO",
             "enum": ["DEBUG", "INFO", "WARN", "ERROR", "SECURITY"],
-            "title": "%config.logging.level.title%",
             "description": "%config.logging.level%"
           },
           "gitIdSwitcher.logging.filePath": {
             "order": 3,
             "type": "string",
             "default": "",
-            "title": "%config.logging.filePath.title%",
             "description": "%config.logging.filePath%"
           },
           "gitIdSwitcher.logging.maxFileSize": {
@@ -220,7 +210,6 @@
             "default": 10485760,
             "minimum": 1048576,
             "maximum": 104857600,
-            "title": "%config.logging.maxFileSize.title%",
             "description": "%config.logging.maxFileSize%"
           },
           "gitIdSwitcher.logging.maxFiles": {
@@ -229,7 +218,6 @@
             "default": 5,
             "minimum": 1,
             "maximum": 20,
-            "title": "%config.logging.maxFiles.title%",
             "description": "%config.logging.maxFiles%"
           }
         }
@@ -242,7 +230,6 @@
             "order": 1,
             "type": "object",
             "default": {},
-            "title": "%config.commandTimeouts.title%",
             "description": "%config.commandTimeouts%",
             "additionalProperties": {
               "type": "number",

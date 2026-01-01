@@ -25,7 +25,7 @@
 
 - **ワンクリックでプロフィール切り替え**: Git user.nameとuser.emailを瞬時に変更
 - **SSH鍵管理**: ssh-agentのSSH鍵を自動的に切り替え
-- **GPG署名対応**: コミット署名用のGPGキーを設定（オプション）
+- **GPG署名対応**: コミット署名用のGPG鍵を設定（オプション）
 - **サブモジュール対応**: Gitサブモジュールにも自動的にプロフィールを伝播
 - **ステータスバー統合**: 現在のプロフィールを常に一目で確認
 - **リッチなツールチップ**: 説明やSSHホストを含む詳細なプロフィール情報
@@ -148,7 +148,7 @@ git clone git@github.com:kaoru/repo.git
 
 GPGでコミットに署名する場合：
 
-### ステップ 1: GPGキーIDを確認
+### ステップ 1: GPG鍵IDを確認
 
 ```bash
 gpg --list-secret-keys --keyid-format SHORT
@@ -164,7 +164,7 @@ uid         [ultimate] 高橋カオル <kaoru@personal.example.com>
 
 キーIDは`ABCD1234`です。
 
-### ステップ 2: プロフィールにGPGキーを追加
+### ステップ 2: プロフィールにGPG鍵を追加
 
 ```json
 {
@@ -288,7 +288,7 @@ Host bitbucket.org
 | `description` |      | ピッカーとツールチップに表示される短い説明               |
 | `sshKeyPath`  |      | SSHプライベートキーへのパス（例：`"~/.ssh/id_ed25519_work"`） |
 | `sshHost`     |      | SSH configのHostエイリアス（例：`"github-work"`）       |
-| `gpgKeyId`    |      | コミット署名用のGPGキーID                                |
+| `gpgKeyId`    |      | コミット署名用のGPG鍵ID                                |
 
 #### 表示に関する制限
 
@@ -380,7 +380,7 @@ Gitの設定には3つのレイヤーがあり、下位の設定を上位が上�
 
 1. **Git Config**（常時）: `git config --local user.name`と`user.email`を設定
 2. **SSH鍵**（`sshKeyPath`設定時）: 他のキーをssh-agentから削除し、選択したキーを追加
-3. **GPGキー**（`gpgKeyId`設定時）: `git config --local user.signingkey`を設定し、署名を有効化
+3. **GPG鍵**（`gpgKeyId`設定時）: `git config --local user.signingkey`を設定し、署名を有効化
 4. **サブモジュール**（有効時）: すべてのサブモジュールに設定を伝播（デフォルト：深度1）
 
 ### サブモジュール伝播の仕組み
@@ -451,7 +451,7 @@ Gitサブモジュールを使用する複雑なリポジトリでは、プロ�
 
 ### GPG署名が動作しない？
 
-1. GPGキーIDを確認：
+1. GPG鍵IDを確認：
 
    ```bash
    gpg --list-secret-keys --keyid-format SHORT
@@ -463,7 +463,7 @@ Gitサブモジュールを使用する複雑なリポジトリでは、プロ�
    echo "test" | gpg --clearsign
    ```
 
-3. プロフィールのメールアドレスがGPGキーのメールアドレスと一致していることを確認
+3. プロフィールのメールアドレスがGPG鍵のメールアドレスと一致していることを確認
 
 ### プロフィールが検出されない？
 

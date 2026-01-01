@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.12] - 2026-01-01
+
+### Removed
+
+- **Revert Title Properties**: Removed non-functional `title` properties from all 13 settings
+  - VSCode does NOT support `title` at individual configuration property level
+  - VSCode always auto-generates titles from property names (camelCase → Title Case)
+  - This was discovered after v0.10.10/v0.10.11 were released
+  - Title properties in package.json and nls files were silently ignored by VSCode
+  - Valid changes from v0.10.10 remain: terminology unification (SSH鍵/GPG鍵), description improvements
+
 ## [0.10.11] - 2026-01-01
 
 ### Fixed
@@ -667,7 +678,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.11...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.12...HEAD
+[0.10.12]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.11...git-id-switcher-v0.10.12
 [0.10.11]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.10...git-id-switcher-v0.10.11
 [0.10.10]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.9...git-id-switcher-v0.10.10
 [0.10.9]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.8...git-id-switcher-v0.10.9
