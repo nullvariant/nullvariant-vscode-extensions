@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.11] - 2026-01-01
+
+### Fixed
+
+- **Build Fix**: Added missing English title keys to package.nls.json
+  - v0.10.10 failed to build because title keys were only added to Japanese file
+
 ## [0.10.10] - 2026-01-01
 
 ### Changed
@@ -660,7 +667,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.10...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.11...HEAD
+[0.10.11]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.10...git-id-switcher-v0.10.11
 [0.10.10]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.9...git-id-switcher-v0.10.10
 [0.10.9]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.8...git-id-switcher-v0.10.9
 [0.10.8]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.7...git-id-switcher-v0.10.8
