@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.8] - 2025-01-01
+
+### Changed
+
+- **English Localization Improvements**: Revised English translations to match Japanese version improvements
+  - `extension.description`: Simplified, uses "Git profiles" instead of "GitHub accounts" (platform-agnostic)
+  - `config.category.display`: Renamed from "Notifications" to "Notifications & Display"
+  - Identity settings: Added "(required)" markers to required fields (id, name, email)
+  - Added examples: icon (🏠, 💼), description (Work, Personal)
+  - Removed redundant "(optional)" from optional fields
+  - Unified terminology: "profile" used in status bar for better UX
+  - Simplified notification messages: unified "Switching..." text
+
 ## [0.10.7] - 2025-01-01
 
 ### Fixed
@@ -619,7 +632,10 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.5...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.8...HEAD
+[0.10.8]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.7...git-id-switcher-v0.10.8
+[0.10.7]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.6...git-id-switcher-v0.10.7
+[0.10.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.5...git-id-switcher-v0.10.6
 [0.10.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.4...git-id-switcher-v0.10.5
 [0.10.4]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.3...git-id-switcher-v0.10.4
 [0.10.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.2...git-id-switcher-v0.10.3
