@@ -1,6 +1,6 @@
 {
-  "Click to select a Git identity": "Git ID를 선택하려면 클릭하세요",
-  "*Click to switch identity*": "*ID를 전환하려면 클릭하세요*",
+  "Click to select a Git identity": "Git ID(프로필)를 선택하려면 클릭",
+  "*Click to switch identity*": "*프로필을 전환하려면 클릭*",
   "Select Identity": "ID 선택",
   "Select Git Identity": "Git ID 선택",
   "Search identities...": "ID 검색...",
@@ -10,7 +10,7 @@
   "Switched to {0}": "{0}(으)로 전환됨",
   "Already using {0}": "이미 {0} 사용 중",
   "Current identity: {0} ({1})": "현재 ID: {0} ({1})",
-  "No identity selected. Click the status bar to select one.": "선택된 ID가 없습니다. 상태 표시줄을 클릭하여 선택하세요.",
+  "No identity selected. Click the status bar to select one.": "ID가 선택되지 않았습니다. 상태 표시줄을 클릭하여 선택하세요.",
   "**Email:** {0}": "**이메일:** {0}",
   "**SSH Host:** {0}": "**SSH 호스트:** {0}",
   "**SSH Key:** {0}": "**SSH 키:** {0}",
@@ -18,7 +18,7 @@
   "Identity Error": "ID 오류",
   "Failed to select identity: {0}": "ID 선택 실패: {0}",
   "Failed to switch identity: {0}": "ID 전환 실패: {0}",
-  "No identities configured. Add identities in settings: {0}": "구성된 ID가 없습니다. 설정에서 ID를 추가하세요: {0}",
+  "No identities configured. Add identities in settings: {0}": "ID가 구성되지 않았습니다. 설정에서 추가하세요: {0}",
   "Welcome to Git ID Switcher! Configure your identities to get started.": "Git ID Switcher에 오신 것을 환영합니다! ID를 구성하여 시작하세요.",
   "Open Settings": "설정 열기",
   "Git ID Switcher: {0}": "Git ID Switcher: {0}"
