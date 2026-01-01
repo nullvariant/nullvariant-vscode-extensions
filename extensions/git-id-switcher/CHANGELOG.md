@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.6] - 2025-01-01
+
+### Changed
+
+- **Japanese Localization Improvements**: Revised Japanese translations for clarity and consistency
+  - `extension.description`: Simplified and made more concise
+  - `config.category.display`: Renamed from "通知" to "通知と表示" to better reflect contents
+  - Identity settings: Added "(必須)" markers to required fields (id, name, email)
+  - Improved descriptions with examples (icon: 🏠, 💼; description: 会社用, 個人用)
+  - Removed redundant "(オプション)" from optional fields
+  - Unified terminology: "プロフィール" added to status bar for better UX
+  - Simplified notification messages: "〜しています" → "〜中"
+
 ## [0.10.5] - 2025-12-31
 
 ### Changed
