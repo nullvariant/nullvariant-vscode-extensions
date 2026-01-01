@@ -1,6 +1,6 @@
 {
-  "Click to select a Git identity": "Kattintson a Git identitás kiválasztásához",
-  "*Click to switch identity*": "*Kattintson az identitás váltásához*",
+  "Click to select a Git identity": "Kattintson a Git identitás (profil) kiválasztásához",
+  "*Click to switch identity*": "*Kattintson a profil váltásához*",
   "Select Identity": "Identitás kiválasztása",
   "Select Git Identity": "Git identitás kiválasztása",
   "Search identities...": "Identitások keresése...",
@@ -18,7 +18,7 @@
   "Identity Error": "Identitás hiba",
   "Failed to select identity: {0}": "Nem sikerült kiválasztani az identitást: {0}",
   "Failed to switch identity: {0}": "Nem sikerült váltani az identitást: {0}",
-  "No identities configured. Add identities in settings: {0}": "Nincsenek konfigurált identitások. Adjon hozzá identitásokat a beállításokban: {0}",
+  "No identities configured. Add identities in settings: {0}": "Nincs konfigurált identitás. Adjon hozzá a beállításokban: {0}",
   "Welcome to Git ID Switcher! Configure your identities to get started.": "Üdvözöljük a Git ID Switcher-ben! Konfigurálja identitásait a kezdéshez.",
   "Open Settings": "Beállítások megnyitása",
   "Git ID Switcher: {0}": "Git ID Switcher: {0}"

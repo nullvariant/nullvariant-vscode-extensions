@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.9] - 2025-01-01
+
+### Changed
+
+- **Multilingual Localization Improvements**: Revised translations for 12 languages to match Japanese/English improvements
+  - Languages updated: German (de), French (fr), Spanish (es), Italian (it), Portuguese-BR (pt-BR), Russian (ru), Polish (pl), Czech (cs), Hungarian (hu), Bulgarian (bg), Ukrainian (uk), Turkish (tr)
+  - Added "(profile)" concept to extension description and status bar messages
+  - Added "(required)" markers to required fields (id, name, email)
+  - Added examples: icon (🏠, 💼), description (Work, Personal equivalents)
+  - Added submodule depth range "(1-5)" to settings
+  - Removed redundant "(optional)" from optional fields
+  - Renamed notifications category to include "& Display"
+
 ## [0.10.8] - 2025-01-01
 
 ### Changed

@@ -1,6 +1,6 @@
 {
-  "Click to select a Git identity": "Git kimliği seçmek için tıklayın",
-  "*Click to switch identity*": "*Kimlik değiştirmek için tıklayın*",
+  "Click to select a Git identity": "Git kimliği (profil) seçmek için tıklayın",
+  "*Click to switch identity*": "*Profil değiştirmek için tıklayın*",
   "Select Identity": "Kimlik Seç",
   "Select Git Identity": "Git Kimliği Seç",
   "Search identities...": "Kimlikleri ara...",
@@ -18,7 +18,7 @@
   "Identity Error": "Kimlik Hatası",
   "Failed to select identity: {0}": "Kimlik seçilemedi: {0}",
   "Failed to switch identity: {0}": "Kimlik değiştirilemedi: {0}",
-  "No identities configured. Add identities in settings: {0}": "Yapılandırılmış kimlik yok. Ayarlarda kimlik ekleyin: {0}",
+  "No identities configured. Add identities in settings: {0}": "Yapılandırılmış kimlik yok. Ayarlarda ekleyin: {0}",
   "Welcome to Git ID Switcher! Configure your identities to get started.": "Git ID Switcher'a hoş geldiniz! Başlamak için kimliklerinizi yapılandırın.",
   "Open Settings": "Ayarları Aç",
   "Git ID Switcher: {0}": "Git ID Switcher: {0}"
