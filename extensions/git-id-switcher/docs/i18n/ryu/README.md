@@ -46,7 +46,7 @@
 ## 機能 (Features)
 
 - **ちゅーちゅクリックさーにID切り替え**: Git user.name とぅ user.email ふぃっちー変えーいびーん
-- **SSHキー管理**: ssh-agentぬSSHキー自動的に切り替え
+- **SSH鍵管理**: ssh-agentぬSSH鍵自動的に切り替え
 - **GPG署名対応**: コミット署名用ぬGPGキー設定（オプション）
 - **サブモジュール対応**: Gitサブモジュールんかいも自動的にID適用
 - **ステータスバー**: 今ぬIDいちなん分かいびーん
@@ -59,7 +59,7 @@
 Git ID 切り替えツールやいっぺーあいびーしが、**Git ID Switcher** や他ぬツールぬ見落としがちな問題解決さびーん:
 
 1. **サブモジュールぬ悩み**: サブモジュール持っちょーるリポジトリ（例：Hugoテーマ、ベンダーライブラリ）んかい仕事すーる時、普通や*うぬうぬ*サブモジュールんかい`git config user.name`手動で設定せんといかんさー。くぬ拡張機能や、全部ぬサブモジュールんかいID適用さーに、くぬ問題解決さびーん。
-2. **SSH & GPG**: 名前変えーるだけやあらん、ssh-agentぬSSHキー入れ替えーてぃ、GPG署名設定さーに、間違った署名んかいコミットすーるくとぅ防じゃびーん。
+2. **SSH & GPG**: 名前変えーるだけやあらん、ssh-agentぬSSH鍵入れ替えーてぃ、GPG署名設定さーに、間違った署名んかいコミットすーるくとぅ防じゃびーん。
 
 ## 🌏 多言語んかいぬ想い
 
@@ -77,9 +77,9 @@ Git ID 切り替えツールやいっぺーあいびーしが、**Git ID Switche
 
 個人アカウントとぅ会社アカウント（Enterprise Managed User）管理すーる典型的な設定やいびーん。
 
-### ステップ 1: SSHキー準備
+### ステップ 1: SSH鍵準備
 
-まず、うぬうぬぬアカウント用んかいSSHキー作てぃくぃみそーれー（あいねーとばしてぃんでぃーびる）:
+まず、うぬうぬぬアカウント用んかいSSH鍵作てぃくぃみそーれー（あいねーとばしてぃんでぃーびる）:
 
 ```bash
 # 個人用
@@ -150,7 +150,7 @@ Host github-work
 
 1. ステータスバー（右下）ぬIDアイコンクリック
 2. ID選ぶん
-3. 終わい! Git configとぅSSHキー切り替わたん。
+3. 終わい! Git configとぅSSH鍵切り替わたん。
 
 ### SSHホストエイリアスぬ使い方
 
@@ -323,7 +323,7 @@ Host bitbucket.org
 | ----------------------------------- | ---------- | ---------------------------------------------- |
 | `gitIdSwitcher.identities`          | 例ば見ーん | ID設定ぬリスト                                 |
 | `gitIdSwitcher.defaultIdentity`     | 例ば見ーん | デフォルトID                                   |
-| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | SSHキー自動切り替え                            |
+| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | SSH鍵自動切り替え                            |
 | `gitIdSwitcher.showNotifications`   | `true`     | 切り替え時通知表示                             |
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Gitサブモジュールんかいも適用                  |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | ネストしたサブモジュールぬ最大深度（1-5）      |
@@ -347,7 +347,7 @@ Host bitbucket.org
 
 ### メモ: 基本設定（SSH無し）
 
-SSHキー切り替え不要な場合（例：同じGitHubアカウントんかい違うコミッター情報使う）、最小設定使えーるん:
+SSH鍵切り替え不要な場合（例：同じGitHubアカウントんかい違うコミッター情報使う）、最小設定使えーるん:
 
 ```json
 {
@@ -401,7 +401,7 @@ Git configや3つぬ階層あいん；下ぬ階層が上ぬ階層ば上書きさ
 ID切り替える時、拡張機能やくぬ順番んかい実行さびーん:
 
 1. **Git Config**（常に）: `git config --local user.name`とぅ`user.email`設定
-2. **SSHキー**（`sshKeyPath`設定時）: ssh-agentから他ぬキー削除、選んだん追加
+2. **SSH鍵**（`sshKeyPath`設定時）: ssh-agentから他ぬキー削除、選んだん追加
 3. **GPGキー**（`gpgKeyId`設定時）: `git config --local user.signingkey`設定、署名有効化
 4. **サブモジュール**（有効時）: 全サブモジュールんかい設定伝播（デフォルト: 深度1）
 
@@ -436,7 +436,7 @@ Gitサブモジュール持っちょーる複雑なリポジトリんかい、ID
 
 ## トラブルシューティング
 
-### SSHキー切り替わらん?
+### SSH鍵切り替わらん?
 
 1. `ssh-agent`が動いちょーる確認:
 

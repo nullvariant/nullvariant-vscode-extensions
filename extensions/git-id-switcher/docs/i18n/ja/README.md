@@ -6,7 +6,7 @@
       <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      ワンクリックで複数のGitプロフィールを切り替え。複数のGitHubアカウント、SSHキー、GPG署名を管理し、<b>Gitサブモジュールにも自動的にプロフィールを適用</b>します。
+      ワンクリックで複数のGitプロフィールを切り替え。複数のGitHubアカウント、SSH鍵、GPG署名を管理し、<b>Gitサブモジュールにも自動的にプロフィールを適用</b>します。
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -24,7 +24,7 @@
 ## 機能
 
 - **ワンクリックでプロフィール切り替え**: Git user.nameとuser.emailを瞬時に変更
-- **SSHキー管理**: ssh-agentのSSHキーを自動的に切り替え
+- **SSH鍵管理**: ssh-agentのSSH鍵を自動的に切り替え
 - **GPG署名対応**: コミット署名用のGPGキーを設定（オプション）
 - **サブモジュール対応**: Gitサブモジュールにも自動的にプロフィールを伝播
 - **ステータスバー統合**: 現在のプロフィールを常に一目で確認
@@ -37,7 +37,7 @@
 Gitプロフィール切り替えツールは数多く存在しますが、**Git ID Switcher**は他のツールが見落としがちな複雑な問題を解決します：
 
 1. **サブモジュールの悩み**: サブモジュールを持つリポジトリ（例：Hugoテーマ、ベンダーライブラリ）で作業する際、通常は*各*サブモジュールに対して`git config user.name`を手動で設定する必要があります。この拡張機能は、すべてのアクティブなサブモジュールに再帰的にプロフィールを適用することで、これをエレガントに解決します。
-2. **SSH & GPGの処理**: 単に名前を変更するだけでなく、ssh-agent内のSSHキーを入れ替え、GPG署名を設定するため、間違った署名でコミットすることを防ぎます。
+2. **SSH & GPGの処理**: 単に名前を変更するだけでなく、ssh-agent内のSSH鍵を入れ替え、GPG署名を設定するため、間違った署名でコミットすることを防ぎます。
 
 ## 🌏 多言語への想い
 
@@ -55,9 +55,9 @@ Gitプロフィール切り替えツールは数多く存在しますが、**Git
 
 個人アカウントと会社発行アカウント（Enterprise Managed User）を使い分ける典型的なセットアップです。
 
-### ステップ 1: SSHキーを準備
+### ステップ 1: SSH鍵を準備
 
-まず、アカウントごとにSSHキーを作成します（すでにある場合はスキップ）：
+まず、アカウントごとにSSH鍵を作成します（すでにある場合はスキップ）：
 
 ```bash
 # 個人用
@@ -128,7 +128,7 @@ Host github-work
 
 1. ステータスバー（右下）のプロフィールアイコンをクリック
 2. プロフィールを選択
-3. 完了！Git configとSSHキーが切り替わりました。
+3. 完了！Git configとSSH鍵が切り替わりました。
 
 ### SSHホストエイリアスの使い方
 
@@ -301,7 +301,7 @@ Host bitbucket.org
 | --------------------------------- | ---------- | -------------------------------------------- |
 | `gitIdSwitcher.identities`        | サンプル参照 | プロフィール設定のリスト                     |
 | `gitIdSwitcher.defaultIdentity`   | サンプル参照 | 使用するデフォルトプロフィールのID           |
-| `gitIdSwitcher.autoSwitchSshKey`  | `true`     | プロフィール変更時にSSHキーを自動切り替え     |
+| `gitIdSwitcher.autoSwitchSshKey`  | `true`     | プロフィール変更時にSSH鍵を自動切り替え     |
 | `gitIdSwitcher.showNotifications` | `true`     | プロフィール切り替え時に通知を表示           |
 | `gitIdSwitcher.applyToSubmodules` | `true`     | Gitサブモジュールにプロフィールを伝播        |
 | `gitIdSwitcher.submoduleDepth`    | `1`        | ネストされたサブモジュール設定の最大深度（1-5） |
@@ -325,7 +325,7 @@ Host bitbucket.org
 
 ### 補足: 基本設定のみ（SSHなし）
 
-SSHキー切り替えが不要な場合（単一のGitHubアカウントで異なるコミット者情報を使い分けるなど）、最小構成で利用できます：
+SSH鍵切り替えが不要な場合（単一のGitHubアカウントで異なるコミット者情報を使い分けるなど）、最小構成で利用できます：
 
 ```json
 {
@@ -379,7 +379,7 @@ Gitの設定には3つのレイヤーがあり、下位の設定を上位が上�
 プロフィールを切り替えると、拡張機能は以下を（順番に）実行します：
 
 1. **Git Config**（常時）: `git config --local user.name`と`user.email`を設定
-2. **SSHキー**（`sshKeyPath`設定時）: 他のキーをssh-agentから削除し、選択したキーを追加
+2. **SSH鍵**（`sshKeyPath`設定時）: 他のキーをssh-agentから削除し、選択したキーを追加
 3. **GPGキー**（`gpgKeyId`設定時）: `git config --local user.signingkey`を設定し、署名を有効化
 4. **サブモジュール**（有効時）: すべてのサブモジュールに設定を伝播（デフォルト：深度1）
 
@@ -414,7 +414,7 @@ Gitサブモジュールを使用する複雑なリポジトリでは、プロ�
 
 ## トラブルシューティング
 
-### SSHキーが切り替わらない？
+### SSH鍵が切り替わらない？
 
 1. `ssh-agent`が実行されていることを確認：
 

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.10] - 2026-01-01
+
+### Changed
+
+- **Japanese Setting Titles Localization**: Added explicit `title` properties to all 13 settings
+  - VSCode auto-generates titles from property names (e.g., `autoSwitchSshKey` → "Auto Switch Ssh Key")
+  - Now uses proper Japanese titles (e.g., "SSH鍵の自動切り替え")
+  - Affected settings: identities, defaultIdentity, autoSwitchSshKey, applyToSubmodules, submoduleDepth, showNotifications, includeIconInGitConfig, logging.* (5 settings), commandTimeouts
+- **Japanese Description Improvements**: Improved 3 setting descriptions
+  - `autoSwitchSshKey`: "ID変更時にSSH鍵も自動的に切り替える"
+  - `logging.fileEnabled`: "監査ログをファイルに保存する（ID切り替え、SSH鍵操作などを記録）"
+  - `logging.level`: "ログの詳細度を設定（DEBUG=全て記録、ERROR=エラーのみ。選択したレベル以上を記録）"
+- **Terminology Unification**: Unified "SSHキー" to "SSH鍵" across all Japanese/Ryukyuan files
+  - Updated: package.nls.ja.json, bundle.l10n.ja.json, docs/i18n/ja/README.md, docs/i18n/ryu/README.md
+
 ## [0.10.9] - 2025-01-01
 
 ### Changed
@@ -645,7 +660,9 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.8...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.10...HEAD
+[0.10.10]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.9...git-id-switcher-v0.10.10
+[0.10.9]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.8...git-id-switcher-v0.10.9
 [0.10.8]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.7...git-id-switcher-v0.10.8
 [0.10.7]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.6...git-id-switcher-v0.10.7
 [0.10.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.5...git-id-switcher-v0.10.6

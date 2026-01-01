@@ -13,7 +13,7 @@
   "No identity selected. Click the status bar to select one.": "IDが未選択です。ステータスバーをクリックして選択してください。",
   "**Email:** {0}": "**メール:** {0}",
   "**SSH Host:** {0}": "**SSHホスト:** {0}",
-  "**SSH Key:** {0}": "**SSHキー:** {0}",
+  "**SSH Key:** {0}": "**SSH鍵:** {0}",
   "**GPG Key:** {0}": "**GPGキー:** {0}",
   "Identity Error": "IDエラー",
   "Failed to select identity: {0}": "IDの選択に失敗しました: {0}",
