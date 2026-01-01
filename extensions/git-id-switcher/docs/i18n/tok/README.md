@@ -25,25 +25,25 @@
 
 <br>
 
-<img src="demo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-tok.png" width="600" alt="Demo">
 
-## ijo pona (Features)
-
-- **ante lili**: sina ken ante e nimi sina lon tenpo lili
-- **SSH**: ilo li ante e SSH key
-- **GPG**: sina ken sitelen e nimi sina lon commit
-- **Submodule**: ilo li pana e nimi tawa submodule ale
-- **lukin pona**: sina ken lukin e nimi sina lon status bar
-- **sona mute**: tooltip li jo e sona mute
-- **ma ale**: ilo li lon macOS, Linux, Windows
-- **toki mute**: ilo li jo e toki 17
-
-## 🚀 tan seme?
+## 🎯 tan seme?
 
 ilo ante mute li lon. taso **Git ID Switcher** li pona tan ni:
 
 1. **submodule**: sina jo e submodule la, sina wile pana e nimi tawa ona ale. ni li ike. ilo ni li pana e nimi tawa submodule ale.
 2. **SSH en GPG**: ilo li ante e SSH key en GPG. sina sitelen e nimi pona.
+
+## ijo pona (Features)
+
+- **Submodule**: ilo li pana e nimi tawa submodule ale
+- **SSH**: ilo li ante e SSH key
+- **GPG**: sina ken sitelen e nimi sina lon commit
+- **ante lili**: sina ken ante e nimi sina lon tenpo lili
+- **lukin pona**: sina ken lukin e nimi sina lon status bar
+- **sona mute**: tooltip li jo e sona mute
+- **ma ale**: ilo li lon macOS, Linux, Windows
+- **toki mute**: ilo li jo e toki 17
 
 ## 🌏 toki lili
 
@@ -308,6 +308,12 @@ sona: pini ID (`jan-musi`) li jo ala e SSH—Git config taso li ante. GitLab acc
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | submodule li kama jo e nimi                    |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | submodule suli (1-5)                           |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | sitelen li tawa Git config `user.name`         |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | file logging li open                           |
+| `gitIdSwitcher.logging.filePath`    | `""`       | nasin file log                                 |
+| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | file log suli (bytes)                          |
+| `gitIdSwitcher.logging.maxFiles`    | `3`        | file log nanpa                                 |
+| `gitIdSwitcher.logging.level`       | `"info"`   | logging suli (debug/info/warn/error)           |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | ilo weka tenpo (ms)                            |
 
 #### sona `includeIconInGitConfig`
 

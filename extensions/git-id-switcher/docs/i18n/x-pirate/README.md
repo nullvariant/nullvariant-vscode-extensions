@@ -23,25 +23,25 @@
 
 <br>
 
-<img src="demo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-x-pirate.png" width="600" alt="Demo">
 
-## Features, Ye Scurvy Dog!
-
-- **One-Click Identity Switch**: Change yer Git user.name and user.email faster than ye can say "shiver me timbers!"
-- **SSH Key Management**: Automatically switch yer SSH keys in ssh-agent, like changin' sails in a storm
-- **GPG Signin' Support**: Configure yer GPG key fer commit signin' (optional, but a true pirate always signs their plunder)
-- **Submodule Support**: Automatically propagate yer identity to all Git submodules in yer fleet
-- **Status Bar Integration**: Always see yer current identity at a glance from the crow's nest
-- **Rich Tooltips**: Detailed identity info with description and SSH host
-- **Cross-Platform**: Works on macOS, Linux, and Windows - every port in the digital sea!
-- **Localized**: Supports 17 languages, plus Pirate speak, arrr!
-
-## 🚀 Why This Extension, Ye Ask?
+## 🎯 Why This Extension, Ye Ask?
 
 While many Git identity switchers sail the seven seas, **Git ID Switcher** solves the treacherous problems that others ignore:
 
 1. **Submodules Be a Nightmare**: Workin' with repositories that have submodules usually requires settin' `git config user.name` manually fer *each* submodule. This extension handles it elegantly by recursively applyin' yer identity to all active submodules in yer fleet.
 2. **SSH & GPG Handlin'**: It don't just change yer name; it swaps yer SSH keys in the agent and configures GPG signin' so ye never commit with the wrong signature, lest ye walk the plank!
+
+## Features, Ye Scurvy Dog!
+
+- **Submodule Support**: Automatically propagate yer identity to all Git submodules in yer fleet
+- **SSH Key Management**: Automatically switch yer SSH keys in ssh-agent, like changin' sails in a storm
+- **GPG Signin' Support**: Configure yer GPG key fer commit signin' (optional, but a true pirate always signs their plunder)
+- **One-Click Identity Switch**: Change yer Git user.name and user.email faster than ye can say "shiver me timbers!"
+- **Status Bar Integration**: Always see yer current identity at a glance from the crow's nest
+- **Rich Tooltips**: Detailed identity info with description and SSH host
+- **Cross-Platform**: Works on macOS, Linux, and Windows - every port in the digital sea!
+- **Localized**: Supports 17 languages, plus Pirate speak, arrr!
 
 ## 🌏 A Note on Multilingual Support
 
@@ -317,6 +317,12 @@ Note: The last identity (`navy-spy`) has no SSH. Ye can use this fer switchin' j
 | `gitIdSwitcher.autoSwitchSshKey` | `true` | Automatically switch SSH keys |
 | `gitIdSwitcher.applyToSubmodules` | `true` | Apply identity to submodules |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Include emoji in Git config (see below) |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Enable loggin' to file |
+| `gitIdSwitcher.logging.filePath` | `""` | Custom log file path |
+| `gitIdSwitcher.logging.maxFileSize` | `5242880` | Max log file size (bytes) |
+| `gitIdSwitcher.logging.maxFiles` | `3` | Number of log files to keep |
+| `gitIdSwitcher.logging.level` | `"info"` | Loggin' level (debug/info/warn/error) |
+| `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms) |
 
 ---
 

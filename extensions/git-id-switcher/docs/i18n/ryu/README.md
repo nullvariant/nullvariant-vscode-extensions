@@ -41,25 +41,25 @@
 
 <br>
 
-<img src="demo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-ryu.png" width="600" alt="Demo">
 
-## 機能 (Features)
-
-- **ちゅーちゅクリックさーにID切り替え**: Git user.name とぅ user.email ふぃっちー変えーいびーん
-- **SSH鍵管理**: ssh-agentぬSSH鍵自動的に切り替え
-- **GPG署名対応**: コミット署名用ぬGPG鍵設定（オプション）
-- **サブモジュール対応**: Gitサブモジュールんかいも自動的にID適用
-- **ステータスバー**: 今ぬIDいちなん分かいびーん
-- **リッチなツールチップ**: IDぬ詳細情報
-- **クロスプラットフォーム**: macOS、Linux、Windowsんかい動ちゃびーん
-- **多言語対応**: 17言語サポート
-
-## 🚀 ぬーんちくぬ Extension 作たがやー?
+## 🎯 ぬーんちくぬ Extension 作たがやー?
 
 Git ID 切り替えツールやいっぺーあいびーしが、**Git ID Switcher** や他ぬツールぬ見落としがちな問題解決さびーん:
 
 1. **サブモジュールぬ悩み**: サブモジュール持っちょーるリポジトリ（例：Hugoテーマ、ベンダーライブラリ）んかい仕事すーる時、普通や*うぬうぬ*サブモジュールんかい`git config user.name`手動で設定せんといかんさー。くぬ拡張機能や、全部ぬサブモジュールんかいID適用さーに、くぬ問題解決さびーん。
 2. **SSH & GPG**: 名前変えーるだけやあらん、ssh-agentぬSSH鍵入れ替えーてぃ、GPG署名設定さーに、間違った署名んかいコミットすーるくとぅ防じゃびーん。
+
+## 機能 (Features)
+
+- **サブモジュール対応**: Gitサブモジュールんかいも自動的にID適用
+- **SSH鍵管理**: ssh-agentぬSSH鍵自動的に切り替え
+- **GPG署名対応**: コミット署名用ぬGPG鍵設定（オプション）
+- **ちゅーちゅクリックさーにID切り替え**: Git user.name とぅ user.email ふぃっちー変えーいびーん
+- **ステータスバー**: 今ぬIDいちなん分かいびーん
+- **リッチなツールチップ**: IDぬ詳細情報
+- **クロスプラットフォーム**: macOS、Linux、Windowsんかい動ちゃびーん
+- **多言語対応**: 17言語サポート
 
 ## 🌏 多言語んかいぬ想い
 
@@ -328,6 +328,12 @@ Host bitbucket.org
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Gitサブモジュールんかいも適用                  |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | ネストしたサブモジュールぬ最大深度（1-5）      |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | 絵文字アイコンばGit config `user.name`んかい書くん |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | ファイルんかいログ出力有効化                   |
+| `gitIdSwitcher.logging.filePath`    | `""`       | カスタムログファイルパス                       |
+| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | ログファイルぬ最大サイズ（バイト）             |
+| `gitIdSwitcher.logging.maxFiles`    | `3`        | 保持すーるログファイル数                       |
+| `gitIdSwitcher.logging.level`       | `"info"`   | ログレベル（debug/info/warn/error）            |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | 外部コマンドぬタイムアウト（ms）               |
 
 #### `includeIconInGitConfig`について
 

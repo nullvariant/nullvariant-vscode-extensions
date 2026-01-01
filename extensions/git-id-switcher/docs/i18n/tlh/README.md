@@ -25,25 +25,25 @@
 
 <br>
 
-<img src="demo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-tlh.png" width="600" alt="Demo">
 
-## Features (ngoQ)
-
-- **wa' weQ ID choH**: Git user.name, user.email nom choHlaH
-- **SSH Key Management**: ssh-agent SSH keys automatic choH
-- **GPG Signing Support**: GPG key commit signing configure (optional)
-- **Submodule Support**: Git submodules ID automatic propagate
-- **Status Bar Integration**: DaH ID leghlaH
-- **Rich Tooltips**: ID details, description, SSH host
-- **Cross-Platform**: macOS, Linux, Windows - Hoch platforms!
-- **Localized**: 17 Hol support
-
-## 🚀 qatlh extension?
+## 🎯 qatlh extension?
 
 Git ID switchers law' tu'lu', 'ach **Git ID Switcher** qay' potlh solve:
 
 1. **Submodules qay'**: Submodules repository work, `git config user.name` *Hoch* submodule manually set need. extension Hoch active submodules ID recursively apply.
 2. **SSH & GPG**: pong neH choH. ssh-agent SSH keys swap, GPG signing configure. wrong signature commit never!
+
+## Features (ngoQ)
+
+- **Submodule Support**: Git submodules ID automatic propagate
+- **SSH Key Management**: ssh-agent SSH keys automatic choH
+- **GPG Signing Support**: GPG key commit signing configure (optional)
+- **wa' weQ ID choH**: Git user.name, user.email nom choHlaH
+- **Status Bar Integration**: DaH ID leghlaH
+- **Rich Tooltips**: ID details, description, SSH host
+- **Cross-Platform**: macOS, Linux, Windows - Hoch platforms!
+- **Localized**: 17 Hol support
 
 ## 🌏 Multilingual Support
 
@@ -308,6 +308,12 @@ Note: Last ID (`spy`) no SSH—Git config only change. Same GitLab account diffe
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Git submodules ID apply                        |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | Nested submodules max depth (1-5)              |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Emoji icon Git config `user.name` write        |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | File logging enable                            |
+| `gitIdSwitcher.logging.filePath`    | `""`       | Custom log file path                           |
+| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | Log file max size (bytes)                      |
+| `gitIdSwitcher.logging.maxFiles`    | `3`        | Log files keep count                           |
+| `gitIdSwitcher.logging.level`       | `"info"`   | Logging level (debug/info/warn/error)          |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | External commands timeout (ms)                 |
 
 #### `includeIconInGitConfig` About
 

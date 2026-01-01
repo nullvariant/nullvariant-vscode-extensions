@@ -24,25 +24,25 @@
 
 <br>
 
-<img src="demo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-x-shakespeare.png" width="600" alt="Demo">
 
-## Features Most Noble
-
-- **One-Click Identity Switch**: Changeth thy Git user.name and user.email in the twinkling of an eye
-- **SSH Key Management**: Automatically switcheth thy SSH keys within the ssh-agent
-- **GPG Signing Support**: Configureth thy GPG key for the signing of commits (optional, yet most wise)
-- **Submodule Support**: Automatically propagateth thine identity unto all Git submodules
-- **Status Bar Integration**: Ever shall thy current identity be visible at a glance
-- **Rich Tooltips**: Detailed identity information with description and SSH host
-- **Cross-Platform**: Worketh upon macOS, Linux, and Windows—all the stages of the world!
-- **Localized**: Supporteth 17 tongues of the realm
-
-## 🚀 Wherefore This Extension?
+## 🎯 Wherefore This Extension?
 
 Whilst many Git identity switchers doth exist upon this mortal coil, **Git ID Switcher** solveth the vexing problems that others do ignore:
 
 1. **The Submodule's Lament**: When working with repositories containing submodules, one must oft set `git config user.name` by hand for *each* submodule—a most tedious affair! This extension handleth it with grace, recursively applying thine identity unto all active submodules.
 2. **SSH & GPG Handling**: It doth not merely change thy name; it swappeth thy SSH keys in the agent and configureth GPG signing, that thou might never commit with the wrong signature!
+
+## Features Most Noble
+
+- **Submodule Support**: Automatically propagateth thine identity unto all Git submodules
+- **SSH Key Management**: Automatically switcheth thy SSH keys within the ssh-agent
+- **GPG Signing Support**: Configureth thy GPG key for the signing of commits (optional, yet most wise)
+- **One-Click Identity Switch**: Changeth thy Git user.name and user.email in the twinkling of an eye
+- **Status Bar Integration**: Ever shall thy current identity be visible at a glance
+- **Rich Tooltips**: Detailed identity information with description and SSH host
+- **Cross-Platform**: Worketh upon macOS, Linux, and Windows—all the stages of the world!
+- **Localized**: Supporteth 17 tongues of the realm
 
 ## 🌏 A Soliloquy on Multilingual Support
 
@@ -321,6 +321,12 @@ Note: The final identity (`romeo`) hath no SSH. Thou canst use this for switchin
 | `gitIdSwitcher.autoSwitchSshKey` | `true` | Automatically switch SSH keys |
 | `gitIdSwitcher.applyToSubmodules` | `true` | Apply identity unto submodules |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Include emoji in Git config (see below) |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Enable logging unto file |
+| `gitIdSwitcher.logging.filePath` | `""` | Custom log file path |
+| `gitIdSwitcher.logging.maxFileSize` | `5242880` | Max log file size (bytes) |
+| `gitIdSwitcher.logging.maxFiles` | `3` | Number of log files to keep |
+| `gitIdSwitcher.logging.level` | `"info"` | Logging level (debug/info/warn/error) |
+| `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms) |
 
 ---
 

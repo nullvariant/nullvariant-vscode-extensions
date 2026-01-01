@@ -39,25 +39,25 @@
 
 <br>
 
-<img src="demo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-haw.png" width="600" alt="Demo">
 
-## Nā Hiʻohiʻona (Features)
-
-- **Hoʻololi ID me ke Kaomi Hoʻokahi**: E hoʻololi i ka Git user.name a me user.email me ka wikiwiki
-- **Hoʻoponopono Kī SSH**: E hoʻololi ʻia nā kī SSH ma ka ssh-agent
-- **Kākoʻo GPG**: E hoʻonohonoho i ke kī GPG no ke kākau inoa commit (koho)
-- **Kākoʻo Submodule**: E hoʻopili ʻia ka ID i nā Git submodule
-- **Pahu Status**: E ʻike mau i kou ID i kēia manawa
-- **Nā Tooltip Nui**: Nā ʻike kikoʻī e pili ana i ka ID
-- **Nā Kahua Āpau**: Hana ma macOS, Linux, a me Windows
-- **Nā ʻŌlelo He Nui**: Kākoʻo i 17 ʻōlelo
-
-## 🚀 No ke aha kēia Extension?
+## 🎯 No ke aha kēia Extension?
 
 ʻOiai he nui nā mea hoʻololi ID Git, hoʻoponopono ʻo **Git ID Switcher** i nā pilikia paʻakikī:
 
 1. **Pilikia Submodule**: I ka hana ʻana me nā repository me nā submodule, pono e hoʻonohonoho lima i ka `git config user.name` no *kēlā me kēia* submodule. Hoʻoponopono kēia extension i kēia pilikia ma ka hoʻopili ʻana i ka ID i nā submodule āpau.
 2. **SSH & GPG**: ʻAʻole wale e hoʻololi i ka inoa; e hoʻololi i nā kī SSH ma ka agent a hoʻonohonoho i ke kākau inoa GPG.
+
+## Nā Hiʻohiʻona (Features)
+
+- **Kākoʻo Submodule**: E hoʻopili ʻia ka ID i nā Git submodule
+- **Hoʻoponopono Kī SSH**: E hoʻololi ʻia nā kī SSH ma ka ssh-agent
+- **Kākoʻo GPG**: E hoʻonohonoho i ke kī GPG no ke kākau inoa commit (koho)
+- **Hoʻololi ID me ke Kaomi Hoʻokahi**: E hoʻololi i ka Git user.name a me user.email me ka wikiwiki
+- **Pahu Status**: E ʻike mau i kou ID i kēia manawa
+- **Nā Tooltip Nui**: Nā ʻike kikoʻī e pili ana i ka ID
+- **Nā Kahua Āpau**: Hana ma macOS, Linux, a me Windows
+- **Nā ʻŌlelo He Nui**: Kākoʻo i 17 ʻōlelo
 
 ## 🌏 Ka Manaʻo e Pili ana i nā ʻŌlelo He Nui
 
@@ -326,6 +326,12 @@ Palapala: ʻAʻohe SSH i ka ID hope (`kūʻokoʻa`)—hoʻololi wale i ka Git co
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Hoʻopili i ka ID i nā Git submodule            |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | Hohonu nui loa no nā submodule nested (1-5)    |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Kākau i ka emoji icon i ka Git config `user.name` |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | Hoʻohana i ka logging i faila                  |
+| `gitIdSwitcher.logging.filePath`    | `""`       | Ala faila log pilikino                         |
+| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | Nui loa o ka faila log (bytes)                 |
+| `gitIdSwitcher.logging.maxFiles`    | `3`        | Helu o nā faila log e mālama                   |
+| `gitIdSwitcher.logging.level`       | `"info"`   | Pae logging (debug/info/warn/error)            |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | Manawa palena no nā kauoha waho (ms)           |
 
 #### E Pili ana i `includeIconInGitConfig`
 

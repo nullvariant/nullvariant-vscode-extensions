@@ -24,25 +24,25 @@
 
 <br>
 
-<img src="demo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-eo.png" width="600" alt="Demo">
 
-## Funkcioj
-
-- **Unu-klaka Identeco-Ŝanĝo**: Ŝanĝu vian Git user.name kaj user.email tuj
-- **SSH-Ŝlosila Administrado**: Aŭtomate ŝanĝu SSH-ŝlosilojn en ssh-agent
-- **GPG-Subskriba Subteno**: Agordu vian GPG-ŝlosilon por commit-subskribo (laŭvola)
-- **Submodula Subteno**: Aŭtomate disvastigu vian identecon al Git-submoduloj
-- **Statusbreto-Integriĝo**: Ĉiam vidu vian nunan identecon per unu rigardo
-- **Riĉaj Konsiletoj**: Detalaj identeco-informoj kun priskribo kaj SSH-gastigo
-- **Plurplatforma**: Funkcias sur macOS, Linux, kaj Windows
-- **Lokalizita**: Subtenas 17 lingvojn
-
-## 🚀 Kial Ĉi Tiu Etendo?
+## 🎯 Kial Ĉi Tiu Etendo?
 
 Kvankam multaj Git-identeco-ŝanĝiloj ekzistas, **Git ID Switcher** solvas la kompleksajn problemojn kiujn aliaj ignoras:
 
 1. **Submodula Koŝmaro**: Laborante kun deponejoj havantaj submodulojn, oni kutime devas mane agordi `git config user.name` por *ĉiu* submodulo. Ĉi tiu etendo traktas ĝin elegante, rekursie aplikante vian identecon al ĉiuj aktivaj submoduloj.
 2. **SSH & GPG Traktado**: Ĝi ne nur ŝanĝas vian nomon; ĝi interŝanĝas viajn SSH-ŝlosilojn en la agento kaj agordas GPG-subskribon, por ke vi neniam faru commit kun malĝusta subskribo.
+
+## Funkcioj
+
+- **Submodula Subteno**: Aŭtomate disvastigu vian identecon al Git-submoduloj
+- **SSH-Ŝlosila Administrado**: Aŭtomate ŝanĝu SSH-ŝlosilojn en ssh-agent
+- **GPG-Subskriba Subteno**: Agordu vian GPG-ŝlosilon por commit-subskribo (laŭvola)
+- **Unu-klaka Identeco-Ŝanĝo**: Ŝanĝu vian Git user.name kaj user.email tuj
+- **Statusbreto-Integriĝo**: Ĉiam vidu vian nunan identecon per unu rigardo
+- **Riĉaj Konsiletoj**: Detalaj identeco-informoj kun priskribo kaj SSH-gastigo
+- **Plurplatforma**: Funkcias sur macOS, Linux, kaj Windows
+- **Lokalizita**: Subtenas 17 lingvojn
 
 ## 🌏 Noto pri Plurlingva Subteno
 
@@ -309,6 +309,12 @@ Noto: La lasta identeco (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-ag
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Apliku identecon al Git-submoduloj             |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | Maks. profundeco por nestitaj submoduloj (1-5) |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Skribu emoji-ikonon al Git-agordo `user.name`  |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | Ebligi protokoladon al dosiero                 |
+| `gitIdSwitcher.logging.filePath`    | `""`       | Persona protokol-dosiera vojo                  |
+| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | Maks. protokol-dosiera grandeco (bajtoj)       |
+| `gitIdSwitcher.logging.maxFiles`    | `3`        | Nombro de protokol-dosieroj por konservi       |
+| `gitIdSwitcher.logging.level`       | `"info"`   | Protokolado-nivelo (debug/info/warn/error)     |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | Tempolimo por eksteraj komandoj (ms)           |
 
 #### Pri `includeIconInGitConfig`
 

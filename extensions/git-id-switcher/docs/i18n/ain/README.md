@@ -41,25 +41,25 @@
 
 <br>
 
-<img src="demo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo-ain.png" width="600" alt="Demo">
 
-## ピㇼカ ウタㇻ (Features / 機能)
-
-- **シネㇷ゚ クリㇰ オロワ ID ウコイタㇰ**: Git user.name ウン user.email ホㇱキノ エトゥㇾ
-- **SSH キー ウコイタㇰ**: ssh-agent オロワ SSH キー ウコイタㇰ
-- **GPG サイン**: commit サイン GPG キー (オプション)
-- **Submodule**: Git submodule オロワノ ID ウコイタㇰ
-- **ステータスバー**: エネアン ID エヌカㇻ
-- **ツールチップ**: ID ウタㇻ オロワ
-- **macOS, Linux, Windows**: オㇿ ケウトゥㇺ
-- **17 イタㇰ**: ウコイタㇰ ウタㇻ
-
-## 🚀 ネーン クス タン Extension?
+## 🎯 ネーン クス タン Extension?
 
 Git ID ウコイタㇰ Extension ポㇿ アン、**Git ID Switcher** ウタㇻ オㇿケ ピㇼカノ:
 
 1. **Submodule**: submodule アン repository オロワ、シネㇷ゚ シネㇷ゚ `git config user.name` エキ クス ネ。タン extension オロワ submodule オㇿ ID ウコイタㇰ。
 2. **SSH & GPG**: レー エトゥㇾ アイヌ、SSH キー ウン GPG サイン エキ。
+
+## ピㇼカ ウタㇻ (Features / 機能)
+
+- **Submodule**: Git submodule オロワノ ID ウコイタㇰ
+- **SSH キー ウコイタㇰ**: ssh-agent オロワ SSH キー ウコイタㇰ
+- **GPG サイン**: commit サイン GPG キー (オプション)
+- **シネㇷ゚ クリㇰ オロワ ID ウコイタㇰ**: Git user.name ウン user.email ホㇱキノ エトゥㇾ
+- **ステータスバー**: エネアン ID エヌカㇻ
+- **ツールチップ**: ID ウタㇻ オロワ
+- **macOS, Linux, Windows**: オㇿ ケウトゥㇺ
+- **17 イタㇰ**: ウコイタㇰ ウタㇻ
 
 ## 🌏 イタㇰ ウタㇻ オロワ
 
@@ -326,6 +326,12 @@ Host bitbucket.org
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Git submodule ID ウコイタㇰ                    |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | ネスト submodule 深さ (1-5)                    |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | 絵文字 icon Git config `user.name` オロワ      |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | 監査ログ ファイル オロワ（ID ウコイタㇰ、SSH 操作 等） |
+| `gitIdSwitcher.logging.filePath` | `""` | ログファイル パス（例：`~/.git-id-switcher/security.log`）。空 = デフォルト |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | ローテーション前 最大ファイルサイズ（バイト、1MB-100MB） |
+| `gitIdSwitcher.logging.maxFiles` | `5` | 保持 ローテーションファイル 最大数（1-20） |
+| `gitIdSwitcher.logging.level` | `"INFO"` | ログレベル：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。選択レベル以上 記録 |
+| `gitIdSwitcher.commandTimeouts` | `{}` | コマンド タイムアウト（ミリ秒、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig` オロワ
 
