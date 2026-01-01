@@ -21,23 +21,23 @@
 
 <img src="https://assets.nullvariant.com/git-id-switcher/demo-ja.png" width="600" alt="デモ">
 
-## 機能
-
-- **ワンクリックでプロフィール切り替え**: Git user.nameとuser.emailを瞬時に変更
-- **SSH鍵管理**: ssh-agentのSSH鍵を自動的に切り替え
-- **GPG署名対応**: コミット署名用のGPG鍵を設定（オプション）
-- **サブモジュール対応**: Gitサブモジュールにも自動的にプロフィールを伝播
-- **ステータスバー統合**: 現在のプロフィールを常に一目で確認
-- **リッチなツールチップ**: 説明やSSHホストを含む詳細なプロフィール情報
-- **クロスプラットフォーム**: macOS、Linux、Windowsで動作
-- **多言語対応**: 17言語をサポート
-
-## 🚀 この拡張機能を作った理由
+## 🎯 なぜ Git ID Switcher？
 
 Gitプロフィール切り替えツールは数多く存在しますが、**Git ID Switcher**は他のツールが見落としがちな複雑な問題を解決します：
 
 1. **サブモジュールの悩み**: サブモジュールを持つリポジトリ（例：Hugoテーマ、ベンダーライブラリ）で作業する際、通常は*各*サブモジュールに対して`git config user.name`を手動で設定する必要があります。この拡張機能は、すべてのアクティブなサブモジュールに再帰的にプロフィールを適用することで、これをエレガントに解決します。
 2. **SSH & GPGの処理**: 単に名前を変更するだけでなく、ssh-agent内のSSH鍵を入れ替え、GPG署名を設定するため、間違った署名でコミットすることを防ぎます。
+
+## 機能
+
+- **サブモジュール対応**: Gitサブモジュールにも自動的にプロフィールを伝播
+- **SSH鍵管理**: ssh-agentのSSH鍵を自動的に切り替え
+- **GPG署名対応**: コミット署名用のGPG鍵を設定（オプション）
+- **ワンクリックでプロフィール切り替え**: Git user.nameとuser.emailを瞬時に変更
+- **ステータスバー統合**: 現在のプロフィールを常に一目で確認
+- **リッチなツールチップ**: 説明やSSHホストを含む詳細なプロフィール情報
+- **クロスプラットフォーム**: macOS、Linux、Windowsで動作
+- **多言語対応**: 17言語をサポート
 
 ## 🌏 多言語への想い
 
@@ -306,6 +306,12 @@ Host bitbucket.org
 | `gitIdSwitcher.applyToSubmodules` | `true`     | Gitサブモジュールにプロフィールを伝播        |
 | `gitIdSwitcher.submoduleDepth`    | `1`        | ネストされたサブモジュール設定の最大深度（1-5） |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | アイコン絵文字をGit configの`user.name`に含めるか |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | 監査ログをファイルに保存する（ID切り替え、SSH鍵操作などを記録） |
+| `gitIdSwitcher.logging.filePath` | `""` | ログファイルのパス（例：`~/.git-id-switcher/security.log`）。空文字列の場合はデフォルトパスを使用 |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | ローテーション前の最大ファイルサイズ（バイト単位、1MB-100MB） |
+| `gitIdSwitcher.logging.maxFiles` | `5` | 保持するローテーションファイルの最大数（1-20） |
+| `gitIdSwitcher.logging.level` | `"INFO"` | ログの詳細度（`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`）。選択したレベル以上を記録 |
+| `gitIdSwitcher.commandTimeouts` | `{}` | コマンドごとのカスタムタイムアウト値（ミリ秒単位、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig` について
 
