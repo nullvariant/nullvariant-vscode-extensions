@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.14] - 2026-01-01
+
+### Changed
+
+- **README Structure Improvements** (JA, EN): Improved first-view appeal on marketplace/Open VSX
+  - Moved "Why Git ID Switcher?" section before "Features" for immediate differentiation
+  - Reordered Features list: Submodule Support → SSH Key Management → GPG Signing → general features
+  - Header renamed from "🚀 Why this extension?" to "🎯 Why Git ID Switcher?"
+- **README Documentation** (JA, EN): Added 6 missing configuration items to Global Settings table
+  - `logging.fileEnabled`: Enable audit logging to file
+  - `logging.filePath`: Log file path with example
+  - `logging.maxFileSize`: Max file size before rotation (bytes, 1MB-100MB)
+  - `logging.maxFiles`: Max rotated log files to keep (1-20)
+  - `logging.level`: Log verbosity with threshold-based recording
+  - `commandTimeouts`: Custom timeout per command with example
+- **Identity Properties Table** (EN): Added icon example `"🏠"` for parity with Japanese version
+
 ## [0.10.13] - 2026-01-01
 
 ### Changed
