@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.7] - 2025-01-01
+
+### Fixed
+
+- **Japanese Localization**: Add icon examples to markdown description in settings
+  - `config.identities.markdown`: Added "(例: 🏠, 💼)" to icon field description
+
 ## [0.10.6] - 2025-01-01
 
 ### Changed
