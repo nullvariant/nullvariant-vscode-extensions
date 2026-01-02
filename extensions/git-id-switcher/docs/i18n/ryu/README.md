@@ -328,12 +328,12 @@ Host bitbucket.org
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Gitサブモジュールんかいも適用                  |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | ネストしたサブモジュールぬ最大深度（1-5）      |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | 絵文字アイコンばGit config `user.name`んかい書くん |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | ファイルんかいログ出力有効化                   |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | 監査ログファイル出力有効化                     |
 | `gitIdSwitcher.logging.filePath`    | `""`       | カスタムログファイルパス                       |
-| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | ログファイルぬ最大サイズ（バイト）             |
-| `gitIdSwitcher.logging.maxFiles`    | `3`        | 保持すーるログファイル数                       |
-| `gitIdSwitcher.logging.level`       | `"info"`   | ログレベル（debug/info/warn/error）            |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | 外部コマンドぬタイムアウト（ms）               |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | ローテーション前ぬ最大ファイルサイズ（バイト、1MB-100MB） |
+| `gitIdSwitcher.logging.maxFiles`    | `5`        | 保持すーるログファイル数（1-20）               |
+| `gitIdSwitcher.logging.level`       | `"INFO"`   | ログレベル（DEBUG/INFO/WARN/ERROR/SECURITY）   |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | 外部コマンドぬタイムアウト（ms、1秒-5分）      |
 
 #### `includeIconInGitConfig`について
 

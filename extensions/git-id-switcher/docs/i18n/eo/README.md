@@ -309,12 +309,12 @@ Noto: La lasta identeco (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-ag
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Apliku identecon al Git-submoduloj             |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | Maks. profundeco por nestitaj submoduloj (1-5) |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Skribu emoji-ikonon al Git-agordo `user.name`  |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | Ebligi protokoladon al dosiero                 |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | Ebligi protokoladon al dosiero por revizio     |
 | `gitIdSwitcher.logging.filePath`    | `""`       | Persona protokol-dosiera vojo                  |
-| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | Maks. protokol-dosiera grandeco (bajtoj)       |
-| `gitIdSwitcher.logging.maxFiles`    | `3`        | Nombro de protokol-dosieroj por konservi       |
-| `gitIdSwitcher.logging.level`       | `"info"`   | Protokolado-nivelo (debug/info/warn/error)     |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | Tempolimo por eksteraj komandoj (ms)           |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Maks. dosiera grandeco antaŭ rotacio (bajtoj, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles`    | `5`        | Nombro de protokol-dosieroj por konservi (1-20) |
+| `gitIdSwitcher.logging.level`       | `"INFO"`   | Protokolado-nivelo (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | Tempolimo por eksteraj komandoj (ms, 1s-5min)  |
 
 #### Pri `includeIconInGitConfig`
 

@@ -308,12 +308,12 @@ Note: Last ID (`spy`) no SSH—Git config only change. Same GitLab account diffe
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Git submodules ID apply                        |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | Nested submodules max depth (1-5)              |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Emoji icon Git config `user.name` write        |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | File logging enable                            |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | File logging enable (audit)                    |
 | `gitIdSwitcher.logging.filePath`    | `""`       | Custom log file path                           |
-| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | Log file max size (bytes)                      |
-| `gitIdSwitcher.logging.maxFiles`    | `3`        | Log files keep count                           |
-| `gitIdSwitcher.logging.level`       | `"info"`   | Logging level (debug/info/warn/error)          |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | External commands timeout (ms)                 |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Log file max size before rotation (bytes, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles`    | `5`        | Log files keep count (1-20)                    |
+| `gitIdSwitcher.logging.level`       | `"INFO"`   | Logging level (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | External commands timeout (ms, 1s-5min)        |
 
 #### `includeIconInGitConfig` About
 

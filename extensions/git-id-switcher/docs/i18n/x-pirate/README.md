@@ -315,14 +315,16 @@ Note: The last identity (`navy-spy`) has no SSH. Ye can use this fer switchin' j
 | `gitIdSwitcher.identities` | `[]` | List of identities in yer crew |
 | `gitIdSwitcher.defaultIdentity` | `""` | Default identity ID |
 | `gitIdSwitcher.autoSwitchSshKey` | `true` | Automatically switch SSH keys |
+| `gitIdSwitcher.showNotifications` | `true` | Show notification when switchin' identities |
 | `gitIdSwitcher.applyToSubmodules` | `true` | Apply identity to submodules |
+| `gitIdSwitcher.submoduleDepth` | `1` | Max depth fer nested submodules (1-5) |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Include emoji in Git config (see below) |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | Enable loggin' to file |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Enable loggin' to file fer audit |
 | `gitIdSwitcher.logging.filePath` | `""` | Custom log file path |
-| `gitIdSwitcher.logging.maxFileSize` | `5242880` | Max log file size (bytes) |
-| `gitIdSwitcher.logging.maxFiles` | `3` | Number of log files to keep |
-| `gitIdSwitcher.logging.level` | `"info"` | Loggin' level (debug/info/warn/error) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms) |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max log file size before rotation (bytes, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | Number of log files to keep (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | Loggin' level (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms, 1s-5min) |
 
 ---
 

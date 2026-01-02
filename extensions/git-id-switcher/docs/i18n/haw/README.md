@@ -326,12 +326,12 @@ Palapala: ʻAʻohe SSH i ka ID hope (`kūʻokoʻa`)—hoʻololi wale i ka Git co
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | Hoʻopili i ka ID i nā Git submodule            |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | Hohonu nui loa no nā submodule nested (1-5)    |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Kākau i ka emoji icon i ka Git config `user.name` |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | Hoʻohana i ka logging i faila                  |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | Hoʻohana i ka logging i faila no ka audit      |
 | `gitIdSwitcher.logging.filePath`    | `""`       | Ala faila log pilikino                         |
-| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | Nui loa o ka faila log (bytes)                 |
-| `gitIdSwitcher.logging.maxFiles`    | `3`        | Helu o nā faila log e mālama                   |
-| `gitIdSwitcher.logging.level`       | `"info"`   | Pae logging (debug/info/warn/error)            |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | Manawa palena no nā kauoha waho (ms)           |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Nui loa o ka faila log ma mua o ka rotation (bytes, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles`    | `5`        | Helu o nā faila log e mālama (1-20)            |
+| `gitIdSwitcher.logging.level`       | `"INFO"`   | Pae logging (DEBUG/INFO/WARN/ERROR/SECURITY)   |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | Manawa palena no nā kauoha waho (ms, 1s-5min)  |
 
 #### E Pili ana i `includeIconInGitConfig`
 

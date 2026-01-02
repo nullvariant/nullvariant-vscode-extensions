@@ -308,12 +308,12 @@ sona: pini ID (`jan-musi`) li jo ala e SSH—Git config taso li ante. GitLab acc
 | `gitIdSwitcher.applyToSubmodules`   | `true`     | submodule li kama jo e nimi                    |
 | `gitIdSwitcher.submoduleDepth`      | `1`        | submodule suli (1-5)                           |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | sitelen li tawa Git config `user.name`         |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | file logging li open                           |
+| `gitIdSwitcher.logging.fileEnabled` | `false`    | file logging li open (tawa lukin)              |
 | `gitIdSwitcher.logging.filePath`    | `""`       | nasin file log                                 |
-| `gitIdSwitcher.logging.maxFileSize` | `5242880`  | file log suli (bytes)                          |
-| `gitIdSwitcher.logging.maxFiles`    | `3`        | file log nanpa                                 |
-| `gitIdSwitcher.logging.level`       | `"info"`   | logging suli (debug/info/warn/error)           |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | ilo weka tenpo (ms)                            |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | file log suli (bytes, 1MB-100MB)               |
+| `gitIdSwitcher.logging.maxFiles`    | `5`        | file log nanpa (1-20)                          |
+| `gitIdSwitcher.logging.level`       | `"INFO"`   | logging suli (DEBUG/INFO/WARN/ERROR/SECURITY)  |
+| `gitIdSwitcher.commandTimeouts`     | `{}`       | ilo weka tenpo (ms, 1s-5min)                   |
 
 #### sona `includeIconInGitConfig`
 

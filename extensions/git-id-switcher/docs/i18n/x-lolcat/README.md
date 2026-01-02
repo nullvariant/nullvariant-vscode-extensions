@@ -326,14 +326,16 @@ NOTE: TEH LAST IDENTITY (`grumpy-cat`) HAZ NO SSH. U CAN USE DIS 4 SWITCHIN JUSS
 | `gitIdSwitcher.identities` | `[]` | LIST OF IDENTITIEZ |
 | `gitIdSwitcher.defaultIdentity` | `""` | DEFALT IDENTITY ID |
 | `gitIdSwitcher.autoSwitchSshKey` | `true` | AUTOMAGICALLY SWITCH SSH KEYZ |
+| `gitIdSwitcher.showNotifications` | `true` | SHOW NOTIFICASHUN WEN SWITCHIN |
 | `gitIdSwitcher.applyToSubmodules` | `true` | APPLY IDENTITY 2 SUBMODULEZ |
+| `gitIdSwitcher.submoduleDepth` | `1` | MAX DEPTH 4 NESTED SUBMODULEZ (1-5) |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | INCLUD EMOJI IN GIT CONFIG (C BELOW) |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | ENABL FILE LOGGIN |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | ENABL FILE LOGGIN 4 AUDITIN |
 | `gitIdSwitcher.logging.filePath` | `""` | CUSTOM LOG FILE PATH |
-| `gitIdSwitcher.logging.maxFileSize` | `5242880` | MAX LOG FILE SIEZ (BYTEZ) |
-| `gitIdSwitcher.logging.maxFiles` | `3` | NUMBR OF LOG FILEZ 2 KEEP |
-| `gitIdSwitcher.logging.level` | `"info"` | LOGGIN LEVL (debug/info/warn/error) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | EXTERNL COMMAND TIEMOUTZ (MS) |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | MAX LOG FILE SIEZ B4 ROTASHUN (BYTEZ, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | NUMBR OF LOG FILEZ 2 KEEP (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | LOGGIN LEVL (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.commandTimeouts` | `{}` | EXTERNL COMMAND TIEMOUTZ (MS, 1S-5MIN) |
 
 ---
 

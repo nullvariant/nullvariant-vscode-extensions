@@ -319,14 +319,16 @@ Note: The final identity (`romeo`) hath no SSH. Thou canst use this for switchin
 | `gitIdSwitcher.identities` | `[]` | The list of identities in thy troupe |
 | `gitIdSwitcher.defaultIdentity` | `""` | Default identity ID |
 | `gitIdSwitcher.autoSwitchSshKey` | `true` | Automatically switch SSH keys |
+| `gitIdSwitcher.showNotifications` | `true` | Display notification upon identity change |
 | `gitIdSwitcher.applyToSubmodules` | `true` | Apply identity unto submodules |
+| `gitIdSwitcher.submoduleDepth` | `1` | Maximum depth for nested submodules (1-5) |
 | `gitIdSwitcher.includeIconInGitConfig` | `false` | Include emoji in Git config (see below) |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | Enable logging unto file |
+| `gitIdSwitcher.logging.fileEnabled` | `false` | Enable logging unto file for audit |
 | `gitIdSwitcher.logging.filePath` | `""` | Custom log file path |
-| `gitIdSwitcher.logging.maxFileSize` | `5242880` | Max log file size (bytes) |
-| `gitIdSwitcher.logging.maxFiles` | `3` | Number of log files to keep |
-| `gitIdSwitcher.logging.level` | `"info"` | Logging level (debug/info/warn/error) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms) |
+| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max log file size ere rotation (bytes, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles` | `5` | Number of log files to preserve (1-20) |
+| `gitIdSwitcher.logging.level` | `"INFO"` | Logging level (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms, 1s-5min) |
 
 ---
 
