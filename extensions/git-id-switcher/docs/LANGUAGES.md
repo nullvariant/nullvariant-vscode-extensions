@@ -8,59 +8,33 @@ This extension values linguistic diversity. We support not only major languages 
 
 ---
 
-## Tier 1: VSCode UI Languages
+## VSCode UI Languages
 
-Full VSCode UI localization (commands, settings, notifications).
+Full VSCode UI localization (commands, settings, notifications) and README documentation.
 
-| Emoji | Code | Language | Native Name | Status |
-|-------|------|----------|-------------|--------|
-| 🇺🇸 | en | English | English | ✅ Base |
-| 🇯🇵 | ja | Japanese | 日本語 | ✅ Complete |
-| 🇨🇳 | zh-CN | Chinese (Simplified) | 简体中文 | ✅ Complete |
-| 🇹🇼 | zh-TW | Chinese (Traditional) | 繁體中文 | ✅ Complete |
-| 🇰🇷 | ko | Korean | 한국어 | ✅ Complete |
-| 🇩🇪 | de | German | Deutsch | ✅ Complete |
-| 🇫🇷 | fr | French | Français | ✅ Complete |
-| 🇪🇸 | es | Spanish | Español | ✅ Complete |
-| 🇧🇷 | pt-BR | Portuguese (Brazil) | Português | ✅ Complete |
-| 🇮🇹 | it | Italian | Italiano | ✅ Complete |
-| 🇷🇺 | ru | Russian | Русский | ✅ Complete |
-| 🇵🇱 | pl | Polish | Polski | ✅ Complete |
-| 🇹🇷 | tr | Turkish | Türkçe | ✅ Complete |
-| 🇨🇿 | cs | Czech | Čeština | ✅ Complete |
-| 🇭🇺 | hu | Hungarian | Magyar | ✅ Complete |
-| 🇧🇬 | bg | Bulgarian | Български | ✅ Complete |
-| 🇺🇦 | uk | Ukrainian | Українська | ✅ Complete |
+| Emoji | Code | Language | Native Name | UI | README |
+|-------|------|----------|-------------|------|--------|
+| 🇺🇸 | en | English | English | ✅ | [README.md](../README.md) |
+| 🇯🇵 | ja | Japanese | 日本語 | ✅ | [README.md](i18n/ja/README.md) |
+| 🇨🇳 | zh-CN | Chinese (Simplified) | 简体中文 | ✅ | [README.md](i18n/zh-CN/README.md) |
+| 🇹🇼 | zh-TW | Chinese (Traditional) | 繁體中文 | ✅ | [README.md](i18n/zh-TW/README.md) |
+| 🇰🇷 | ko | Korean | 한국어 | ✅ | [README.md](i18n/ko/README.md) |
+| 🇩🇪 | de | German | Deutsch | ✅ | [README.md](i18n/de/README.md) |
+| 🇫🇷 | fr | French | Français | ✅ | [README.md](i18n/fr/README.md) |
+| 🇪🇸 | es | Spanish | Español | ✅ | [README.md](i18n/es/README.md) |
+| 🇧🇷 | pt-BR | Portuguese (Brazil) | Português | ✅ | [README.md](i18n/pt-BR/README.md) |
+| 🇮🇹 | it | Italian | Italiano | ✅ | [README.md](i18n/it/README.md) |
+| 🇷🇺 | ru | Russian | Русский | ✅ | [README.md](i18n/ru/README.md) |
+| 🇵🇱 | pl | Polish | Polski | ✅ | [README.md](i18n/pl/README.md) |
+| 🇹🇷 | tr | Turkish | Türkçe | ✅ | [README.md](i18n/tr/README.md) |
+| 🇨🇿 | cs | Czech | Čeština | ✅ | [README.md](i18n/cs/README.md) |
+| 🇭🇺 | hu | Hungarian | Magyar | ✅ | [README.md](i18n/hu/README.md) |
+| 🇧🇬 | bg | Bulgarian | Български | ✅ | [README.md](i18n/bg/README.md) |
+| 🇺🇦 | uk | Ukrainian | Українська | ✅ | [README.md](i18n/uk/README.md) |
 
 ---
 
-## Tier 2: README Translations
-
-### Major Languages (VSCode Supported)
-
-Full README documentation translated.
-
-| Emoji | Code | Language | Native Name | README |
-|-------|------|----------|-------------|--------|
-| 🇺🇸 | en | English | English | [README.md](../README.md) |
-| 🇯🇵 | ja | Japanese | 日本語 | [README.md](i18n/ja/README.md) |
-| 🇨🇳 | zh-CN | Chinese (Simplified) | 简体中文 | [README.md](i18n/zh-CN/README.md) |
-| 🇹🇼 | zh-TW | Chinese (Traditional) | 繁體中文 | [README.md](i18n/zh-TW/README.md) |
-| 🇰🇷 | ko | Korean | 한국어 | [README.md](i18n/ko/README.md) |
-| 🇩🇪 | de | German | Deutsch | [README.md](i18n/de/README.md) |
-| 🇫🇷 | fr | French | Français | [README.md](i18n/fr/README.md) |
-| 🇪🇸 | es | Spanish | Español | [README.md](i18n/es/README.md) |
-| 🇧🇷 | pt-BR | Portuguese (Brazil) | Português | [README.md](i18n/pt-BR/README.md) |
-| 🇮🇹 | it | Italian | Italiano | [README.md](i18n/it/README.md) |
-| 🇷🇺 | ru | Russian | Русский | [README.md](i18n/ru/README.md) |
-| 🇵🇱 | pl | Polish | Polski | [README.md](i18n/pl/README.md) |
-| 🇹🇷 | tr | Turkish | Türkçe | [README.md](i18n/tr/README.md) |
-| 🇨🇿 | cs | Czech | Čeština | [README.md](i18n/cs/README.md) |
-| 🇭🇺 | hu | Hungarian | Magyar | [README.md](i18n/hu/README.md) |
-| 🇧🇬 | bg | Bulgarian | Български | [README.md](i18n/bg/README.md) |
-| 🇺🇦 | uk | Ukrainian | Українська | [README.md](i18n/uk/README.md) |
-
-### Minority Languages 🌏
+## Minority Languages 🌏
 
 > **Why only three languages?**
 >
@@ -72,7 +46,7 @@ Full README documentation translated.
 >
 > - 🌺 **Hawaiian**: I was guided through sacred sites on Maui by a Native Hawaiian. At Honolulu Airport, I learned that Hawaiian is announced before English—a sign of respect for the local people.
 > - 🐻 **Ainu**: I recently visited Hokkaido and saw the Ainu exhibitions at the Former Government Office.
-> - 🌴 **Ryukyuan**: I visit Okinawa frequently as a tourist.
+> - 🐉 **Ryukyuan**: I visit Okinawa frequently as a tourist.
 >
 > If you have a connection to an endangered language, please consider contributing a translation.
 > Your small connection matters too.
@@ -80,38 +54,39 @@ Full README documentation translated.
 > ⚠️ These translations are experimental and may contain errors.
 > Native speakers are warmly invited to submit corrections via PR.
 
-| Emoji | Code | Language | Native Name | README |
-|-------|------|----------|-------------|--------|
-| 🌺 | haw | Hawaiian | ʻŌlelo Hawaiʻi | [README.md](i18n/haw/README.md) |
-| 🐻 | ain | Ainu | アイヌ イタㇰ | [README.md](i18n/ain/README.md) |
-| 🌴 | ryu | Ryukyuan | 島言葉 | [README.md](i18n/ryu/README.md) |
+| Emoji | Code | Language | Native Name | Description | README |
+|-------|------|----------|-------------|-------------|--------|
+| 🌺 | haw | Hawaiian | ʻŌlelo Hawaiʻi | Guided through sacred sites on Maui | [README.md](i18n/haw/README.md) |
+| 🐻 | ain | Ainu | アイヌ イタㇰ | Saw Ainu exhibitions in Hokkaido | [README.md](i18n/ain/README.md) |
+| 🐉 | ryu | Ryukyuan | 島言葉 | Frequent visitor to Okinawa | [README.md](i18n/ryu/README.md) |
 
-### Joke Languages 🎭
+---
 
-| Emoji | Code | Language | Description | README |
-|-------|------|----------|-------------|--------|
-| 🏴‍☠️ | x-pirate | Pirate | Arrr! Sailor slang | [README.md](i18n/x-pirate/README.md) |
-| 🐱 | x-lolcat | LOLcat | I CAN HAZ CHEEZBURGER? | [README.md](i18n/x-lolcat/README.md) |
-| 🎭 | x-shakespeare | Shakespearean | Wherefore art thou? | [README.md](i18n/x-shakespeare/README.md) |
-| 🖖 | tlh | Klingon | tlhIngan Hol | [README.md](i18n/tlh/README.md) |
-| ✨ | tok | Toki Pona | 120-word language | [README.md](i18n/tok/README.md) |
+## Joke Languages 🎭
 
-### Special 🌍
+| Emoji | Code | Language | Native Name | Description | README |
+|-------|------|----------|-------------|-------------|--------|
+| 🏴‍☠️ | x-pirate | Pirate | - | Arrr! Sailor slang | [README.md](i18n/x-pirate/README.md) |
+| 🐱 | x-lolcat | LOLcat | - | I CAN HAZ CHEEZBURGER? | [README.md](i18n/x-lolcat/README.md) |
+| 🎭 | x-shakespeare | Shakespearean | - | Wherefore art thou? | [README.md](i18n/x-shakespeare/README.md) |
+| 🖖 | tlh | Klingon | tlhIngan Hol | Constructed for Star Trek | [README.md](i18n/tlh/README.md) |
+| ✨ | tok | Toki Pona | toki pona | Minimalist 120-word language | [README.md](i18n/tok/README.md) |
 
-| Emoji | Code | Language | Native Name | README |
-|-------|------|----------|-------------|--------|
-| 🌍 | eo | Esperanto | Esperanto | [README.md](i18n/eo/README.md) |
+---
+
+## Special 🌍
+
+| Emoji | Code | Language | Native Name | Description | README |
+|-------|------|----------|-------------|-------------|--------|
+| 🌍 | eo | Esperanto | Esperanto | Constructed international auxiliary language | [README.md](i18n/eo/README.md) |
 
 ---
 
 ## Status Legend
 
-| Status | Meaning |
+| Symbol | Meaning |
 |--------|---------|
-| ✅ Base | Base language (English) |
-| ✅ Complete | Translation complete and reviewed |
-| 🔄 In Progress | Translation in progress |
-| 📝 Planned | Translation planned |
+| ✅ | VSCode UI localization supported |
 
 ---
 
