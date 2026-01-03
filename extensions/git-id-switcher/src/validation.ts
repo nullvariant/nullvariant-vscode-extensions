@@ -181,6 +181,7 @@ export function validateIdentity(identity: Identity): ValidationResult {
   // Text field validation (dangerous patterns)
   validateField(identity.name, 'name', errors);
   validateField(identity.email, 'email', errors);
+  validateField(identity.service, 'service', errors);
   validateField(identity.description, 'description', errors);
   validateField(identity.icon, 'icon', errors);
 
@@ -193,6 +194,9 @@ export function validateIdentity(identity: Identity): ValidationResult {
   // Length limits
   if (identity.name && identity.name.length > 256) {
     errors.push('name: exceeds maximum length (256 characters)');
+  }
+  if (identity.service && identity.service.length > 64) {
+    errors.push('service: exceeds maximum length (64 characters)');
   }
   if (identity.description && identity.description.length > 500) {
     errors.push('description: exceeds maximum length (500 characters)');

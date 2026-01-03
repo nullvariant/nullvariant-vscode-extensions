@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.18] - 2026-01-03
+
+### Fixed
+
+- **i18n Validation Bug**: Fixed `service` and `description` fields rejecting Unicode characters (e.g., Japanese, Chinese)
+  - Changed validation pattern from ASCII-only to Unicode-safe while still blocking dangerous shell metacharacters
+  - Added missing `service` field validation in secondary validation layer
+  - This bug prevented identities with non-ASCII service names (e.g., "GitHub 会社用") from being loaded
+
+### Security
+
+- **Validation Consistency**: Added missing `service` field length check (64 characters) in validation.ts for defense-in-depth
+
 ## [0.10.17] - 2026-01-03
 
 ### Changed

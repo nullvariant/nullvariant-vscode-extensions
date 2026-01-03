@@ -60,8 +60,9 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     type: 'string',
     description: 'Git hosting service (e.g., GitHub, GitLab, Bitbucket)',
     maxLength: 64,
-    // Alphanumeric, spaces, and common punctuation only
-    pattern: '^[a-zA-Z0-9 ._-]+$',
+    // Allow Unicode (for i18n) but block control characters and shell metacharacters
+    // Same pattern as 'name' field for consistency
+    pattern: '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$',
   },
   email: {
     type: 'string',
@@ -74,6 +75,9 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     type: 'string',
     description: 'Optional description of this identity',
     maxLength: 500,
+    // Allow Unicode (for i18n) but block control characters and shell metacharacters
+    // Same pattern as 'name' field for consistency
+    pattern: '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$',
   },
   sshKeyPath: {
     type: 'string',
