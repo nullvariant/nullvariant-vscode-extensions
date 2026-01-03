@@ -132,6 +132,8 @@ o open e settings (`Cmd+,` / `Ctrl+,`) → o alasa e "Git ID Switcher" → o luk
 2. o kama jo e nimi
 3. pona! nimi sina li ante!
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-tok.png" width="600" alt="Quick Pick">
+
 ### SSH Host Alias
 
 sina kama jo e repo la, o kepeken host pona:

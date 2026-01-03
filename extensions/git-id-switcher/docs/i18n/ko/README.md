@@ -130,6 +130,8 @@ Host github-work
 2. ID를 선택합니다
 3. 완료! Git 설정과 SSH 키가 전환되었습니다.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-ko.png" width="600" alt="Quick Pick">
+
 ### SSH 호스트 별칭 사용
 
 저장소를 클론할 때, ID에 해당하는 호스트를 사용합니다:

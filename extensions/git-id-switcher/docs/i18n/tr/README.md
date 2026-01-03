@@ -130,6 +130,8 @@ Eklenti ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın �
 2. Bir kimlik seçin
 3. Tamam! Git yapılandırması ve SSH anahtarı değiştirildi.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-tr.png" width="600" alt="Quick Pick">
+
 ### SSH Host Takma Adlarını Kullanma
 
 Depoları klonlarken, kimliğinize karşılık gelen hostu kullanın:

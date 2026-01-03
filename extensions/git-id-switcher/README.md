@@ -130,6 +130,8 @@ Open extension settings (`Cmd+,` / `Ctrl+,`) → search "Git ID Switcher" → cl
 2. Select an identity
 3. Done! Git config and SSH key are now switched.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick.png" width="600" alt="Quick Pick">
+
 ### Using SSH Host Aliases
 
 When cloning repos, use the host that corresponds to your identity:

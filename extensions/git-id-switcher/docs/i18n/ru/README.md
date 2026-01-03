@@ -130,6 +130,8 @@ Host github-work
 2. Выберите идентификатор
 3. Готово! Git-конфигурация и SSH-ключ переключены.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-ru.png" width="600" alt="Quick Pick">
+
 ### Использование SSH-алиасов хостов
 
 При клонировании репозиториев используйте хост, соответствующий вашему идентификатору:

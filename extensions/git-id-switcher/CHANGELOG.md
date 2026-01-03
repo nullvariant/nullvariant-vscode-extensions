@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.19] - 2026-01-04
+
+### Changed
+
+- **README Screenshots**: Added Quick Pick screenshots to all 26 README files
+  - Each language now displays localized Quick Pick UI screenshot in "Step 4: Use It" section
+  - Images hosted on CDN: `assets.nullvariant.com/git-id-switcher/quickpick-{lang}.png`
+  - Retina-ready: 1200px source displayed at 600px width for 2x resolution
+
 ## [0.10.18] - 2026-01-03
 
 ### Fixed
@@ -736,7 +745,9 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.17...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.19...HEAD
+[0.10.19]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.18...git-id-switcher-v0.10.19
+[0.10.18]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.17...git-id-switcher-v0.10.18
 [0.10.17]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.16...git-id-switcher-v0.10.17
 [0.10.16]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.15...git-id-switcher-v0.10.16
 [0.10.15]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.14...git-id-switcher-v0.10.15

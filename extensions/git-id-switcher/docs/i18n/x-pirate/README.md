@@ -149,6 +149,8 @@ Open **Extension Settings** and configure yer identities in `gitIdSwitcher.ident
 2. Pick yer identity
 3. Arrr! Yer Git config and SSH keys be switched!
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-x-pirate.png" width="600" alt="Quick Pick">
+
 ---
 
 ## Optional: GPG Signin'

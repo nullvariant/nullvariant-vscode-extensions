@@ -130,6 +130,8 @@ Nyissa meg a bővítmény beállításait (`Cmd+,` / `Ctrl+,`) → keressen rá:
 2. Válasszon azonosítót
 3. Kész! A Git-konfiguráció és az SSH-kulcs váltva lett.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-hu.png" width="600" alt="Quick Pick">
+
 ### SSH host aliasok használata
 
 Tárolók klónozásakor használja az azonosítójának megfelelő hostot:

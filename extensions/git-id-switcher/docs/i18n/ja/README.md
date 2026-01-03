@@ -130,6 +130,8 @@ Host github-work
 2. プロフィールを選択
 3. 完了！Git configとSSH鍵が切り替わりました。
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-ja.png" width="600" alt="Quick Pick">
+
 ### SSHホストエイリアスの使い方
 
 リポジトリをクローンする際、プロフィールに対応したホストを使用します：

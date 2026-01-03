@@ -130,6 +130,8 @@ Host github-work
 2. Изберете самоличност
 3. Готово! Git конфигурацията и SSH ключът са превключени.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-bg.png" width="600" alt="Quick Pick">
+
 ### Използване на SSH хост псевдоними
 
 При клониране на хранилища използвайте хоста съответстващ на вашата самоличност:

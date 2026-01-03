@@ -130,6 +130,8 @@ Apri le impostazioni dell'estensione (`Cmd+,` / `Ctrl+,`) → cerca "Git ID Swit
 2. Seleziona un'identità
 3. Fatto! La configurazione Git e la chiave SSH sono ora cambiate.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-it.png" width="600" alt="Quick Pick">
+
 ### Usare gli alias host SSH
 
 Quando cloni i repository, usa l'host che corrisponde alla tua identità:

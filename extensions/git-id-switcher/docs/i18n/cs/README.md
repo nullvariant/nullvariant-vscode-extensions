@@ -130,6 +130,8 @@ Otevřete nastavení rozšíření (`Cmd+,` / `Ctrl+,`) → hledejte "Git ID Swi
 2. Vyberte identitu
 3. Hotovo! Git konfigurace a SSH klíč jsou přepnuty.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-cs.png" width="600" alt="Quick Pick">
+
 ### Používání SSH host aliasů
 
 Při klonování repozitářů použijte host odpovídající vaší identitě:

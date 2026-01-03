@@ -152,6 +152,8 @@ Host github-work
 2. ID選ぶん
 3. 終わい! Git configとぅSSH鍵切り替わたん。
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-ryu.png" width="600" alt="Quick Pick">
+
 ### SSHホストエイリアスぬ使い方
 
 リポジトリクローンすーる時、IDんかい対応すーるホスト使てぃくぃみそーれー:

@@ -130,6 +130,8 @@ Otwórz ustawienia rozszerzenia (`Cmd+,` / `Ctrl+,`) → wyszukaj "Git ID Switch
 2. Wybierz tożsamość
 3. Gotowe! Konfiguracja Git i klucz SSH zostały przełączone.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-pl.png" width="600" alt="Quick Pick">
+
 ### Używanie aliasów hostów SSH
 
 Podczas klonowania repozytoriów używaj hosta odpowiadającego twojej tożsamości:

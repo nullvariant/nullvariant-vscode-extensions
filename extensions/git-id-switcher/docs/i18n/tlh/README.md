@@ -132,6 +132,8 @@ Extension settings open (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" search → "E
 2. ID select
 3. Qapla'! Git config, SSH keys switched!
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-tlh.png" width="600" alt="Quick Pick">
+
 ### SSH Host Aliases Use
 
 Repositories clone, ID corresponding host use:

@@ -150,6 +150,8 @@ Extension 設定 (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" エヌカㇻ → "se
 2. ID エトゥㇾ
 3. オㇿケ! Git config ウン SSH キー ウコイタㇰ。
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-ain.png" width="600" alt="Quick Pick">
+
 ### SSH Host エイリアス
 
 Repository クローン、ID オロワ Host エキ:

@@ -133,6 +133,8 @@ Malfermu etendo-agordojn (`Cmd+,` / `Ctrl+,`) → Serĉu "Git ID Switcher" → K
 2. Elektu vian identecon
 3. Farite! Via Git-agordo kaj SSH-ŝlosilo estas ŝanĝitaj.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-eo.png" width="600" alt="Quick Pick">
+
 ### Uzi SSH-Gastigajn Kaŝnomojn
 
 Klonante deponejojn, uzu la gastigon kiu respondas al via identeco:

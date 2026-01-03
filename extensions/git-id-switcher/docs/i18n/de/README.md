@@ -130,6 +130,8 @@ Host github-work
 2. Wählen Sie eine Identität
 3. Fertig! Git-Konfiguration und SSH-Schlüssel sind jetzt gewechselt.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-de.png" width="600" alt="Quick Pick">
+
 ### SSH-Host-Aliase verwenden
 
 Verwenden Sie beim Klonen von Repos den Host, der Ihrer Identität entspricht:

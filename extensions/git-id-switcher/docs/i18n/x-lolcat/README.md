@@ -149,6 +149,8 @@ OPEN **EXTENSHUN SETTINGZ** AN CONFIGUR UR IDENTITIEZ IN `gitIdSwitcher.identiti
 2. PIK UR IDENTITY
 3. INVISIBLE IDENTITY SWITCH! U CANT C IT BUT ITS DERE!
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-x-lolcat.png" width="600" alt="Quick Pick">
+
 ---
 
 ## OPSHUNUL: GPG SININ

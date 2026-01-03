@@ -150,6 +150,8 @@ E wehe i nā hoʻonohonoho extension (`Cmd+,` / `Ctrl+,`) → E huli "Git ID Swi
 2. E koho i ka ID
 3. Pau! Ua hoʻololi ʻia ka Git config a me ke kī SSH.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-haw.png" width="600" alt="Quick Pick">
+
 ### E Hoʻohana i nā Inoa Hoʻololi SSH Host
 
 I ka clone ʻana i nā repository, e hoʻohana i ka host e pili ana i kou ID:

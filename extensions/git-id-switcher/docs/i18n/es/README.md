@@ -130,6 +130,8 @@ Abre la configuración de la extensión (`Cmd+,` / `Ctrl+,`) → busca "Git ID S
 2. Selecciona una identidad
 3. ¡Listo! La configuración de Git y la clave SSH ya están cambiadas.
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-es.png" width="600" alt="Quick Pick">
+
 ### Usar alias de host SSH
 
 Al clonar repos, usa el host que corresponde a tu identidad:

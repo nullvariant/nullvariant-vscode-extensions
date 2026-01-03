@@ -130,6 +130,8 @@ Host github-work
 2. 选择一个身份
 3. 完成！Git 配置和 SSH 密钥已切换。
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-zh-CN.png" width="600" alt="Quick Pick">
+
 ### 使用 SSH 主机别名
 
 克隆仓库时，使用与您的身份对应的主机：

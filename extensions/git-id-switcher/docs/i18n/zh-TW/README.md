@@ -130,6 +130,8 @@ Host github-work
 2. 選擇一個身份
 3. 完成！Git 設定和 SSH 金鑰已切換。
 
+<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-zh-TW.png" width="600" alt="Quick Pick">
+
 ### 使用 SSH 主機別名
 
 複製儲存庫時，使用與您的身份對應的主機：
