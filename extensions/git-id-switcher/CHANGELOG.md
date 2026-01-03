@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.16] - 2026-01-03
+
+### Changed
+
+- **README Demo Format**: Changed demo image from GIF to WebP for ~50% smaller file size
+
 ## [0.10.15] - 2026-01-03
 
 ### Changed
@@ -711,7 +717,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.15...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.16...HEAD
+[0.10.16]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.15...git-id-switcher-v0.10.16
 [0.10.15]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.14...git-id-switcher-v0.10.15
 [0.10.14]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.13...git-id-switcher-v0.10.14
 [0.10.13]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.12...git-id-switcher-v0.10.13
