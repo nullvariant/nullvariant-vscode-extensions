@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo.webp" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo.png" width="600" alt="Demo">
 
 ## 🎯 Why Git ID Switcher?
 

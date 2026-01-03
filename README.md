@@ -27,7 +27,7 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo.webp" width="600" alt="Git ID Switcher Demo">
+<img src="https://assets.nullvariant.com/git-id-switcher/demo.png" width="600" alt="Git ID Switcher Demo">
 
 ## Development
 
