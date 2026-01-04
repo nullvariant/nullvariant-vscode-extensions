@@ -122,14 +122,11 @@ function renderMarkdown(raw: string): string {
   let html = sanitizeHtml(raw);
 
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
-  // Language name can contain hyphens (e.g., ssh-config, c++), so use [^\n\r]* instead of \w*
-  // Also handle both \n and \r\n line endings
   const codeBlocks: string[] = [];
   html = html.replace(/```([^\n\r]*)\r?\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
     const index = codeBlocks.length;
-    // Escape HTML in code blocks to show literal code
     codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
-    return `<<CODEBLOCK_${index}>>`;
+    return `\n<<CODEBLOCK_${index}>>\n`;
   });
 
   // Step 3: Extract inline code to placeholders
@@ -140,51 +137,48 @@ function renderMarkdown(raw: string): string {
     return `<<INLINECODE_${index}>>`;
   });
 
-  // Step 4: Horizontal rules (--- or ***)
-  html = html.replace(/^---+\s*$/gm, '<hr>');
-  html = html.replace(/^\*\*\*+\s*$/gm, '<hr>');
-
-  // Step 5: Headings (### before ## before #) - only if not inside HTML
-  // Skip lines that look like they're inside HTML tags
-  html = html.replace(/^### ([^<].*)$/gm, '<h3>$1</h3>');
-  html = html.replace(/^## ([^<].*)$/gm, '<h2>$1</h2>');
-  html = html.replace(/^# ([^<].*)$/gm, '<h1>$1</h1>');
-
-  // Step 6: Bold and Italic (only outside of HTML attributes)
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/(?<![*])\*([^*]+)\*(?![*])/g, '<em>$1</em>');
-
-  // Step 7: Markdown links [text](url) - convert to HTML
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-
-  // Step 8: Ordered lists (1. 2. 3. etc.)
-  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
-
-  // Step 9: Unordered lists (only lines starting with - at the beginning)
-  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-
-  // Step 10: Blockquotes
-  html = html.replace(/^>\s*(.*)$/gm, '<blockquote>$1</blockquote>');
-
-  // Step 11: Markdown tables
-  // Match table header, separator, and body rows
+  // Step 4: Markdown tables (BEFORE other transformations that might break pipe characters)
   html = html.replace(
     /^\|(.+)\|\r?\n\|[-:\s|]+\|\r?\n((?:\|.+\|\r?\n?)+)/gm,
     (_match, headerRow: string, bodyRows: string) => {
-      // Parse header cells
-      const headers = headerRow.split('|').map((cell: string) => cell.trim()).filter((cell: string) => cell);
+      const headers = headerRow.split('|').map((c: string) => c.trim()).filter((c: string) => c);
       const headerHtml = headers.map((h: string) => `<th>${h}</th>`).join('');
-
-      // Parse body rows
       const rows = bodyRows.trim().split(/\r?\n/);
       const bodyHtml = rows.map((row: string) => {
-        const cells = row.split('|').map((cell: string) => cell.trim()).filter((cell: string) => cell);
+        const cells = row.split('|').map((c: string) => c.trim()).filter((c: string) => c);
         return `<tr>${cells.map((c: string) => `<td>${c}</td>`).join('')}</tr>`;
-      }).join('\n');
-
-      return `<table>\n<thead><tr>${headerHtml}</tr></thead>\n<tbody>\n${bodyHtml}\n</tbody>\n</table>`;
+      }).join('');
+      return `<table><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
     }
   );
+
+  // Step 5: Horizontal rules (--- or ***)
+  html = html.replace(/^---+\s*$/gm, '<hr>');
+  html = html.replace(/^\*\*\*+\s*$/gm, '<hr>');
+
+  // Step 6: Headings
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // Step 7: Bold and Italic
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/(?<![*])\*([^*]+)\*(?![*])/g, '<em>$1</em>');
+
+  // Step 8: Markdown links [text](url)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+  // Step 9: Blockquotes - merge consecutive lines into single blockquote
+  html = html.replace(/(^>\s*.+$(\r?\n^>\s*.+$)*)/gm, (match) => {
+    const lines = match.split(/\r?\n/).map((line: string) => line.replace(/^>\s*/, ''));
+    return `<blockquote>${lines.join(' ')}</blockquote>`;
+  });
+
+  // Step 10: Ordered lists
+  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+
+  // Step 11: Unordered lists
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
 
   // Step 12: Restore inline code
   html = html.replace(/<<INLINECODE_(\d+)>>/g, (_match, index: string) => {
@@ -196,10 +190,15 @@ function renderMarkdown(raw: string): string {
     return codeBlocks[parseInt(index, 10)];
   });
 
-  // Step 14: Convert remaining single newlines to <br> for readability
-  // But preserve double newlines as paragraph breaks
-  // And don't add <br> after block elements
-  html = html.replace(/([^>\n])\n(?![\n<])/g, '$1<br>\n');
+  // Step 14: Convert double newlines to paragraph breaks
+  html = html.replace(/\n\n+/g, '</p><p>');
+  html = `<p>${html}</p>`;
+  // Clean up empty paragraphs and paragraphs around block elements
+  html = html.replace(/<p>\s*<\/p>/g, '');
+  html = html.replace(/<p>\s*(<(?:h[1-6]|pre|table|blockquote|hr|ul|ol)[^>]*>)/g, '$1');
+  html = html.replace(/(<\/(?:h[1-6]|pre|table|blockquote|hr|ul|ol)>)\s*<\/p>/g, '$1');
+  html = html.replace(/<p>\s*(<\/(?:h[1-6]|pre|table|blockquote|hr|ul|ol)>)/g, '$1');
+  html = html.replace(/(<(?:h[1-6]|pre|table|blockquote|hr|ul|ol)[^>]*>)\s*<\/p>/g, '$1');
 
   return html;
 }
