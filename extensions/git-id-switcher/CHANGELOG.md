@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.20] - 2026-01-04
+
+### Added
+
+- **Show Documentation Command**: New command to display README in VS Code Webview
+  - Command: `Git ID Switcher: Show Documentation` (Command Palette)
+  - Automatically detects user's VS Code locale and fetches matching language README
+  - Supports all 26 languages with fallback to English
+  - Secure implementation: XSS prevention via HTML escaping, CSP headers, `enableScripts: false`
+  - DoS protection: 1MB content size limit
+  - Footer links to GitHub repository and external browser view
+
+### Changed
+
+- **GitHub Actions**: Added automatic documentation deployment to Cloudflare R2
+  - `publish.yml`: Deploy docs on release
+  - `deploy-docs.yml`: Deploy docs on README/docs changes (new workflow)
+
 ## [0.10.19] - 2026-01-04
 
 ### Changed

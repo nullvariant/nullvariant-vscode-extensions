@@ -1,0 +1,51 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'extensions/git-id-switcher/README.md'  # English version
+      - 'extensions/git-id-switcher/docs/**'    # Other 25 languages
+  workflow_dispatch:  # Manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy documentation to R2
+        run: |
+          # Upload English README (from extension root, not monorepo root)
+          echo "Deploying en/README.md..."
+          wrangler r2 object put "nullvariant-assets/git-id-switcher/docs/i18n/en/README.md" \
+            --file "extensions/git-id-switcher/README.md" \
+            --content-type "text/markdown; charset=utf-8"
+
+          # Upload other 25 languages from docs/i18n/
+          for lang_dir in extensions/git-id-switcher/docs/i18n/*/; do
+            lang=$(basename "$lang_dir")
+            echo "Deploying ${lang}/README.md..."
+            wrangler r2 object put "nullvariant-assets/git-id-switcher/docs/i18n/${lang}/README.md" \
+              --file "${lang_dir}README.md" \
+              --content-type "text/markdown; charset=utf-8"
+          done
+
+          echo "Documentation deployed successfully (26 languages)!"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

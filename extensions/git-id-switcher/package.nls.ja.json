@@ -3,6 +3,7 @@
   "extension.description": "複数のGitプロフィールをワンクリックで切り替え。SSH鍵・GPG署名も連動し、サブモジュールにも一括適用。",
   "command.selectIdentity": "Git ID: IDを選択",
   "command.showCurrentIdentity": "Git ID: 現在のIDを表示",
+  "command.showDocumentation": "ドキュメントを表示",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: ID管理",
   "config.category.submodule": "Git ID Switcher: サブモジュール",

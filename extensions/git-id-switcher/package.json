@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.10.19",
+  "version": "0.10.20",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -57,6 +57,11 @@
       {
         "command": "git-id-switcher.showCurrentIdentity",
         "title": "%command.showCurrentIdentity%"
+      },
+      {
+        "command": "git-id-switcher.showDocumentation",
+        "title": "%command.showDocumentation%",
+        "category": "Git ID Switcher"
       }
     ],
     "configuration": [

@@ -28,6 +28,7 @@ import {
   showIdentitySwitchedNotification,
   showErrorNotification,
 } from './quickPick';
+import { showDocumentation } from './documentation';
 import { securityLogger } from './securityLogger';
 import { getUserSafeMessage, isFatalError } from './errors';
 
@@ -63,7 +64,12 @@ export async function activate(
     showCurrentIdentityCommand
   );
 
-  context.subscriptions.push(selectCommand, showCurrentCommand);
+  const showDocsCommand = vscode.commands.registerCommand(
+    'git-id-switcher.showDocumentation',
+    () => showDocumentation(context)
+  );
+
+  context.subscriptions.push(selectCommand, showCurrentCommand, showDocsCommand);
 
   // Initialize state
   await initializeState(context);
