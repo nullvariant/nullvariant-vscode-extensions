@@ -34,7 +34,8 @@ jobs:
           echo "Deploying en/README.md..."
           wrangler r2 object put "nullvariant-assets/git-id-switcher/docs/i18n/en/README.md" \
             --file "extensions/git-id-switcher/README.md" \
-            --content-type "text/markdown; charset=utf-8"
+            --content-type "text/markdown; charset=utf-8" \
+            --remote
 
           # Upload other 25 languages from docs/i18n/
           for lang_dir in extensions/git-id-switcher/docs/i18n/*/; do
@@ -42,7 +43,8 @@ jobs:
             echo "Deploying ${lang}/README.md..."
             wrangler r2 object put "nullvariant-assets/git-id-switcher/docs/i18n/${lang}/README.md" \
               --file "${lang_dir}README.md" \
-              --content-type "text/markdown; charset=utf-8"
+              --content-type "text/markdown; charset=utf-8" \
+              --remote
           done
 
           echo "Documentation deployed successfully (26 languages)!"
