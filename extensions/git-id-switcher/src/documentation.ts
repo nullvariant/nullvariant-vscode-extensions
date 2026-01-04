@@ -122,11 +122,12 @@ function renderMarkdown(raw: string): string {
   let html = sanitizeHtml(raw);
 
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
+  // Use %% delimiters to avoid confusion with HTML tags
   const codeBlocks: string[] = [];
   html = html.replace(/```([^\n\r]*)\r?\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
     const index = codeBlocks.length;
     codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
-    return `\n<<CODEBLOCK_${index}>>\n`;
+    return `%%CODEBLOCK_${index}%%`;
   });
 
   // Step 3: Extract inline code to placeholders
@@ -134,15 +135,15 @@ function renderMarkdown(raw: string): string {
   html = html.replace(/`([^`]+)`/g, (_match, code: string) => {
     const index = inlineCodes.length;
     inlineCodes.push(`<code>${escapeHtmlEntities(code)}</code>`);
-    return `<<INLINECODE_${index}>>`;
+    return `%%INLINECODE_${index}%%`;
   });
 
   // Step 4: Markdown tables (BEFORE other transformations that might break pipe characters)
   html = html.replace(
     /^\|(.+)\|\r?\n\|[-:\s|]+\|\r?\n((?:\|.+\|\r?\n?)+)/gm,
     (_match, headerRow: string, bodyRows: string) => {
-      // Split by | but keep empty cells (don't filter them out!)
-      const headers = headerRow.split('|').map((c: string) => c.trim()).slice(1, -1);
+      // headerRow is content between outer pipes, split by inner pipes
+      const headers = headerRow.split('|').map((c: string) => c.trim());
       const headerHtml = headers.map((h: string) => `<th>${h}</th>`).join('');
       const rows = bodyRows.trim().split(/\r?\n/);
       const bodyHtml = rows.map((row: string) => {
@@ -189,12 +190,12 @@ function renderMarkdown(raw: string): string {
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
 
   // Step 13: Restore inline code
-  html = html.replace(/<<INLINECODE_(\d+)>>/g, (_match, index: string) => {
+  html = html.replace(/%%INLINECODE_(\d+)%%/g, (_match, index: string) => {
     return inlineCodes[parseInt(index, 10)];
   });
 
   // Step 14: Restore code blocks
-  html = html.replace(/<<CODEBLOCK_(\d+)>>/g, (_match, index: string) => {
+  html = html.replace(/%%CODEBLOCK_(\d+)%%/g, (_match, index: string) => {
     return codeBlocks[parseInt(index, 10)];
   });
 
@@ -203,7 +204,7 @@ function renderMarkdown(raw: string): string {
   html = `<p>${html}</p>`;
 
   // Clean up empty paragraphs and paragraphs around block elements
-  const blockElements = 'h[1-6]|pre|table|blockquote|hr|ul|ol|li';
+  const blockElements = 'h[1-6]|pre|table|blockquote|hr|ul|ol|li|img';
   html = html.replace(/<p>\s*<\/p>/g, '');
   html = html.replace(new RegExp(`<p>\\s*(<(?:${blockElements})[^>]*>)`, 'g'), '$1');
   html = html.replace(new RegExp(`(<\\/(?:${blockElements})>)\\s*<\\/p>`, 'g'), '$1');
