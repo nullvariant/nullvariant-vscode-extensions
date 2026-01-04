@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.10.20] - 2026-01-04
+## [0.10.21] - 2026-01-04
 
 ### Added
 
@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **GitHub Actions**: Added automatic documentation deployment to Cloudflare R2
   - `publish.yml`: Deploy docs on release
   - `deploy-docs.yml`: Deploy docs on README/docs changes (new workflow)
+
+## [0.10.20] - 2026-01-04 [YANKED]
+
+> **Note**: This version was partially published with build errors. Use v0.10.21 instead.
 
 ## [0.10.19] - 2026-01-04
 
