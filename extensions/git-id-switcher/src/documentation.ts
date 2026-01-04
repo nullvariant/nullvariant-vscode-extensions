@@ -115,18 +115,18 @@ function renderMarkdown(raw: string): string {
 
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
   const codeBlocks: string[] = [];
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
     const index = codeBlocks.length;
     codeBlocks.push(`<pre><code>${code.trim()}</code></pre>`);
-    return `\x00CODEBLOCK${index}\x00`;
+    return `<<CODEBLOCK_${index}>>`;
   });
 
   // Step 3: Extract inline code to placeholders
   const inlineCodes: string[] = [];
-  html = html.replace(/`([^`]+)`/g, (_match, code) => {
+  html = html.replace(/`([^`]+)`/g, (_match, code: string) => {
     const index = inlineCodes.length;
     inlineCodes.push(`<code>${code}</code>`);
-    return `\x00INLINECODE${index}\x00`;
+    return `<<INLINECODE_${index}>>`;
   });
 
   // Step 4: Headings (### before ## before #)
@@ -153,12 +153,12 @@ function renderMarkdown(raw: string): string {
   html = `<p>${html}</p>`;
 
   // Step 9: Restore inline code
-  html = html.replace(/\x00INLINECODE(\d+)\x00/g, (_match, index) => {
+  html = html.replace(/<<INLINECODE_(\d+)>>/g, (_match, index: string) => {
     return inlineCodes[parseInt(index, 10)];
   });
 
   // Step 10: Restore code blocks
-  html = html.replace(/\x00CODEBLOCK(\d+)\x00/g, (_match, index) => {
+  html = html.replace(/<<CODEBLOCK_(\d+)>>/g, (_match, index: string) => {
     return codeBlocks[parseInt(index, 10)];
   });
 
@@ -497,11 +497,14 @@ async function fetchDocumentation(locale: string): Promise<{ content: string; lo
  *
  * Called from the command palette via 'git-id-switcher.showDocumentation'
  *
- * @param _context - Extension context (reserved for future use)
+ * @param context - Extension context (reserved for future use)
  */
 export async function showDocumentation(
-  _context: vscode.ExtensionContext
+  context: vscode.ExtensionContext
 ): Promise<void> {
+  // Reserved for future use (e.g., caching, state management)
+  void context;
+
   const locale = getDocumentLocale();
   const panelTitle = getPanelTitle(locale);
 
