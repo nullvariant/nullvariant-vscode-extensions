@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.23] - 2026-01-04
+
+### Fixed
+
+- **Documentation Webview badges not displaying**: Added `img.shields.io` to CSP `img-src` directive
+- **Code blocks with hyphenated language names broken**: Fixed regex to match `ssh-config`, `c++`, etc.
+  - Changed from `\w*` to `[^\n\r]*` to capture any language identifier
+  - Also handle Windows line endings (`\r\n`)
+
 ## [0.10.22] - 2026-01-04
 
 ### Fixed

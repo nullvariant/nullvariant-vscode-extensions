@@ -122,8 +122,10 @@ function renderMarkdown(raw: string): string {
   let html = sanitizeHtml(raw);
 
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
+  // Language name can contain hyphens (e.g., ssh-config, c++), so use [^\n\r]* instead of \w*
+  // Also handle both \n and \r\n line endings
   const codeBlocks: string[] = [];
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
+  html = html.replace(/```([^\n\r]*)\r?\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
     const index = codeBlocks.length;
     // Escape HTML in code blocks to show literal code
     codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
@@ -222,7 +224,8 @@ function getPanelTitle(locale: string): string {
 function buildCsp(webview: vscode.Webview): string {
   return [
     `default-src 'none'`,
-    `img-src ${webview.cspSource} https://assets.nullvariant.com`,
+    // Allow images from: VSCode, our CDN, shields.io badges, GitHub avatars
+    `img-src ${webview.cspSource} https://assets.nullvariant.com https://img.shields.io https://*.githubusercontent.com`,
     `style-src ${webview.cspSource} 'unsafe-inline'`,
     `connect-src https://assets.nullvariant.com`,
     `font-src ${webview.cspSource}`,
