@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.28] - 2026-01-04
+
+### Fixed
+
+- **Documentation Webview: double-backtick inline code support**:
+  - Added support for ``` `` ` `` ``` syntax (backtick inside inline code)
+  - Process double-backtick patterns before single-backtick patterns
+
 ## [0.10.27] - 2026-01-04
 
 ### Fixed
@@ -827,7 +835,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.27...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.28...HEAD
+[0.10.28]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.27...git-id-switcher-v0.10.28
 [0.10.27]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.26...git-id-switcher-v0.10.27
 [0.10.26]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.25...git-id-switcher-v0.10.26
 [0.10.25]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.24...git-id-switcher-v0.10.25

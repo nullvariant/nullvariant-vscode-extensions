@@ -131,7 +131,16 @@ function renderMarkdown(raw: string): string {
   });
 
   // Step 3: Extract inline code to placeholders
+  // Handle double-backtick inline code first (for content containing single backticks)
+  // e.g., `` ` `` renders as a backtick
   const inlineCodes: string[] = [];
+  html = html.replace(/``(.+?)``/g, (_match, code: string) => {
+    const index = inlineCodes.length;
+    inlineCodes.push(`<code>${escapeHtmlEntities(code.trim())}</code>`);
+    return `%%INLINECODE_${index}%%`;
+  });
+
+  // Then handle single-backtick inline code
   html = html.replace(/`([^`]+)`/g, (_match, code: string) => {
     const index = inlineCodes.length;
     inlineCodes.push(`<code>${escapeHtmlEntities(code)}</code>`);
