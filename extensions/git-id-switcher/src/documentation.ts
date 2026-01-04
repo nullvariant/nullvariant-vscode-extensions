@@ -141,11 +141,13 @@ function renderMarkdown(raw: string): string {
   html = html.replace(
     /^\|(.+)\|\r?\n\|[-:\s|]+\|\r?\n((?:\|.+\|\r?\n?)+)/gm,
     (_match, headerRow: string, bodyRows: string) => {
-      const headers = headerRow.split('|').map((c: string) => c.trim()).filter((c: string) => c);
+      // Split by | but keep empty cells (don't filter them out!)
+      const headers = headerRow.split('|').map((c: string) => c.trim()).slice(1, -1);
       const headerHtml = headers.map((h: string) => `<th>${h}</th>`).join('');
       const rows = bodyRows.trim().split(/\r?\n/);
       const bodyHtml = rows.map((row: string) => {
-        const cells = row.split('|').map((c: string) => c.trim()).filter((c: string) => c);
+        // Remove leading/trailing | then split, keeping empty cells
+        const cells = row.replace(/^\||\|$/g, '').split('|').map((c: string) => c.trim());
         return `<tr>${cells.map((c: string) => `<td>${c}</td>`).join('')}</tr>`;
       }).join('');
       return `<table><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
@@ -156,7 +158,10 @@ function renderMarkdown(raw: string): string {
   html = html.replace(/^---+\s*$/gm, '<hr>');
   html = html.replace(/^\*\*\*+\s*$/gm, '<hr>');
 
-  // Step 6: Headings
+  // Step 6: Headings h1-h6 (process from most specific to least)
+  html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
+  html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
+  html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
   html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
   html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
@@ -165,40 +170,45 @@ function renderMarkdown(raw: string): string {
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/(?<![*])\*([^*]+)\*(?![*])/g, '<em>$1</em>');
 
-  // Step 8: Markdown links [text](url)
+  // Step 8: Images ![alt](src) - must be before links
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+
+  // Step 9: Markdown links [text](url)
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
-  // Step 9: Blockquotes - merge consecutive lines into single blockquote
+  // Step 10: Blockquotes - merge consecutive lines into single blockquote
   html = html.replace(/(^>\s*.+$(\r?\n^>\s*.+$)*)/gm, (match) => {
     const lines = match.split(/\r?\n/).map((line: string) => line.replace(/^>\s*/, ''));
     return `<blockquote>${lines.join(' ')}</blockquote>`;
   });
 
-  // Step 10: Ordered lists
+  // Step 11: Ordered lists
   html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
 
-  // Step 11: Unordered lists
+  // Step 12: Unordered lists
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
 
-  // Step 12: Restore inline code
+  // Step 13: Restore inline code
   html = html.replace(/<<INLINECODE_(\d+)>>/g, (_match, index: string) => {
     return inlineCodes[parseInt(index, 10)];
   });
 
-  // Step 13: Restore code blocks
+  // Step 14: Restore code blocks
   html = html.replace(/<<CODEBLOCK_(\d+)>>/g, (_match, index: string) => {
     return codeBlocks[parseInt(index, 10)];
   });
 
-  // Step 14: Convert double newlines to paragraph breaks
+  // Step 15: Convert double newlines to paragraph breaks
   html = html.replace(/\n\n+/g, '</p><p>');
   html = `<p>${html}</p>`;
+
   // Clean up empty paragraphs and paragraphs around block elements
+  const blockElements = 'h[1-6]|pre|table|blockquote|hr|ul|ol|li';
   html = html.replace(/<p>\s*<\/p>/g, '');
-  html = html.replace(/<p>\s*(<(?:h[1-6]|pre|table|blockquote|hr|ul|ol)[^>]*>)/g, '$1');
-  html = html.replace(/(<\/(?:h[1-6]|pre|table|blockquote|hr|ul|ol)>)\s*<\/p>/g, '$1');
-  html = html.replace(/<p>\s*(<\/(?:h[1-6]|pre|table|blockquote|hr|ul|ol)>)/g, '$1');
-  html = html.replace(/(<(?:h[1-6]|pre|table|blockquote|hr|ul|ol)[^>]*>)\s*<\/p>/g, '$1');
+  html = html.replace(new RegExp(`<p>\\s*(<(?:${blockElements})[^>]*>)`, 'g'), '$1');
+  html = html.replace(new RegExp(`(<\\/(?:${blockElements})>)\\s*<\\/p>`, 'g'), '$1');
+  html = html.replace(new RegExp(`<p>\\s*(<\\/(?:${blockElements})>)`, 'g'), '$1');
+  html = html.replace(new RegExp(`(<(?:${blockElements})[^>]*>)\\s*<\\/p>`, 'g'), '$1');
 
   return html;
 }
