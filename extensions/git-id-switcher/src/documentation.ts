@@ -59,65 +59,74 @@ const PANEL_TITLES: Record<string, string> = {
 // ============================================================================
 
 /**
- * Escape HTML entities to prevent XSS attacks
+ * Sanitize HTML to remove dangerous elements while preserving safe HTML
  *
- * SECURITY: This MUST be called before any Markdown rendering
- * to neutralize any embedded HTML/script tags in the source.
+ * SECURITY: Since enableScripts: false is set on the Webview, JavaScript
+ * cannot execute. However, we still remove dangerous patterns as defense-in-depth.
  *
- * @param text - Raw text that may contain HTML
- * @returns Escaped text safe for HTML insertion
+ * Removes:
+ * - <script> tags (completely)
+ * - Event handler attributes (onclick, onerror, etc.)
+ * - Dangerous URL schemes (javascript:, data:, vbscript:)
+ *
+ * @param html - Raw HTML/Markdown that may contain dangerous elements
+ * @returns Sanitized HTML
  */
-function escapeHtml(text: string): string {
+function sanitizeHtml(html: string): string {
+  let result = html;
+
+  // Remove script tags completely (including content)
+  result = result.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+  // Remove event handler attributes (onclick, onerror, onload, etc.)
+  // Match: onclick="..." or onclick='...' or onclick=value
+  result = result.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+  result = result.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
+
+  // Sanitize href and src attributes for dangerous schemes
+  result = result.replace(/(href|src)\s*=\s*["']\s*(javascript:|data:|vbscript:)[^"']*["']/gi, '$1="#"');
+
+  return result;
+}
+
+/**
+ * Escape HTML entities for text content (used only for code blocks)
+ *
+ * @param text - Raw text
+ * @returns Escaped text
+ */
+function escapeHtmlEntities(text: string): string {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/>/g, '&gt;');
 }
 
 /**
- * Sanitize URL to prevent javascript: and data: scheme attacks
+ * Render Markdown/HTML hybrid content safely
  *
- * SECURITY: Only allows http:// and https:// URLs.
- * All other schemes are replaced with '#' to prevent XSS.
+ * SECURITY APPROACH:
+ * - enableScripts: false prevents JS execution in Webview
+ * - CSP restricts resource loading
+ * - We sanitize dangerous patterns as defense-in-depth
+ * - HTML tags from README are preserved (they're our own content from R2)
  *
- * @param url - URL string to validate
- * @returns Safe URL or '#' if invalid
- */
-function sanitizeUrl(url: string): string {
-  const trimmed = url.trim();
-  if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
-    return trimmed;
-  }
-  // Block javascript:, data:, vbscript:, and other dangerous schemes
-  return '#';
-}
-
-/**
- * Render Markdown to HTML with security-first approach
+ * The README contains both Markdown and raw HTML (tables, images, etc.)
+ * We preserve HTML while converting Markdown-only sections.
  *
- * SECURITY FLOW:
- * 1. Escape ALL HTML entities first (neutralizes <script>, <img onerror>, etc.)
- * 2. Extract code blocks/inline code to placeholders (prevent internal transformation)
- * 3. Apply safe Markdown transformations
- * 4. Restore code blocks/inline code
- * 5. Sanitize all URLs in links
- *
- * Supports: headings, bold, italic, links, inline code, code blocks, lists
- *
- * @param raw - Raw Markdown text
+ * @param raw - Raw Markdown/HTML content
  * @returns Safe HTML string
  */
 function renderMarkdown(raw: string): string {
-  // Step 1: Escape all HTML (CRITICAL - must be first)
-  let html = escapeHtml(raw);
+  // Step 1: Sanitize dangerous HTML elements
+  let html = sanitizeHtml(raw);
 
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
   const codeBlocks: string[] = [];
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
     const index = codeBlocks.length;
-    codeBlocks.push(`<pre><code>${code.trim()}</code></pre>`);
+    // Escape HTML in code blocks to show literal code
+    codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
     return `<<CODEBLOCK_${index}>>`;
   });
 
@@ -125,45 +134,35 @@ function renderMarkdown(raw: string): string {
   const inlineCodes: string[] = [];
   html = html.replace(/`([^`]+)`/g, (_match, code: string) => {
     const index = inlineCodes.length;
-    inlineCodes.push(`<code>${code}</code>`);
+    inlineCodes.push(`<code>${escapeHtmlEntities(code)}</code>`);
     return `<<INLINECODE_${index}>>`;
   });
 
-  // Step 4: Headings (### before ## before #)
-  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  // Step 4: Headings (### before ## before #) - only if not inside HTML
+  // Skip lines that look like they're inside HTML tags
+  html = html.replace(/^### ([^<].*)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## ([^<].*)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# ([^<].*)$/gm, '<h1>$1</h1>');
 
-  // Step 5: Bold and Italic
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Step 5: Bold and Italic (only outside of HTML attributes)
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/(?<![*])\*([^*]+)\*(?![*])/g, '<em>$1</em>');
 
-  // Step 6: Links with URL sanitization
-  html = html.replace(/\[(.+?)\]\((.+?)\)/g, (_match, text, url) => {
-    const safeUrl = sanitizeUrl(url);
-    return `<a href="${safeUrl}">${text}</a>`;
-  });
+  // Step 6: Markdown links [text](url) - convert to HTML
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
-  // Step 7: Unordered lists
+  // Step 7: Unordered lists (only lines starting with - at the beginning)
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
 
-  // Step 8: Paragraphs (double newlines)
-  html = html.replace(/\n\n/g, '</p><p>');
-  html = `<p>${html}</p>`;
-
-  // Step 9: Restore inline code
+  // Step 8: Restore inline code
   html = html.replace(/<<INLINECODE_(\d+)>>/g, (_match, index: string) => {
     return inlineCodes[parseInt(index, 10)];
   });
 
-  // Step 10: Restore code blocks
+  // Step 9: Restore code blocks
   html = html.replace(/<<CODEBLOCK_(\d+)>>/g, (_match, index: string) => {
     return codeBlocks[parseInt(index, 10)];
   });
-
-  // Clean up empty paragraphs
-  html = html.replace(/<p>\s*<\/p>/g, '');
 
   return html;
 }

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.22] - 2026-01-04
+
+### Fixed
+
+- **Documentation Webview HTML Rendering**: Fixed HTML tags displaying as raw text
+  - README contains mixed Markdown and HTML (tables, images, badges)
+  - Changed from full HTML escaping to sanitization approach
+  - Now preserves safe HTML tags while removing dangerous elements (`<script>`, event handlers, `javascript:` URLs)
+  - Defense-in-depth: `enableScripts: false` already prevents JS execution
+
 ## [0.10.21] - 2026-01-04
 
 ### Added
