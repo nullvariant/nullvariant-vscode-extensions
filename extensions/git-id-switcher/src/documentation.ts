@@ -140,31 +140,66 @@ function renderMarkdown(raw: string): string {
     return `<<INLINECODE_${index}>>`;
   });
 
-  // Step 4: Headings (### before ## before #) - only if not inside HTML
+  // Step 4: Horizontal rules (--- or ***)
+  html = html.replace(/^---+\s*$/gm, '<hr>');
+  html = html.replace(/^\*\*\*+\s*$/gm, '<hr>');
+
+  // Step 5: Headings (### before ## before #) - only if not inside HTML
   // Skip lines that look like they're inside HTML tags
   html = html.replace(/^### ([^<].*)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## ([^<].*)$/gm, '<h2>$1</h2>');
   html = html.replace(/^# ([^<].*)$/gm, '<h1>$1</h1>');
 
-  // Step 5: Bold and Italic (only outside of HTML attributes)
+  // Step 6: Bold and Italic (only outside of HTML attributes)
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/(?<![*])\*([^*]+)\*(?![*])/g, '<em>$1</em>');
 
-  // Step 6: Markdown links [text](url) - convert to HTML
+  // Step 7: Markdown links [text](url) - convert to HTML
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
-  // Step 7: Unordered lists (only lines starting with - at the beginning)
+  // Step 8: Ordered lists (1. 2. 3. etc.)
+  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+
+  // Step 9: Unordered lists (only lines starting with - at the beginning)
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
 
-  // Step 8: Restore inline code
+  // Step 10: Blockquotes
+  html = html.replace(/^>\s*(.*)$/gm, '<blockquote>$1</blockquote>');
+
+  // Step 11: Markdown tables
+  // Match table header, separator, and body rows
+  html = html.replace(
+    /^\|(.+)\|\r?\n\|[-:\s|]+\|\r?\n((?:\|.+\|\r?\n?)+)/gm,
+    (_match, headerRow: string, bodyRows: string) => {
+      // Parse header cells
+      const headers = headerRow.split('|').map((cell: string) => cell.trim()).filter((cell: string) => cell);
+      const headerHtml = headers.map((h: string) => `<th>${h}</th>`).join('');
+
+      // Parse body rows
+      const rows = bodyRows.trim().split(/\r?\n/);
+      const bodyHtml = rows.map((row: string) => {
+        const cells = row.split('|').map((cell: string) => cell.trim()).filter((cell: string) => cell);
+        return `<tr>${cells.map((c: string) => `<td>${c}</td>`).join('')}</tr>`;
+      }).join('\n');
+
+      return `<table>\n<thead><tr>${headerHtml}</tr></thead>\n<tbody>\n${bodyHtml}\n</tbody>\n</table>`;
+    }
+  );
+
+  // Step 12: Restore inline code
   html = html.replace(/<<INLINECODE_(\d+)>>/g, (_match, index: string) => {
     return inlineCodes[parseInt(index, 10)];
   });
 
-  // Step 9: Restore code blocks
+  // Step 13: Restore code blocks
   html = html.replace(/<<CODEBLOCK_(\d+)>>/g, (_match, index: string) => {
     return codeBlocks[parseInt(index, 10)];
   });
+
+  // Step 14: Convert remaining single newlines to <br> for readability
+  // But preserve double newlines as paragraph breaks
+  // And don't add <br> after block elements
+  html = html.replace(/([^>\n])\n(?![\n<])/g, '$1<br>\n');
 
   return html;
 }
@@ -298,6 +333,35 @@ function getDocumentHtml(
     }
     li {
       margin-bottom: 0.5em;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid var(--vscode-panel-border);
+      padding: 0.5em 1em;
+      text-align: left;
+    }
+    th {
+      background-color: var(--vscode-textCodeBlock-background);
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background-color: var(--vscode-textCodeBlock-background);
+    }
+    blockquote {
+      border-left: 4px solid var(--vscode-textLink-foreground);
+      margin: 1em 0;
+      padding: 0.5em 1em;
+      background-color: var(--vscode-textCodeBlock-background);
+      font-style: italic;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid var(--vscode-panel-border);
+      margin: 2em 0;
     }
     .footer {
       margin-top: 40px;
