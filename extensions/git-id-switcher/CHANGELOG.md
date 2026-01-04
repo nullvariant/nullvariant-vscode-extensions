@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.29] - 2026-01-04
+
+### Fixed
+
+- **Documentation Webview: relative URL conversion**:
+  - Convert relative paths (e.g., `../zh-CN/README.md`) to absolute GitHub URLs for Webview display
+  - Preserves relative paths in source READMEs for GitHub/local viewing
+
 ## [0.10.28] - 2026-01-04
 
 ### Fixed
@@ -835,7 +843,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.28...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.29...HEAD
+[0.10.29]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.28...git-id-switcher-v0.10.29
 [0.10.28]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.27...git-id-switcher-v0.10.28
 [0.10.27]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.26...git-id-switcher-v0.10.27
 [0.10.26]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.25...git-id-switcher-v0.10.26

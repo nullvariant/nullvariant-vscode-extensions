@@ -102,6 +102,75 @@ function escapeHtmlEntities(text: string): string {
     .replace(/>/g, '&gt;');
 }
 
+/** GitHub base URL for documentation links */
+const GITHUB_BASE_URL = 'https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher';
+
+/**
+ * Convert relative URLs to absolute GitHub URLs
+ *
+ * Webview cannot resolve relative paths, so we convert them to absolute URLs.
+ * This preserves relative paths in the source README for GitHub/local viewing.
+ *
+ * @param html - HTML content with relative URLs
+ * @param locale - Current locale (determines base path)
+ * @returns HTML with absolute URLs
+ */
+function convertRelativeUrls(html: string, locale: string): string {
+  // Base path for the current locale's README
+  // e.g., 'ja' → 'docs/i18n/ja/'
+  // e.g., 'en' → '' (root README)
+  const basePath = locale === 'en' ? '' : `docs/i18n/${locale}/`;
+
+  // Convert href attributes
+  html = html.replace(
+    /href="(\.\.?\/[^"]+)"/g,
+    (_match, relativePath: string) => {
+      const absoluteUrl = resolveRelativePath(basePath, relativePath);
+      return `href="${absoluteUrl}"`;
+    }
+  );
+
+  // Convert src attributes (for images)
+  html = html.replace(
+    /src="(\.\.?\/[^"]+)"/g,
+    (_match, relativePath: string) => {
+      const absoluteUrl = resolveRelativePath(basePath, relativePath);
+      return `src="${absoluteUrl}"`;
+    }
+  );
+
+  return html;
+}
+
+/**
+ * Resolve a relative path against a base path and return absolute GitHub URL
+ *
+ * @param basePath - Base path (e.g., 'docs/i18n/ja/')
+ * @param relativePath - Relative path (e.g., '../../../README.md')
+ * @returns Absolute GitHub URL
+ */
+function resolveRelativePath(basePath: string, relativePath: string): string {
+  // Split base path into segments
+  const baseSegments = basePath.split('/').filter(s => s);
+
+  // Split relative path into segments
+  const relativeSegments = relativePath.split('/');
+
+  // Process each segment
+  const resultSegments = [...baseSegments];
+  for (const segment of relativeSegments) {
+    if (segment === '..') {
+      resultSegments.pop();
+    } else if (segment !== '.' && segment !== '') {
+      resultSegments.push(segment);
+    }
+  }
+
+  // Join and create full URL
+  const resolvedPath = resultSegments.join('/');
+  return `${GITHUB_BASE_URL}/${resolvedPath}`;
+}
+
 /**
  * Render Markdown/HTML hybrid content safely
  *
@@ -613,7 +682,9 @@ export async function showDocumentation(
     const result = await fetchDocumentation(locale);
 
     if (result) {
-      const renderedContent = renderMarkdown(result.content);
+      let renderedContent = renderMarkdown(result.content);
+      // Convert relative URLs to absolute GitHub URLs for Webview
+      renderedContent = convertRelativeUrls(renderedContent, result.locale);
       panel.webview.html = getDocumentHtml(panel.webview, renderedContent, result.locale);
     } else {
       panel.webview.html = getErrorHtml(panel.webview, 'network');
