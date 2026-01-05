@@ -41,20 +41,6 @@ const LOCALE_MAP: Record<string, string> = {
   'pt': 'pt-BR',
 };
 
-/** Localized panel titles */
-const PANEL_TITLES: Record<string, string> = {
-  'ja': 'Git ID Switcher ドキュメント',
-  'zh-CN': 'Git ID Switcher 文档',
-  'zh-TW': 'Git ID Switcher 文件',
-  'ko': 'Git ID Switcher 문서',
-  'de': 'Git ID Switcher Dokumentation',
-  'fr': 'Git ID Switcher Documentation',
-  'es': 'Git ID Switcher Documentación',
-  'it': 'Git ID Switcher Documentazione',
-  'pt-BR': 'Git ID Switcher Documentação',
-  'ru': 'Git ID Switcher Документация',
-};
-
 /**
  * Generate a cryptographically secure nonce for CSP
  * @returns Base64-encoded random string
@@ -338,13 +324,16 @@ function getDocumentLocale(): string {
 }
 
 /**
- * Get localized panel title
+ * Extract document display name from path
  *
- * @param locale - Locale code
- * @returns Localized title or default English title
+ * @param path - Document path (e.g., 'docs/i18n/ja/README.md', 'CONTRIBUTING.md')
+ * @returns Display name (e.g., 'README', 'CONTRIBUTING')
  */
-function getPanelTitle(locale: string): string {
-  return PANEL_TITLES[locale] ?? 'Git ID Switcher Documentation';
+function getDocumentDisplayName(path: string): string {
+  // Extract filename from path
+  const filename = path.includes('/') ? path.substring(path.lastIndexOf('/') + 1) : path;
+  // Remove .md extension
+  return filename.replace(/\.md$/i, '');
 }
 
 // ============================================================================
@@ -825,6 +814,9 @@ async function handleNavigation(
           state.history.push(state.currentPath);
           state.currentPath = classification.resolvedPath;
 
+          // Update panel title to show current document name
+          panel.title = getDocumentDisplayName(state.currentPath);
+
           const renderedContent = renderMarkdown(content);
           panel.webview.html = getDocumentHtml(
             panel.webview,
@@ -882,8 +874,16 @@ async function handleBack(
     const previousPath = state.history.pop()!;
     state.currentPath = previousPath;
 
+    // Update panel title to show current document name
+    panel.title = getDocumentDisplayName(state.currentPath);
+
     panel.webview.html = getLoadingHtml(panel.webview);
-    await updateWebviewContent(panel, state, nonce);
+    const success = await updateWebviewContent(panel, state, nonce);
+
+    if (!success) {
+      // Document no longer available - show error
+      panel.webview.html = getErrorHtml(panel.webview, 'network');
+    }
   }
 }
 
@@ -901,16 +901,16 @@ export async function showDocumentation(
   void context;
 
   const locale = getDocumentLocale();
-  const panelTitle = getPanelTitle(locale);
+  const initialPath = locale === 'en' ? 'README.md' : `docs/i18n/${locale}/README.md`;
 
   // Generate nonce for CSP
   const nonce = generateNonce();
 
-  // Create Webview panel
+  // Create Webview panel with initial document name as title
   // SECURITY: enableScripts: true for link interception, CSP restricts to nonce-only
   const panel = vscode.window.createWebviewPanel(
     'gitIdSwitcherDocs',
-    panelTitle,
+    getDocumentDisplayName(initialPath),
     vscode.ViewColumn.One,
     {
       enableScripts: true,  // Required for link click interception
@@ -920,7 +920,7 @@ export async function showDocumentation(
 
   // Navigation state
   const state: NavigationState = {
-    currentPath: locale === 'en' ? 'README.md' : `docs/i18n/${locale}/README.md`,
+    currentPath: initialPath,
     currentLocale: locale,
     history: [],
   };
@@ -949,6 +949,9 @@ export async function showDocumentation(
     if (result) {
       state.currentPath = result.path;
       state.currentLocale = result.locale;
+
+      // Update panel title to show current document name
+      panel.title = getDocumentDisplayName(state.currentPath);
 
       const renderedContent = renderMarkdown(result.content);
       panel.webview.html = getDocumentHtml(

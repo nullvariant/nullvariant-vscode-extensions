@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.32] - 2026-01-06
+
+### Added
+
+- **Documentation Webview: In-Webview Navigation**
+  - Relative markdown links (e.g., `../../CONTRIBUTING.md`) now open within Webview instead of external browser
+  - Panel title dynamically updates to show current document name (e.g., "README" → "CONTRIBUTING")
+  - Back button with navigation history stack for returning to previous documents
+  - Error handling: shows error page if previously visited document becomes unavailable
+
+### Changed
+
+- **Panel Title**: Now displays document name instead of localized "Documentation" title
+  - Consistent title from initial load through navigation
+  - Removed unused `PANEL_TITLES` constant and `getPanelTitle()` function
+
+### Security
+
+- All navigation security measures maintained:
+  - CSP nonce-based script execution
+  - Command whitelist (`navigate`, `back` only)
+  - URL classification and validation
+
 ## [0.10.31] - 2026-01-05
 
 ### Changed
@@ -862,7 +885,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.31...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.32...HEAD
+[0.10.32]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.31...git-id-switcher-v0.10.32
 [0.10.31]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.30...git-id-switcher-v0.10.31
 [0.10.30]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.29...git-id-switcher-v0.10.30
 [0.10.29]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.28...git-id-switcher-v0.10.29
