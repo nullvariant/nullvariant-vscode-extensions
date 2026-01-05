@@ -843,7 +843,7 @@ async function handleNavigation(
       }
       break;
 
-    case 'external':
+    case 'external': {
       // Open external URLs in browser
       let externalUrl = href;
 
@@ -855,6 +855,7 @@ async function handleNavigation(
 
       vscode.env.openExternal(vscode.Uri.parse(externalUrl));
       break;
+    }
 
     case 'anchor':
       // Anchor links are handled in the Webview JS
