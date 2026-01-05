@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Přepínejte mezi více Git identitami jedním kliknutím. Spravujte více GitHub účtů, SSH klíče, GPG podepisování a <b>automaticky aplikujte identitu na Git submoduly</b>.
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-cs.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-cs.png" width="600" alt="Demo">
 
 ## 🎯 Proč Git ID Switcher?
 
@@ -130,7 +130,7 @@ Otevřete nastavení rozšíření (`Cmd+,` / `Ctrl+,`) → hledejte "Git ID Swi
 2. Vyberte identitu
 3. Hotovo! Git konfigurace a SSH klíč jsou přepnuty.
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-cs.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-cs.png" width="600" alt="Quick Pick">
 
 ### Používání SSH host aliasů
 

@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Перемикайтеся між кількома Git-ідентифікаторами одним кліком. Керуйте кількома обліковими записами GitHub, SSH-ключами, GPG-підписами та <b>автоматично застосовуйте ідентифікатор до Git-підмодулів</b>.
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-uk.png" width="600" alt="Демо">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-uk.png" width="600" alt="Демо">
 
 ## 🎯 Чому Git ID Switcher?
 
@@ -130,7 +130,7 @@ Host github-work
 2. Виберіть ідентифікатор
 3. Готово! Git-конфігурацію та SSH-ключ перемкнуто.
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-uk.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-uk.png" width="600" alt="Quick Pick">
 
 ### Використання SSH-псевдонімів хостів
 

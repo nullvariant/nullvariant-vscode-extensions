@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       한 번의 클릭으로 여러 Git ID를 전환합니다. 여러 GitHub 계정, SSH 키, GPG 서명을 관리하고, <b>Git 서브모듈에 자동으로 ID를 적용</b>합니다.
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-ko.png" width="600" alt="데모">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-ko.png" width="600" alt="데모">
 
 ## 🎯 왜 Git ID Switcher인가요?
 
@@ -130,7 +130,7 @@ Host github-work
 2. ID를 선택합니다
 3. 완료! Git 설정과 SSH 키가 전환되었습니다.
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-ko.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-ko.png" width="600" alt="Quick Pick">
 
 ### SSH 호스트 별칭 사용
 

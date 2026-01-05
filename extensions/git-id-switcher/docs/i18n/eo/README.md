@@ -8,7 +8,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Ŝanĝu inter pluraj Git-identecoj per unu klako. Administru plurajn GitHub-kontojn, SSH-ŝlosilojn, GPG-subskribon, kaj <b>aŭtomate apliku identecon al Git-submoduloj</b>.
@@ -24,7 +24,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-eo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-eo.png" width="600" alt="Demo">
 
 ## 🎯 Kial Ĉi Tiu Etendo?
 
@@ -133,7 +133,7 @@ Malfermu etendo-agordojn (`Cmd+,` / `Ctrl+,`) → Serĉu "Git ID Switcher" → K
 2. Elektu vian identecon
 3. Farite! Via Git-agordo kaj SSH-ŝlosilo estas ŝanĝitaj.
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-eo.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-eo.png" width="600" alt="Quick Pick">
 
 ### Uzi SSH-Gastigajn Kaŝnomojn
 

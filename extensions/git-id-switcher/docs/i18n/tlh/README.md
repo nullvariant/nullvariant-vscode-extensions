@@ -9,7 +9,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       wa' weQ neH lo'taHvIS Git ID law' choHlaH. GitHub accounts law', SSH keys, GPG signing, <b>Git Submodules automatic ID apply</b>.
@@ -25,7 +25,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-tlh.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-tlh.png" width="600" alt="Demo">
 
 ## 🎯 qatlh extension?
 
@@ -132,7 +132,7 @@ Extension settings open (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" search → "E
 2. ID select
 3. Qapla'! Git config, SSH keys switched!
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-tlh.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-tlh.png" width="600" alt="Quick Pick">
 
 ### SSH Host Aliases Use
 

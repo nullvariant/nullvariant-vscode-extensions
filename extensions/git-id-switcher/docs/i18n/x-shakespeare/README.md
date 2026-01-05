@@ -8,7 +8,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Switcheth betwixt thy multiple Git identities with but a single click. Manageth multiple GitHub accounts, SSH keys, GPG signing, and <b>automatically applyeth thine identity unto Git Submodules</b>.
@@ -24,7 +24,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-x-shakespeare.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-x-shakespeare.png" width="600" alt="Demo">
 
 ## 🎯 Wherefore This Extension?
 
@@ -153,7 +153,7 @@ Open **Extension Settings** and configure thine identities within `gitIdSwitcher
 2. Select thine identity
 3. 'Tis done! Thy Git config and SSH keys have been switched!
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-x-shakespeare.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-x-shakespeare.png" width="600" alt="Quick Pick">
 
 ---
 

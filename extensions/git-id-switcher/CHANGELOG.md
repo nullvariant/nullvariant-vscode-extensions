@@ -111,7 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **README Screenshots**: Added Quick Pick screenshots to all 26 README files
   - Each language now displays localized Quick Pick UI screenshot in "Step 4: Use It" section
-  - Images hosted on CDN: `assets.nullvariant.com/git-id-switcher/quickpick-{lang}.png`
+  - Images hosted on CDN: `assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-{lang}.png`
   - Retina-ready: 1200px source displayed at 600px width for 2x resolution
 
 ## [0.10.18] - 2026-01-03

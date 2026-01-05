@@ -25,7 +25,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       ちゅーちゅクリックさーに Git ID 変えーいびーん。GitHub アカウント、SSH キー、GPG 署名、<b>Git Submodule んかい自動的にID適用</b>さびーん。
@@ -41,7 +41,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-ryu.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-ryu.png" width="600" alt="Demo">
 
 ## 🎯 ぬーんちくぬ Extension 作たがやー?
 
@@ -152,7 +152,7 @@ Host github-work
 2. ID選ぶん
 3. 終わい! Git configとぅSSH鍵切り替わたん。
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-ryu.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-ryu.png" width="600" alt="Quick Pick">
 
 ### SSHホストエイリアスぬ使い方
 

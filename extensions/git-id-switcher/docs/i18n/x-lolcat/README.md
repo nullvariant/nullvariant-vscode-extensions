@@ -7,7 +7,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       SWITCH BETWEN UR MULTIPLE GIT IDENTITIEZ WIF WUN CLIK. MANAGE LOTZ OF GITHUB ACCOUNTZ, SSH KEYZ, GPG SININ, AN <b>AUTOMAGICALLY APPLY IDENTITY 2 GIT SUBMODULEZ</b>. KTHXBAI!
@@ -23,7 +23,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-x-lolcat.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-x-lolcat.png" width="600" alt="Demo">
 
 ## 🎯 Y DIS EXTENSHUN?
 
@@ -149,7 +149,7 @@ OPEN **EXTENSHUN SETTINGZ** AN CONFIGUR UR IDENTITIEZ IN `gitIdSwitcher.identiti
 2. PIK UR IDENTITY
 3. INVISIBLE IDENTITY SWITCH! U CANT C IT BUT ITS DERE!
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-x-lolcat.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-x-lolcat.png" width="600" alt="Quick Pick">
 
 ---
 

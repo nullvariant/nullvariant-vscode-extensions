@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       一鍵切換多個Git身份。管理多個GitHub帳戶、SSH金鑰、GPG簽署，並<b>自動將身份套用到Git子模組</b>。
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-zh-TW.png" width="600" alt="示範">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-zh-TW.png" width="600" alt="示範">
 
 ## 🎯 為什麼選擇 Git ID Switcher？
 
@@ -130,7 +130,7 @@ Host github-work
 2. 選擇一個身份
 3. 完成！Git 設定和 SSH 金鑰已切換。
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-zh-TW.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-zh-TW.png" width="600" alt="Quick Pick">
 
 ### 使用 SSH 主機別名
 

@@ -9,7 +9,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       sina ken ante e nimi sina lon Git. luka wan la, sina ante e nimi. ilo ni li pona tawa GitHub mute, SSH, GPG, en <b>Git Submodule</b>.
@@ -25,7 +25,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-tok.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-tok.png" width="600" alt="Demo">
 
 ## 🎯 tan seme?
 
@@ -132,7 +132,7 @@ o open e settings (`Cmd+,` / `Ctrl+,`) → o alasa e "Git ID Switcher" → o luk
 2. o kama jo e nimi
 3. pona! nimi sina li ante!
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-tok.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-tok.png" width="600" alt="Quick Pick">
 
 ### SSH Host Alias
 

@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Alterne entre múltiplas identidades Git com um clique. Gerencie múltiplas contas GitHub, chaves SSH, assinatura GPG e <b>aplique automaticamente a identidade aos submódulos Git</b>.
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-pt-BR.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-pt-BR.png" width="600" alt="Demo">
 
 ## 🎯 Por que Git ID Switcher?
 
@@ -130,7 +130,7 @@ Abra as configurações da extensão (`Cmd+,` / `Ctrl+,`) → pesquise "Git ID S
 2. Selecione uma identidade
 3. Pronto! A configuração Git e a chave SSH foram trocadas.
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-pt-BR.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-pt-BR.png" width="600" alt="Quick Pick">
 
 ### Usando aliases de host SSH
 

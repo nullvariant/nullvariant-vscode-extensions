@@ -23,7 +23,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       E hoʻololi i nā ID Git he nui me ke kaomi hoʻokahi. E hoʻoponopono i nā moʻokāki GitHub he nui, nā kī SSH, ke kākau inoa GPG, a <b>hoʻopili ʻia ka ID i nā Git Submodule</b>.
@@ -39,7 +39,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-haw.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-haw.png" width="600" alt="Demo">
 
 ## 🎯 No ke aha kēia Extension?
 
@@ -150,7 +150,7 @@ E wehe i nā hoʻonohonoho extension (`Cmd+,` / `Ctrl+,`) → E huli "Git ID Swi
 2. E koho i ka ID
 3. Pau! Ua hoʻololi ʻia ka Git config a me ke kī SSH.
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-haw.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-haw.png" width="600" alt="Quick Pick">
 
 ### E Hoʻohana i nā Inoa Hoʻololi SSH Host
 

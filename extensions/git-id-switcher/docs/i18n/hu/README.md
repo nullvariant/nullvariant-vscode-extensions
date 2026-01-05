@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Váltson több Git-azonosító között egyetlen kattintással. Kezeljen több GitHub-fiókot, SSH-kulcsokat, GPG-aláírást, és <b>automatikusan alkalmazza az azonosítót a Git-almodulokra</b>.
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-hu.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-hu.png" width="600" alt="Demo">
 
 ## 🎯 Miért a Git ID Switcher?
 
@@ -130,7 +130,7 @@ Nyissa meg a bővítmény beállításait (`Cmd+,` / `Ctrl+,`) → keressen rá:
 2. Válasszon azonosítót
 3. Kész! A Git-konfiguráció és az SSH-kulcs váltva lett.
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-hu.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-hu.png" width="600" alt="Quick Pick">
 
 ### SSH host aliasok használata
 

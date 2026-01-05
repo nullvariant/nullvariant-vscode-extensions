@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Tek tıklamayla birden fazla Git kimliği arasında geçiş yapın. Birden fazla GitHub hesabını, SSH anahtarlarını, GPG imzalamayı yönetin ve <b>kimliği Git alt modüllerine otomatik olarak uygulayın</b>.
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-tr.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-tr.png" width="600" alt="Demo">
 
 ## 🎯 Neden Git ID Switcher?
 
@@ -130,7 +130,7 @@ Eklenti ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın �
 2. Bir kimlik seçin
 3. Tamam! Git yapılandırması ve SSH anahtarı değiştirildi.
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-tr.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-tr.png" width="600" alt="Quick Pick">
 
 ### SSH Host Takma Adlarını Kullanma
 

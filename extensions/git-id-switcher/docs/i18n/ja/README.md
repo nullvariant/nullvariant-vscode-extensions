@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" valign="top" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       ワンクリックで複数のGitプロフィールを切り替え。複数のGitHubアカウント、SSH鍵、GPG署名を管理し、<b>Gitサブモジュールにも自動的にプロフィールを適用</b>します。
@@ -19,7 +19,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo-ja.png" width="600" alt="デモ">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-ja.png" width="600" alt="デモ">
 
 ## 🎯 なぜ Git ID Switcher？
 
@@ -130,7 +130,7 @@ Host github-work
 2. プロフィールを選択
 3. 完了！Git configとSSH鍵が切り替わりました。
 
-<img src="https://assets.nullvariant.com/git-id-switcher/quickpick-ja.png" width="600" alt="Quick Pick">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-ja.png" width="600" alt="Quick Pick">
 
 ### SSHホストエイリアスの使い方
 
