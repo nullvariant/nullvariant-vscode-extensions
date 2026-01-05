@@ -16,8 +16,8 @@ import * as vscode from 'vscode';
 // Constants
 // ============================================================================
 
-/** Asset server base URL */
-const ASSET_BASE_URL = 'https://assets.nullvariant.com/git-id-switcher';
+/** Asset server base URL (monorepo-based structure) */
+const ASSET_BASE_URL = 'https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher';
 
 /** Fetch timeout in milliseconds */
 const FETCH_TIMEOUT_MS = 10000;
@@ -597,7 +597,10 @@ async function fetchDocumentation(locale: string): Promise<{ content: string; lo
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const url = `${ASSET_BASE_URL}/docs/i18n/${locale}/README.md`;
+    // English README is at extension root, other languages are in docs/i18n/{locale}/
+    const url = locale === 'en'
+      ? `${ASSET_BASE_URL}/README.md`
+      : `${ASSET_BASE_URL}/docs/i18n/${locale}/README.md`;
     const response = await fetch(url, { signal: controller.signal });
 
     clearTimeout(timeoutId);

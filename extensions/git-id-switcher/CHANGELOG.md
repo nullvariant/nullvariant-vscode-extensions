@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.31] - 2026-01-05
+
+### Changed
+
+- **Documentation Webview URL**: Updated R2 fetch URLs to new monorepo-based structure
+  - Base URL: `assets.nullvariant.com/git-id-switcher` → `assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher`
+  - English README: `docs/i18n/en/README.md` → `README.md` (extension root)
+  - Other languages: unchanged relative path (`docs/i18n/{locale}/README.md`)
+
 ## [0.10.30] - 2026-01-05
 
 ### Changed
@@ -853,7 +862,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.30...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.31...HEAD
+[0.10.31]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.30...git-id-switcher-v0.10.31
 [0.10.30]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.29...git-id-switcher-v0.10.30
 [0.10.29]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.28...git-id-switcher-v0.10.29
 [0.10.28]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.27...git-id-switcher-v0.10.28
