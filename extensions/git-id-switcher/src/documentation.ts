@@ -4,13 +4,14 @@
  * Displays localized documentation in a Webview panel.
  * Fetches Markdown from external server and renders safely with XSS protection.
  *
- * Security: enableScripts: false, strict CSP, HTML escaping
+ * Security: enableScripts: true with nonce-based CSP, HTML sanitization
  *
  * @author Null;Variant
  * @license MIT
  */
 
 import * as vscode from 'vscode';
+import * as crypto from 'crypto';
 
 // ============================================================================
 // Constants
@@ -54,6 +55,14 @@ const PANEL_TITLES: Record<string, string> = {
   'ru': 'Git ID Switcher Документация',
 };
 
+/**
+ * Generate a cryptographically secure nonce for CSP
+ * @returns Base64-encoded random string
+ */
+function generateNonce(): string {
+  return crypto.randomBytes(16).toString('base64');
+}
+
 // ============================================================================
 // Security Utilities (Step 1 - Most Critical)
 // ============================================================================
@@ -61,8 +70,8 @@ const PANEL_TITLES: Record<string, string> = {
 /**
  * Sanitize HTML to remove dangerous elements while preserving safe HTML
  *
- * SECURITY: Since enableScripts: false is set on the Webview, JavaScript
- * cannot execute. However, we still remove dangerous patterns as defense-in-depth.
+ * SECURITY: CSP with nonce restricts script execution to our inline script only.
+ * We still remove dangerous patterns as defense-in-depth.
  *
  * Removes:
  * - <script> tags (completely)
@@ -102,56 +111,24 @@ function escapeHtmlEntities(text: string): string {
     .replace(/>/g, '&gt;');
 }
 
-/** GitHub base URL for documentation links */
+/** GitHub base URL for documentation links (fallback for non-R2 content) */
 const GITHUB_BASE_URL = 'https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher';
 
 /**
- * Convert relative URLs to absolute GitHub URLs
+ * Resolve a relative path against a base path
  *
- * Webview cannot resolve relative paths, so we convert them to absolute URLs.
- * This preserves relative paths in the source README for GitHub/local viewing.
- *
- * @param html - HTML content with relative URLs
- * @param locale - Current locale (determines base path)
- * @returns HTML with absolute URLs
- */
-function convertRelativeUrls(html: string, locale: string): string {
-  // Base path for the current locale's README
-  // e.g., 'ja' → 'docs/i18n/ja/'
-  // e.g., 'en' → '' (root README)
-  const basePath = locale === 'en' ? '' : `docs/i18n/${locale}/`;
-
-  // Convert href attributes
-  html = html.replace(
-    /href="(\.\.?\/[^"]+)"/g,
-    (_match, relativePath: string) => {
-      const absoluteUrl = resolveRelativePath(basePath, relativePath);
-      return `href="${absoluteUrl}"`;
-    }
-  );
-
-  // Convert src attributes (for images)
-  html = html.replace(
-    /src="(\.\.?\/[^"]+)"/g,
-    (_match, relativePath: string) => {
-      const absoluteUrl = resolveRelativePath(basePath, relativePath);
-      return `src="${absoluteUrl}"`;
-    }
-  );
-
-  return html;
-}
-
-/**
- * Resolve a relative path against a base path and return absolute GitHub URL
- *
- * @param basePath - Base path (e.g., 'docs/i18n/ja/')
- * @param relativePath - Relative path (e.g., '../../../README.md')
- * @returns Absolute GitHub URL
+ * @param basePath - Base path (e.g., 'docs/i18n/ja/README.md')
+ * @param relativePath - Relative path (e.g., '../../CONTRIBUTING.md')
+ * @returns Resolved path (e.g., 'docs/CONTRIBUTING.md')
  */
 function resolveRelativePath(basePath: string, relativePath: string): string {
-  // Split base path into segments
-  const baseSegments = basePath.split('/').filter(s => s);
+  // Get directory of base path (remove filename)
+  const baseDir = basePath.includes('/')
+    ? basePath.substring(0, basePath.lastIndexOf('/'))
+    : '';
+
+  // Split base directory into segments
+  const baseSegments = baseDir.split('/').filter(s => s);
 
   // Split relative path into segments
   const relativeSegments = relativePath.split('/');
@@ -166,17 +143,53 @@ function resolveRelativePath(basePath: string, relativePath: string): string {
     }
   }
 
-  // Join and create full URL
-  const resolvedPath = resultSegments.join('/');
-  return `${GITHUB_BASE_URL}/${resolvedPath}`;
+  // Join segments
+  return resultSegments.join('/');
+}
+
+/**
+ * Classify a URL and determine how to handle it
+ *
+ * @param href - The href value from a link
+ * @param currentPath - Current document path for relative resolution
+ * @returns Classification with resolved path if applicable
+ */
+function classifyUrl(href: string, currentPath: string): {
+  type: 'internal-md' | 'anchor' | 'external';
+  resolvedPath?: string;
+} {
+  // Anchor links
+  if (href.startsWith('#')) {
+    return { type: 'anchor' };
+  }
+
+  // Absolute URLs (external)
+  if (href.startsWith('http://') || href.startsWith('https://')) {
+    return { type: 'external' };
+  }
+
+  // Relative paths
+  if (href.startsWith('./') || href.startsWith('../') || !href.includes('://')) {
+    const resolved = resolveRelativePath(currentPath, href);
+
+    // Check if it's a markdown file (internal navigation)
+    if (resolved.endsWith('.md')) {
+      return { type: 'internal-md', resolvedPath: resolved };
+    }
+
+    // Non-markdown files - treat as external (open on GitHub)
+    return { type: 'external' };
+  }
+
+  return { type: 'external' };
 }
 
 /**
  * Render Markdown/HTML hybrid content safely
  *
  * SECURITY APPROACH:
- * - enableScripts: false prevents JS execution in Webview
- * - CSP restricts resource loading
+ * - CSP with nonce restricts script execution to our link interceptor only
+ * - CSP restricts resource loading to allowed origins
  * - We sanitize dangerous patterns as defense-in-depth
  * - HTML tags from README are preserved (they're our own content from R2)
  *
@@ -342,17 +355,25 @@ function getPanelTitle(locale: string): string {
  * Build Content Security Policy header value
  *
  * @param webview - Webview instance for cspSource
+ * @param nonce - Optional nonce for script-src (required when enableScripts: true)
  * @returns CSP header string
  */
-function buildCsp(webview: vscode.Webview): string {
-  return [
+function buildCsp(webview: vscode.Webview, nonce?: string): string {
+  const directives = [
     `default-src 'none'`,
     // Allow images from: VSCode, our CDN, shields.io badges, GitHub avatars
     `img-src ${webview.cspSource} https://assets.nullvariant.com https://img.shields.io https://*.githubusercontent.com`,
     `style-src ${webview.cspSource} 'unsafe-inline'`,
     `connect-src https://assets.nullvariant.com`,
     `font-src ${webview.cspSource}`,
-  ].join('; ');
+  ];
+
+  // Add script-src with nonce when scripts are enabled
+  if (nonce) {
+    directives.push(`script-src 'nonce-${nonce}'`);
+  }
+
+  return directives.join('; ');
 }
 
 /**
@@ -361,14 +382,58 @@ function buildCsp(webview: vscode.Webview): string {
  * @param webview - Webview instance
  * @param content - Rendered HTML content
  * @param locale - Current locale
+ * @param currentPath - Current document path (for relative link resolution)
+ * @param nonce - CSP nonce for inline scripts
+ * @param canGoBack - Whether back navigation is available
  * @returns Complete HTML document
  */
 function getDocumentHtml(
   webview: vscode.Webview,
   content: string,
-  locale: string
+  locale: string,
+  currentPath: string,
+  nonce: string,
+  canGoBack: boolean
 ): string {
-  const csp = buildCsp(webview);
+  const csp = buildCsp(webview, nonce);
+
+  // Script to intercept link clicks and send messages to extension
+  const linkInterceptScript = `
+    (function() {
+      const vscode = acquireVsCodeApi();
+
+      document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        // Prevent default navigation
+        e.preventDefault();
+
+        // Handle anchor links (scroll within page)
+        if (href.startsWith('#')) {
+          const target = document.getElementById(href.slice(1));
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+          return;
+        }
+
+        // Send navigation request to extension
+        vscode.postMessage({
+          command: 'navigate',
+          href: href
+        });
+      });
+
+      // Handle back button
+      document.getElementById('back-btn')?.addEventListener('click', function() {
+        vscode.postMessage({ command: 'back' });
+      });
+    })();
+  `;
 
   return `<!DOCTYPE html>
 <html lang="${locale}">
@@ -393,6 +458,11 @@ function getDocumentHtml(
     }
     a:hover {
       color: var(--vscode-textLink-activeForeground);
+    }
+    /* External link indicator */
+    a[href^="http"]:not([href*="assets.nullvariant.com"])::after {
+      content: " ↗";
+      font-size: 0.8em;
     }
     h1, h2, h3 {
       color: var(--vscode-foreground);
@@ -451,6 +521,33 @@ function getDocumentHtml(
       border-top: 1px solid var(--vscode-panel-border);
       margin: 2em 0;
     }
+    .nav-bar {
+      margin-bottom: 1em;
+      padding-bottom: 0.5em;
+      border-bottom: 1px solid var(--vscode-panel-border);
+    }
+    .nav-bar button {
+      background: var(--vscode-button-secondaryBackground);
+      color: var(--vscode-button-secondaryForeground);
+      border: none;
+      padding: 4px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: var(--vscode-font-family);
+      font-size: var(--vscode-font-size);
+    }
+    .nav-bar button:hover {
+      background: var(--vscode-button-secondaryHoverBackground);
+    }
+    .nav-bar button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .nav-bar .current-path {
+      margin-left: 1em;
+      color: var(--vscode-descriptionForeground);
+      font-size: 0.9em;
+    }
     .footer {
       margin-top: 40px;
       padding-top: 20px;
@@ -463,11 +560,16 @@ function getDocumentHtml(
   </style>
 </head>
 <body>
+  <div class="nav-bar">
+    <button id="back-btn" ${canGoBack ? '' : 'disabled'}>← Back</button>
+    <span class="current-path">${currentPath}</span>
+  </div>
   ${content}
   <div class="footer">
     <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher#readme">View on GitHub</a>
     <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher">VS Code Marketplace</a>
   </div>
+  <script nonce="${nonce}">${linkInterceptScript}</script>
 </body>
 </html>`;
 }
@@ -587,20 +689,17 @@ function getErrorHtml(
 // ============================================================================
 
 /**
- * Fetch documentation with timeout and fallback
+ * Fetch a document by path from R2
  *
- * @param locale - Target locale
+ * @param path - Document path relative to extension root (e.g., 'README.md', 'docs/i18n/ja/README.md')
  * @returns Markdown content or null on failure
  */
-async function fetchDocumentation(locale: string): Promise<{ content: string; locale: string } | null> {
+async function fetchDocumentByPath(path: string): Promise<string | null> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    // English README is at extension root, other languages are in docs/i18n/{locale}/
-    const url = locale === 'en'
-      ? `${ASSET_BASE_URL}/README.md`
-      : `${ASSET_BASE_URL}/docs/i18n/${locale}/README.md`;
+    const url = `${ASSET_BASE_URL}/${path}`;
     const response = await fetch(url, { signal: controller.signal });
 
     clearTimeout(timeoutId);
@@ -622,32 +721,171 @@ async function fetchDocumentation(locale: string): Promise<{ content: string; lo
       }
 
       if (content.trim().length > 0) {
-        return { content, locale };
+        return content;
       }
-      // Empty response, try fallback
-    }
-
-    // 404: Try English fallback
-    if (response.status === 404 && locale !== 'en') {
-      return fetchDocumentation('en');
     }
 
     return null;
-  } catch (error) {
+  } catch {
     clearTimeout(timeoutId);
-
-    // Network error or timeout, try English fallback if not already
-    if (locale !== 'en') {
-      return fetchDocumentation('en');
-    }
-
     return null;
   }
+}
+
+/**
+ * Fetch documentation with locale-based fallback
+ *
+ * @param locale - Target locale
+ * @returns Markdown content with actual locale and path, or null on failure
+ */
+async function fetchDocumentation(locale: string): Promise<{ content: string; locale: string; path: string } | null> {
+  // English README is at extension root, other languages are in docs/i18n/{locale}/
+  const path = locale === 'en'
+    ? 'README.md'
+    : `docs/i18n/${locale}/README.md`;
+
+  const content = await fetchDocumentByPath(path);
+
+  if (content) {
+    return { content, locale, path };
+  }
+
+  // 404: Try English fallback
+  if (locale !== 'en') {
+    const fallbackContent = await fetchDocumentByPath('README.md');
+    if (fallbackContent) {
+      return { content: fallbackContent, locale: 'en', path: 'README.md' };
+    }
+  }
+
+  return null;
 }
 
 // ============================================================================
 // Main Entry Point
 // ============================================================================
+
+/**
+ * Navigation state for the documentation viewer
+ */
+interface NavigationState {
+  currentPath: string;
+  currentLocale: string;
+  history: string[];  // Stack of previous paths for back navigation
+}
+
+/**
+ * Update Webview with document content
+ */
+async function updateWebviewContent(
+  panel: vscode.WebviewPanel,
+  state: NavigationState,
+  nonce: string
+): Promise<boolean> {
+  const content = await fetchDocumentByPath(state.currentPath);
+
+  if (content) {
+    const renderedContent = renderMarkdown(content);
+    panel.webview.html = getDocumentHtml(
+      panel.webview,
+      renderedContent,
+      state.currentLocale,
+      state.currentPath,
+      nonce,
+      state.history.length > 0
+    );
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Handle navigation to a new document
+ */
+async function handleNavigation(
+  panel: vscode.WebviewPanel,
+  state: NavigationState,
+  href: string,
+  nonce: string
+): Promise<void> {
+  const classification = classifyUrl(href, state.currentPath);
+
+  switch (classification.type) {
+    case 'internal-md':
+      if (classification.resolvedPath) {
+        // Show loading
+        panel.webview.html = getLoadingHtml(panel.webview);
+
+        // Try to fetch the document
+        const content = await fetchDocumentByPath(classification.resolvedPath);
+
+        if (content) {
+          // Push current path to history before navigating
+          state.history.push(state.currentPath);
+          state.currentPath = classification.resolvedPath;
+
+          const renderedContent = renderMarkdown(content);
+          panel.webview.html = getDocumentHtml(
+            panel.webview,
+            renderedContent,
+            state.currentLocale,
+            state.currentPath,
+            nonce,
+            state.history.length > 0
+          );
+        } else {
+          // Document not found - offer to open on GitHub
+          const githubUrl = `${GITHUB_BASE_URL}/${classification.resolvedPath}`;
+          const choice = await vscode.window.showWarningMessage(
+            `Document not found on R2. Open on GitHub?`,
+            'Open on GitHub',
+            'Cancel'
+          );
+          if (choice === 'Open on GitHub') {
+            vscode.env.openExternal(vscode.Uri.parse(githubUrl));
+          }
+          // Restore current view
+          await updateWebviewContent(panel, state, nonce);
+        }
+      }
+      break;
+
+    case 'external':
+      // Open external URLs in browser
+      let externalUrl = href;
+
+      // If it's a relative non-markdown path, convert to GitHub URL
+      if (!href.startsWith('http://') && !href.startsWith('https://')) {
+        const resolved = resolveRelativePath(state.currentPath, href);
+        externalUrl = `${GITHUB_BASE_URL}/${resolved}`;
+      }
+
+      vscode.env.openExternal(vscode.Uri.parse(externalUrl));
+      break;
+
+    case 'anchor':
+      // Anchor links are handled in the Webview JS
+      break;
+  }
+}
+
+/**
+ * Handle back navigation
+ */
+async function handleBack(
+  panel: vscode.WebviewPanel,
+  state: NavigationState,
+  nonce: string
+): Promise<void> {
+  if (state.history.length > 0) {
+    const previousPath = state.history.pop()!;
+    state.currentPath = previousPath;
+
+    panel.webview.html = getLoadingHtml(panel.webview);
+    await updateWebviewContent(panel, state, nonce);
+  }
+}
 
 /**
  * Show documentation in a Webview panel
@@ -665,30 +903,62 @@ export async function showDocumentation(
   const locale = getDocumentLocale();
   const panelTitle = getPanelTitle(locale);
 
+  // Generate nonce for CSP
+  const nonce = generateNonce();
+
   // Create Webview panel
-  // SECURITY: enableScripts: false prevents all JavaScript execution
+  // SECURITY: enableScripts: true for link interception, CSP restricts to nonce-only
   const panel = vscode.window.createWebviewPanel(
     'gitIdSwitcherDocs',
     panelTitle,
     vscode.ViewColumn.One,
     {
-      enableScripts: false,  // SECURITY: No JS needed, disable completely
+      enableScripts: true,  // Required for link click interception
       retainContextWhenHidden: false,  // Release resources when hidden
     }
   );
 
+  // Navigation state
+  const state: NavigationState = {
+    currentPath: locale === 'en' ? 'README.md' : `docs/i18n/${locale}/README.md`,
+    currentLocale: locale,
+    history: [],
+  };
+
   // Show loading state
   panel.webview.html = getLoadingHtml(panel.webview);
 
-  // Fetch and render documentation
+  // Handle messages from Webview
+  panel.webview.onDidReceiveMessage(
+    async (message: { command: string; href?: string }) => {
+      // Security: Whitelist allowed commands
+      if (message.command === 'navigate' && message.href) {
+        await handleNavigation(panel, state, message.href, nonce);
+      } else if (message.command === 'back') {
+        await handleBack(panel, state, nonce);
+      }
+    },
+    undefined,
+    context.subscriptions
+  );
+
+  // Fetch and render initial documentation
   try {
     const result = await fetchDocumentation(locale);
 
     if (result) {
-      let renderedContent = renderMarkdown(result.content);
-      // Convert relative URLs to absolute GitHub URLs for Webview
-      renderedContent = convertRelativeUrls(renderedContent, result.locale);
-      panel.webview.html = getDocumentHtml(panel.webview, renderedContent, result.locale);
+      state.currentPath = result.path;
+      state.currentLocale = result.locale;
+
+      const renderedContent = renderMarkdown(result.content);
+      panel.webview.html = getDocumentHtml(
+        panel.webview,
+        renderedContent,
+        result.locale,
+        result.path,
+        nonce,
+        false
+      );
     } else {
       panel.webview.html = getErrorHtml(panel.webview, 'network');
     }
