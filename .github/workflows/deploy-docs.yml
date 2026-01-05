@@ -5,8 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'extensions/git-id-switcher/README.md'  # English version
-      - 'extensions/git-id-switcher/docs/**'    # Other 25 languages
+      - 'README.md'                               # Monorepo root
+      - 'CONTRIBUTING.md'                         # Monorepo root
+      - 'LICENSE'                                 # Monorepo root
+      - 'extensions/git-id-switcher/README.md'    # Extension root (English)
+      - 'extensions/git-id-switcher/LICENSE'      # Extension root
+      - 'extensions/git-id-switcher/CHANGELOG.md' # Extension root
+      - 'extensions/git-id-switcher/docs/**'      # All language READMEs + docs
   workflow_dispatch:  # Manual trigger
 
 permissions:
@@ -30,24 +35,90 @@ jobs:
 
       - name: Deploy documentation to R2
         run: |
-          # Upload English README (from extension root, not monorepo root)
-          echo "Deploying en/README.md..."
-          wrangler r2 object put "nullvariant-assets/git-id-switcher/docs/i18n/en/README.md" \
-            --file "extensions/git-id-switcher/README.md" \
+          R2_BASE="nullvariant-assets/nullvariant-vscode-extensions"
+          EXT_PATH="extensions/git-id-switcher"
+
+          # === Monorepo root files ===
+          echo "=== Deploying monorepo root files ==="
+
+          if [ -f "README.md" ]; then
+            echo "Deploying monorepo README.md..."
+            wrangler r2 object put "${R2_BASE}/README.md" \
+              --file "README.md" \
+              --content-type "text/markdown; charset=utf-8" \
+              --remote
+          fi
+
+          if [ -f "CONTRIBUTING.md" ]; then
+            echo "Deploying monorepo CONTRIBUTING.md..."
+            wrangler r2 object put "${R2_BASE}/CONTRIBUTING.md" \
+              --file "CONTRIBUTING.md" \
+              --content-type "text/markdown; charset=utf-8" \
+              --remote
+          fi
+
+          if [ -f "LICENSE" ]; then
+            echo "Deploying monorepo LICENSE..."
+            wrangler r2 object put "${R2_BASE}/LICENSE" \
+              --file "LICENSE" \
+              --content-type "text/plain; charset=utf-8" \
+              --remote
+          fi
+
+          # === Extension root files ===
+          echo "=== Deploying extension root files ==="
+
+          # English README (extension root)
+          echo "Deploying extension README.md (English)..."
+          wrangler r2 object put "${R2_BASE}/${EXT_PATH}/README.md" \
+            --file "${EXT_PATH}/README.md" \
             --content-type "text/markdown; charset=utf-8" \
             --remote
 
-          # Upload other 25 languages from docs/i18n/
-          for lang_dir in extensions/git-id-switcher/docs/i18n/*/; do
+          if [ -f "${EXT_PATH}/LICENSE" ]; then
+            echo "Deploying extension LICENSE..."
+            wrangler r2 object put "${R2_BASE}/${EXT_PATH}/LICENSE" \
+              --file "${EXT_PATH}/LICENSE" \
+              --content-type "text/plain; charset=utf-8" \
+              --remote
+          fi
+
+          if [ -f "${EXT_PATH}/CHANGELOG.md" ]; then
+            echo "Deploying extension CHANGELOG.md..."
+            wrangler r2 object put "${R2_BASE}/${EXT_PATH}/CHANGELOG.md" \
+              --file "${EXT_PATH}/CHANGELOG.md" \
+              --content-type "text/markdown; charset=utf-8" \
+              --remote
+          fi
+
+          # === Extension docs files ===
+          echo "=== Deploying extension docs files ==="
+
+          # Deploy all .md files in docs/ (CONTRIBUTING.md, LANGUAGES.md, etc.)
+          for doc_file in ${EXT_PATH}/docs/*.md; do
+            if [ -f "$doc_file" ]; then
+              filename=$(basename "$doc_file")
+              echo "Deploying docs/${filename}..."
+              wrangler r2 object put "${R2_BASE}/${EXT_PATH}/docs/${filename}" \
+                --file "$doc_file" \
+                --content-type "text/markdown; charset=utf-8" \
+                --remote
+            fi
+          done
+
+          # === Language-specific READMEs ===
+          echo "=== Deploying language-specific READMEs ==="
+
+          for lang_dir in ${EXT_PATH}/docs/i18n/*/; do
             lang=$(basename "$lang_dir")
             echo "Deploying ${lang}/README.md..."
-            wrangler r2 object put "nullvariant-assets/git-id-switcher/docs/i18n/${lang}/README.md" \
+            wrangler r2 object put "${R2_BASE}/${EXT_PATH}/docs/i18n/${lang}/README.md" \
               --file "${lang_dir}README.md" \
               --content-type "text/markdown; charset=utf-8" \
               --remote
           done
 
-          echo "Documentation deployed successfully (26 languages)!"
+          echo "=== Documentation deployed successfully! ==="
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
