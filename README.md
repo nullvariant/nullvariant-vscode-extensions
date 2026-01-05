@@ -9,7 +9,7 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 <table>
   <tr>
     <td align="center" width="150">
-      <img src="https://assets.nullvariant.com/git-id-switcher/icon.png" width="128" alt="Git ID Switcher">
+      <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
       Switch between multiple Git identities with one click. Manage multiple GitHub accounts, SSH keys, GPG signing, and <b>automatically apply identity to Git Submodules</b>.
@@ -27,7 +27,7 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
 <br>
 
-<img src="https://assets.nullvariant.com/git-id-switcher/demo.png" width="600" alt="Git ID Switcher Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo.png" width="600" alt="Git ID Switcher Demo">
 
 ## Development
 
