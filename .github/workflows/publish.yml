@@ -66,18 +66,14 @@ jobs:
           # Install wrangler
           npm install -g wrangler
 
-          # Upload English README (from extension root, not monorepo root)
-          echo "Deploying en/README.md..."
-          wrangler r2 object put "nullvariant-assets/git-id-switcher/docs/i18n/en/README.md" \
-            --file "extensions/git-id-switcher/README.md" \
-            --content-type "text/markdown; charset=utf-8" \
-            --remote
+          R2_BASE="nullvariant-assets/nullvariant-vscode-extensions"
+          EXT_PATH="extensions/git-id-switcher"
 
-          # Upload other 25 languages from docs/i18n/
-          for lang_dir in extensions/git-id-switcher/docs/i18n/*/; do
+          # Upload all language READMEs from docs/i18n/ (including en/)
+          for lang_dir in ${EXT_PATH}/docs/i18n/*/; do
             lang=$(basename "$lang_dir")
             echo "Deploying ${lang}/README.md..."
-            wrangler r2 object put "nullvariant-assets/git-id-switcher/docs/i18n/${lang}/README.md" \
+            wrangler r2 object put "${R2_BASE}/${EXT_PATH}/docs/i18n/${lang}/README.md" \
               --file "${lang_dir}README.md" \
               --content-type "text/markdown; charset=utf-8" \
               --remote
