@@ -542,3 +542,13 @@ MIT License - see [LICENSE](https://github.com/nullvariant/nullvariant-vscode-ex
 ## Credits
 
 Created by [Null;Variant](https://github.com/nullvariant)
+
+---
+
+<!-- DEV: XSS Security Test (remove after testing) -->
+<details>
+<summary>🔒 Security Test</summary>
+
+[XSS Test Page](../test-xss/README.md)
+
+</details>
