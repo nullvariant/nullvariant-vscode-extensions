@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.34] - 2026-01-06
+
+### Changed
+
+- **Documentation Webview: Unified English Path**
+  - English README now served from `docs/i18n/en/README.md` (same structure as other languages)
+  - Enables consistent in-Webview navigation between all languages
+  - English fallback path also updated to i18n directory
+
+### Added
+
+- **English i18n README** (`docs/i18n/en/README.md`)
+  - Contains relative language links for Webview navigation
+  - Uses `-en` suffix for English-specific images (`demo-en.png`, `quickpick-en.png`)
+
+- **Language Link Updates**
+  - All 25 language READMEs updated to link to `../en/README.md`
+  - LANGUAGES.md updated to link to `i18n/en/README.md`
+
 ## [0.10.33] - 2026-01-06
 
 ### Fixed

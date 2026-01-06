@@ -728,10 +728,8 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
  * @returns Markdown content with actual locale and path, or null on failure
  */
 async function fetchDocumentation(locale: string): Promise<{ content: string; locale: string; path: string } | null> {
-  // English README is at extension root, other languages are in docs/i18n/{locale}/
-  const path = locale === 'en'
-    ? 'README.md'
-    : `docs/i18n/${locale}/README.md`;
+  // All languages are in docs/i18n/{locale}/
+  const path = `docs/i18n/${locale}/README.md`;
 
   const content = await fetchDocumentByPath(path);
 
@@ -741,9 +739,9 @@ async function fetchDocumentation(locale: string): Promise<{ content: string; lo
 
   // 404: Try English fallback
   if (locale !== 'en') {
-    const fallbackContent = await fetchDocumentByPath('README.md');
+    const fallbackContent = await fetchDocumentByPath('docs/i18n/en/README.md');
     if (fallbackContent) {
-      return { content: fallbackContent, locale: 'en', path: 'README.md' };
+      return { content: fallbackContent, locale: 'en', path: 'docs/i18n/en/README.md' };
     }
   }
 
@@ -902,7 +900,7 @@ export async function showDocumentation(
   void context;
 
   const locale = getDocumentLocale();
-  const initialPath = locale === 'en' ? 'README.md' : `docs/i18n/${locale}/README.md`;
+  const initialPath = `docs/i18n/${locale}/README.md`;
 
   // Generate nonce for CSP
   const nonce = generateNonce();
