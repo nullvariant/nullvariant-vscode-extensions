@@ -14,7 +14,7 @@ Full VSCode UI localization (commands, settings, notifications) and README docum
 
 | Emoji | Code | Language | Native Name | UI | README |
 |-------|------|----------|-------------|------|--------|
-| 🇺🇸 | en | English | English | ✅ | [README.md](../README.md) |
+| 🇺🇸 | en | English | English | ✅ | [README.md](i18n/en/README.md) |
 | 🇯🇵 | ja | Japanese | 日本語 | ✅ | [README.md](i18n/ja/README.md) |
 | 🇨🇳 | zh-CN | Chinese (Simplified) | 简体中文 | ✅ | [README.md](i18n/zh-CN/README.md) |
 | 🇹🇼 | zh-TW | Chinese (Traditional) | 繁體中文 | ✅ | [README.md](i18n/zh-TW/README.md) |
