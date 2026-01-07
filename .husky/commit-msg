@@ -1,0 +1,8 @@
+# Chain to parent's commit-msg hook for signature insertion
+# This ensures commits are signed even when husky manages hooks
+
+PARENT_HOOK="$(git rev-parse --show-toplevel)/../../scripts/hooks/commit-msg"
+
+if [ -f "$PARENT_HOOK" ]; then
+  "$PARENT_HOOK" "$@"
+fi
