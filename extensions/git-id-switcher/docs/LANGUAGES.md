@@ -1,7 +1,7 @@
 # Supported Languages
 
 <p align="center">
-  <img src="../images/whoami.webp" alt="Who am I?" width="600">
+  <img src="../images/whoami.png" alt="Who am I?" width="600">
 </p>
 
 This extension values linguistic diversity. We support not only major languages but also minority languages and even joke languages.
