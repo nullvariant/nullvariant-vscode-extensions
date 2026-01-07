@@ -32,7 +32,7 @@ jobs:
           node-version: '20'
 
       - name: Install wrangler
-        run: npm install -g wrangler
+        run: npm install -g wrangler@4.54.0
 
       - name: Deploy documentation to R2
         run: |

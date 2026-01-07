@@ -69,7 +69,7 @@ jobs:
       - name: Deploy documentation to R2
         run: |
           # Install wrangler
-          npm install -g wrangler
+          npm install -g wrangler@4.54.0
 
           R2_BASE="nullvariant-assets/nullvariant-vscode-extensions"
           EXT_PATH="extensions/git-id-switcher"
