@@ -1,0 +1,52 @@
+# Mergify Configuration
+# https://docs.mergify.com/
+
+pull_request_rules:
+  # Auto-merge bot PRs that pass CI
+  - name: Auto-merge Dependabot minor/patch updates
+    conditions:
+      - author=dependabot[bot]
+      - check-success=build
+      - -draft
+      - label!=do-not-merge
+    actions:
+      merge:
+        method: squash
+
+  - name: Auto-merge Renovate minor/patch updates
+    conditions:
+      - author=renovate[bot]
+      - check-success=build
+      - -draft
+      - label!=do-not-merge
+    actions:
+      merge:
+        method: squash
+
+  - name: Auto-merge ImgBot
+    conditions:
+      - author=imgbot[bot]
+      - check-success=build
+      - -draft
+    actions:
+      merge:
+        method: squash
+
+  # Label PRs by type
+  - name: Label documentation PRs
+    conditions:
+      - files~=\.(md|txt)$
+    actions:
+      label:
+        add:
+          - documentation
+
+  - name: Label dependency PRs
+    conditions:
+      - or:
+          - author=dependabot[bot]
+          - author=renovate[bot]
+    actions:
+      label:
+        add:
+          - dependencies
