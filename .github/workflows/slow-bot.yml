@@ -58,6 +58,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ steps.app-token.outputs.token }}
+          sign-commits: true
           author: nullvariant-slow[bot] <2610174+nullvariant-slow[bot]@users.noreply.github.com>
           committer: nullvariant-slow[bot] <2610174+nullvariant-slow[bot]@users.noreply.github.com>
           commit-message: |
