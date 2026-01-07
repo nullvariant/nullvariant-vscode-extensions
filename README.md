@@ -1,5 +1,7 @@
 # nullvariant-vscode-extensions
 
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nullvariant/nullvariant-vscode-extensions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/nullvariant/nullvariant-vscode-extensions)
+
 VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
 ## Extensions
@@ -8,7 +10,7 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
 <table>
   <tr>
-    <td align="center" width="150">
+    <td align="center" valign="top" width="150">
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
