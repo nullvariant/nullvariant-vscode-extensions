@@ -200,7 +200,13 @@
             "order": 2,
             "type": "string",
             "default": "INFO",
-            "enum": ["DEBUG", "INFO", "WARN", "ERROR", "SECURITY"],
+            "enum": [
+              "DEBUG",
+              "INFO",
+              "WARN",
+              "ERROR",
+              "SECURITY"
+            ],
             "description": "%config.logging.level%"
           },
           "gitIdSwitcher.logging.filePath": {
@@ -263,9 +269,9 @@
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "@vscode/vsce": "^3.0.0",
     "eslint": "^8.57.0",
-    "typescript": "^5.3.0",
-    "@vscode/vsce": "^3.0.0"
+    "typescript": "^5.3.0"
   },
   "repository": {
     "type": "git",
