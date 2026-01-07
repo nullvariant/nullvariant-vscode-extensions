@@ -14,6 +14,8 @@ jobs:
     if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
     permissions:
       contents: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Checkout
@@ -37,6 +39,11 @@ jobs:
       - name: Package extension
         run: npm run package
         working-directory: extensions/git-id-switcher
+
+      - name: Generate SLSA Provenance attestation
+        uses: actions/attest-build-provenance@ef244123eb79f2f7a7e75d99086184180e6d0018 # v2.1.0
+        with:
+          subject-path: extensions/git-id-switcher/*.vsix
 
       - name: Get version from tag
         id: version
