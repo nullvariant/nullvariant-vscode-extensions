@@ -71,7 +71,7 @@ function waitForFileOps(ms: number = 50): Promise<void> {
 
 /**
  * Create test configuration for FileLogWriter
- * 
+ *
  * DRY: Centralizes test config creation to avoid duplication
  */
 function createTestConfig(
@@ -89,7 +89,7 @@ function createTestConfig(
 
 /**
  * Assert that log file contains expected content
- * 
+ *
  * DRY: Centralizes assertion logic for log content verification
  */
 function assertLogContains(

@@ -53,7 +53,7 @@ async function testCommandAllowlist(): Promise<void> {
   {
     console.log('  Testing allowedOptionsWithValues setting...');
     // git config has allowAnyPositional: false but allowedOptionsWithValues: ['user.name', ...]
-    
+
     // Correct usage: value follows allowed option
     const result1 = isCommandAllowed('git', ['config', 'user.name', 'John Doe']);
     assert.strictEqual(result1.allowed, true, 'Should allow value following allowed option');
@@ -70,11 +70,11 @@ async function testCommandAllowlist(): Promise<void> {
   // Test 6: allowAnyPositional (ssh-add)
   {
     console.log('  Testing allowAnyPositional (ssh-add)...');
-    
+
     // Valid path (also checked by isSecurePath)
     const result1 = isCommandAllowed('ssh-add', ['/path/to/key']);
     assert.strictEqual(result1.allowed, true, 'Should allow arbitrary positional for ssh-add');
-    
+
     // But flag-like strings are still blocked if unknown
     const result2 = isCommandAllowed('ssh-add', ['--unknown-flag']);
     assert.strictEqual(result2.allowed, false, 'Should block unknown flags even with allowAnyPositional');
@@ -84,7 +84,7 @@ async function testCommandAllowlist(): Promise<void> {
   {
     console.log('  Testing path argument validation...');
     // ssh-add has allowAnyPositional: true
-    
+
     // Valid path
     const result1 = isCommandAllowed('ssh-add', ['/path/to/key']);
     assert.strictEqual(result1.allowed, true, 'Should allow valid path');

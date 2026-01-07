@@ -269,7 +269,7 @@ export function validateIdentitySchema(identity: unknown): SchemaValidationResul
   // SECURITY: Object.keys() prevents prototype chain traversal
   const knownFields = Object.keys(IDENTITY_SCHEMA);
   const objKeys = Object.keys(obj);
-  
+
   // SECURITY: Limit number of fields to prevent DoS via excessive unknown fields
   const MAX_FIELDS = 100;
   if (objKeys.length > MAX_FIELDS) {
