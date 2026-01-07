@@ -265,7 +265,7 @@
     "generate:readme": "node scripts/generate-root-readme.js"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
+    "@types/node": "^25.0.3",
     "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
