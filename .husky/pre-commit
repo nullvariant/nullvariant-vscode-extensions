@@ -1,0 +1,10 @@
+# Auto-regenerate README.md when i18n/en/README.md changes
+# This ensures all commits are signed by the developer, not by GitHub Actions
+
+if git diff --cached --name-only | grep -q "extensions/git-id-switcher/docs/i18n/en/README.md"; then
+  echo "📝 Regenerating README.md from i18n/en source..."
+  cd extensions/git-id-switcher
+  npm run generate:readme
+  git add README.md
+  echo "✅ README.md regenerated and staged"
+fi

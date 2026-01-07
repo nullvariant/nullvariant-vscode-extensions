@@ -13,21 +13,27 @@ on:
         type: boolean
         default: true
 
+permissions: read-all
+
 jobs:
   unpublish:
     runs-on: ubuntu-latest
+    # Prevent forks from unpublishing (no marketplace secrets)
+    if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: extensions/git-id-switcher/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
         working-directory: extensions/git-id-switcher
 
       - name: Unpublish from VS Code Marketplace

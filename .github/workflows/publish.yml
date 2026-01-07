@@ -5,19 +5,22 @@ on:
     tags:
       - 'git-id-switcher-v*'
 
-permissions:
-  contents: write
+permissions: read-all
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Prevent forks from publishing
+    if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: '20'
 
@@ -38,13 +41,13 @@ jobs:
         run: echo "version=${GITHUB_REF#refs/tags/git-id-switcher-v}" >> $GITHUB_OUTPUT
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: git-id-switcher-${{ steps.version.outputs.version }}.vsix
           path: extensions/git-id-switcher/*.vsix
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
           files: extensions/git-id-switcher/*.vsix
           generate_release_notes: true
