@@ -3,12 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "description": "VS Code extensions monorepo",
-  "author": "Null;Variant <nullvariant@pm.me>",
+  "author": "Null;Variant <null@nullvariant.com>",
   "license": "MIT",
   "scripts": {
     "prepare": "husky"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "lodash": "4.17.21"
   }
 }
