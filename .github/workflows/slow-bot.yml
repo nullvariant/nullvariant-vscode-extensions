@@ -1,0 +1,78 @@
+# nullvariant-slow[bot] - The laziest contributor
+# "働きたくないでござる"
+
+name: 🦥 Slow Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'What should Slow say? (optional)'
+        required: false
+        default: '...zzz...'
+
+jobs:
+  slow-commit:
+    name: 🦥 Make a lazy commit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🦥 Wake up slowly...
+        run: |
+          echo "...yawn..."
+          sleep 3
+          echo "Do I really have to work today?"
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.SLOW_BOT_APP_ID }}
+          private_key: ${{ secrets.SLOW_BOT_PRIVATE_KEY }}
+
+      - name: 📥 Checkout (reluctantly)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: 🦥 Configure Git as Slow
+        run: |
+          git config user.name "nullvariant-slow[bot]"
+          git config user.email "2610174+nullvariant-slow[bot]@users.noreply.github.com"
+
+      - name: 📝 Leave a lazy message
+        run: |
+          # Create or update SLOTH.md
+          cat > SLOTH.md << 'EOF'
+          # 🦥 Slow's Corner
+
+          > "Why hurry? The code will still be here tomorrow."
+
+          ## Today's Wisdom
+
+          ${{ github.event.inputs.message }}
+
+          ---
+
+          *Last yawned: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+
+          > 働きたくないでござる
+          EOF
+
+          # Fix the date
+          sed -i "s/\$(date -u +\"%Y-%m-%d %H:%M:%S UTC\")/$(date -u +"%Y-%m-%d %H:%M:%S UTC")/" SLOTH.md
+
+      - name: 💤 Commit (eventually)
+        run: |
+          git add SLOTH.md
+          git commit -m "🦥 ...zzz... updated wisdom
+
+          ${{ github.event.inputs.message }}
+
+          *yawn* maybe I'll do more tomorrow..."
+          git push
+
+      - name: 😴 Go back to sleep
+        run: |
+          echo "That was exhausting."
+          echo "Time for a nap... 💤"
