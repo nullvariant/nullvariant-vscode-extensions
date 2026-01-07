@@ -115,8 +115,8 @@ jobs:
   codeql-analysis:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-    # Prevent forks from writing to security-events
-    if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
+    # Only run when results can be uploaded (skip forked PRs)
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     permissions:
       actions: read
       contents: read
