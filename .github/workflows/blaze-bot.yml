@@ -1,0 +1,86 @@
+# nullvariant-blaze[bot] - The hot-headed deployer
+# "よっしゃ！デプロイしまくるぞ！"
+
+name: 🐗 Blaze Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'What should Blaze shout? (optional)'
+        required: false
+        default: 'LETS GOOOO!!!'
+
+jobs:
+  blaze-commit:
+    name: 🐗 Charge forward!
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🐗 Get fired up!
+        run: |
+          echo "🔥🔥🔥 BLAZE IS HERE! 🔥🔥🔥"
+          echo "No time to waste! Let's DO THIS!"
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.BLAZE_BOT_APP_ID }}
+          private_key: ${{ secrets.BLAZE_BOT_PRIVATE_KEY }}
+
+      - name: 📥 Checkout (FAST!)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: 📝 Leave a fired-up message
+        run: |
+          mkdir -p docs
+          cat > docs/BLAZE.md << EOF
+          # 🐗 Blaze's Battle Cry
+
+          > "Don't think, just DO IT!"
+
+          ## Today's War Cry
+
+          ${{ github.event.inputs.message }}
+
+          ---
+
+          *Last charged: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+
+          > よっしゃ！デプロイしまくるぞ！
+          EOF
+
+      - name: 📬 Create PR with verified commit
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          sign-commits: true
+          author: nullvariant-blaze[bot] <2610768+nullvariant-blaze[bot]@users.noreply.github.com>
+          committer: nullvariant-blaze[bot] <2610768+nullvariant-blaze[bot]@users.noreply.github.com>
+          commit-message: |
+            🐗 CHARGE!!! Updated battle cry
+
+            ${{ github.event.inputs.message }}
+
+            NO RETREAT! FULL SPEED AHEAD!
+          branch: blaze/charge-${{ github.run_number }}
+          delete-branch: true
+          title: "🐗 Blaze's battle cry update"
+          body: |
+            ## 🐗 LETS GOOOO!!!
+
+            ${{ github.event.inputs.message }}
+
+            ---
+
+            > よっしゃ！デプロイしまくるぞ！
+
+            *This PR was ENTHUSIASTICALLY created by nullvariant-blaze[bot]*
+
+      - name: 🔥 Victory roar
+        run: |
+          echo "MISSION COMPLETE!"
+          echo "Who's next?! 🔥🔥🔥"

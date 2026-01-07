@@ -1,0 +1,92 @@
+# nullvariant-mimi[bot] - The keen listener
+# "バリデーターを通してくださいね"
+
+name: 🐰 Mimi Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'What did Mimi hear? (optional)'
+        required: false
+        default: 'I heard something...'
+
+jobs:
+  mimi-commit:
+    name: 🐰 Listen carefully
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🐰 Perk up ears
+        run: |
+          echo "🐰 *ears twitching*"
+          echo "Shh... I'm listening..."
+          echo "Did someone forget to validate their input?"
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.MIMI_BOT_APP_ID }}
+          private_key: ${{ secrets.MIMI_BOT_PRIVATE_KEY }}
+
+      - name: 📥 Checkout (quietly)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: 📝 Leave a whispered note
+        run: |
+          mkdir -p docs
+          cat > docs/MIMI.md << EOF
+          # 🐰 Mimi's Listening Post
+
+          > "These ears don't miss a thing."
+
+          ## Today's Whisper
+
+          ${{ github.event.inputs.message }}
+
+          ### Reminder
+          Always validate your inputs!
+          Mimi's ears can hear unvalidated data from miles away...
+
+          ---
+
+          *Last heard: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+
+          > バリデーターを通してくださいね
+          EOF
+
+      - name: 📬 Create PR with verified commit
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          sign-commits: true
+          author: nullvariant-mimi[bot] <2610795+nullvariant-mimi[bot]@users.noreply.github.com>
+          committer: nullvariant-mimi[bot] <2610795+nullvariant-mimi[bot]@users.noreply.github.com>
+          commit-message: |
+            🐰 Heard something important
+
+            ${{ github.event.inputs.message }}
+
+            *ears still listening*
+          branch: mimi/whisper-${{ github.run_number }}
+          delete-branch: true
+          title: "🐰 Mimi's listening post update"
+          body: |
+            ## 🐰 *whispers*
+
+            ${{ github.event.inputs.message }}
+
+            ---
+
+            > バリデーターを通してくださいね
+
+            *This PR was quietly delivered by nullvariant-mimi[bot]*
+
+      - name: 👂 Keep listening
+        run: |
+          echo "*ears still perked*"
+          echo "Always listening for unvalidated inputs..."
+          echo "🐰 Stay safe out there!"

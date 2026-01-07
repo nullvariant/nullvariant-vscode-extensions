@@ -37,8 +37,9 @@ jobs:
 
       - name: 📝 Leave a lazy message
         run: |
-          # Create or update SLOTH.md
-          cat > SLOTH.md << EOF
+          # Create docs directory and update SLOW.md
+          mkdir -p docs
+          cat > docs/SLOW.md << EOF
           # 🦥 Slow's Corner
 
           > "Why hurry? The code will still be here tomorrow."
