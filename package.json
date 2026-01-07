@@ -10,6 +10,6 @@
   },
   "devDependencies": {
     "husky": "^9.1.7",
-    "lodash": "4.17.20"
+    "lodash": "4.17.21"
   }
 }
