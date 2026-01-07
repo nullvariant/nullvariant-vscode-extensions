@@ -1,0 +1,37 @@
+# Restyled.io Configuration
+# https://github.com/restyled-io/restyled.io
+# Bot: restyled-io[bot] will auto-fix and commit formatting changes
+
+enabled: true
+
+# Auto-fix and commit changes
+auto: true
+
+# Comment on PRs
+comments: true
+
+# Request changes if not styled
+request_review: none
+
+# Exclude paths
+exclude:
+  - "node_modules/**"
+  - "**/node_modules/**"
+  - "**/out/**"
+  - "**/.vscode-test/**"
+  - "**/*.vsix"
+
+# Restylers to use
+restylers:
+  - prettier:
+      include:
+        - "**/*.ts"
+        - "**/*.js"
+        - "**/*.json"
+        - "**/*.md"
+        - "**/*.yaml"
+        - "**/*.yml"
+
+  - whitespace:
+      include:
+        - "**/*"
