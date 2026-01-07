@@ -3,10 +3,25 @@
   "projectOwner": "nullvariant",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "files": ["README.md"],
+  "files": [
+    "README.md"
+  ],
   "imageSize": 64,
   "commit": true,
   "commitConvention": "angular",
-  "contributors": [],
-  "contributorsPerLine": 7
+  "contributors": [
+    {
+      "login": "nullvariant",
+      "name": "Null;Variant",
+      "avatar_url": "https://avatars.githubusercontent.com/u/205900024?v=4",
+      "profile": "https://nullvariant.com/",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "commitType": "docs"
 }
