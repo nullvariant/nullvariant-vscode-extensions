@@ -13,6 +13,13 @@ updates:
       - "github-actions"
     open-pull-requests-limit: 5
     rebase-strategy: "auto"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # npm dependencies for git-id-switcher extension
   - package-ecosystem: "npm"
