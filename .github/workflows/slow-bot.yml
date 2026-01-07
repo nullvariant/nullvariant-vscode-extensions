@@ -40,6 +40,12 @@ jobs:
           git config user.name "nullvariant-slow[bot]"
           git config user.email "2610174+nullvariant-slow[bot]@users.noreply.github.com"
 
+      - name: 🌿 Create branch (so much effort...)
+        run: |
+          BRANCH_NAME="slow/wisdom-$(date +%Y%m%d-%H%M%S)"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          git checkout -b "$BRANCH_NAME"
+
       - name: 📝 Leave a lazy message
         run: |
           # Create or update SLOTH.md
@@ -50,17 +56,18 @@ jobs:
 
           ## Today's Wisdom
 
-          ${{ github.event.inputs.message }}
+          MESSAGE_PLACEHOLDER
 
           ---
 
-          *Last yawned: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+          *Last yawned: DATE_PLACEHOLDER*
 
           > 働きたくないでござる
           EOF
 
-          # Fix the date
-          sed -i "s/\$(date -u +\"%Y-%m-%d %H:%M:%S UTC\")/$(date -u +"%Y-%m-%d %H:%M:%S UTC")/" SLOTH.md
+          # Fix placeholders
+          sed -i "s/MESSAGE_PLACEHOLDER/${{ github.event.inputs.message }}/" SLOTH.md
+          sed -i "s/DATE_PLACEHOLDER/$(date -u +"%Y-%m-%d %H:%M:%S UTC")/" SLOTH.md
 
       - name: 💤 Commit (eventually)
         run: |
@@ -70,9 +77,33 @@ jobs:
           ${{ github.event.inputs.message }}
 
           *yawn* maybe I'll do more tomorrow..."
-          git push
+
+      - name: 📤 Push branch (ugh, more work)
+        run: |
+          git push -u origin "$BRANCH_NAME"
+
+      - name: 📬 Create PR (this is exhausting)
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh pr create \
+            --title "🦥 Slow's wisdom update" \
+            --body "## 🦥 *yawn*
+
+          ${{ github.event.inputs.message }}
+
+          ---
+
+          > 働きたくないでござる
+
+          *This PR was reluctantly created by nullvariant-slow[bot]*" \
+            --head "$BRANCH_NAME" \
+            --base main
 
       - name: 😴 Go back to sleep
         run: |
           echo "That was exhausting."
           echo "Time for a nap... 💤"
+          echo ""
+          echo "PR created. Someone else can merge it."
+          echo "I'm going back to sleep now."
