@@ -213,7 +213,7 @@ export function isCommandAllowed(command: string, args: string[]): AllowlistChec
         if (arg.startsWith('-')) {
           return { allowed: false, reason: `Value for '${prevArg}' cannot mean a flag ('${arg}')` };
         }
-        
+
         // This arg is a value for a permitted option (e.g. "user.name" -> "John")
         // It is allowed regardless of content (as long as path checks passed above)
         continue;

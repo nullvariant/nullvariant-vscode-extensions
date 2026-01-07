@@ -27,7 +27,7 @@ export class FileLogWriter implements ILogWriter {
   private rotationRetryCount: number = 0;
   /**
    * Maximum number of rotation retry attempts
-   * 
+   *
    * Set to 3 to allow for transient filesystem errors while preventing
    * infinite loops in case of persistent issues (e.g., disk full, permissions).
    */
@@ -132,10 +132,10 @@ export class FileLogWriter implements ILogWriter {
 
   /**
    * Serialize metadata with circular reference handling
-   * 
+   *
    * Attempts to serialize metadata, falling back to partial serialization
    * if full serialization fails (e.g., circular references).
-   * 
+   *
    * Separated from formatLogLine() for Single Responsibility Principle.
    */
   private serializeMetadata(metadata: Record<string, unknown>): string {
@@ -172,7 +172,7 @@ export class FileLogWriter implements ILogWriter {
 
   /**
    * Perform log file rotation
-   * 
+   *
    * Separated from rotate() for Single Responsibility Principle.
    * Handles the actual file rotation operation.
    */
@@ -225,7 +225,7 @@ export class FileLogWriter implements ILogWriter {
     } catch (error) {
       this.rotationRetryCount++;
       console.error(`[Git ID Switcher] Failed to rotate log file (attempt ${this.rotationRetryCount}/${this.MAX_ROTATION_RETRIES}):`, error);
-      
+
       // Only retry if under limit
       if (this.rotationRetryCount < this.MAX_ROTATION_RETRIES) {
         this.openWriteStream();

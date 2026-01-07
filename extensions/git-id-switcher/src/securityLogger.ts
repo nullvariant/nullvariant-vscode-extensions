@@ -103,7 +103,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
     const config = vscode.workspace.getConfiguration('gitIdSwitcher.logging');
     const rawFilePath = config.get<string>('filePath', DEFAULT_FILE_LOG_CONFIG.filePath);
     const expandedPath = rawFilePath ? expandTilde(rawFilePath) : '';
-    
+
     // Validate file path for security
     if (expandedPath) {
       const pathResult = isSecurePath(expandedPath);
@@ -112,7 +112,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
         return;
       }
     }
-    
+
     const fileConfig: FileLogConfig = {
       enabled: config.get<boolean>('fileEnabled', DEFAULT_FILE_LOG_CONFIG.enabled),
       filePath: expandedPath,

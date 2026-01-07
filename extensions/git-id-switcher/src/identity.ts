@@ -180,7 +180,7 @@ export function getIdentitiesWithValidation(): Identity[] {
 
 /**
  * Reset the validation error notification flag
- * 
+ *
  * Used when configuration changes to allow re-notification of validation errors.
  * Also exposed for testing purposes.
  */
