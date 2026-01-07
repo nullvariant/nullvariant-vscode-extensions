@@ -11,6 +11,6 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lodash": "4.17.21",
-    "minimist": "1.2.5"
+    "minimist": "1.2.6"
   }
 }
