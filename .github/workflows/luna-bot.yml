@@ -1,0 +1,92 @@
+# nullvariant-luna[bot] - The curious explorer
+# "Botに418返そうよ！"
+
+name: 👧 Luna Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'What did Luna discover? (optional)'
+        required: false
+        default: 'I found something interesting!'
+
+jobs:
+  luna-commit:
+    name: 👧 Explore and discover
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 👧 Start exploring
+        run: |
+          echo "✨ Luna here! What's this? ✨"
+          echo "Ooh, let me poke around..."
+          echo "Hey, did you know bots can get 418 I'm a teapot? Hehe!"
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.LUNA_BOT_APP_ID }}
+          private_key: ${{ secrets.LUNA_BOT_PRIVATE_KEY }}
+
+      - name: 📥 Checkout (excitedly)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: 📝 Leave a discovery note
+        run: |
+          mkdir -p docs
+          cat > docs/LUNA.md << EOF
+          # 👧 Luna's Discovery Journal
+
+          > "Every bug is just an undocumented feature waiting to be found!"
+
+          ## Today's Discovery
+
+          ${{ github.event.inputs.message }}
+
+          ### Fun Fact
+          Did you know? HTTP 418 "I'm a teapot" is a real status code!
+          Let's return it to bots! 🫖
+
+          ---
+
+          *Last explored: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+
+          > Botに418返そうよ！
+          EOF
+
+      - name: 📬 Create PR with verified commit
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          sign-commits: true
+          author: nullvariant-luna[bot] <2610752+nullvariant-luna[bot]@users.noreply.github.com>
+          committer: nullvariant-luna[bot] <2610752+nullvariant-luna[bot]@users.noreply.github.com>
+          commit-message: |
+            👧 New discovery logged!
+
+            ${{ github.event.inputs.message }}
+
+            ~Luna was here~ ✨
+          branch: luna/discovery-${{ github.run_number }}
+          delete-branch: true
+          title: "👧 Luna's discovery journal update"
+          body: |
+            ## 👧 ✨ LOOK WHAT I FOUND! ✨
+
+            ${{ github.event.inputs.message }}
+
+            ---
+
+            > Botに418返そうよ！
+
+            *This PR was curiously created by nullvariant-luna[bot]*
+
+      - name: ✨ Off to the next adventure
+        run: |
+          echo "That was fun!"
+          echo "I wonder what else I can find..."
+          echo "✨ See you next time! ✨"

@@ -1,0 +1,94 @@
+# nullvariant-justice[bot] - The code enforcer
+# "テストは？型定義は？エラーハンドリングは？"
+
+name: 👮 Justice Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'What should Justice inspect? (optional)'
+        required: false
+        default: 'Code review in progress...'
+
+jobs:
+  justice-commit:
+    name: 👮 Enforce the law
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 👮 Begin inspection
+        run: |
+          echo "⚖️ JUSTICE HAS ARRIVED ⚖️"
+          echo "Let me check your code quality..."
+          echo "Tests? Types? Error handling?"
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.JUSTICE_BOT_APP_ID }}
+          private_key: ${{ secrets.JUSTICE_BOT_PRIVATE_KEY }}
+
+      - name: 📥 Checkout (for inspection)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: 📝 Leave a verdict
+        run: |
+          mkdir -p docs
+          cat > docs/JUSTICE.md << EOF
+          # 👮 Justice's Code Review
+
+          > "The law applies equally to all code."
+
+          ## Today's Verdict
+
+          ${{ github.event.inputs.message }}
+
+          ### Checklist
+          - [ ] Tests written?
+          - [ ] Types defined?
+          - [ ] Errors handled?
+          - [ ] Edge cases covered?
+
+          ---
+
+          *Last inspected: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+
+          > テストは？型定義は？エラーハンドリングは？
+          EOF
+
+      - name: 📬 Create PR with verified commit
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          sign-commits: true
+          author: nullvariant-justice[bot] <2610732+nullvariant-justice[bot]@users.noreply.github.com>
+          committer: nullvariant-justice[bot] <2610732+nullvariant-justice[bot]@users.noreply.github.com>
+          commit-message: |
+            👮 Code inspection complete
+
+            ${{ github.event.inputs.message }}
+
+            Remember: Tests? Types? Error handling?
+          branch: justice/verdict-${{ github.run_number }}
+          delete-branch: true
+          title: "👮 Justice's code review update"
+          body: |
+            ## 👮 ⚖️ VERDICT ⚖️
+
+            ${{ github.event.inputs.message }}
+
+            ---
+
+            > テストは？型定義は？エラーハンドリングは？
+
+            *This PR was officially filed by nullvariant-justice[bot]*
+
+      - name: ⚖️ Case closed
+        run: |
+          echo "Inspection complete."
+          echo "Stay vigilant. Write tests."
+          echo "⚖️ JUSTICE NEVER SLEEPS ⚖️"

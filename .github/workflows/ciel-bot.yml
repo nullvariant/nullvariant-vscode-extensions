@@ -1,0 +1,86 @@
+# nullvariant-ciel[bot] - The sky messenger
+# "まあまあ、ほどほどに。"
+
+name: 🕊️ Ciel Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'What should Ciel whisper? (optional)'
+        required: false
+        default: 'Peace and balance...'
+
+jobs:
+  ciel-commit:
+    name: 🕊️ Descend from the sky
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🕊️ Arrive gracefully
+        run: |
+          echo "~~ floating down from the clouds ~~"
+          echo "Everything in moderation..."
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.CIEL_BOT_APP_ID }}
+          private_key: ${{ secrets.CIEL_BOT_PRIVATE_KEY }}
+
+      - name: 📥 Checkout (gently)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: 📝 Leave a peaceful message
+        run: |
+          mkdir -p docs
+          cat > docs/CIEL.md << EOF
+          # 🕊️ Ciel's Sky Notes
+
+          > "The sky sees all, judges none."
+
+          ## Today's Whisper
+
+          ${{ github.event.inputs.message }}
+
+          ---
+
+          *Last descended: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+
+          > まあまあ、ほどほどに。
+          EOF
+
+      - name: 📬 Create PR with verified commit
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          sign-commits: true
+          author: nullvariant-ciel[bot] <2610776+nullvariant-ciel[bot]@users.noreply.github.com>
+          committer: nullvariant-ciel[bot] <2610776+nullvariant-ciel[bot]@users.noreply.github.com>
+          commit-message: |
+            🕊️ A message from above
+
+            ${{ github.event.inputs.message }}
+
+            ~~ drifting back to the clouds ~~
+          branch: ciel/whisper-${{ github.run_number }}
+          delete-branch: true
+          title: "🕊️ Ciel's sky notes update"
+          body: |
+            ## 🕊️ *A gentle breeze*
+
+            ${{ github.event.inputs.message }}
+
+            ---
+
+            > まあまあ、ほどほどに。
+
+            *This PR was peacefully delivered by nullvariant-ciel[bot]*
+
+      - name: ☁️ Return to the sky
+        run: |
+          echo "Balance has been restored."
+          echo "~~ ascending back to the clouds ~~"
