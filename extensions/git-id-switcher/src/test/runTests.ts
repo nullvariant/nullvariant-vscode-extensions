@@ -69,12 +69,16 @@ async function main(): Promise<void> {
 
     process.exit(0);
   } catch (error) {
-    console.error('\n❌ Test suite failed:', error);
+    // Sanitize error to prevent sensitive data leakage
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('\n❌ Test suite failed:', errorMessage);
     process.exit(1);
   }
 }
 
 main().catch(error => {
-  console.error('Fatal error:', error);
+  // Sanitize error to prevent sensitive data leakage
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.error('Fatal error:', errorMessage);
   process.exit(1);
 });

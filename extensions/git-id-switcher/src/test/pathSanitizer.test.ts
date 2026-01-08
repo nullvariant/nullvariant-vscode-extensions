@@ -1118,12 +1118,17 @@ export async function runPathSanitizerTests(): Promise<void> {
 
     console.log('\n✅ All path sanitizer tests passed!\n');
   } catch (error) {
-    console.error('\n❌ Test failed:', error);
+    // Sanitize error to prevent sensitive data leakage
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('\n❌ Test failed:', errorMessage);
     process.exit(1);
   }
 }
 
 // Run tests when executed directly
 if (require.main === module) {
-  runPathSanitizerTests().catch(console.error);
+  runPathSanitizerTests().catch(error => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(errorMessage);
+  });
 }
