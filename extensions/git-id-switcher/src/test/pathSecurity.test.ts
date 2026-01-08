@@ -429,6 +429,42 @@ function testTrailingDot(): void {
 }
 
 /**
+ * Test trailing dot-slash patterns (/./ or /..)
+ * These are edge cases that could be used for path confusion attacks.
+ *
+ * Note: These patterns are blocked by earlier validators in the pipeline:
+ * - /. endings are caught by validateNoTrailingDot ("ends with dot")
+ * - /.. endings are caught by validateNoTraversal ("contains traversal")
+ * validateNoTrailingDotSlash is defense-in-depth code that catches
+ * edge cases if earlier validators are bypassed or modified.
+ */
+function testTrailingDotSlashPatterns(): void {
+  console.log('Testing trailing dot-slash patterns...');
+
+  // These patterns are blocked, but by different validators due to pipeline order
+  const trailingDotSlashAttacks = [
+    { path: '/home/user/.', expectedReason: 'ends with dot' },      // Blocked by validateNoTrailingDot
+    { path: '/path/to/dir/.', expectedReason: 'ends with dot' },    // Blocked by validateNoTrailingDot
+    { path: '~/subdir/..', expectedReason: 'traversal' },           // Blocked by validateNoTraversal
+  ];
+
+  for (const { path, expectedReason } of trailingDotSlashAttacks) {
+    const result = isSecurePath(path);
+    assert.strictEqual(
+      result.valid,
+      false,
+      `Trailing /. or /.. should be blocked: "${path}"`
+    );
+    assert.ok(
+      result.reason?.includes(expectedReason),
+      `Should mention "${expectedReason}" in reason for: "${path}", got: "${result.reason}"`
+    );
+  }
+
+  console.log('✅ Trailing dot-slash patterns blocked (by various validators)!');
+}
+
+/**
  * Test isPathArgument with whitespace and Windows paths
  */
 function testIsPathArgumentEdgeCases(): void {
@@ -615,6 +651,7 @@ export async function runPathSecurityTests(): Promise<void> {
     testEmptyPaths();
     testWhitespaceObfuscation();
     testTrailingDot();
+    testTrailingDotSlashPatterns();
     testWindowsDriveLetterOnly();
     testAbsolutePathWithRelativeTraversal();
     testValidPaths();
