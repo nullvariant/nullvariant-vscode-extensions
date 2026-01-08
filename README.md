@@ -1,6 +1,7 @@
 # nullvariant-vscode-extensions
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nullvariant/nullvariant-vscode-extensions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/nullvariant/nullvariant-vscode-extensions)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11709/badge)](https://www.bestpractices.dev/projects/11709)
 
 VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
