@@ -15,6 +15,7 @@ import { runFileLogWriterTests } from './fileLogWriter.test';
 import { runFuzzingTests } from './validation.fuzz.test';
 import { runCombinedFlagValidationTests } from './combinedFlagValidation.test';
 import { runSensitiveDataDetectorTests } from './sensitiveDataDetector.test';
+import { runSecurityLoggerTests } from './securityLogger.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -54,6 +55,9 @@ async function main(): Promise<void> {
 
     // Run sensitive data detector tests
     await runSensitiveDataDetectorTests();
+
+    // Run security logger tests
+    await runSecurityLoggerTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
