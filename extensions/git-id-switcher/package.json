@@ -260,6 +260,7 @@
     "lint": "eslint src --ext ts",
     "test": "npm run compile && node out/test/runTests.js",
     "test:security": "npm run compile && node out/test/runTests.js",
+    "test:fuzz": "npm run compile && node -e \"require('./out/test/validation.fuzz.test').runFuzzingTests()\"",
     "package": "vsce package",
     "publish": "echo '❌ Do not use vsce publish directly. Push a tag instead: git tag git-id-switcher-vX.X.X && git push --tags' && exit 1",
     "generate:readme": "node scripts/generate-root-readme.js"
@@ -271,6 +272,7 @@
     "@typescript-eslint/parser": "^7.0.0",
     "@vscode/vsce": "^3.0.0",
     "eslint": "^8.57.0",
+    "fast-check": "^4.5.3",
     "typescript": "^5.3.0"
   },
   "repository": {
