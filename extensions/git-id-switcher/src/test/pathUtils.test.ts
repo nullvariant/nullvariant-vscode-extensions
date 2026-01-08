@@ -12,6 +12,72 @@
  * - Path traversal prevention
  * - PATH_MAX enforcement
  * - Home directory escape prevention
+ *
+ * 🔒 Defense-in-depth code not covered (requires fs mocking or malicious symlinks):
+ *
+ * normalizeAndValidatePath():
+ *   Lines 160-163: Double-check normalization consistency
+ *     - path.resolve() and path.normalize() are idempotent
+ *     - Defense against potential Node.js path module bugs
+ *
+ *   Lines 169-174: Post-normalization check failed
+ *     - Unreachable: isSecurePath (line 127) catches attacks before normalization
+ *     - Defense-in-depth for bypasses or Node.js edge cases
+ *
+ *   Lines 179-184: Normalized path exceeds PATH_MAX
+ *     - Normalization typically shortens paths (removes .., //)
+ *     - Edge case: very long tilde expansion on systems with short home paths
+ *
+ *   Lines 191-196, 204-209: Symlink resolution failures
+ *     - Requires ELOOP (symlink loop), EACCES, or malicious symlinks
+ *     - Creating symlink loops is destructive and platform-specific
+ *
+ * isSecurePathAfterNormalization():
+ *   Lines 254-255: Null byte in normalized path
+ *     - path.normalize() removes null bytes on most platforms
+ *     - Defense against platforms with different behavior
+ *
+ *   Lines 260-264: Path traversal in normalized path
+ *     - path.normalize() resolves .. and .
+ *     - Defense against edge cases not caught by pre-check
+ *
+ *   Lines 268-272: Double slashes in normalized path
+ *     - path.normalize() removes double slashes
+ *     - Defense against platforms with different behavior
+ *
+ *   Lines 279-283: Home directory escape after normalization
+ *     - Requires path that passes isSecurePath but escapes after normalize
+ *     - Pre-check catches most traversal attacks
+ *
+ * resolveSymlinksSecurely():
+ *   Lines 323-327: Resolved path exceeds PATH_MAX
+ *     - Requires symlink target to be extremely long
+ *     - Filesystem-dependent edge case
+ *
+ *   Lines 339-342: ELOOP (symlink loop)
+ *     - Requires creating actual symlink loops (A->B->A)
+ *     - Destructive test setup
+ *
+ *   Lines 354-372: EACCES, ENAMETOOLONG, ENOTDIR, default errors
+ *     - Require specific filesystem conditions or permissions
+ *     - Platform-specific behavior
+ *
+ * containsSymlinks():
+ *   Lines 395-396: ELOOP detection
+ *     - Same as above - requires symlink loops
+ *
+ * validateSubmodulePath():
+ *   Lines 565-572: Submodule path escapes workspace after normalization
+ *     - Requires path that passes initial checks but escapes after normalize
+ *     - Pre-checks are comprehensive
+ *
+ *   Lines 593-626: Symlink escape checks
+ *     - Requires actual symlinks pointing outside workspace
+ *     - Would need test fixtures with symlinks (platform-specific)
+ *
+ *   Lines 633-635: Non-ENOENT error logging
+ *     - Requires specific filesystem errors (EACCES, etc.)
+ *     - Empty code block (just comment) for logging purposes
  */
 
 import * as assert from 'assert';

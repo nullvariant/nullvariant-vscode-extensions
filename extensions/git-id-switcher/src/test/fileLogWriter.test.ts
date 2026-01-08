@@ -11,6 +11,56 @@
  * - Circular reference handling in metadata
  * - Reinitialization after dispose
  * - Error handling (empty path, disabled logging)
+ *
+ * 🔒 Defense-in-depth code not covered (requires fs mocking):
+ *
+ * Lines 77-78: writeStream.end() before reopen
+ *   - Dead code: All code paths set writeStream=null before calling openWriteStream()
+ *   - Kept as defense-in-depth for future code changes
+ *
+ * Lines 90-95: Stream error callback
+ *   - Handles I/O errors during stream operations (disk full, permission revoked)
+ *   - Requires mocking fs.WriteStream.on('error') to test
+ *
+ * Lines 97-99: openWriteStream catch block
+ *   - Handles fs.createWriteStream() failures (invalid path, permissions)
+ *   - Requires simulating filesystem errors
+ *
+ * Lines 115-116: Null writeStream guard in write()
+ *   - Guards against write after stream error
+ *   - Only reachable if stream error callback fires (lines 90-95)
+ *
+ * Lines 129-130: write() catch block
+ *   - Handles formatLogLine/stream.write errors
+ *   - Requires mocking to trigger
+ *
+ * Lines 158-161: Final metadata serialization fallback
+ *   - Only reached if WeakSet-based circular ref handling also fails
+ *   - Extremely difficult to trigger (WeakSet is very robust)
+ *
+ * Lines 201-202: Null writeStream guard in rotate()
+ *   - Dead code: rotate() only called from write() which checks writeStream
+ *   - Kept as defense-in-depth for direct rotate() calls
+ *
+ * Lines 206-209: Maximum rotation retries exceeded
+ *   - Requires 3 consecutive rotation failures
+ *   - Needs fs mocking to reliably trigger
+ *
+ * Lines 226-236: rotation catch block with retry logic
+ *   - Handles performRotation/cleanupOldFiles failures
+ *   - Requires fs.renameSync/readdirSync to throw
+ *
+ * Lines 258-259: File stat race condition handler
+ *   - Handles ENOENT when file deleted between readdir and stat
+ *   - Race condition - non-deterministic
+ *
+ * Lines 273-274: File unlink race condition handler
+ *   - Handles ENOENT when file deleted between stat and unlink
+ *   - Race condition - non-deterministic
+ *
+ * Lines 277-278: cleanupOldFiles catch block
+ *   - Handles readdirSync failures (permission denied, dir deleted)
+ *   - Requires fs mocking to trigger
  */
 
 import * as assert from 'assert';

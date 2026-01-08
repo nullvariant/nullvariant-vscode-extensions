@@ -10,6 +10,38 @@
  * - Shell interpretation prevention
  * - Timeout handling and error detection
  * - SSH command wrappers (sshAgentExec, sshKeygenExec)
+ *
+ * 🔒 Defense-in-depth code not covered (requires VS Code mocking or actual timeouts):
+ *
+ * VS Code API dependent (tests run without VS Code context):
+ *   Lines 112-138: isValidCommandName()
+ *     - Only called from getUserConfiguredTimeouts()
+ *     - getUserConfiguredTimeouts() early returns when VS Code unavailable
+ *
+ *   Lines 161-253: getUserConfiguredTimeouts()
+ *     - Line 157: `if (!workspace)` always true in tests
+ *     - Returns {} immediately, skipping all validation logic
+ *     - Would require mocking VS Code workspace API
+ *
+ *   Lines 331-333: User-configured timeout return
+ *     - Not reached because getUserConfiguredTimeouts() returns {}
+ *
+ * Error handler fallbacks:
+ *   Lines 295-298, 317-320: console.warn fallbacks
+ *     - Catch blocks for when securityLogger.logValidationFailure throws
+ *     - Defense-in-depth for logger failures
+ *     - Requires mocking securityLogger to throw
+ *
+ * Actual timeout required:
+ *   Lines 438-447: Timeout error handling in secureExec()
+ *     - Only allowed commands can reach this code: git, ssh-add, ssh-keygen
+ *     - These commands complete quickly (< timeout)
+ *     - Would need:
+ *       a) Allowed command that hangs (git with network issues)
+ *       b) Very short timeout (but minimum is 1000ms)
+ *       c) Mocking child_process.execFile
+ *     - Test testTimeoutDetection tries with `sleep` but it's not in allowlist
+ *     - Creating reliable timeout conditions is non-deterministic
  */
 
 import * as assert from 'assert';
