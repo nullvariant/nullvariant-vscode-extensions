@@ -3,13 +3,11 @@ name: Security Checks
 on:
   push:
     branches: [main]
-    paths:
-      - 'extensions/git-id-switcher/**'
-      - '.github/workflows/security.yml'
+    # Removed paths filter to improve SAST coverage (Scorecard check)
+    # All commits now trigger security checks including CodeQL
   pull_request:
     branches: [main]
-    paths:
-      - 'extensions/git-id-switcher/**'
+    # Removed paths filter to improve SAST coverage (Scorecard check)
   schedule:
     # Run daily at 00:00 UTC
     - cron: '0 0 * * *'
