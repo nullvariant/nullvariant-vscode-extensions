@@ -522,3 +522,17 @@ export async function sshAgentExec(args: string[]): Promise<ExecResult> {
 export async function sshKeygenExec(args: string[]): Promise<ExecResult> {
   return secureExec('ssh-keygen', args);
 }
+
+/**
+ * Test-only exports
+ *
+ * These exports are intended for testing internal functions.
+ * Do not use in production code.
+ */
+export const __testExports = {
+  /**
+   * Check if an error is a timeout error
+   * @internal For testing only - references the internal isTimeoutError function
+   */
+  isTimeoutError: isTimeoutError,
+};
