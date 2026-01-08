@@ -16,6 +16,7 @@ import { runFuzzingTests } from './validation.fuzz.test';
 import { runCombinedFlagValidationTests } from './combinedFlagValidation.test';
 import { runSensitiveDataDetectorTests } from './sensitiveDataDetector.test';
 import { runSecurityLoggerTests } from './securityLogger.test';
+import { runPathSanitizerTests } from './pathSanitizer.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -58,6 +59,9 @@ async function main(): Promise<void> {
 
     // Run security logger tests
     await runSecurityLoggerTests();
+
+    // Run path sanitizer tests
+    await runPathSanitizerTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
