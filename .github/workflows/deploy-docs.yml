@@ -31,9 +31,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install wrangler
-        run: npm install -g wrangler@4.54.0
-
       - name: Deploy documentation to R2
         run: |
           R2_BASE="nullvariant-assets/nullvariant-vscode-extensions"
@@ -44,7 +41,7 @@ jobs:
 
           if [ -f "README.md" ]; then
             echo "Deploying monorepo README.md..."
-            wrangler r2 object put "${R2_BASE}/README.md" \
+            npx wrangler@4.54.0 r2 object put "${R2_BASE}/README.md" \
               --file "README.md" \
               --content-type "text/markdown; charset=utf-8" \
               --remote
@@ -52,7 +49,7 @@ jobs:
 
           if [ -f "CONTRIBUTING.md" ]; then
             echo "Deploying monorepo CONTRIBUTING.md..."
-            wrangler r2 object put "${R2_BASE}/CONTRIBUTING.md" \
+            npx wrangler@4.54.0 r2 object put "${R2_BASE}/CONTRIBUTING.md" \
               --file "CONTRIBUTING.md" \
               --content-type "text/markdown; charset=utf-8" \
               --remote
@@ -60,7 +57,7 @@ jobs:
 
           if [ -f "LICENSE" ]; then
             echo "Deploying monorepo LICENSE..."
-            wrangler r2 object put "${R2_BASE}/LICENSE" \
+            npx wrangler@4.54.0 r2 object put "${R2_BASE}/LICENSE" \
               --file "LICENSE" \
               --content-type "text/plain; charset=utf-8" \
               --remote
@@ -71,14 +68,14 @@ jobs:
 
           # English README (extension root)
           echo "Deploying extension README.md (English)..."
-          wrangler r2 object put "${R2_BASE}/${EXT_PATH}/README.md" \
+          npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/README.md" \
             --file "${EXT_PATH}/README.md" \
             --content-type "text/markdown; charset=utf-8" \
             --remote
 
           if [ -f "${EXT_PATH}/LICENSE" ]; then
             echo "Deploying extension LICENSE..."
-            wrangler r2 object put "${R2_BASE}/${EXT_PATH}/LICENSE" \
+            npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/LICENSE" \
               --file "${EXT_PATH}/LICENSE" \
               --content-type "text/plain; charset=utf-8" \
               --remote
@@ -86,7 +83,7 @@ jobs:
 
           if [ -f "${EXT_PATH}/CHANGELOG.md" ]; then
             echo "Deploying extension CHANGELOG.md..."
-            wrangler r2 object put "${R2_BASE}/${EXT_PATH}/CHANGELOG.md" \
+            npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/CHANGELOG.md" \
               --file "${EXT_PATH}/CHANGELOG.md" \
               --content-type "text/markdown; charset=utf-8" \
               --remote
@@ -100,7 +97,7 @@ jobs:
             if [ -f "$doc_file" ]; then
               filename=$(basename "$doc_file")
               echo "Deploying docs/${filename}..."
-              wrangler r2 object put "${R2_BASE}/${EXT_PATH}/docs/${filename}" \
+              npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/docs/${filename}" \
                 --file "$doc_file" \
                 --content-type "text/markdown; charset=utf-8" \
                 --remote
@@ -113,7 +110,7 @@ jobs:
           for lang_dir in ${EXT_PATH}/docs/i18n/*/; do
             lang=$(basename "$lang_dir")
             echo "Deploying ${lang}/README.md..."
-            wrangler r2 object put "${R2_BASE}/${EXT_PATH}/docs/i18n/${lang}/README.md" \
+            npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/docs/i18n/${lang}/README.md" \
               --file "${lang_dir}README.md" \
               --content-type "text/markdown; charset=utf-8" \
               --remote
