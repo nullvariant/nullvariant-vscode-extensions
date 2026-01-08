@@ -18,6 +18,7 @@ import { runSensitiveDataDetectorTests } from './sensitiveDataDetector.test';
 import { runSecurityLoggerTests } from './securityLogger.test';
 import { runPathSanitizerTests } from './pathSanitizer.test';
 import { runConfigChangeDetectorTests } from './configChangeDetector.test';
+import { runCommandAllowlistTests } from './commandAllowlist.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -66,6 +67,9 @@ async function main(): Promise<void> {
 
     // Run config change detector tests
     runConfigChangeDetectorTests();
+
+    // Run command allowlist tests
+    await runCommandAllowlistTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');

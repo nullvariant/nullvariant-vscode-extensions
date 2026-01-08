@@ -7,7 +7,7 @@
 import * as assert from 'assert';
 import { isCommandAllowed } from '../commandAllowlist';
 
-async function testCommandAllowlist(): Promise<void> {
+export async function runCommandAllowlistTests(): Promise<void> {
   console.log('Testing Command Allowlist Security...');
 
   // Test 1: Safe git config commands
@@ -109,12 +109,45 @@ async function testCommandAllowlist(): Promise<void> {
     assert.strictEqual(result2.allowed, false, 'Should block invalid combined flag');
   }
 
+  // Test 9: Block flag-like value after allowedOptionsWithValues
+  {
+    console.log('  Testing flag-like value rejection after option...');
+    // ssh-keygen has -f in allowedOptionsWithValues
+    // A value starting with - should be rejected
+    const result = isCommandAllowed('ssh-keygen', ['-f', '-malicious']);
+    assert.strictEqual(result.allowed, false, 'Should block flag-like value after option');
+    assert.ok(
+      result.reason?.includes('cannot mean a flag') || result.reason?.includes('cannot be a flag'),
+      'Reason should mention value cannot be a flag'
+    );
+  }
+
+  // Test 10: allowPathPositionals with valid path
+  {
+    console.log('  Testing allowPathPositionals with valid path...');
+    // git submodule has allowPathPositionals: true
+    // Should allow path-like arguments
+    const result1 = isCommandAllowed('git', ['submodule', 'status', './path/to/module']);
+    assert.strictEqual(result1.allowed, true, 'Should allow path positional for submodule status');
+
+    const result2 = isCommandAllowed('git', ['submodule', 'status', '/absolute/path/to/module']);
+    assert.strictEqual(result2.allowed, true, 'Should allow absolute path positional');
+
+    // Non-path-like argument should be blocked
+    const result3 = isCommandAllowed('git', ['submodule', 'status', 'init']);
+    assert.strictEqual(result3.allowed, false, 'Should block non-path argument for submodule');
+    assert.ok(
+      result3.reason?.includes('not allowed'),
+      'Reason should mention argument not allowed'
+    );
+  }
+
   console.log('✅ All Command Allowlist tests passed!');
 }
 
 // Run tests when executed directly
 if (require.main === module) {
-  testCommandAllowlist().catch((error) => {
+  runCommandAllowlistTests().catch((error: unknown) => {
     console.error('❌ Test failed:', error);
     process.exit(1);
   });

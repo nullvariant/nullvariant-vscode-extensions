@@ -204,6 +204,69 @@ function testValidateIdentity(): void {
     assert.strictEqual(result.valid, false, 'Hex escape sequence should fail');
   }
 
+  // Test 16: Email exceeding max length (320) should fail
+  {
+    const longEmail: Identity = {
+      id: 'test',
+      name: 'Test User',
+      email: 'a'.repeat(310) + '@example.com', // 322 chars > 320
+    };
+    const result = validateIdentity(longEmail);
+    assert.strictEqual(result.valid, false, 'Email exceeding max length should fail');
+    assert.ok(
+      result.errors.some(e => e.includes('email') && e.includes('320')),
+      'Error should mention email max length 320'
+    );
+  }
+
+  // Test 17: sshHost exceeding max length (253) should fail
+  {
+    const longSshHost: Identity = {
+      id: 'test',
+      name: 'Test User',
+      email: 'test@example.com',
+      sshHost: 'a'.repeat(254), // > 253 chars
+    };
+    const result = validateIdentity(longSshHost);
+    assert.strictEqual(result.valid, false, 'sshHost exceeding max length should fail');
+    assert.ok(
+      result.errors.some(e => e.includes('sshHost') && e.includes('253')),
+      'Error should mention sshHost max length 253'
+    );
+  }
+
+  // Test 18: Service exceeding max length (64) should fail
+  {
+    const longService: Identity = {
+      id: 'test',
+      name: 'Test User',
+      email: 'test@example.com',
+      service: 'a'.repeat(65), // > 64 chars
+    };
+    const result = validateIdentity(longService);
+    assert.strictEqual(result.valid, false, 'Service exceeding max length should fail');
+    assert.ok(
+      result.errors.some(e => e.includes('service') && e.includes('64')),
+      'Error should mention service max length 64'
+    );
+  }
+
+  // Test 19: Description exceeding max length (500) should fail
+  {
+    const longDescription: Identity = {
+      id: 'test',
+      name: 'Test User',
+      email: 'test@example.com',
+      description: 'a'.repeat(501), // > 500 chars
+    };
+    const result = validateIdentity(longDescription);
+    assert.strictEqual(result.valid, false, 'Description exceeding max length should fail');
+    assert.ok(
+      result.errors.some(e => e.includes('description') && e.includes('500')),
+      'Error should mention description max length 500'
+    );
+  }
+
   console.log('✅ All validateIdentity tests passed!');
 }
 
