@@ -3,6 +3,8 @@
 
 name: 🕊️ Ciel Bot
 
+permissions: read-all
+
 on:
   workflow_dispatch:
     inputs:

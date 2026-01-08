@@ -3,6 +3,8 @@
 
 name: 👧 Luna Bot
 
+permissions: read-all
+
 on:
   workflow_dispatch:
     inputs:

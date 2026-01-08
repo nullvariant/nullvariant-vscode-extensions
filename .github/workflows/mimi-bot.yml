@@ -3,6 +3,8 @@
 
 name: 🐰 Mimi Bot
 
+permissions: read-all
+
 on:
   workflow_dispatch:
     inputs:
