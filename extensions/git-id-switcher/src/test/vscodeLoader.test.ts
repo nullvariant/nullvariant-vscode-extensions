@@ -11,6 +11,7 @@ import {
   getWindow,
   getExtensions,
   _resetCache,
+  _setMockVSCode,
 } from '../vscodeLoader';
 
 /**
@@ -136,6 +137,51 @@ function testLazyLoading(): void {
 }
 
 /**
+ * Test suite for mock VS Code injection
+ * Tests the truthy branch of optional chaining operators (vscode?.workspace, etc.)
+ */
+function testMockVSCodeInjection(): void {
+  console.log('Testing mock VS Code injection...');
+
+  // Create mock VS Code API with workspace, window, and extensions
+  const mockWorkspace = { name: 'test-workspace' };
+  const mockWindow = { activeTextEditor: null };
+  const mockExtensions = { all: [] };
+
+  const mockVSCode = {
+    workspace: mockWorkspace,
+    window: mockWindow,
+    extensions: mockExtensions,
+  };
+
+  try {
+    // Inject mock - this tests the truthy branch of optional chaining
+    _setMockVSCode(mockVSCode as never);
+
+    // Test getVSCode returns mock
+    const vscode = getVSCode();
+    assert.strictEqual(vscode, mockVSCode, 'getVSCode should return injected mock');
+
+    // Test getWorkspace returns mock workspace (covers vscode?.workspace truthy branch)
+    const workspace = getWorkspace();
+    assert.strictEqual(workspace, mockWorkspace, 'getWorkspace should return mock workspace');
+
+    // Test getWindow returns mock window (covers vscode?.window truthy branch)
+    const window = getWindow();
+    assert.strictEqual(window, mockWindow, 'getWindow should return mock window');
+
+    // Test getExtensions returns mock extensions (covers vscode?.extensions truthy branch)
+    const extensions = getExtensions();
+    assert.strictEqual(extensions, mockExtensions, 'getExtensions should return mock extensions');
+
+    console.log('✅ Mock VS Code injection tests passed!');
+  } finally {
+    // Cleanup - always reset to prevent affecting other tests
+    _resetCache();
+  }
+}
+
+/**
  * Run all tests
  */
 export function runVSCodeLoaderTests(): void {
@@ -148,6 +194,7 @@ export function runVSCodeLoaderTests(): void {
     testGetExtensions();
     testCacheReset();
     testLazyLoading();
+    testMockVSCodeInjection();
 
     console.log('\n✅ All VS Code loader tests passed!\n');
   } catch (error) {

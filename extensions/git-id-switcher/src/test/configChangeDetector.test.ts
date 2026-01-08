@@ -62,7 +62,7 @@ import {
   configChangeDetector,
   ConfigSnapshot,
 } from '../configChangeDetector';
-import { _resetCache } from '../vscodeLoader';
+import { _resetCache, _setMockVSCode } from '../vscodeLoader';
 
 // ============================================================================
 // Test Helpers (DRY: Centralized snapshot creation and setup)
@@ -993,6 +993,176 @@ function testSingletonInstance(): void {
 }
 
 /**
+ * Test createSnapshot() with mock VS Code workspace API
+ * This tests the code path when VS Code API is available
+ */
+function testCreateSnapshotWithMockWorkspace(): void {
+  console.log('Testing createSnapshot() with mock VS Code workspace...');
+
+  // Create a mock configuration object
+  const mockConfig = {
+    identities: [{ id: 'test-id', name: 'Test User', email: 'test@example.com' }],
+    defaultIdentity: 'test-id',
+    autoSwitchSshKey: false,
+    showNotifications: false,
+    applyToSubmodules: false,
+    submoduleDepth: 3,
+    includeIconInGitConfig: true,
+    commandTimeouts: { git: 5000, ssh: 3000 },
+  };
+
+  // Create a mock workspace with getConfiguration
+  const mockWorkspace = {
+    getConfiguration: (section: string) => {
+      assert.strictEqual(section, 'gitIdSwitcher', 'Should request gitIdSwitcher config');
+      return {
+        get: <T>(key: string, defaultValue: T): T => {
+          const value = mockConfig[key as keyof typeof mockConfig];
+          return (value !== undefined ? value : defaultValue) as T;
+        },
+      };
+    },
+  };
+
+  // Inject mock VS Code with the mock workspace
+  const mockVSCode = { workspace: mockWorkspace };
+
+  try {
+    _setMockVSCode(mockVSCode as never);
+
+    const detector = new ConfigChangeDetector();
+    const snapshot = detector.createSnapshot();
+
+    // Verify all values are read from mock config
+    assert.deepStrictEqual(snapshot.identities, mockConfig.identities, 'identities should match');
+    assert.strictEqual(snapshot.defaultIdentity, mockConfig.defaultIdentity, 'defaultIdentity should match');
+    assert.strictEqual(snapshot.autoSwitchSshKey, mockConfig.autoSwitchSshKey, 'autoSwitchSshKey should match');
+    assert.strictEqual(snapshot.showNotifications, mockConfig.showNotifications, 'showNotifications should match');
+    assert.strictEqual(snapshot.applyToSubmodules, mockConfig.applyToSubmodules, 'applyToSubmodules should match');
+    assert.strictEqual(snapshot.submoduleDepth, mockConfig.submoduleDepth, 'submoduleDepth should match');
+    assert.strictEqual(snapshot.includeIconInGitConfig, mockConfig.includeIconInGitConfig, 'includeIconInGitConfig should match');
+    assert.deepStrictEqual(snapshot.commandTimeouts, mockConfig.commandTimeouts, 'commandTimeouts should match');
+
+    console.log('✅ createSnapshot() with mock VS Code workspace passed!');
+  } finally {
+    // Always cleanup to prevent affecting other tests
+    _resetCache();
+  }
+}
+
+/**
+ * Test createSnapshot() with large identities array (DoS protection)
+ * This tests the MAX_IDENTITIES limit
+ */
+function testCreateSnapshotIdentitiesLimit(): void {
+  console.log('Testing createSnapshot() with large identities array (DoS protection)...');
+
+  // Create array larger than MAX_IDENTITIES (1000)
+  const largeIdentities = Array.from({ length: 1500 }, (_, i) => ({
+    id: `id-${i}`,
+    name: `User ${i}`,
+    email: `user${i}@example.com`,
+  }));
+
+  const mockWorkspace = {
+    getConfiguration: () => ({
+      get: <T>(key: string, defaultValue: T): T => {
+        if (key === 'identities') {
+          return largeIdentities as T;
+        }
+        return defaultValue;
+      },
+    }),
+  };
+
+  const mockVSCode = { workspace: mockWorkspace };
+
+  try {
+    _setMockVSCode(mockVSCode as never);
+
+    const detector = new ConfigChangeDetector();
+    const snapshot = detector.createSnapshot();
+
+    // Verify identities array is limited to MAX_IDENTITIES (1000)
+    assert.strictEqual(snapshot.identities.length, 1000, 'identities should be limited to 1000');
+    assert.deepStrictEqual(
+      snapshot.identities[0],
+      { id: 'id-0', name: 'User 0', email: 'user0@example.com' },
+      'First identity should be preserved'
+    );
+
+    console.log('✅ createSnapshot() with large identities array passed!');
+  } finally {
+    _resetCache();
+  }
+}
+
+/**
+ * Test valuesEqual() with type mismatches and null values
+ * This tests the type check and null handling branches
+ */
+function testValuesEqualTypeMismatchAndNull(): void {
+  console.log('Testing valuesEqual() with type mismatch and null values...');
+
+  const detector = new ConfigChangeDetector();
+
+  // Test 1: Type mismatch (string vs number) - tests typeof check
+  setDetectorSnapshot(detector, createTestSnapshot({ submoduleDepth: 1 }));
+  const typeMismatchSnapshot = {
+    ...createTestSnapshot(),
+    submoduleDepth: '1' as unknown as number, // String instead of number
+  };
+  const changes1 = detector.detectChanges(typeMismatchSnapshot);
+  assert.strictEqual(changes1.length, 1, 'Type mismatch should be detected as change');
+  assert.strictEqual(changes1[0].key, 'submoduleDepth', 'submoduleDepth should be flagged');
+
+  // Test 2: non-null vs null - tests null check (b is null)
+  setDetectorSnapshot(detector, createTestSnapshot({ defaultIdentity: 'test' }));
+  const nullSnapshot = {
+    ...createTestSnapshot(),
+    defaultIdentity: null as unknown as string,
+  };
+  const changes2 = detector.detectChanges(nullSnapshot);
+  assert.strictEqual(changes2.length, 1, 'non-null vs null should be detected as change');
+
+  // Test 2b: null vs non-null - tests null check (a is null)
+  setDetectorSnapshot(detector, {
+    ...createTestSnapshot(),
+    defaultIdentity: null as unknown as string,
+  });
+  const changes2b = detector.detectChanges(createTestSnapshot({ defaultIdentity: 'test' }));
+  assert.strictEqual(changes2b.length, 1, 'null vs non-null should be detected as change');
+
+  // Test 3: null vs null (both null should be equal)
+  setDetectorSnapshot(detector, {
+    ...createTestSnapshot(),
+    defaultIdentity: null as unknown as string,
+  });
+  const changes3 = detector.detectChanges({
+    ...createTestSnapshot(),
+    defaultIdentity: null as unknown as string,
+  });
+  // Both null should be equal, so no change detected for defaultIdentity
+  const defaultIdentityChanges = changes3.filter(c => c.key === 'defaultIdentity');
+  assert.strictEqual(defaultIdentityChanges.length, 0, 'null vs null should not be detected as change');
+
+  // Test 4: undefined vs null (different) - type difference
+  setDetectorSnapshot(detector, {
+    ...createTestSnapshot(),
+    defaultIdentity: undefined as unknown as string,
+  });
+  const changes4 = detector.detectChanges({
+    ...createTestSnapshot(),
+    defaultIdentity: null as unknown as string,
+  });
+  // undefined and null are different types, should be detected as change
+  const changes4Filtered = changes4.filter(c => c.key === 'defaultIdentity');
+  assert.strictEqual(changes4Filtered.length, 1, 'undefined vs null should be detected as change');
+
+  console.log('✅ valuesEqual() with type mismatch and null values passed!');
+}
+
+/**
  * Run all tests
  */
 function runTests(): void {
@@ -1021,6 +1191,9 @@ function runTests(): void {
     testDetectChangesErrorHandling();
     testSummarizeIdentityChanges();
     testSingletonInstance();
+    testCreateSnapshotWithMockWorkspace();
+    testCreateSnapshotIdentitiesLimit();
+    testValuesEqualTypeMismatchAndNull();
 
     console.log();
     console.log('='.repeat(60));
@@ -1057,5 +1230,8 @@ export {
   testDetectChangesErrorHandling,
   testSummarizeIdentityChanges,
   testSingletonInstance,
+  testCreateSnapshotWithMockWorkspace,
+  testCreateSnapshotIdentitiesLimit,
+  testValuesEqualTypeMismatchAndNull,
   runTests as runConfigChangeDetectorTests,
 };
