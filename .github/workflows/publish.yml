@@ -40,14 +40,38 @@ jobs:
         run: npm run package
         working-directory: extensions/git-id-switcher
 
+      - name: Get version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/git-id-switcher-v}" >> $GITHUB_OUTPUT
+
+      # SLSA Provenance: Generate attestation via GitHub Attestation API
+      # This creates verifiable build provenance for supply chain security
       - name: Generate SLSA Provenance attestation
+        id: provenance
         uses: actions/attest-build-provenance@ef244123eb79f2f7a7e75d99086184180e6d0018 # v2.1.0
         with:
           subject-path: extensions/git-id-switcher/*.vsix
 
-      - name: Get version from tag
-        id: version
-        run: echo "version=${GITHUB_REF#refs/tags/git-id-switcher-v}" >> $GITHUB_OUTPUT
+      # Copy the provenance bundle to release assets for OpenSSF Scorecard detection
+      # The bundle is also stored in GitHub Attestation API for `gh attestation verify`
+      - name: Prepare provenance for release
+        run: |
+          BUNDLE_PATH="${{ steps.provenance.outputs.bundle-path }}"
+          DEST_PATH="extensions/git-id-switcher/git-id-switcher-${{ steps.version.outputs.version }}.vsix.intoto.jsonl"
+
+          if [ -z "$BUNDLE_PATH" ]; then
+            echo "::error::Provenance bundle path is empty"
+            exit 1
+          fi
+
+          if [ ! -f "$BUNDLE_PATH" ]; then
+            echo "::error::Provenance bundle file not found: $BUNDLE_PATH"
+            exit 1
+          fi
+
+          cp "$BUNDLE_PATH" "$DEST_PATH"
+          echo "Provenance bundle copied to: $DEST_PATH"
+          ls -la "$DEST_PATH"
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -58,7 +82,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
-          files: extensions/git-id-switcher/*.vsix
+          files: |
+            extensions/git-id-switcher/*.vsix
+            extensions/git-id-switcher/*.intoto.jsonl
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
