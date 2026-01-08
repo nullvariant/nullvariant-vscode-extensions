@@ -301,10 +301,11 @@ class SecurityLoggerImpl implements ISecurityLogger {
     return ids.map(id => id.length > MAX_ID_LENGTH ? id.slice(0, MAX_ID_LENGTH) + '...' : id);
   }
 
-  private sanitizeConfigValue(key: ConfigKey, value: unknown): unknown {
-    if (key === 'identities' && Array.isArray(value)) {
-      return { count: value.length, ids: this.sanitizeIds(configChangeDetector.extractIdentityIds(value)) };
-    }
+  /**
+   * Sanitize config value for logging
+   * Note: identities are handled separately via buildIdentityChangeDetails()
+   */
+  private sanitizeConfigValue(_key: ConfigKey, value: unknown): unknown {
     return sanitizeValue(value);
   }
 
