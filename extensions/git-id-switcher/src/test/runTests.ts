@@ -12,6 +12,7 @@ import { runSshKeyFormatTests } from './sshKeyFormat.test';
 import { runValidatorsCommonTests } from './validatorsCommon.test';
 import { runVSCodeLoaderTests } from './vscodeLoader.test';
 import { runFileLogWriterTests } from './fileLogWriter.test';
+import { runFuzzingTests } from './validation.fuzz.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -42,6 +43,9 @@ async function main(): Promise<void> {
 
     // Run FileLogWriter tests
     await runFileLogWriterTests();
+
+    // Run fuzzing tests (property-based testing)
+    runFuzzingTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');

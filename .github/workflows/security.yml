@@ -111,7 +111,7 @@ jobs:
       - name: Compile TypeScript
         run: npm run compile
 
-      - name: Run security tests
+      - name: Run security tests (includes fuzzing)
         run: npm run test:security
 
   codeql-analysis:
