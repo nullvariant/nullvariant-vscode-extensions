@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.37] - 2026-01-08
+
+### Changed
+
+- **CI/CD: Attach SLSA Provenance to releases**
+  - Provenance bundle (`.intoto.jsonl`) now included in release assets
+  - Enables OpenSSF Scorecard Signed-Releases detection
+  - Provenance also stored in GitHub Attestation API for `gh attestation verify`
+
 ## [0.10.36] - 2026-01-08
 
 ### Added
