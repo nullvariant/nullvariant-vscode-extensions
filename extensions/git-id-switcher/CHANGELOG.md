@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.36] - 2026-01-08
+
+### Added
+
+- **OpenSSF Best Practices Badge**
+  - Added OpenSSF Best Practices passing badge to all READMEs (28 files)
+  - Project registered at bestpractices.dev (project #11709)
+
+### Changed
+
+- **CI/CD: Pin GitHub Actions to SHA hashes**
+  - All actions in bot workflows now pinned to SHA for improved Scorecard Pinned-Dependencies score
+  - Added explicit permissions to bot workflows for OpenSSF Scorecard compliance
+
+### Security
+
+- **Mend Bolt Integration**
+  - Configured Mend Bolt for automated security scanning
+  - Updated `minimist` to v1.2.6 (security fix)
+
+## [0.10.35] - 2026-01-07
+
+### Added
+
+- **OpenSSF Scorecard Integration**
+  - Added OpenSSF Scorecard GitHub Action for automated security scoring
+  - Added OpenSSF Scorecard badge to READMEs
+  - Configured branch protection score improvements
+
+- **SLSA Provenance Attestation**
+  - Added SLSA Provenance attestation for releases
+  - Enhances supply chain security with verifiable build provenance
+
+- **Root README Auto-Generation**
+  - Added script to auto-generate root README.md from `docs/i18n/en/README.md`
+  - Transforms relative URLs to absolute URLs for external platforms
+  - GitHub Actions workflow for automatic regeneration on push/PR
+
+### Changed
+
+- **CI/CD: Pin Wrangler Version**
+  - Pinned wrangler version for improved Pinned-Dependencies score
+
+- **Dependency Updates**
+  - Updated `actions/checkout` from 4.2.2 to 6.0.1
+  - Updated `actions/setup-node` from 4.3.0 to 6.1.0
+  - Updated `actions/upload-artifact` from 4.6.0 to 6.0.0
+  - Updated `softprops/action-gh-release` from 2.2.1 to 2.5.0
+  - Updated `github/codeql-action` to latest
+  - Added GitHub Actions dependency grouping for Renovate
+
+### Fixed
+
+- **CI/CD: R2 Paths**
+  - Updated R2 paths in publish.yml to monorepo structure
+
 ## [0.10.34] - 2026-01-06
 
 ### Changed
