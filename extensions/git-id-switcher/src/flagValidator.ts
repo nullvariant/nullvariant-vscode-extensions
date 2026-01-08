@@ -30,21 +30,12 @@ export interface CombinedFlagResult {
 }
 
 /**
- * Definition for allowed combined flag patterns
- */
-interface AllowedCombinedPattern {
-  pattern: string; // e.g., 'lf' for -lf
-  ordered: boolean; // true if order matters (e.g., -lf !== -fl)
-}
-
-/**
  * Allowed combined flag patterns per command
  * Only explicitly listed combinations are allowed.
+ * Patterns are matched exactly (order matters).
  */
-const ALLOWED_COMBINED_PATTERNS: Record<string, AllowedCombinedPattern[]> = {
-  'ssh-keygen': [
-    { pattern: 'lf', ordered: true }, // -lf (list fingerprint of file) - order matters
-  ],
+const ALLOWED_COMBINED_PATTERNS: Record<string, readonly string[]> = {
+  'ssh-keygen': ['lf'], // -lf (list fingerprint of file)
 };
 
 /**
@@ -54,7 +45,7 @@ const ALLOWED_COMBINED_PATTERNS: Record<string, AllowedCombinedPattern[]> = {
  * 1. Length limit to prevent DoS attacks
  * 2. Duplicate flag detection (e.g., -ll is rejected)
  * 3. Unknown flag detection (each character must be in allowlist)
- * 4. Order-sensitive validation for specific commands
+ * 4. Exact match validation (patterns must match exactly)
  * 5. Only explicitly allowed combinations are permitted
  *
  * @param flag - The flag to validate (e.g., '-lf', '-abc')
@@ -199,21 +190,9 @@ export function validateCombinedFlags(
   const commandPatterns = ALLOWED_COMBINED_PATTERNS[command];
 
   if (commandPatterns) {
-    // Check against explicitly allowed patterns
-    for (const pattern of commandPatterns) {
-      if (pattern.ordered) {
-        // Exact match required for ordered patterns
-        if (flagChars === pattern.pattern) {
-          return { valid: true };
-        }
-      } else {
-        // For unordered patterns, check if same characters (sorted)
-        const sortedFlag = [...flagChars].sort().join('');
-        const sortedPattern = [...pattern.pattern].sort().join('');
-        if (sortedFlag === sortedPattern) {
-          return { valid: true };
-        }
-      }
+    // Check against explicitly allowed patterns (exact match required)
+    if (commandPatterns.includes(flagChars)) {
+      return { valid: true };
     }
   }
 

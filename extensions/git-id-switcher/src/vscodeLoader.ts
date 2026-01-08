@@ -113,3 +113,16 @@ export function _resetCache(): void {
   cachedVSCode = undefined;
   loadAttempted = false;
 }
+
+/**
+ * Set a mock VS Code module for testing
+ *
+ * Used for testing purposes to inject mock objects.
+ * Not intended for production use.
+ *
+ * @param mockVSCode - Mock VS Code module or undefined to clear
+ */
+export function _setMockVSCode(mockVSCode: typeof vscodeTypes | undefined): void {
+  cachedVSCode = mockVSCode;
+  loadAttempted = true;
+}

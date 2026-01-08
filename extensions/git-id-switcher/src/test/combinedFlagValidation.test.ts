@@ -5,7 +5,7 @@
  * - Combined flag parsing (-lf, -abc)
  * - Duplicate flag detection (-ll)
  * - Unknown flag detection
- * - Order-sensitive validation
+ * - Exact match validation (patterns must match exactly)
  * - DoS attack prevention (long flag strings)
  * - Integration with isCommandAllowed
  * - Whitespace/null byte/control character detection
@@ -16,16 +16,13 @@
  * - Non-ASCII dash character handling
  * - Windows-specific path injection prevention
  *
- * Coverage: flagValidator.ts achieves 95.65% statement coverage.
+ * Coverage: flagValidator.ts achieves 98.27% statement coverage.
  *
- * Intentionally uncovered lines (defensive/extensibility code):
- * - Lines 101-102, 104-105: Post-NFC-normalization checks for control chars
+ * Intentionally uncovered lines (defensive code):
+ * - Lines 91-93, 94-96: Post-NFC-normalization checks for control chars
  *   and invisible Unicode. These are defensive checks that trigger only if
  *   NFC normalization introduces problematic characters, which is extremely
  *   rare in practice. The pre-normalization checks catch virtually all cases.
- * - Lines 210-216: Unordered pattern matching logic. Currently, all patterns
- *   in ALLOWED_COMBINED_PATTERNS use ordered=true. This code exists for
- *   future extensibility but has no active use case.
  */
 
 import * as assert from 'assert';
