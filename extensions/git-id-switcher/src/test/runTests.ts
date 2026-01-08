@@ -14,6 +14,7 @@ import { runVSCodeLoaderTests } from './vscodeLoader.test';
 import { runFileLogWriterTests } from './fileLogWriter.test';
 import { runFuzzingTests } from './validation.fuzz.test';
 import { runCombinedFlagValidationTests } from './combinedFlagValidation.test';
+import { runSensitiveDataDetectorTests } from './sensitiveDataDetector.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -50,6 +51,9 @@ async function main(): Promise<void> {
 
     // Run fuzzing tests (property-based testing)
     runFuzzingTests();
+
+    // Run sensitive data detector tests
+    await runSensitiveDataDetectorTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
