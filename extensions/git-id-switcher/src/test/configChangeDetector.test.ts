@@ -61,9 +61,50 @@ import {
   ConfigChangeDetector,
   configChangeDetector,
   ConfigSnapshot,
-  ConfigKey,
 } from '../configChangeDetector';
 import { _resetCache } from '../vscodeLoader';
+
+// ============================================================================
+// Test Helpers (DRY: Centralized snapshot creation and setup)
+// ============================================================================
+
+/**
+ * Default snapshot values for testing
+ */
+const DEFAULT_SNAPSHOT: ConfigSnapshot = {
+  identities: [],
+  defaultIdentity: '',
+  autoSwitchSshKey: true,
+  showNotifications: true,
+  applyToSubmodules: true,
+  submoduleDepth: 1,
+  includeIconInGitConfig: false,
+  commandTimeouts: {},
+};
+
+/**
+ * Create a test snapshot with optional overrides (DRY helper)
+ */
+function createTestSnapshot(overrides: Partial<ConfigSnapshot> = {}): ConfigSnapshot {
+  return { ...DEFAULT_SNAPSHOT, ...overrides };
+}
+
+/**
+ * Set detector's internal snapshot for testing
+ *
+ * Note: This accesses private property for testing purposes.
+ * This is intentional to test detectChanges() without relying on createSnapshot()
+ * which depends on VS Code API. The access is centralized here to minimize
+ * coupling to implementation details.
+ */
+function setDetectorSnapshot(detector: ConfigChangeDetector, snapshot: ConfigSnapshot): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (detector as any).snapshot = snapshot;
+}
+
+// ============================================================================
+// Tests
+// ============================================================================
 
 /**
  * Test createSnapshot() method
@@ -260,33 +301,12 @@ function testDetectChangesNoChanges(): void {
   console.log('Testing detectChanges() with no changes...');
 
   const detector = new ConfigChangeDetector();
-
-  // Create and store initial snapshot
-  const snapshot1: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: 'test',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot1; // Access private property for testing
+  const snapshot = createTestSnapshot({ defaultIdentity: 'test' });
+  setDetectorSnapshot(detector, snapshot);
 
   // Create identical snapshot
-  const snapshot2: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: 'test',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  const changes = detector.detectChanges(snapshot2);
+  const newSnapshot = createTestSnapshot({ defaultIdentity: 'test' });
+  const changes = detector.detectChanges(newSnapshot);
   assert.strictEqual(changes.length, 0, 'No changes should be detected');
 
   console.log('✅ detectChanges() with no changes passed!');
@@ -299,44 +319,12 @@ function testDetectChangesSingleChange(): void {
   console.log('Testing detectChanges() with single change...');
 
   const detector = new ConfigChangeDetector();
+  setDetectorSnapshot(detector, createTestSnapshot({ defaultIdentity: 'test1' }));
 
-  // Create and store initial snapshot
-  const snapshot1: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: 'test1',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot1;
-
-  // Create snapshot with changed defaultIdentity
-  const snapshot2: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: 'test2',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  const changes = detector.detectChanges(snapshot2);
+  const changes = detector.detectChanges(createTestSnapshot({ defaultIdentity: 'test2' }));
   assert.strictEqual(changes.length, 1, 'One change should be detected');
-  assert.strictEqual(
-    changes[0].key,
-    'defaultIdentity',
-    'Change key should be defaultIdentity'
-  );
-  assert.strictEqual(
-    changes[0].previousValue,
-    'test1',
-    'Previous value should be test1'
-  );
+  assert.strictEqual(changes[0].key, 'defaultIdentity', 'Change key should be defaultIdentity');
+  assert.strictEqual(changes[0].previousValue, 'test1', 'Previous value should be test1');
   assert.strictEqual(changes[0].newValue, 'test2', 'New value should be test2');
 
   console.log('✅ detectChanges() with single change passed!');
@@ -349,60 +337,28 @@ function testDetectChangesMultipleChanges(): void {
   console.log('Testing detectChanges() with multiple changes...');
 
   const detector = new ConfigChangeDetector();
+  setDetectorSnapshot(detector, createTestSnapshot({ defaultIdentity: 'test1' }));
 
-  // Create and store initial snapshot
-  const snapshot1: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: 'test1',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot1;
-
-  // Create snapshot with multiple changes
-  const snapshot2: ConfigSnapshot = {
-    identities: [],
+  const newSnapshot = createTestSnapshot({
     defaultIdentity: 'test2',
     autoSwitchSshKey: false,
     showNotifications: false,
-    applyToSubmodules: true,
     submoduleDepth: 2,
     includeIconInGitConfig: true,
     commandTimeouts: { git: 5000 },
-  };
+  });
 
-  const changes = detector.detectChanges(snapshot2);
+  const changes = detector.detectChanges(newSnapshot);
   assert.ok(changes.length >= 6, 'Multiple changes should be detected');
 
-  const changeKeys = changes.map(c => c.key);
-  assert.ok(
-    changeKeys.includes('defaultIdentity'),
-    'defaultIdentity change should be detected'
-  );
-  assert.ok(
-    changeKeys.includes('autoSwitchSshKey'),
-    'autoSwitchSshKey change should be detected'
-  );
-  assert.ok(
-    changeKeys.includes('showNotifications'),
-    'showNotifications change should be detected'
-  );
-  assert.ok(
-    changeKeys.includes('submoduleDepth'),
-    'submoduleDepth change should be detected'
-  );
-  assert.ok(
-    changeKeys.includes('includeIconInGitConfig'),
-    'includeIconInGitConfig change should be detected'
-  );
-  assert.ok(
-    changeKeys.includes('commandTimeouts'),
-    'commandTimeouts change should be detected'
-  );
+  const changeKeys = changes.map(c => c.key) as string[];
+  const expectedChanges = [
+    'defaultIdentity', 'autoSwitchSshKey', 'showNotifications',
+    'submoduleDepth', 'includeIconInGitConfig', 'commandTimeouts'
+  ];
+  for (const key of expectedChanges) {
+    assert.ok(changeKeys.includes(key), `${key} change should be detected`);
+  }
 
   console.log('✅ detectChanges() with multiple changes passed!');
 }
@@ -414,27 +370,10 @@ function testDetectChangesNoStoredSnapshot(): void {
   console.log('Testing detectChanges() with no stored snapshot...');
 
   const detector = new ConfigChangeDetector();
-
-  // Ensure no snapshot is stored
   detector.clearSnapshot();
 
-  const snapshot: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: 'test',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  const changes = detector.detectChanges(snapshot);
-  assert.strictEqual(
-    changes.length,
-    0,
-    'No changes should be detected when no snapshot is stored'
-  );
+  const changes = detector.detectChanges(createTestSnapshot({ defaultIdentity: 'test' }));
+  assert.strictEqual(changes.length, 0, 'No changes should be detected when no snapshot is stored');
 
   console.log('✅ detectChanges() with no stored snapshot passed!');
 }
@@ -448,137 +387,29 @@ function testDetectChangesEdgeCases(): void {
   const detector = new ConfigChangeDetector();
 
   // Test 1: Empty identities array to non-empty
-  const snapshot1: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot1;
-
-  const snapshot2: ConfigSnapshot = {
-    identities: [{ id: 'test' }],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  const changes1 = detector.detectChanges(snapshot2);
+  setDetectorSnapshot(detector, createTestSnapshot());
+  const changes1 = detector.detectChanges(createTestSnapshot({ identities: [{ id: 'test' }] }));
   assert.strictEqual(changes1.length, 1, 'One change should be detected');
-  assert.strictEqual(
-    changes1[0].key,
-    'identities',
-    'Change key should be identities'
-  );
+  assert.strictEqual(changes1[0].key, 'identities', 'Change key should be identities');
 
   // Test 2: Empty string to non-empty string
-  const snapshot3: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot3;
-
-  const snapshot4: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: 'new',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  const changes2 = detector.detectChanges(snapshot4);
+  setDetectorSnapshot(detector, createTestSnapshot());
+  const changes2 = detector.detectChanges(createTestSnapshot({ defaultIdentity: 'new' }));
   assert.strictEqual(changes2.length, 1, 'One change should be detected');
-  assert.strictEqual(
-    changes2[0].key,
-    'defaultIdentity',
-    'Change key should be defaultIdentity'
-  );
+  assert.strictEqual(changes2[0].key, 'defaultIdentity', 'Change key should be defaultIdentity');
 
   // Test 3: Boolean true to false
-  const snapshot5: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot5;
-
-  const snapshot6: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: false,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  const changes3 = detector.detectChanges(snapshot6);
+  setDetectorSnapshot(detector, createTestSnapshot());
+  const changes3 = detector.detectChanges(createTestSnapshot({ autoSwitchSshKey: false }));
   assert.strictEqual(changes3.length, 1, 'One change should be detected');
-  assert.strictEqual(
-    changes3[0].key,
-    'autoSwitchSshKey',
-    'Change key should be autoSwitchSshKey'
-  );
+  assert.strictEqual(changes3[0].key, 'autoSwitchSshKey', 'Change key should be autoSwitchSshKey');
 
   // Test 4: Number change
-  const snapshot7: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot7;
-
-  const snapshot8: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 5,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  const changes4 = detector.detectChanges(snapshot8);
+  setDetectorSnapshot(detector, createTestSnapshot());
+  const changes4 = detector.detectChanges(createTestSnapshot({ submoduleDepth: 5 }));
   assert.strictEqual(changes4.length, 1, 'One change should be detected');
-  assert.strictEqual(
-    changes4[0].key,
-    'submoduleDepth',
-    'Change key should be submoduleDepth'
-  );
-  assert.strictEqual(
-    changes4[0].previousValue,
-    1,
-    'Previous value should be 1'
-  );
+  assert.strictEqual(changes4[0].key, 'submoduleDepth', 'Change key should be submoduleDepth');
+  assert.strictEqual(changes4[0].previousValue, 1, 'Previous value should be 1');
   assert.strictEqual(changes4[0].newValue, 5, 'New value should be 5');
 
   console.log('✅ detectChanges() with edge cases passed!');
@@ -593,79 +424,22 @@ function testDetectChangesDeepNesting(): void {
   const detector = new ConfigChangeDetector();
 
   // Test with nested commandTimeouts
-  const snapshot1: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {
-      git: 5000,
-      ssh: 3000,
-    },
-  };
-  detector['snapshot'] = snapshot1;
-
-  const snapshot2: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {
-      git: 5000,
-      ssh: 3000,
-      npm: 10000,
-    },
-  };
-
-  const changes = detector.detectChanges(snapshot2);
-  assert.strictEqual(changes.length, 1, 'One change should be detected');
-  assert.strictEqual(
-    changes[0].key,
-    'commandTimeouts',
-    'Change key should be commandTimeouts'
+  setDetectorSnapshot(detector, createTestSnapshot({ commandTimeouts: { git: 5000, ssh: 3000 } }));
+  const changes = detector.detectChanges(
+    createTestSnapshot({ commandTimeouts: { git: 5000, ssh: 3000, npm: 10000 } })
   );
+  assert.strictEqual(changes.length, 1, 'One change should be detected');
+  assert.strictEqual(changes[0].key, 'commandTimeouts', 'Change key should be commandTimeouts');
 
   // Test with nested identities
-  const snapshot3: ConfigSnapshot = {
-    identities: [
-      { id: 'test1', name: 'Test 1', email: 'test1@example.com' },
-    ],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot3;
-
-  const snapshot4: ConfigSnapshot = {
-    identities: [
-      { id: 'test1', name: 'Test 1 Modified', email: 'test1@example.com' },
-    ],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  const changes2 = detector.detectChanges(snapshot4);
+  setDetectorSnapshot(detector, createTestSnapshot({
+    identities: [{ id: 'test1', name: 'Test 1', email: 'test1@example.com' }]
+  }));
+  const changes2 = detector.detectChanges(createTestSnapshot({
+    identities: [{ id: 'test1', name: 'Test 1 Modified', email: 'test1@example.com' }]
+  }));
   assert.strictEqual(changes2.length, 1, 'One change should be detected');
-  assert.strictEqual(
-    changes2[0].key,
-    'identities',
-    'Change key should be identities'
-  );
+  assert.strictEqual(changes2[0].key, 'identities', 'Change key should be identities');
 
   console.log('✅ detectChanges() with deeply nested objects passed!');
 }
@@ -881,99 +655,32 @@ function testValuesEqualLargeObjects(): void {
   const detector = new ConfigChangeDetector();
 
   // Create large objects that exceed MAX_STRINGIFY_SIZE (100KB = 100000 bytes)
-  // Use numbers instead of strings for commandTimeouts type
-  const largeObject1: Record<string, number> = {};
-  const largeObject2: Record<string, number> = {};
+  const createLargeObject = (prefix: string, count: number): Record<string, number> => {
+    const obj: Record<string, number> = {};
+    const longKey = prefix.repeat(100);
+    for (let i = 0; i < count; i++) {
+      obj[`${longKey}${i}`] = 1000000 + i;
+    }
+    return obj;
+  };
 
-  // Add enough properties to exceed 100KB
-  // Each property: "key" + 100 chars + ":1000000," ≈ 110 bytes
-  // 1000 properties ≈ 110KB > 100KB
-  const longKey = 'x'.repeat(100);
-  for (let i = 0; i < 1000; i++) {
-    largeObject1[`${longKey}${i}`] = 1000000 + i;
-    largeObject2[`${longKey}${i}`] = 1000000 + i;
-  }
+  const largeObject1 = createLargeObject('x', 1000);
+  const largeObject2 = createLargeObject('x', 1000);
 
   // Test 1: Identical large objects (should use length-based comparison)
-  const snapshot1: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: largeObject1,
-  };
-  detector['snapshot'] = snapshot1;
-
-  const snapshot2: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: largeObject2,
-  };
-
-  // Should detect as equal (length-based comparison)
-  const changes1 = detector.detectChanges(snapshot2);
-  assert.strictEqual(
-    changes1.length,
-    0,
-    'Large identical objects should be considered equal'
-  );
+  setDetectorSnapshot(detector, createTestSnapshot({ commandTimeouts: largeObject1 }));
+  const changes1 = detector.detectChanges(createTestSnapshot({ commandTimeouts: largeObject2 }));
+  assert.strictEqual(changes1.length, 0, 'Large identical objects should be considered equal');
 
   // Test 2: Different large objects (different length)
-  const largeObject3: Record<string, number> = {};
-  const longKey3 = 'y'.repeat(100);
-  for (let i = 0; i < 1001; i++) {
-    largeObject3[`${longKey3}${i}`] = 2000000 + i;
-  }
-
-  const snapshot3: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: largeObject3,
-  };
-
-  const changes2 = detector.detectChanges(snapshot3);
-  assert.strictEqual(
-    changes2.length,
-    1,
-    'Different large objects (different length) should be detected as changed'
-  );
+  const largeObject3 = createLargeObject('y', 1001);
+  const changes2 = detector.detectChanges(createTestSnapshot({ commandTimeouts: largeObject3 }));
+  assert.strictEqual(changes2.length, 1, 'Different large objects (different length) should be detected as changed');
 
   // Test 3: Different large objects (same length, different type)
-  const largeObject4: Record<string, number> = {};
-  for (let i = 0; i < 3; i++) {
-    largeObject4[`key${i}`] = 12345;
-  }
-
-  const snapshot4: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: largeObject4 as unknown as Record<string, number>,
-  };
-
-  const changes3 = detector.detectChanges(snapshot4);
-  assert.strictEqual(
-    changes3.length,
-    1,
-    'Different large objects (different type) should be detected as changed'
-  );
+  const smallObject: Record<string, number> = { key0: 12345, key1: 12345, key2: 12345 };
+  const changes3 = detector.detectChanges(createTestSnapshot({ commandTimeouts: smallObject }));
+  assert.strictEqual(changes3.length, 1, 'Different large objects (different type) should be detected as changed');
 
   console.log('✅ valuesEqual() with large objects passed!');
 }
@@ -986,81 +693,26 @@ function testValuesEqualCircularReference(): void {
 
   const detector = new ConfigChangeDetector();
 
-  // Create circular reference objects
-  const circular1: Record<string, unknown> = { id: 'test1', name: 'Test 1' };
-  circular1.self = circular1;
+  // Helper to create circular reference object
+  const createCircular = (id: string, name: string): Record<string, unknown> => {
+    const obj: Record<string, unknown> = { id, name };
+    obj.self = obj;
+    return obj;
+  };
 
-  const circular2: Record<string, unknown> = { id: 'test2', name: 'Test 2' };
-  circular2.self = circular2;
+  const circular1 = createCircular('test1', 'Test 1');
+  const circular2 = createCircular('test2', 'Test 2');
 
   // Test 1: Different circular references should be detected as different
-  const snapshot1: ConfigSnapshot = {
-    identities: [circular1],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot1;
+  setDetectorSnapshot(detector, createTestSnapshot({ identities: [circular1] }));
+  const changes1 = detector.detectChanges(createTestSnapshot({ identities: [circular2] }));
+  assert.strictEqual(changes1.length, 1, 'Different circular references should be detected as different');
 
-  const snapshot2: ConfigSnapshot = {
-    identities: [circular2],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  // Should detect as different (circular reference causes JSON.stringify to fail)
-  const changes1 = detector.detectChanges(snapshot2);
-  assert.strictEqual(
-    changes1.length,
-    1,
-    'Different circular references should be detected as different'
-  );
-
-  // Test 2: Same circular reference structure (same object reference)
-  const circular3: Record<string, unknown> = { id: 'test1', name: 'Test 1' };
-  circular3.self = circular3;
-
-  const snapshot3: ConfigSnapshot = {
-    identities: [circular1],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot3;
-
-  const snapshot4: ConfigSnapshot = {
-    identities: [circular1], // Same reference
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-
-  // Same reference, but JSON.stringify fails on circular references,
-  // so valuesEqual returns false and changes are detected
-  // This is expected behavior: circular references cannot be stringified
-  const changes2 = detector.detectChanges(snapshot4);
-  assert.strictEqual(
-    changes2.length,
-    1,
-    'Circular references cause JSON.stringify to fail, so changes are detected (expected behavior)'
-  );
+  // Test 2: Same circular reference (same object reference)
+  // JSON.stringify fails on circular references, so valuesEqual returns false
+  setDetectorSnapshot(detector, createTestSnapshot({ identities: [circular1] }));
+  const changes2 = detector.detectChanges(createTestSnapshot({ identities: [circular1] }));
+  assert.strictEqual(changes2.length, 1, 'Circular references cause JSON.stringify to fail, so changes are detected');
 
   console.log('✅ valuesEqual() with circular references passed!');
 }
@@ -1072,22 +724,9 @@ function testDetectChangesErrorHandling(): void {
   console.log('Testing detectChanges() error handling...');
 
   const detector = new ConfigChangeDetector();
+  setDetectorSnapshot(detector, createTestSnapshot());
 
-  // Create snapshot with problematic values that might cause errors
-  const problematicSnapshot: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = problematicSnapshot;
-
-  // Test 1: Create a snapshot with a getter that throws an error
-  // This simulates an error during property access
+  // Test 1: Snapshot with a getter that throws an error
   const errorSnapshot1 = {
     get identities() {
       throw new Error('Test error during property access');
@@ -1101,37 +740,16 @@ function testDetectChangesErrorHandling(): void {
     commandTimeouts: {},
   } as unknown as ConfigSnapshot;
 
-  // Should handle error gracefully and return empty array
   const changes1 = detector.detectChanges(errorSnapshot1);
-  assert.strictEqual(
-    changes1.length,
-    0,
-    'Should return empty array on property access error'
-  );
+  assert.strictEqual(changes1.length, 0, 'Should return empty array on property access error');
 
-  // Test 2: Create a snapshot with values that cause JSON.stringify to fail
-  // This tests the catch block in detectChanges
-  const errorSnapshot2: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: '',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {
-      // Create a value that might cause issues during comparison
-      test: undefined as unknown as number,
-    },
-  };
-  detector['snapshot'] = errorSnapshot2;
-
+  // Test 2: Snapshot with problematic values
+  const errorSnapshot2 = createTestSnapshot({
+    commandTimeouts: { test: undefined as unknown as number },
+  });
+  setDetectorSnapshot(detector, errorSnapshot2);
   const changes2 = detector.detectChanges(errorSnapshot2);
-  // Should handle gracefully (may or may not detect changes, but should not throw)
-  assert.ok(
-    Array.isArray(changes2),
-    'Should return an array even with problematic values'
-  );
+  assert.ok(Array.isArray(changes2), 'Should return an array even with problematic values');
 
   console.log('✅ detectChanges() error handling passed!');
 }
@@ -1143,22 +761,10 @@ function testDetectChangesAllConfigKeys(): void {
   console.log('Testing detectChanges() with all CONFIG_KEYS...');
 
   const detector = new ConfigChangeDetector();
-
-  // Create initial snapshot
-  const snapshot1: ConfigSnapshot = {
-    identities: [],
-    defaultIdentity: 'id1',
-    autoSwitchSshKey: true,
-    showNotifications: true,
-    applyToSubmodules: true,
-    submoduleDepth: 1,
-    includeIconInGitConfig: false,
-    commandTimeouts: {},
-  };
-  detector['snapshot'] = snapshot1;
+  setDetectorSnapshot(detector, createTestSnapshot({ defaultIdentity: 'id1' }));
 
   // Create snapshot with all keys changed
-  const snapshot2: ConfigSnapshot = {
+  const newSnapshot = createTestSnapshot({
     identities: [{ id: 'new' }],
     defaultIdentity: 'id2',
     autoSwitchSshKey: false,
@@ -1167,32 +773,18 @@ function testDetectChangesAllConfigKeys(): void {
     submoduleDepth: 2,
     includeIconInGitConfig: true,
     commandTimeouts: { git: 5000 },
-  };
+  });
 
-  const changes = detector.detectChanges(snapshot2);
-  assert.strictEqual(
-    changes.length,
-    8,
-    'All 8 configuration keys should be detected as changed'
-  );
+  const changes = detector.detectChanges(newSnapshot);
+  assert.strictEqual(changes.length, 8, 'All 8 configuration keys should be detected as changed');
 
-  const changeKeys = changes.map(c => c.key);
+  const changeKeys = changes.map(c => c.key) as string[];
   const expectedKeys = [
-    'identities',
-    'defaultIdentity',
-    'autoSwitchSshKey',
-    'showNotifications',
-    'applyToSubmodules',
-    'submoduleDepth',
-    'includeIconInGitConfig',
-    'commandTimeouts',
+    'identities', 'defaultIdentity', 'autoSwitchSshKey', 'showNotifications',
+    'applyToSubmodules', 'submoduleDepth', 'includeIconInGitConfig', 'commandTimeouts',
   ];
-
   for (const key of expectedKeys) {
-    assert.ok(
-      changeKeys.includes(key as ConfigKey),
-      `Change for ${key} should be detected`
-    );
+    assert.ok(changeKeys.includes(key), `Change for ${key} should be detected`);
   }
 
   console.log('✅ detectChanges() with all CONFIG_KEYS passed!');
