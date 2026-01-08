@@ -1,5 +1,6 @@
 .vscode/**
 .vscode-test/**
+.vscode-test.mjs
 src/**
 **/*.ts
 **/*.map
@@ -9,3 +10,7 @@ tsconfig.json
 .eslintrc*
 .prettierrc*
 node_modules/**
+test-workspace/**
+coverage/**
+.cursor/**
+out/test/e2e/**

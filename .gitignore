@@ -8,6 +8,9 @@ dist/
 # VS Code extension packages
 *.vsix
 
+# VS Code test downloads
+.vscode-test/
+
 # TypeScript cache
 *.tsbuildinfo
 
