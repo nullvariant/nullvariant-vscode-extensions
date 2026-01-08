@@ -38,6 +38,17 @@ jobs:
         run: npm run compile
         working-directory: extensions/git-id-switcher
 
+      - name: Run tests with coverage
+        run: npm run test:coverage
+        working-directory: extensions/git-id-switcher
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: extensions/git-id-switcher/coverage
+          fail_ci_if_error: false
+
       - name: Package
         run: npm run package
         working-directory: extensions/git-id-switcher
