@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.38] - 2026-01-08
+
+### Added
+
+- **Security Badges**
+  - Added SLSA level 3 badge (supply chain security attestation)
+  - Added Security badge (CodeQL analysis workflow status)
+  - Added CI badge (build and test workflow status)
+  - Updated all 28 README files (monorepo root + 27 language variants)
+
 ## [0.10.37] - 2026-01-08
 
 ### Changed
