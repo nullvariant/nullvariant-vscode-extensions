@@ -17,6 +17,7 @@ import { runCombinedFlagValidationTests } from './combinedFlagValidation.test';
 import { runSensitiveDataDetectorTests } from './sensitiveDataDetector.test';
 import { runSecurityLoggerTests } from './securityLogger.test';
 import { runPathSanitizerTests } from './pathSanitizer.test';
+import { runConfigChangeDetectorTests } from './configChangeDetector.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -62,6 +63,9 @@ async function main(): Promise<void> {
 
     // Run path sanitizer tests
     await runPathSanitizerTests();
+
+    // Run config change detector tests
+    runConfigChangeDetectorTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
