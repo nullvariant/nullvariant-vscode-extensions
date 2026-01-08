@@ -16,6 +16,7 @@ import { runFuzzingTests } from './validation.fuzz.test';
 import { runCombinedFlagValidationTests } from './combinedFlagValidation.test';
 import { runSensitiveDataDetectorTests } from './sensitiveDataDetector.test';
 import { runSecurityLoggerTests } from './securityLogger.test';
+import { runPathSanitizerTests } from './pathSanitizer.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -59,18 +60,25 @@ async function main(): Promise<void> {
     // Run security logger tests
     await runSecurityLoggerTests();
 
+    // Run path sanitizer tests
+    await runPathSanitizerTests();
+
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
     console.log('╚════════════════════════════════════════════╝\n');
 
     process.exit(0);
   } catch (error) {
-    console.error('\n❌ Test suite failed:', error);
+    // Sanitize error to prevent sensitive data leakage
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('\n❌ Test suite failed:', errorMessage);
     process.exit(1);
   }
 }
 
 main().catch(error => {
-  console.error('Fatal error:', error);
+  // Sanitize error to prevent sensitive data leakage
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.error('Fatal error:', errorMessage);
   process.exit(1);
 });
