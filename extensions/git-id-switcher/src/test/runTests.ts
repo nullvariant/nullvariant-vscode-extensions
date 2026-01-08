@@ -13,6 +13,7 @@ import { runValidatorsCommonTests } from './validatorsCommon.test';
 import { runVSCodeLoaderTests } from './vscodeLoader.test';
 import { runFileLogWriterTests } from './fileLogWriter.test';
 import { runFuzzingTests } from './validation.fuzz.test';
+import { runCombinedFlagValidationTests } from './combinedFlagValidation.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -43,6 +44,9 @@ async function main(): Promise<void> {
 
     // Run FileLogWriter tests
     await runFileLogWriterTests();
+
+    // Run combined flag validation tests
+    await runCombinedFlagValidationTests();
 
     // Run fuzzing tests (property-based testing)
     runFuzzingTests();
