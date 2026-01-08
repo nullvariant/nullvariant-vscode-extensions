@@ -87,14 +87,23 @@ nullvariant-vscode-extensions/
 └── README.md
 ```
 
-## Publishing
+## Publishing (Maintainers Only)
 
-Extensions are automatically published when a tag is pushed:
+> **Note**: The `main` branch is protected. All changes must go through a Pull Request.
+
+Extensions are automatically published when a release tag is pushed:
+
+1. Ensure all changes are merged to `main` via Pull Request
+2. Create and push a release tag from the latest `main`:
 
 ```bash
-git tag git-id-switcher-v0.1.0
-git push origin git-id-switcher-v0.1.0
+git checkout main
+git pull origin main
+git tag git-id-switcher-v1.0.0
+git push origin git-id-switcher-v1.0.0
 ```
+
+The [publish workflow](.github/workflows/publish.yml) will automatically build and publish the extension to VS Code Marketplace and Open VSX.
 
 ## License
 

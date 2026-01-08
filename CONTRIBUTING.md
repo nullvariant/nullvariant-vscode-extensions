@@ -2,6 +2,17 @@
 
 Thank you for your interest in contributing to nullvariant-vscode-extensions!
 
+## Branch Protection
+
+The `main` branch is protected with the following rules:
+
+- **Pull Request required**: All changes must go through a PR (direct push is disabled)
+- **CI status checks**: The `build` check must pass before merging
+- **Signed commits required on main**: Commits merged to `main` must be GPG signed (handled by maintainers during merge)
+- **Linear history**: Rebase/squash merging is required (no merge commits)
+
+> **Note for contributors**: You don't need to GPG-sign your commits. The maintainer will handle signing when merging your PR.
+
 ## Getting Started
 
 1. Fork the repository
@@ -11,6 +22,7 @@ Thank you for your interest in contributing to nullvariant-vscode-extensions!
 5. Commit with a descriptive message
 6. Push to your fork
 7. Open a Pull Request
+8. Wait for CI checks to pass, then a maintainer will merge
 
 ## Development Setup
 
@@ -18,6 +30,9 @@ Thank you for your interest in contributing to nullvariant-vscode-extensions!
 # Clone
 git clone https://github.com/your-username/nullvariant-vscode-extensions.git
 cd nullvariant-vscode-extensions
+
+# Set up git hooks (recommended)
+git config core.hooksPath .githooks
 
 # Install dependencies
 npm install
