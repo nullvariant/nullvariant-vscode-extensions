@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.39] - 2026-01-08
+
+### Added
+
+- **Codecov Integration**
+  - Added code coverage reporting to CI workflow using c8
+  - Coverage data automatically uploaded to Codecov on every CI run
+  - Added Codecov badge to all 28 README files (monorepo root + 27 language variants)
+
 ## [0.10.38] - 2026-01-08
 
 ### Added
@@ -985,7 +994,13 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.33...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.39...HEAD
+[0.10.39]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.38...git-id-switcher-v0.10.39
+[0.10.38]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.37...git-id-switcher-v0.10.38
+[0.10.37]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.36...git-id-switcher-v0.10.37
+[0.10.36]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.35...git-id-switcher-v0.10.36
+[0.10.35]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.34...git-id-switcher-v0.10.35
+[0.10.34]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.33...git-id-switcher-v0.10.34
 [0.10.33]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.32...git-id-switcher-v0.10.33
 [0.10.32]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.31...git-id-switcher-v0.10.32
 [0.10.31]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.30...git-id-switcher-v0.10.31

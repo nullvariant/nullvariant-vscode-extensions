@@ -5,6 +5,7 @@
 [![SLSA 3](https://img.shields.io/badge/SLSA-Level_3-green)](https://github.com/nullvariant/nullvariant-vscode-extensions/attestations)
 [![Security](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml)
 [![CI](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/nullvariant/nullvariant-vscode-extensions/graph/badge.svg)](https://codecov.io/gh/nullvariant/nullvariant-vscode-extensions)
 
 VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 

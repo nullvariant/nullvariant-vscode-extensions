@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.10.38",
+  "version": "0.10.39",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -260,6 +260,7 @@
     "lint": "eslint src --ext ts",
     "test": "npm run compile && node out/test/runTests.js",
     "test:security": "npm run compile && node out/test/runTests.js",
+    "test:coverage": "npm run compile && npx c8 --reporter=lcov --reporter=text node out/test/runTests.js",
     "test:fuzz": "npm run compile && node -e \"require('./out/test/validation.fuzz.test').runFuzzingTests()\"",
     "package": "vsce package",
     "publish": "echo '❌ Do not use vsce publish directly. Push a tag instead: git tag git-id-switcher-vX.X.X && git push --tags' && exit 1",
