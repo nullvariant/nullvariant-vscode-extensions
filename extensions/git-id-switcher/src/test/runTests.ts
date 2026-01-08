@@ -17,7 +17,7 @@ import { runCombinedFlagValidationTests } from './combinedFlagValidation.test';
 import { runSensitiveDataDetectorTests } from './sensitiveDataDetector.test';
 import { runSecurityLoggerTests } from './securityLogger.test';
 import { runPathSanitizerTests } from './pathSanitizer.test';
-import { runTests as runConfigChangeDetectorTests } from './configChangeDetector.test';
+import { runConfigChangeDetectorTests } from './configChangeDetector.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
