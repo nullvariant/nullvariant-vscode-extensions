@@ -12,9 +12,10 @@ coverage:
         target: auto
 
 # Fix path mapping for monorepo structure
+# lcov.info contains paths like "out/commandAllowlist.js"
+# Source files are at "extensions/git-id-switcher/src/commandAllowlist.ts"
 fixes:
-  - "out/::" # Remove out/ prefix from paths
-  - "extensions/git-id-switcher/out/::extensions/git-id-switcher/src/" # Map compiled to source
+  - "out/::extensions/git-id-switcher/src/"
 
 # Ignore test files from coverage
 ignore:
