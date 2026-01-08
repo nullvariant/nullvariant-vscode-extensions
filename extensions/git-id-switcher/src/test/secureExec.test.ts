@@ -13,6 +13,7 @@
  */
 
 import * as assert from 'assert';
+import * as os from 'os';
 import {
   secureExec,
   gitExec,
@@ -482,7 +483,7 @@ async function testCwdOption(): Promise<void> {
   // Test with valid cwd
   {
     try {
-      const tempDir = require('os').tmpdir();
+      const tempDir = os.tmpdir();
       const result = await secureExec('pwd', [], { cwd: tempDir });
       assert.ok(result.stdout.trim().length > 0, 'Should return current directory');
     } catch (error) {
