@@ -39,23 +39,37 @@ export const LOCALE_MAP: Record<string, string> = {
  * We still remove dangerous patterns as defense-in-depth.
  *
  * Removes:
- * - <script> tags (completely)
+ * - <script> tags (completely, including malformed variants)
  * - Event handler attributes (onclick, onerror, etc.)
  * - Dangerous URL schemes (javascript:, data:, vbscript:)
+ *
+ * Uses loop-based sanitization to handle nested/recursive attack patterns.
  *
  * @param html - Raw HTML/Markdown that may contain dangerous elements
  * @returns Sanitized HTML
  */
 export function sanitizeHtml(html: string): string {
   let result = html;
+  let previous: string;
 
-  // Remove script tags completely (including content)
-  result = result.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  // Loop until no more changes (handles nested/recursive patterns)
+  do {
+    previous = result;
 
-  // Remove event handler attributes (onclick, onerror, onload, etc.)
-  // Match: onclick="..." or onclick='...' or onclick=value
-  result = result.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
-  result = result.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
+    // Remove script tags completely (including content)
+    // Handle variations: </script>, </script >, </ script>, etc.
+    result = result.replace(/<script\b[^]*?<\/\s*script\s*>/gi, '');
+    // Remove orphan opening script tags
+    result = result.replace(/<script\b[^>]*>/gi, '');
+    // Remove orphan closing script tags (with optional whitespace)
+    result = result.replace(/<\/\s*script\s*>/gi, '');
+
+    // Remove event handler attributes (onclick, onerror, onload, etc.)
+    // Match: onclick="..." or onclick='...' or onclick=value
+    result = result.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+    result = result.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
+
+  } while (result !== previous);
 
   // Sanitize href and src attributes for dangerous schemes
   result = result.replace(/(href|src)\s*=\s*["']\s*(javascript:|data:|vbscript:)[^"']*["']/gi, '$1="#"');

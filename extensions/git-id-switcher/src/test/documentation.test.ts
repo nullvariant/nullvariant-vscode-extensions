@@ -345,6 +345,47 @@ function testSanitizeHtmlEdgeCases(): void {
     'Deeply nested safe HTML should be preserved'
   );
 
+  // CodeQL-flagged edge cases: whitespace variations in script tags
+  assert.strictEqual(
+    sanitizeHtml('<script>alert(1)</script >'),
+    '',
+    'Script tag with whitespace before closing > should be removed'
+  );
+  assert.strictEqual(
+    sanitizeHtml('<script>alert(1)</ script>'),
+    '',
+    'Script tag with space after </ should be removed'
+  );
+  assert.strictEqual(
+    sanitizeHtml('<script>alert(1)</script\n>'),
+    '',
+    'Script tag with newline before closing > should be removed'
+  );
+  assert.strictEqual(
+    sanitizeHtml('<script>alert(1)</script\t>'),
+    '',
+    'Script tag with tab before closing > should be removed'
+  );
+
+  // Orphan script tags (malformed HTML)
+  assert.strictEqual(
+    sanitizeHtml('<script>unclosed'),
+    'unclosed',
+    'Orphan opening script tag should be removed'
+  );
+  assert.strictEqual(
+    sanitizeHtml('text</script>more text'),
+    'textmore text',
+    'Orphan closing script tag should be removed'
+  );
+
+  // Recursive event handler attempts
+  assert.strictEqual(
+    sanitizeHtml('<div onclick="x" onclick="y">text</div>'),
+    '<div>text</div>',
+    'Multiple onclick attributes should all be removed'
+  );
+
   console.log('  sanitizeHtml (edge cases) passed!');
 }
 
