@@ -6,6 +6,16 @@
  */
 
 /**
+ * Shared Intl.Segmenter instance for grapheme counting.
+ * Reused across all functions to avoid repeated instantiation.
+ *
+ * @remarks
+ * Intl.Segmenter is available in Node.js 16+ and modern browsers.
+ * VS Code extensions run on Node.js 18+, so this is always available.
+ */
+const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+
+/**
  * Display limits for each UI context
  */
 export const DISPLAY_LIMITS = {
@@ -57,9 +67,31 @@ export const DISPLAY_LIMITS = {
  * @returns The number of visible characters
  */
 export function countGraphemes(str: string): number {
-  // Intl.Segmenter is available in Node.js 16+ and modern browsers
-  const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-  return [...segmenter.segment(str)].length;
+  return [...graphemeSegmenter.segment(str)].length;
+}
+
+/**
+ * Truncate a string by grapheme clusters with a suffix.
+ * Common implementation for all truncation functions.
+ *
+ * Both text length and suffix length are calculated in graphemes (visible characters),
+ * ensuring accurate truncation even with emoji or combined characters.
+ *
+ * @param text - The text to truncate
+ * @param maxLength - Maximum length in graphemes (must be positive)
+ * @param suffix - Suffix to append when truncated (default: '...')
+ * @returns Truncated text if necessary, original text otherwise
+ */
+function truncateByGraphemes(text: string, maxLength: number, suffix: string = '...'): string {
+  const segments = [...graphemeSegmenter.segment(text)];
+  if (segments.length <= maxLength) {
+    return text;
+  }
+  // Calculate suffix length in graphemes (not bytes) for accurate truncation
+  const suffixGraphemeLength = [...graphemeSegmenter.segment(suffix)].length;
+  const targetLength = Math.max(0, maxLength - suffixGraphemeLength);
+  const truncatedSegments = segments.slice(0, targetLength);
+  return truncatedSegments.map(s => s.segment).join('') + suffix;
 }
 
 /**
@@ -71,20 +103,7 @@ export function countGraphemes(str: string): number {
  */
 export function truncateForStatusBar(text: string): string {
   const { maxLength, truncateSuffix } = DISPLAY_LIMITS.statusBar;
-
-  // Count graphemes for accurate length measurement
-  const graphemeCount = countGraphemes(text);
-
-  if (graphemeCount <= maxLength) {
-    return text;
-  }
-
-  // Truncate by grapheme clusters, not bytes
-  const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-  const segments = [...segmenter.segment(text)];
-  const truncatedSegments = segments.slice(0, maxLength - truncateSuffix.length);
-
-  return truncatedSegments.map(s => s.segment).join('') + truncateSuffix;
+  return truncateByGraphemes(text, maxLength, truncateSuffix);
 }
 
 /**
@@ -94,18 +113,7 @@ export function truncateForStatusBar(text: string): string {
  * @returns Truncated text if necessary, original text otherwise
  */
 export function truncateForQuickPickLabel(text: string): string {
-  const { maxLength } = DISPLAY_LIMITS.quickPickLabel;
-  const graphemeCount = countGraphemes(text);
-
-  if (graphemeCount <= maxLength) {
-    return text;
-  }
-
-  const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-  const segments = [...segmenter.segment(text)];
-  const truncatedSegments = segments.slice(0, maxLength - 3);
-
-  return truncatedSegments.map(s => s.segment).join('') + '...';
+  return truncateByGraphemes(text, DISPLAY_LIMITS.quickPickLabel.maxLength);
 }
 
 /**
@@ -115,18 +123,7 @@ export function truncateForQuickPickLabel(text: string): string {
  * @returns Truncated text if necessary, original text otherwise
  */
 export function truncateForQuickPickDetail(text: string): string {
-  const { maxLength } = DISPLAY_LIMITS.quickPickDetail;
-  const graphemeCount = countGraphemes(text);
-
-  if (graphemeCount <= maxLength) {
-    return text;
-  }
-
-  const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-  const segments = [...segmenter.segment(text)];
-  const truncatedSegments = segments.slice(0, maxLength - 3);
-
-  return truncatedSegments.map(s => s.segment).join('') + '...';
+  return truncateByGraphemes(text, DISPLAY_LIMITS.quickPickDetail.maxLength);
 }
 
 /**
