@@ -18,6 +18,7 @@ permissions: {}
 jobs:
   unpublish:
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
     # Prevent forks from unpublishing (no marketplace secrets)

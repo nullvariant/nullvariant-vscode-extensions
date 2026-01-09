@@ -10,6 +10,7 @@ permissions: {}
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: production
     # Prevent forks from publishing
     if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
     permissions:
