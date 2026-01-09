@@ -13,11 +13,13 @@ on:
         type: boolean
         default: true
 
-permissions: read-all
+permissions: {}
 
 jobs:
   unpublish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     # Prevent forks from unpublishing (no marketplace secrets)
     if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
 

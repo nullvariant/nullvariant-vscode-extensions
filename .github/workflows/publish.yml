@@ -5,7 +5,7 @@ on:
     tags:
       - 'git-id-switcher-v*'
 
-permissions: read-all
+permissions: {}
 
 jobs:
   publish:

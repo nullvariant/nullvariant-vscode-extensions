@@ -3,7 +3,7 @@
 
 name: 🐰 Mimi Bot
 
-permissions: read-all
+permissions: {}
 
 on:
   workflow_dispatch:
@@ -17,6 +17,8 @@ jobs:
   mimi-commit:
     name: 🐰 Listen carefully
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: 🐰 Perk up ears

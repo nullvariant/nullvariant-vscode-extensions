@@ -14,12 +14,14 @@ on:
   branch_protection_rule:
   workflow_dispatch:
 
-permissions: read-all
+permissions: {}
 
 jobs:
   security-audit:
     name: Security Audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: extensions/git-id-switcher
@@ -48,6 +50,8 @@ jobs:
   lint-security:
     name: Security Linting
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: extensions/git-id-switcher
@@ -88,6 +92,8 @@ jobs:
   security-tests:
     name: Security Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: extensions/git-id-switcher
@@ -146,6 +152,7 @@ jobs:
     # Only run on main branch (push, schedule) - not on PRs
     if: github.event_name != 'pull_request'
     permissions:
+      contents: read
       security-events: write
       id-token: write
 

@@ -14,11 +14,13 @@ on:
       - 'extensions/git-id-switcher/docs/**'      # All language READMEs + docs
   workflow_dispatch:  # Manual trigger
 
-permissions: read-all
+permissions: {}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     # Prevent forks from deploying (no Cloudflare secrets)
     if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
 

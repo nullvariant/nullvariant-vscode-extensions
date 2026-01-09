@@ -8,11 +8,13 @@ on:
     branches:
       - main
 
-permissions: read-all
+permissions: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -59,6 +61,8 @@ jobs:
   e2e:
     name: E2E Tests (VS Code Extension)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     continue-on-error: true
 
     steps:
