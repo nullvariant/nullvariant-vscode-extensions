@@ -62,9 +62,29 @@ npm run package
 
 ### Testing locally
 
+#### Manual Testing
+
 1. Open the extension folder in VS Code
 2. Press `F5` to launch Extension Development Host
 3. Test the extension in the new window
+
+#### Unit Tests
+
+```bash
+cd extensions/git-id-switcher
+npm run test
+```
+
+#### E2E Tests
+
+E2E tests run in an actual VS Code environment using `@vscode/test-electron`:
+
+```bash
+cd extensions/git-id-switcher
+npm run test:e2e
+```
+
+> **Note**: On first run, VS Code will be downloaded automatically (~100MB). Subsequent runs use the cached version.
 
 ### Git Hooks Setup
 
