@@ -52,9 +52,51 @@ npm run watch
 
 ## Testing
 
+### Manual Testing
+
 1. Open the extension folder in VS Code
 2. Press `F5` to launch Extension Development Host
 3. Test your changes manually
+
+### Unit Tests
+
+```bash
+cd extensions/git-id-switcher
+npm run test
+```
+
+### E2E Tests
+
+E2E (End-to-End) tests run in an actual VS Code environment using `@vscode/test-electron` and verify the extension works correctly as a whole.
+
+#### Requirements
+
+- Node.js 20+
+- On first run, VS Code will be downloaded automatically (~100MB)
+
+#### Running E2E Tests
+
+```bash
+cd extensions/git-id-switcher
+npm run test:e2e
+```
+
+#### Adding E2E Tests
+
+E2E test files are located in `src/test/e2e/`. When adding new E2E tests:
+
+1. Create a test file in `src/test/e2e/` (e.g., `myFeature.test.ts`)
+2. Use the VS Code Test API (`@vscode/test-electron`)
+3. Test real extension behavior without mocks
+4. Clean up any test data after tests complete
+
+#### CI/CD Integration
+
+E2E tests run automatically in GitHub Actions CI:
+
+- Executed in parallel with the build job
+- Uses `xvfb-run` for headless execution on Linux
+- Currently set as non-blocking (`continue-on-error: true`)
 
 ## Pull Request Guidelines
 
