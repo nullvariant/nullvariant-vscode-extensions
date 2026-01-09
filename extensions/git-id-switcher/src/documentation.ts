@@ -402,6 +402,14 @@ function getErrorHtml(
 // ============================================================================
 
 /**
+ * Check if running in CI/test environment
+ * @returns true if in CI environment (GitHub Actions, etc.)
+ */
+function isTestEnvironment(): boolean {
+  return process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+}
+
+/**
  * Fetch a document by path from R2
  *
  * @param path - Document path relative to extension root (e.g., 'README.md', 'docs/i18n/ja/README.md')
@@ -413,7 +421,14 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
 
   try {
     const url = `${ASSET_BASE_URL}/${path}`;
-    const response = await fetch(url, { signal: controller.signal });
+
+    // Add header for CI/test environment access (for analytics filtering)
+    const headers: Record<string, string> = {};
+    if (isTestEnvironment()) {
+      headers['X-Test-Environment'] = 'true';
+    }
+
+    const response = await fetch(url, { signal: controller.signal, headers });
 
     clearTimeout(timeoutId);
 
