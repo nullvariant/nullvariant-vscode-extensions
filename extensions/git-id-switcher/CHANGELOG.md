@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.40] - 2026-01-09
+
+### Changed
+
+- **CI/CD: E2E Test Integration**
+  - Added E2E test job to CI workflow running in parallel with build job
+  - Uses `xvfb-run` for headless VS Code extension testing on Linux CI
+  - Set `continue-on-error: true` as E2E tests can be flaky due to environment
+
 ## [0.10.39] - 2026-01-08
 
 ### Added
@@ -994,7 +1003,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.39...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.40...HEAD
+[0.10.40]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.39...git-id-switcher-v0.10.40
 [0.10.39]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.38...git-id-switcher-v0.10.39
 [0.10.38]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.37...git-id-switcher-v0.10.38
 [0.10.37]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.36...git-id-switcher-v0.10.37
