@@ -90,6 +90,36 @@ E2E test files are located in `src/test/e2e/`. When adding new E2E tests:
 3. Test real extension behavior without mocks
 4. Clean up any test data after tests complete
 
+#### UI Module Testing Patterns
+
+When testing UI modules (StatusBar, QuickPick, Documentation), follow these patterns:
+
+**StatusBar Tests:**
+
+- Test state transitions: `setIdentity()`, `setNoIdentity()`, `setLoading()`, `setError()`
+- Verify status bar item visibility and text updates
+- Use `statusBar.dispose()` in afterEach for cleanup
+
+**QuickPick Tests:**
+
+- Modify configuration → call item generation function → verify items
+- Use `vscode.workspace.getConfiguration().update()` for temporary config changes
+- Restore original configuration in afterEach
+
+**Documentation (Webview) Tests:**
+
+- **Limitation**: Cannot directly access Webview DOM from tests
+- Use command execution + extension stability verification pattern:
+
+  ```typescript
+  await vscode.commands.executeCommand('git-id-switcher.showDocumentation');
+  assert.strictEqual(extension.isActive, true, 'Extension should remain active');
+  ```
+
+- Test panel lifecycle: create → close → re-create
+- Add stress tests (rapid open/close) to detect resource leaks
+- Set appropriate timeout (e.g., `this.timeout(15000)`) for network operations
+
 #### CI/CD Integration
 
 E2E tests run automatically in GitHub Actions CI:
