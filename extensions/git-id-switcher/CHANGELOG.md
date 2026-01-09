@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.41] - 2026-01-09
+
+### Security
+
+- **CI/CD: Environment Protection for Marketplace Publishing**
+  - Added `production` environment to publish.yml and unpublish.yml
+  - Marketplace secrets (VSCE_PAT, OVSX_PAT) now protected by GitHub Environment
+  - Requires tag push matching `git-id-switcher-v*` pattern
+  - Implements least privilege principle for CI/CD secrets
+
+### Added
+
+- **Secrets Management Documentation**
+  - Added comprehensive Secrets Management section to SECURITY.md
+  - Documents all 15 secrets used in CI/CD workflows
+  - Includes rotation procedures and provider links
+  - Added sensitivity levels for each secret
+
 ## [0.10.40] - 2026-01-09
 
 ### Changed
@@ -1003,7 +1021,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.40...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.41...HEAD
+[0.10.41]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.40...git-id-switcher-v0.10.41
 [0.10.40]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.39...git-id-switcher-v0.10.40
 [0.10.39]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.38...git-id-switcher-v0.10.39
 [0.10.38]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.37...git-id-switcher-v0.10.38
