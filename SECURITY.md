@@ -45,6 +45,7 @@ This repository contains VS Code extensions with the following security measures
 - **Automated Security Scanning**: CodeQL analysis runs on every push
 - **Daily Vulnerability Scans**: `npm audit` runs daily via scheduled workflow
 - **Fork Protection**: Sensitive workflows skip on fork repositories
+- **Runtime Security Monitoring**: [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) monitors all workflow runs for suspicious network egress, file access, and process execution
 
 ## Security Testing
 
