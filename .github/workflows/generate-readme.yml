@@ -7,7 +7,7 @@ on:
       - 'extensions/git-id-switcher/README.md'
   workflow_dispatch:  # Manual trigger for verification
 
-permissions: read-all
+permissions: {}
 
 # README auto-generation is handled by local pre-commit hook (husky)
 # This workflow only verifies sync as a safety net
@@ -16,6 +16,8 @@ jobs:
   check-sync:
     name: Verify README is in sync
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout

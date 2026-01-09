@@ -3,7 +3,7 @@
 
 name: 🦥 Slow Bot
 
-permissions: read-all
+permissions: {}
 
 on:
   workflow_dispatch:
@@ -17,6 +17,8 @@ jobs:
   slow-commit:
     name: 🦥 Make a lazy commit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: 🦥 Wake up slowly...

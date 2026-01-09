@@ -3,7 +3,7 @@
 
 name: 👮 Justice Bot
 
-permissions: read-all
+permissions: {}
 
 on:
   workflow_dispatch:
@@ -17,6 +17,8 @@ jobs:
   justice-commit:
     name: 👮 Enforce the law
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: 👮 Begin inspection
