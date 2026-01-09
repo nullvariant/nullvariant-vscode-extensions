@@ -19,6 +19,7 @@ import { runSecurityLoggerTests } from './securityLogger.test';
 import { runPathSanitizerTests } from './pathSanitizer.test';
 import { runConfigChangeDetectorTests } from './configChangeDetector.test';
 import { runCommandAllowlistTests } from './commandAllowlist.test';
+import { runDocumentationTests } from './documentation.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -70,6 +71,9 @@ async function main(): Promise<void> {
 
     // Run command allowlist tests
     await runCommandAllowlistTests();
+
+    // Run documentation module tests
+    await runDocumentationTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
