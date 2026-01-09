@@ -14,15 +14,19 @@ import {
 
 /**
  * Quick pick item for an identity
+ *
+ * @internal Exported for testing purposes
  */
-interface IdentityQuickPickItem extends vscode.QuickPickItem {
+export interface IdentityQuickPickItem extends vscode.QuickPickItem {
   identity: Identity;
 }
 
 /**
  * Create quick pick items from identities
+ *
+ * @internal Exported for testing purposes
  */
-function createQuickPickItems(
+export function createQuickPickItems(
   currentIdentity?: Identity
 ): IdentityQuickPickItem[] {
   const identities = getIdentitiesWithValidation();
