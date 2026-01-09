@@ -60,6 +60,12 @@ E2E test files are in `extensions/git-id-switcher/src/test/e2e/`. Guidelines:
 3. **Isolation**: Each test should be independent
 4. **Naming**: Use descriptive test names that explain the scenario
 
+#### UI Module Testing Notes
+
+- **StatusBar**: Test state transitions (`setIdentity`, `setNoIdentity`, `setLoading`, `setError`)
+- **QuickPick**: Modify config → generate items → verify output
+- **Webview (Documentation)**: Cannot access DOM directly; verify via command execution + `extension.isActive` check
+
 ### CI/CD
 
 - Unit tests: Must pass to merge PR
