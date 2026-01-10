@@ -1,11 +1,12 @@
 # Pre-commit configuration
 # https://pre-commit.com/
-# Bot: pre-commit-ci[bot] will auto-fix and commit changes
+# Bot: pre-commit-ci[bot] reports errors only (no auto-fix commits)
+# Reason: Bot commits are unverified; only GPG-signed commits allowed
 
 ci:
   autofix_commit_msg: |
     [pre-commit.ci] auto fixes from pre-commit hooks
-  autofix_prs: true
+  autofix_prs: false
   autoupdate_branch: ''
   autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
   autoupdate_schedule: weekly
