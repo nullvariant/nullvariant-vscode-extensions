@@ -258,10 +258,9 @@ function testListenerManagement(): void {
   // Test 3: Disposed listener should not be called
   {
     mockVscode = createMockVscode(false);
-    let callCount = 0;
 
     const subscription = mockVscode.workspace.onDidGrantWorkspaceTrust(() => {
-      callCount++;
+      // Listener would be called here if not disposed
     });
 
     // Dispose before trigger

@@ -215,7 +215,7 @@ export class WorkspaceTrustManager implements IWorkspaceTrustManager {
     this.listeners.add(listener);
 
     return {
-      dispose: () => {
+      dispose: (): void => {
         this.listeners.delete(listener);
       },
     };
