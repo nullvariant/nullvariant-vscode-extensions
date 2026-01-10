@@ -82,12 +82,20 @@ function transformLicenseLink(content) {
  * Transform DESIGN_PHILOSOPHY.md link to correct relative path
  * ../../DESIGN_PHILOSOPHY.md -> docs/DESIGN_PHILOSOPHY.md
  * (from root README perspective)
+ * Handles both markdown links (...) and HTML href="..."
  */
 function transformDesignPhilosophyLink(content) {
-  return content.replace(
+  // Transform markdown-style links
+  content = content.replace(
     /\(\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md\)/g,
     `(docs/DESIGN_PHILOSOPHY.md)`
   );
+  // Transform HTML href attributes
+  content = content.replace(
+    /href="\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md"/g,
+    `href="docs/DESIGN_PHILOSOPHY.md"`
+  );
+  return content;
 }
 
 function main() {

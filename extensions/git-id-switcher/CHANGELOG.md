@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.44] - 2026-01-10
+
+### Fixed
+
+- **Root README Badge Link**
+  - Fixed broken DESIGN_PHILOSOPHY.md link in header badge section
+  - `generate-root-readme.js` now transforms both markdown `(...)` and HTML `href="..."` links
+
 ## [0.10.43] - 2026-01-10
 
 ### Added
