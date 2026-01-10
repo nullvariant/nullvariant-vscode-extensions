@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.48] - 2026-01-10
+
+### Fixed
+
+- **Marketplace DESIGN_PHILOSOPHY.md Links**
+  - Fixed 404 errors for Karesansui Architecture badge links in VS Code Marketplace
+  - Changed from relative paths (`docs/DESIGN_PHILOSOPHY.md`) to absolute GitHub URLs
+  - `generate-root-readme.js` now generates absolute URLs consistent with other link transformations
+
 ## [0.10.47] - 2026-01-10
 
 ### Fixed
