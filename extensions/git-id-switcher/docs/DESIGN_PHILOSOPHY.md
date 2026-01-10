@@ -2,6 +2,9 @@
 
 *A design philosophy for Git ID Switcher*
 
+> **Note**: Karesansui (枯山水) is a Japanese rock garden--sand and stone representing mountains and water.
+> This philosophy is not efficiency-driven minimalism. It invests deeply in what appears simple.
+
 ---
 
 ## Placing Stones
@@ -86,6 +89,32 @@ They're right.
 But no one questions ROI in a hobby garden.
 
 Lining up coverage badges is like hanging a scroll. They're there because they're beautiful.
+
+---
+
+## What This Is Not
+
+Karesansui is not Western minimalism.
+
+Western minimalism asks: "What can we remove?"
+Karesansui asks: "What deserves to remain?"
+
+Western minimalism removes to save cost and effort.
+Karesansui invests enormously to *appear* simple.
+
+In a real karesansui, sand patterns require daily raking.
+In this codebase, "invisible quality" requires continuous investment.
+The "empty" space is the most intentional part.
+What looks effortless demands the most effort.
+
+"Eliminate waste" misses the point entirely.
+"If it works, it's fine" has no place here.
+In this garden, sand patterns and accents *are* the richness--not waste to be cut.
+
+The goal is not efficiency or quick results.
+The goal is depth disguised as simplicity.
+
+Karesansui is intentional richness that *appears* minimal.
 
 ---
 
