@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.46] - 2026-01-10
+
+### Changed
+
+- **Full 26 Language Links**
+  - Replaced `17+9 more` badge with `26 Languages` badge
+  - Now displaying all 26 language links with their emojis instead of just 17 VSCode UI languages
+  - Each language README shows its own emoji in bold, with other 25 languages as clickable links
+  - Minority (🌺🐻🐉), Special (🌍), and Joke (✨🖖🐱🏴‍☠️🎭) languages now visible alongside UI language flags
+
 ## [0.10.45] - 2026-01-10
 
 ### Changed
