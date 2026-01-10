@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.45] - 2026-01-10
+
+### Changed
+
+- **Languages Badge Redesign**
+  - Replaced language-specific text labels with unified shields.io badge `[🌐 Languages | 17+9 more]`
+  - Updated all 26 i18n README files with consistent badge format
+  - Fixed language count from `17+8` to `17+9` (actual total: 26 languages)
+  - Added Karesansui Architecture badge to monorepo root README
+
 ## [0.10.44] - 2026-01-10
 
 ### Fixed
