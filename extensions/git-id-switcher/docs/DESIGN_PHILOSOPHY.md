@@ -111,3 +111,35 @@ To the maker, it exists as a garden.
 Both are true. Both are real.
 
 And so the gardener is satisfied.
+
+---
+
+## Badge
+
+If you resonate with this philosophy, feel free to use one of these badges in your project:
+
+### Stone (🪨)
+
+| Preview | Markdown |
+|---------|----------|
+| ![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-lightgrey) | `![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-lightgrey)` |
+| ![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-555) | `![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-555)` |
+| ![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-e8dcc8) | `![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-e8dcc8)` |
+| ![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-333) | `![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-333)` |
+| ![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568) | `![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)` |
+
+### Zen (🧘)
+
+| Preview | Markdown |
+|---------|----------|
+| ![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-lightgrey) | `![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-lightgrey)` |
+| ![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-555) | `![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-555)` |
+| ![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-e8dcc8) | `![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-e8dcc8)` |
+
+### Waves (🌊)
+
+| Preview | Markdown |
+|---------|----------|
+| ![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-lightgrey) | `![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-lightgrey)` |
+| ![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-555) | `![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-555)` |
+| ![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-e8dcc8) | `![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-e8dcc8)` |
