@@ -562,6 +562,8 @@ Kūkulu ʻia ma luna o ka **Karesansui Architecture**: he kumu maʻalahi (100 la
 puni ʻia e ka maikaʻi hoʻoholo ʻia (90% uhi, logging, timeouts)
 a me nā palena manaʻo ʻia (ʻaʻohe GitHub API, ʻaʻohe token management).
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [Heluhelu i ke kumu hoʻolālā piha](../../DESIGN_PHILOSOPHY.md)
 
 ---

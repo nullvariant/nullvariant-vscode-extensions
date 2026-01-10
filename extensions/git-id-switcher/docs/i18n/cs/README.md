@@ -541,6 +541,8 @@ Postaveno na **Architektuře Karesansui**: jednoduché jádro (100 řádků),
 obklopené záměrnou kvalitou (90% pokrytí, logování, timeouty)
 a vědomými omezeními (žádné GitHub API, žádná správa tokenů).
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [Přečíst celou filozofii](../../DESIGN_PHILOSOPHY.md)
 
 ---

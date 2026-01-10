@@ -542,6 +542,8 @@ Costruita sull'**Architettura Karesansui**: un nucleo semplice (100 righe),
 circondato da qualità deliberata (90% copertura, logging, timeout)
 e vincoli intenzionali (nessuna API GitHub, nessuna gestione token).
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [Leggi la filosofia completa](../../DESIGN_PHILOSOPHY.md)
 
 ---

@@ -560,6 +560,8 @@ tenpo pini la, settings ala li lon la, cloud sync li ante e open ijo.
 pona wawa (90% li lon, lipu, tenpo awen) li lon poka,
 wile ala li lon (GitHub API ala, ilo token ala).
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [o lukin e nasin pali ale](../../DESIGN_PHILOSOPHY.md)
 
 ---

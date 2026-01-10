@@ -542,6 +542,8 @@ Geçmişte boş ayarlar kaydettiyseniz, bu ayarlar buluta senkronize edilmiş ve
 kasıtlı kalite (90% kapsama, loglama, zaman aşımları) ve
 bilinçli kısıtlamalarla (GitHub API yok, token yönetimi yok) çevrili.
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [Tam felsefeyi oku](../../DESIGN_PHILOSOPHY.md)
 
 ---

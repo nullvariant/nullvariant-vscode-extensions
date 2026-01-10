@@ -450,6 +450,8 @@ Built on **Karesansui Architecture**: a simple core (100 lines),
 surrounded by deliberate quality (90% coverage, loggin', timeouts)
 an' intentional constraints (no GitHub API, no token management).
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [Read the full philosophy, ye scurvy dog](../../DESIGN_PHILOSOPHY.md)
 
 ---
