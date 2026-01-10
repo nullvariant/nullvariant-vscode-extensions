@@ -534,6 +534,18 @@ Wenn Sie zuvor leere Einstellungen gespeichert haben, wurden sie möglicherweise
 
 ---
 
+## Designphilosophie
+
+> „Wer bin ich?" — Die einzige Frage, die diese Erweiterung beantwortet.
+
+Entwickelt nach der **Karesansui-Architektur**: ein einfacher Kern (100 Zeilen),
+umgeben von gezielter Qualität (90% Abdeckung, Logging, Timeouts)
+und bewussten Einschränkungen (keine GitHub API, keine Token-Verwaltung).
+
+[Die vollständige Philosophie lesen](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Mitwirken
 
 Beiträge willkommen! Siehe [CONTRIBUTING.md](../../CONTRIBUTING.md).

@@ -534,6 +534,18 @@ Si guardaste ajustes vacíos anteriormente, pueden haberse sincronizado a la nub
 
 ---
 
+## Filosofía de diseño
+
+> "¿Quién soy yo?" — La única pregunta que responde esta extensión.
+
+Construida con **Arquitectura Karesansui**: un núcleo simple (100 líneas),
+rodeado de calidad deliberada (90% cobertura, logging, timeouts)
+y restricciones intencionales (sin API de GitHub, sin gestión de tokens).
+
+[Leer la filosofía completa](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Contribuir
 
 ¡Las contribuciones son bienvenidas! Ver [CONTRIBUTING.md](../../CONTRIBUTING.md).

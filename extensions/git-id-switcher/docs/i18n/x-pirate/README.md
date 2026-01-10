@@ -442,6 +442,18 @@ If ye use VS Code Settings Sync and have different identities on different ships
 
 ---
 
+## Design Philosophy
+
+> "Who be I?" — That be the only question this here extension answers, savvy?
+
+Built on **Karesansui Architecture**: a simple core (100 lines),
+surrounded by deliberate quality (90% coverage, loggin', timeouts)
+an' intentional constraints (no GitHub API, no token management).
+
+[Read the full philosophy, ye scurvy dog](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Contributing
 
 We welcome contributions from all pirates! See [CONTRIBUTING.md](../../CONTRIBUTING.md).

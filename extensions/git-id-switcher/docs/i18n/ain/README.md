@@ -554,6 +554,18 @@ VS Code 設定スキーマ メモリ キャッシュ、"Reload Window" ウン re
 
 ---
 
+## Design Philosophy
+
+> 「クアニ ネノ ネ?」— クコロ extension ネイタ ハウェアン。
+
+**Karesansui Architecture** コㇿカ アラ: simple core (100 lines),
+deliberate quality (90% coverage, logging, timeouts) オッタ
+intentional constraints (GitHub API アㇰ、token management アㇰ)。
+
+[Full philosophy エヌカㇻ](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Contributing
 
 [CONTRIBUTING.md](../../CONTRIBUTING.md) エヌカㇻ。

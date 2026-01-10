@@ -534,6 +534,18 @@ Se in precedenza hai salvato impostazioni vuote, potrebbero essersi sincronizzat
 
 ---
 
+## Filosofia di design
+
+> "Chi sono io?" — L'unica domanda a cui risponde questa estensione.
+
+Costruita sull'**Architettura Karesansui**: un nucleo semplice (100 righe),
+circondato da qualità deliberata (90% copertura, logging, timeout)
+e vincoli intenzionali (nessuna API GitHub, nessuna gestione token).
+
+[Leggi la filosofia completa](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Contribuire
 
 I contributi sono benvenuti! Vedi [CONTRIBUTING.md](../../CONTRIBUTING.md).

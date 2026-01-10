@@ -534,6 +534,18 @@ Se você salvou anteriormente configurações vazias, elas podem ter sido sincro
 
 ---
 
+## Filosofia de Design
+
+> "Quem sou eu?" — A única pergunta que esta extensão responde.
+
+Construída com **Arquitetura Karesansui**: um núcleo simples (100 linhas),
+cercado por qualidade deliberada (90% cobertura, logging, timeouts)
+e restrições intencionais (sem API do GitHub, sem gerenciamento de tokens).
+
+[Leia a filosofia completa](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Contribuindo
 
 Contribuições são bem-vindas! Veja [CONTRIBUTING.md](../../CONTRIBUTING.md).

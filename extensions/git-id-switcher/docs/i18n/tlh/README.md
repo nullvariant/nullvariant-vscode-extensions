@@ -548,6 +548,18 @@ Past empty settings save, cloud sync, new install default values override.
 
 ---
 
+## Design Philosophy (meqba' QeD)
+
+> "jIH 'Iv?" — wa' yu'wI' neH jang extension.
+
+**Karesansui Architecture** lo'lu': nap core (100 lines),
+quality puS (90% coverage, logging, timeouts) je
+constraints wIv (GitHub API pagh, token management pagh).
+
+[meqba' naQ yIlaD](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Contributing
 
 Contributions welcome! [CONTRIBUTING.md](../../CONTRIBUTING.md) yIlaD.

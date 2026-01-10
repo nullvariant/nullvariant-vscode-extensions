@@ -534,6 +534,18 @@ Geçmişte boş ayarlar kaydettiyseniz, bu ayarlar buluta senkronize edilmiş ve
 
 ---
 
+## Tasarım Felsefesi
+
+> "Ben kimim?" — Bu uzantının yanıtladığı tek soru.
+
+**Karesansui Mimarisi** üzerine inşa edilmiştir: basit bir çekirdek (100 satır),
+kasıtlı kalite (90% kapsama, loglama, zaman aşımları) ve
+bilinçli kısıtlamalarla (GitHub API yok, token yönetimi yok) çevrili.
+
+[Tam felsefeyi oku](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Katkıda Bulunma
 
 Katkılar memnuniyetle karşılanır! [CONTRIBUTING.md](../../CONTRIBUTING.md)'ye bakın.
