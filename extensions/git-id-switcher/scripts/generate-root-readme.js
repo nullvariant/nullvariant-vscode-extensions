@@ -79,21 +79,20 @@ function transformLicenseLink(content) {
 }
 
 /**
- * Transform DESIGN_PHILOSOPHY.md link to correct relative path
- * ../../DESIGN_PHILOSOPHY.md -> docs/DESIGN_PHILOSOPHY.md
- * (from root README perspective)
+ * Transform DESIGN_PHILOSOPHY.md link to absolute GitHub URL
+ * ../../DESIGN_PHILOSOPHY.md -> https://github.com/.../docs/DESIGN_PHILOSOPHY.md
  * Handles both markdown links (...) and HTML href="..."
  */
 function transformDesignPhilosophyLink(content) {
-  // Transform markdown-style links
+  // Transform markdown-style links to absolute GitHub URL
   content = content.replace(
     /\(\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md\)/g,
-    `(docs/DESIGN_PHILOSOPHY.md)`
+    `(${GITHUB_BASE}/${EXTENSION_PATH}/docs/DESIGN_PHILOSOPHY.md)`
   );
-  // Transform HTML href attributes
+  // Transform HTML href attributes to absolute GitHub URL
   content = content.replace(
     /href="\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md"/g,
-    `href="docs/DESIGN_PHILOSOPHY.md"`
+    `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/DESIGN_PHILOSOPHY.md"`
   );
   return content;
 }
