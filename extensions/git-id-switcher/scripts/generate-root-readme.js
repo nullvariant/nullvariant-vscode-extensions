@@ -78,6 +78,18 @@ function transformLicenseLink(content) {
   );
 }
 
+/**
+ * Transform DESIGN_PHILOSOPHY.md link to correct relative path
+ * ../../DESIGN_PHILOSOPHY.md -> docs/DESIGN_PHILOSOPHY.md
+ * (from root README perspective)
+ */
+function transformDesignPhilosophyLink(content) {
+  return content.replace(
+    /\(\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md\)/g,
+    `(docs/DESIGN_PHILOSOPHY.md)`
+  );
+}
+
 function main() {
   // Read source file
   if (!fs.existsSync(SOURCE_PATH)) {
@@ -93,6 +105,7 @@ function main() {
   content = removeEnSuffixFromImages(content);
   content = transformContributingLink(content);
   content = transformLicenseLink(content);
+  content = transformDesignPhilosophyLink(content);
 
   // Add auto-generated header
   content = AUTO_GENERATED_HEADER + content;

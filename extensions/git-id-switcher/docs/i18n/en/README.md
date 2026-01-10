@@ -534,6 +534,18 @@ If you previously saved empty settings, they may have synced to the cloud and ar
 
 ---
 
+## Design Philosophy
+
+> "Who am I?" — That's the only question this extension answers.
+
+Built on **Karesansui Architecture**: a simple core (100 lines),
+surrounded by deliberate quality (90% coverage, logging, timeouts)
+and intentional constraints (no GitHub API, no token management).
+
+[Read the full philosophy](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Contributing
 
 Contributions welcome! See [CONTRIBUTING.md](../../CONTRIBUTING.md).
