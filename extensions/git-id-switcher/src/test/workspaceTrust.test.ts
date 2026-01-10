@@ -45,7 +45,7 @@ function createMockVscode(isTrusted: boolean): MockVscode {
       onDidGrantWorkspaceTrust: (callback: () => void) => {
         trustGrantedCallback = callback;
         return {
-          dispose: () => {
+          dispose: (): void => {
             mockSubscriptionDisposed = true;
             trustGrantedCallback = null;
           },
@@ -53,6 +53,22 @@ function createMockVscode(isTrusted: boolean): MockVscode {
       },
     },
   };
+}
+
+/**
+ * Create a mock workspace without Trust API (simulates VS Code < 1.57)
+ */
+function createNoApiWorkspace(): MockWorkspace {
+  return {
+    onDidGrantWorkspaceTrust: () => ({ dispose: (): void => {} }),
+  } as unknown as MockWorkspace;
+}
+
+/**
+ * Check if a value's type is boolean
+ */
+function isBooleanType(value: unknown): boolean {
+  return typeof value === 'boolean';
 }
 
 /**
@@ -64,24 +80,19 @@ function testIsWorkspaceTrustApiAvailable(): void {
   // Test 1: API available with isTrusted = true
   {
     mockVscode = createMockVscode(true);
-    // In real tests, we would mock the vscode module import
-    // For now, test the logic directly
-    const isTrustedBoolean = typeof mockVscode.workspace.isTrusted === 'boolean';
-    assert.strictEqual(isTrustedBoolean, true, 'Should detect API as available');
+    assert.strictEqual(isBooleanType(mockVscode.workspace.isTrusted), true, 'Should detect API as available');
   }
 
   // Test 2: API available with isTrusted = false
   {
     mockVscode = createMockVscode(false);
-    const isTrustedBoolean = typeof mockVscode.workspace.isTrusted === 'boolean';
-    assert.strictEqual(isTrustedBoolean, true, 'Should detect API as available');
+    assert.strictEqual(isBooleanType(mockVscode.workspace.isTrusted), true, 'Should detect API as available');
   }
 
   // Test 3: API not available (isTrusted undefined)
   {
-    const noApiWorkspace = { onDidGrantWorkspaceTrust: () => ({ dispose: () => {} }) } as unknown as MockWorkspace;
-    const isTrustedBoolean = typeof noApiWorkspace.isTrusted === 'boolean';
-    assert.strictEqual(isTrustedBoolean, false, 'Should detect API as unavailable');
+    const noApiWorkspace = createNoApiWorkspace();
+    assert.strictEqual(isBooleanType(noApiWorkspace.isTrusted), false, 'Should detect API as unavailable');
   }
 
   console.log('  isWorkspaceTrustApiAvailable tests passed!');
@@ -183,12 +194,7 @@ function testFailSafeBehavior(): void {
 
   // Test 1: When API unavailable, should treat as untrusted
   {
-    // Simulate API not available
-    const noApiWorkspace = {
-      onDidGrantWorkspaceTrust: () => ({ dispose: () => {} }),
-    } as unknown as MockWorkspace;
-
-    // Without isTrusted property, default should be false (untrusted)
+    const noApiWorkspace = createNoApiWorkspace();
     const isTrusted = noApiWorkspace.isTrusted ?? false;
     assert.strictEqual(isTrusted, false, 'Should default to untrusted');
   }
@@ -426,17 +432,13 @@ function testIsApiAvailableBehavior(): void {
   // Test 1: Returns true when API is available
   {
     mockVscode = createMockVscode(true);
-    const apiAvailable = typeof mockVscode.workspace.isTrusted === 'boolean';
-    assert.strictEqual(apiAvailable, true, 'Should return true when API available');
+    assert.strictEqual(isBooleanType(mockVscode.workspace.isTrusted), true, 'Should return true when API available');
   }
 
   // Test 2: Returns false when API is unavailable
   {
-    const noApiWorkspace = {
-      onDidGrantWorkspaceTrust: () => ({ dispose: () => {} }),
-    } as unknown as MockWorkspace;
-    const apiAvailable = typeof noApiWorkspace.isTrusted === 'boolean';
-    assert.strictEqual(apiAvailable, false, 'Should return false when API unavailable');
+    const noApiWorkspace = createNoApiWorkspace();
+    assert.strictEqual(isBooleanType(noApiWorkspace.isTrusted), false, 'Should return false when API unavailable');
   }
 
   console.log('  isApiAvailable behavior tests passed!');
@@ -560,57 +562,49 @@ function testDisposedStateBehavior(): void {
 function testConfigCachingBehavior(): void {
   console.log('Testing config caching behavior...');
 
+  // Helper to create a cached config reader
+  const createCachedReader = (): {
+    getConfig: () => boolean;
+    invalidate: () => void;
+    getReadCount: () => number;
+  } => {
+    let readCount = 0;
+    let cache: boolean | undefined;
+    return {
+      getConfig: (): boolean => {
+        if (cache !== undefined) return cache;
+        readCount++;
+        cache = false;
+        return cache;
+      },
+      invalidate: (): void => {
+        cache = undefined;
+      },
+      getReadCount: (): number => readCount,
+    };
+  };
+
   // Test 1: Cache returns same value without config read
   {
-    let configReadCount = 0;
-    let cachedValue: boolean | undefined;
-
-    const getConfig = (): boolean => {
-      if (cachedValue !== undefined) {
-        return cachedValue;
-      }
-      configReadCount++;
-      cachedValue = false;
-      return cachedValue;
-    };
-
-    // First call reads config
-    const result1 = getConfig();
+    const reader = createCachedReader();
+    const result1 = reader.getConfig();
     assert.strictEqual(result1, false, 'First call should return config value');
-    assert.strictEqual(configReadCount, 1, 'Should read config once');
+    assert.strictEqual(reader.getReadCount(), 1, 'Should read config once');
 
-    // Second call uses cache
-    const result2 = getConfig();
+    const result2 = reader.getConfig();
     assert.strictEqual(result2, false, 'Second call should return cached value');
-    assert.strictEqual(configReadCount, 1, 'Should not read config again');
+    assert.strictEqual(reader.getReadCount(), 1, 'Should not read config again');
   }
 
   // Test 2: Cache invalidation triggers new config read
   {
-    let configReadCount = 0;
-    let cachedValue: boolean | undefined;
+    const reader = createCachedReader();
+    reader.getConfig();
+    assert.strictEqual(reader.getReadCount(), 1, 'Initial read count');
 
-    const getConfig = (): boolean => {
-      if (cachedValue !== undefined) {
-        return cachedValue;
-      }
-      configReadCount++;
-      cachedValue = false;
-      return cachedValue;
-    };
-
-    const invalidateCache = (): void => {
-      cachedValue = undefined;
-    };
-
-    // First read
-    getConfig();
-    assert.strictEqual(configReadCount, 1, 'Initial read count');
-
-    // Invalidate and read again
-    invalidateCache();
-    getConfig();
-    assert.strictEqual(configReadCount, 2, 'Should read config after invalidation');
+    reader.invalidate();
+    reader.getConfig();
+    assert.strictEqual(reader.getReadCount(), 2, 'Should read config after invalidation');
   }
 
   console.log('  Config caching behavior tests passed!');
