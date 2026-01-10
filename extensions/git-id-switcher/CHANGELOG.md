@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.43] - 2026-01-10
+
+### Added
+
+- **Karesansui Architecture Documentation**
+  - Added `docs/DESIGN_PHILOSOPHY.md` with full design philosophy poem
+  - Documents the "Karesansui (Zen Garden) Architecture" approach
+  - Explains core concepts: Stone (core), Sand Patterns (quality), Accents (differentiation), and Stones We Don't Place (intentional constraints)
+
+- **Design Philosophy Section in READMEs**
+  - Added Design Philosophy section to all 26 language README files
+  - Each section includes localized summary and link to full philosophy
+
+- **Karesansui Architecture Badge**
+  - Added clickable badge (🪨 Karesansui | Architecture) to header section of all READMEs
+  - Badge links to DESIGN_PHILOSOPHY.md
+  - Multiple badge style samples available in DESIGN_PHILOSOPHY.md
+
 ## [0.10.42] - 2026-01-09
 
 ### Added
