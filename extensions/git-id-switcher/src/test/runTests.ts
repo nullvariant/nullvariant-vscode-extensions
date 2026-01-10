@@ -20,6 +20,7 @@ import { runPathSanitizerTests } from './pathSanitizer.test';
 import { runConfigChangeDetectorTests } from './configChangeDetector.test';
 import { runCommandAllowlistTests } from './commandAllowlist.test';
 import { runDocumentationTests } from './documentation.test';
+import { runWorkspaceTrustTests } from './workspaceTrust.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -74,6 +75,9 @@ async function main(): Promise<void> {
 
     // Run documentation module tests
     await runDocumentationTests();
+
+    // Run workspace trust tests
+    await runWorkspaceTrustTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
