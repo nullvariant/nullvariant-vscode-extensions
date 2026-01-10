@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.47] - 2026-01-10
+
+### Fixed
+
+- **Badge Design Restoration**
+  - Restored `🌐 Languages | 17+9 more` two-tone badge (was incorrectly changed to `🌐 26 Languages`)
+  - The `17+9` format intentionally shows: 17 VSCode UI languages + 9 additional (minority/joke/special)
+
 ## [0.10.46] - 2026-01-10
 
 ### Changed
