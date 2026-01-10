@@ -554,6 +554,18 @@ Se vi antaŭe konservis malplenajn agordojn, ili estis sinkronigitaj al la nubo 
 
 ---
 
+## Dezajna Filozofio
+
+> "Kiu mi estas?" — La sola demando, kiun ĉi tiu etendaĵo respondas.
+
+Konstruita sur **Karesansui-Arkitekturo**: simpla kerno (100 linioj),
+ĉirkaŭita de intenca kvalito (90% kovrado, protokolado, tempolimoj)
+kaj konsciaj limigoj (sen GitHub API, sen ĵetonoadministrado).
+
+[Legu la plenan filozofion](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Kontribuado
 
 Ni bonvenigas kontribuojn! Vidu [CONTRIBUTING.md](../../CONTRIBUTING.md).

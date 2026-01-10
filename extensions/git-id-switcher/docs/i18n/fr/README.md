@@ -534,6 +534,18 @@ Si vous avez précédemment sauvegardé des paramètres vides, ils peuvent avoir
 
 ---
 
+## Philosophie de conception
+
+> « Qui suis-je ? » — La seule question à laquelle cette extension répond.
+
+Construite sur l'**Architecture Karesansui** : un noyau simple (100 lignes),
+entouré d'une qualité délibérée (90% de couverture, journalisation, timeouts)
+et de contraintes intentionnelles (pas d'API GitHub, pas de gestion de tokens).
+
+[Lire la philosophie complète](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Contribuer
 
 Les contributions sont les bienvenues ! Voir [CONTRIBUTING.md](../../CONTRIBUTING.md).

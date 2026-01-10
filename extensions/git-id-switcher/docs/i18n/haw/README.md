@@ -554,6 +554,18 @@ Inā mālama ʻoe i nā hoʻonohonoho hakahaka ma mua, ua sync ʻia lākou i ka 
 
 ---
 
+## Ke Kumu Hoʻolālā (Design Philosophy)
+
+> "ʻO wai au?" — ʻO ia wale nō ka nīnau a kēia hoʻonui e pane ai.
+
+Kūkulu ʻia ma luna o ka **Karesansui Architecture**: he kumu maʻalahi (100 laina),
+puni ʻia e ka maikaʻi hoʻoholo ʻia (90% uhi, logging, timeouts)
+a me nā palena manaʻo ʻia (ʻaʻohe GitHub API, ʻaʻohe token management).
+
+[Heluhelu i ke kumu hoʻolālā piha](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Kōkua (Contributing)
 
 E ʻoluʻolu e nānā i [CONTRIBUTING.md](../../CONTRIBUTING.md).

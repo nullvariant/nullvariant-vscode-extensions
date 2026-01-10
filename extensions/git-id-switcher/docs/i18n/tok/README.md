@@ -552,6 +552,18 @@ tenpo pini la, settings ala li lon la, cloud sync li ante e open ijo.
 
 ---
 
+## nasin pali (Design Philosophy)
+
+> "mi seme?" — wile ni taso li jo e toki.
+
+**nasin Karesansui** li lon: insa pi lili en pona (linja 100),
+pona wawa (90% li lon, lipu, tenpo awen) li lon poka,
+wile ala li lon (GitHub API ala, ilo token ala).
+
+[o lukin e nasin pali ale](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## pana (Contributing)
 
 sina ken pana! o lukin e [CONTRIBUTING.md](../../CONTRIBUTING.md).

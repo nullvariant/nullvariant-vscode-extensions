@@ -446,6 +446,18 @@ If thou usest VS Code Settings Sync and hast different identities upon different
 
 ---
 
+## Design Philosophy
+
+> "Who art I?" — That is the sole question this extension doth answer.
+
+Built upon the **Karesansui Architecture**: a core most simple (100 lines),
+surrounded by deliberate quality (90% coverage, logging, timeouts)
+and constraints most intentional (no GitHub API, no token management).
+
+[Read the full philosophy](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Contributing
 
 We welcome contributions from all players upon this stage! See [CONTRIBUTING.md](../../CONTRIBUTING.md).

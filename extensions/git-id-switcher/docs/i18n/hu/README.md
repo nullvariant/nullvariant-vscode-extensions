@@ -534,6 +534,18 @@ Ha korábban üres beállításokat mentett, azok szinkronizálódtak a felhőbe
 
 ---
 
+## Tervezési filozófia
+
+> "Ki vagyok én?" — Az egyetlen kérdés, amire ez a bővítmény válaszol.
+
+A **Karesansui Architektúrára** épül: egyszerű mag (100 sor),
+szándékos minőséggel (90% lefedettség, naplózás, időtúllépések)
+és tudatos korlátozásokkal (nincs GitHub API, nincs token kezelés) körülvéve.
+
+[Olvassa el a teljes filozófiát](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Hozzájárulás
 
 Hozzájárulásokat szívesen fogadunk! Lásd: [CONTRIBUTING.md](../../CONTRIBUTING.md).

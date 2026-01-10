@@ -533,6 +533,18 @@ Pokud jste dříve uložili prázdná nastavení, mohla být synchronizována do
 
 ---
 
+## Filozofie návrhu
+
+> "Kdo jsem?" — Jediná otázka, na kterou toto rozšíření odpovídá.
+
+Postaveno na **Architektuře Karesansui**: jednoduché jádro (100 řádků),
+obklopené záměrnou kvalitou (90% pokrytí, logování, timeouty)
+a vědomými omezeními (žádné GitHub API, žádná správa tokenů).
+
+[Přečíst celou filozofii](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Přispívání
 
 Příspěvky jsou vítány! Viz [CONTRIBUTING.md](../../CONTRIBUTING.md).

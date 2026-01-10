@@ -536,6 +536,18 @@ Jeśli wcześniej zapisałeś puste ustawienia, mogły zostać zsynchronizowane 
 
 ---
 
+## Filozofia projektowania
+
+> "Kim jestem?" — Jedyne pytanie, na które odpowiada to rozszerzenie.
+
+Zbudowane w oparciu o **Architekturę Karesansui**: proste jądro (100 linii),
+otoczone celową jakością (90% pokrycia, logowanie, timeouty)
+i świadomymi ograniczeniami (brak GitHub API, brak zarządzania tokenami).
+
+[Przeczytaj pełną filozofię](../../DESIGN_PHILOSOPHY.md)
+
+---
+
 ## Współtworzenie
 
 Wkład jest mile widziany! Zobacz [CONTRIBUTING.md](../../CONTRIBUTING.md).
