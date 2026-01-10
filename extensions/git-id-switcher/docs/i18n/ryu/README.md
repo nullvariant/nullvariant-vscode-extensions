@@ -564,6 +564,8 @@ VS Codeんかいぬエディタや設定スキーマばメモリんかいキャ�
 意図的な品質（90%カバレッジ、ログ、タイムアウト）と
 意図的な制約（GitHub APIなし、トークン管理なし）んかい囲まりてぃいびーん。
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [設計哲学ぬ全文読みやびーん](../../DESIGN_PHILOSOPHY.md)
 
 ---

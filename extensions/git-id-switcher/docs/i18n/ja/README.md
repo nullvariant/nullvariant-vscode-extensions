@@ -542,6 +542,8 @@ VS Codeなどのエディタは設定スキーマをメモリにキャッシュ�
 だからこそ、残りを品質（テスト90%、ログ、タイムアウト）と
 意図的な制約（GitHub API連携なし、トークン管理なし）に費やせます。
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [設計哲学の全文を読む](../../DESIGN_PHILOSOPHY.md)
 
 ---

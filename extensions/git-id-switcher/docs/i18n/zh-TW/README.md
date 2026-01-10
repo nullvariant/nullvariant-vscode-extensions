@@ -542,6 +542,8 @@ VS Code 等編輯器會將設定架構快取在記憶體中，「重新載入視
 被刻意的品質（90%覆蓋率、日誌、逾時處理）
 和有意的約束（無GitHub API、無令牌管理）所包圍。
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [閱讀完整理念](../../DESIGN_PHILOSOPHY.md)
 
 ---

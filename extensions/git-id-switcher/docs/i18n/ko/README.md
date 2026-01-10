@@ -542,6 +542,8 @@ VS Code 등의 에디터는 설정 스키마를 메모리에 캐시하며, "창 
 의도적인 품질 (90% 커버리지, 로깅, 타임아웃)과
 의도적인 제약 (GitHub API 없음, 토큰 관리 없음)으로 둘러싸여 있습니다.
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [전체 철학 읽기](../../DESIGN_PHILOSOPHY.md)
 
 ---

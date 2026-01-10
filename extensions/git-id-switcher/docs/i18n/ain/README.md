@@ -562,6 +562,8 @@ VS Code 設定スキーマ メモリ キャッシュ、"Reload Window" ウン re
 deliberate quality (90% coverage, logging, timeouts) オッタ
 intentional constraints (GitHub API アㇰ、token management アㇰ)。
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [Full philosophy エヌカㇻ](../../DESIGN_PHILOSOPHY.md)
 
 ---

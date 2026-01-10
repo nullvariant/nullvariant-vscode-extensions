@@ -542,6 +542,8 @@ VS Code 等编辑器会将设置架构缓存在内存中，"重新加载窗口"�
 被刻意的质量（90%覆盖率、日志、超时处理）
 和有意的约束（无GitHub API、无令牌管理）所包围。
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [阅读完整理念](../../DESIGN_PHILOSOPHY.md)
 
 ---

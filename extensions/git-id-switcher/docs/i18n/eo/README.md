@@ -562,6 +562,8 @@ Konstruita sur **Karesansui-Arkitekturo**: simpla kerno (100 linioj),
 ĉirkaŭita de intenca kvalito (90% kovrado, protokolado, tempolimoj)
 kaj konsciaj limigoj (sen GitHub API, sen ĵetonoadministrado).
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [Legu la plenan filozofion](../../DESIGN_PHILOSOPHY.md)
 
 ---

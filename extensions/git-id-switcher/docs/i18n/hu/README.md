@@ -542,6 +542,8 @@ A **Karesansui Architektúrára** épül: egyszerű mag (100 sor),
 szándékos minőséggel (90% lefedettség, naplózás, időtúllépések)
 és tudatos korlátozásokkal (nincs GitHub API, nincs token kezelés) körülvéve.
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [Olvassa el a teljes filozófiát](../../DESIGN_PHILOSOPHY.md)
 
 ---

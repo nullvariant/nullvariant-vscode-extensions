@@ -542,6 +542,8 @@ Entwickelt nach der **Karesansui-Architektur**: ein einfacher Kern (100 Zeilen),
 umgeben von gezielter Qualität (90% Abdeckung, Logging, Timeouts)
 und bewussten Einschränkungen (keine GitHub API, keine Token-Verwaltung).
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [Die vollständige Philosophie lesen](../../DESIGN_PHILOSOPHY.md)
 
 ---

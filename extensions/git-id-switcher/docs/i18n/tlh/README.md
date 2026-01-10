@@ -556,6 +556,8 @@ Past empty settings save, cloud sync, new install default values override.
 quality puS (90% coverage, logging, timeouts) je
 constraints wIv (GitHub API pagh, token management pagh).
 
+[![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
+
 [meqba' naQ yIlaD](../../DESIGN_PHILOSOPHY.md)
 
 ---
