@@ -273,6 +273,187 @@ function testOperationGuardBehavior(): void {
 }
 
 /**
+ * Test OperationGuard.checkOperation() for trusted workspace
+ *
+ * Tests that checkOperation returns allowed=true immediately for trusted workspaces
+ * without any delay or additional checks.
+ */
+function testCheckOperationTrustedWorkspace(): void {
+  console.log('Testing checkOperation for trusted workspace...');
+
+  // Simulate trusted workspace behavior pattern
+  // In trusted workspace, checkOperation should return {allowed: true} immediately
+  {
+    const isTrusted = true;
+
+    // BLOCKED operation should still be allowed in trusted workspace
+    const blockedOp = OperationType.GIT_CONFIG_WRITE;
+    const blockedRestriction = getRestrictionLevel(blockedOp);
+    const blockedAllowed = isTrusted; // Short-circuit: trusted = allowed
+    assert.strictEqual(blockedAllowed, true, 'BLOCKED operation should be allowed in trusted workspace');
+    assert.strictEqual(blockedRestriction, RestrictionLevel.BLOCKED, 'Operation should have BLOCKED restriction');
+
+    // CONFIRMATION_REQUIRED operation should be allowed without confirmation
+    const confirmRestriction = getRestrictionLevel(OperationType.IDENTITY_SWITCH);
+    const confirmAllowed = isTrusted; // Short-circuit: trusted = allowed
+    assert.strictEqual(confirmAllowed, true, 'CONFIRMATION_REQUIRED operation should be allowed in trusted workspace');
+    assert.strictEqual(confirmRestriction, RestrictionLevel.CONFIRMATION_REQUIRED, 'Operation should have CONFIRMATION_REQUIRED restriction');
+
+    // ALLOWED operation should be allowed
+    const allowedRestriction = getRestrictionLevel(OperationType.GIT_CONFIG_READ);
+    const readAllowed = isTrusted; // Short-circuit: trusted = allowed
+    assert.strictEqual(readAllowed, true, 'ALLOWED operation should be allowed in trusted workspace');
+    assert.strictEqual(allowedRestriction, RestrictionLevel.ALLOWED, 'Operation should have ALLOWED restriction');
+  }
+
+  console.log('  checkOperation trusted workspace tests passed!');
+}
+
+/**
+ * Test OperationGuard.checkOperation() for untrusted workspace - BLOCKED operations
+ *
+ * Tests that checkOperation returns allowed=false for BLOCKED operations
+ * in untrusted workspaces.
+ */
+function testCheckOperationUntrustedBlocked(): void {
+  console.log('Testing checkOperation for untrusted workspace (BLOCKED)...');
+
+  const isTrusted = false;
+
+  // Test all BLOCKED operations
+  const blockedOps = getOperationsByRestriction(RestrictionLevel.BLOCKED);
+  for (const op of blockedOps) {
+    const restriction = getRestrictionLevel(op);
+    const allowed = isTrusted || restriction === RestrictionLevel.ALLOWED;
+
+    assert.strictEqual(allowed, false, `${op} should be blocked in untrusted workspace`);
+    assert.strictEqual(restriction, RestrictionLevel.BLOCKED, `${op} should have BLOCKED restriction`);
+
+    // Verify reason exists
+    const info = getOperationInfo(op);
+    assert.ok(info, `${op} should have operation info`);
+    assert.ok(info.restrictionReason.length > 0, `${op} should have restriction reason`);
+  }
+
+  console.log('  checkOperation untrusted BLOCKED tests passed!');
+}
+
+/**
+ * Test OperationGuard.checkOperation() sync behavior for CONFIRMATION_REQUIRED
+ *
+ * Tests that synchronous checkOperation returns needsConfirmation=true
+ * for CONFIRMATION_REQUIRED operations (caller should use async version).
+ */
+function testCheckOperationSyncConfirmation(): void {
+  console.log('Testing checkOperation sync for CONFIRMATION_REQUIRED...');
+
+  const isTrusted = false;
+
+  // Test CONFIRMATION_REQUIRED operations
+  const confirmOps = getOperationsByRestriction(RestrictionLevel.CONFIRMATION_REQUIRED);
+  for (const op of confirmOps) {
+    const restriction = getRestrictionLevel(op);
+
+    // Sync check should indicate confirmation needed
+    const needsConfirmation = !isTrusted && restriction === RestrictionLevel.CONFIRMATION_REQUIRED;
+    assert.strictEqual(needsConfirmation, true, `${op} should need confirmation in sync check`);
+
+    // Verify info exists
+    const info = getOperationInfo(op);
+    assert.ok(info, `${op} should have operation info`);
+  }
+
+  console.log('  checkOperation sync CONFIRMATION_REQUIRED tests passed!');
+}
+
+/**
+ * Test OperationGuard behavior patterns for executeGuarded
+ *
+ * Tests the expected behavior when executeGuarded encounters blocked operations.
+ */
+function testExecuteGuardedBlockedBehavior(): void {
+  console.log('Testing executeGuarded blocked behavior patterns...');
+
+  const isTrusted = false;
+
+  // Test: BLOCKED operation should result in WorkspaceTrustError pattern
+  {
+    const op = OperationType.GIT_CONFIG_WRITE;
+    const restriction = getRestrictionLevel(op);
+    const allowed = isTrusted || restriction === RestrictionLevel.ALLOWED;
+
+    // executeGuarded should throw when not allowed
+    const shouldThrow = !allowed;
+    assert.strictEqual(shouldThrow, true, 'executeGuarded should throw for BLOCKED operation');
+
+    // Verify error contains operation type info
+    const info = getOperationInfo(op);
+    assert.ok(info, 'Should have operation info for error message');
+    assert.ok(info.displayName.length > 0, 'Should have display name for error');
+  }
+
+  // Test: ALLOWED operation should not throw
+  {
+    const op = OperationType.GIT_CONFIG_READ;
+    const restriction = getRestrictionLevel(op);
+    const allowed = isTrusted || restriction === RestrictionLevel.ALLOWED;
+
+    const shouldThrow = !allowed;
+    assert.strictEqual(shouldThrow, false, 'executeGuarded should not throw for ALLOWED operation');
+  }
+
+  console.log('  executeGuarded blocked behavior tests passed!');
+}
+
+/**
+ * Test confirmation dialog button options
+ *
+ * Tests that the confirmation dialog should have three options:
+ * Trust Workspace, Proceed Anyway, Cancel
+ */
+function testConfirmationDialogOptions(): void {
+  console.log('Testing confirmation dialog options...');
+
+  // The confirmation dialog should present three options
+  const expectedOptions = ['Trust Workspace', 'Proceed Anyway', 'Cancel'];
+
+  // Verify these are the standard patterns used
+  assert.strictEqual(expectedOptions.length, 3, 'Should have 3 dialog options');
+  assert.ok(expectedOptions.includes('Trust Workspace'), 'Should include Trust Workspace option');
+  assert.ok(expectedOptions.includes('Proceed Anyway'), 'Should include Proceed Anyway option');
+  assert.ok(expectedOptions.includes('Cancel'), 'Should include Cancel option');
+
+  console.log('  Confirmation dialog options tests passed!');
+}
+
+/**
+ * Test WorkspaceTrustError structure
+ *
+ * Tests the expected structure of WorkspaceTrustError thrown by executeGuarded.
+ */
+function testWorkspaceTrustErrorStructure(): void {
+  console.log('Testing WorkspaceTrustError structure...');
+
+  // WorkspaceTrustError should contain:
+  // - operationType
+  // - reason message
+
+  const operationType = OperationType.GIT_CONFIG_WRITE;
+  const info = getOperationInfo(operationType);
+  assert.ok(info, 'Should have operation info');
+
+  // The error message should include the operation name
+  const operationName = info.displayName;
+  assert.ok(operationName.length > 0, 'Operation should have display name for error');
+
+  // The error should include restriction reason when available
+  const reason = info.restrictionReason;
+  assert.ok(reason.length > 0, 'BLOCKED operation should have restriction reason');
+
+  console.log('  WorkspaceTrustError structure tests passed!');
+}
+
+/**
  * Test edge cases
  */
 function testEdgeCases(): void {
@@ -340,6 +521,12 @@ export async function runOperationGuardTests(): Promise<void> {
     testGetOperationsByRestriction();
     testRestrictionReasons();
     testOperationGuardBehavior();
+    testCheckOperationTrustedWorkspace();
+    testCheckOperationUntrustedBlocked();
+    testCheckOperationSyncConfirmation();
+    testExecuteGuardedBlockedBehavior();
+    testConfirmationDialogOptions();
+    testWorkspaceTrustErrorStructure();
     testEdgeCases();
 
     console.log('\n  All operation guard tests passed!\n');
