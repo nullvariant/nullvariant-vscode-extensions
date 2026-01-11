@@ -1,5 +1,9 @@
 # Karesansui Architecture
 
+<p align="center">
+  <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/karesansui.webp" alt="Digital Karesansui (デジタル枯山水)" width="600">
+</p>
+
 *A design philosophy for Git ID Switcher*
 
 > **Note**: Karesansui (枯山水) is a Japanese rock garden--sand and stone representing mountains and water.
