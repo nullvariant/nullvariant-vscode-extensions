@@ -74,6 +74,8 @@ function testSecurityEventTypeEnum(): void {
     'CONFIG_CHANGE',
     'EXTENSION_ACTIVATE',
     'EXTENSION_DEACTIVATE',
+    'OPERATION_BLOCKED',
+    'OPERATION_CONFIRMED',
   ];
 
   for (const type of expectedTypes) {

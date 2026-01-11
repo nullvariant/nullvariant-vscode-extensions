@@ -55,6 +55,8 @@ export enum SecurityEventType {
   CONFIG_CHANGE = 'CONFIG_CHANGE',
   EXTENSION_ACTIVATE = 'EXTENSION_ACTIVATE',
   EXTENSION_DEACTIVATE = 'EXTENSION_DEACTIVATE',
+  OPERATION_BLOCKED = 'OPERATION_BLOCKED',
+  OPERATION_CONFIRMED = 'OPERATION_CONFIRMED',
 }
 
 export type Severity = 'info' | 'warning' | 'error';
@@ -75,6 +77,9 @@ export { LogLevel } from './logTypes';
 export interface ISecurityLogger {
   logCommandTimeout(command: string, args: string[], timeoutMs: number, cwd?: string): void;
   logCommandBlocked(command: string, args: string[], reason: string): void;
+  logValidationFailure(field: string, reason: string, value?: unknown): void;
+  logOperationBlocked(operationType: string, reason: string): void;
+  logOperationConfirmed(operationType: string): void;
 }
 
 /**
@@ -280,6 +285,30 @@ class SecurityLoggerImpl implements ISecurityLogger {
         args: this.buildArgsDetails(args),
         timeoutMs,
         cwd: cwd ? sanitizePath(cwd) : undefined,
+      },
+    });
+  }
+
+  logOperationBlocked(operationType: string, reason: string): void {
+    this.log({
+      type: SecurityEventType.OPERATION_BLOCKED,
+      severity: 'warning',
+      details: {
+        operationType: sanitizeValue(operationType),
+        reason,
+        workspaceTrusted: false,
+      },
+    });
+  }
+
+  logOperationConfirmed(operationType: string): void {
+    this.log({
+      type: SecurityEventType.OPERATION_CONFIRMED,
+      severity: 'info',
+      details: {
+        operationType: sanitizeValue(operationType),
+        workspaceTrusted: false,
+        userConfirmed: true,
       },
     });
   }
