@@ -73,21 +73,60 @@ export async function getCurrentGitConfig(
     return { userName: undefined, userEmail: undefined, signingKey: undefined };
   }
 
-  const [userName, userEmail, signingKey] = await Promise.all([
+  // If no token provided, execute normally
+  if (!token) {
+    const [userName, userEmail, signingKey] = await Promise.all([
+      execGitInWorkspace(['config', 'user.name']),
+      execGitInWorkspace(['config', 'user.email']),
+      execGitInWorkspace(['config', 'user.signingkey']),
+    ]);
+
+    return {
+      userName: userName || undefined,
+      userEmail: userEmail || undefined,
+      signingKey: signingKey || undefined,
+    };
+  }
+
+  // With cancellation token: race the operations against cancellation
+  const configPromise = Promise.all([
     execGitInWorkspace(['config', 'user.name']),
     execGitInWorkspace(['config', 'user.email']),
     execGitInWorkspace(['config', 'user.signingkey']),
   ]);
 
-  if (token?.isCancellationRequested) {
-    return { userName: undefined, userEmail: undefined, signingKey: undefined };
-  }
+  // Create a promise that rejects when cancellation is requested
+  const cancellationPromise = new Promise<never>((_, reject) => {
+    if (token.isCancellationRequested) {
+      reject(new Error('Operation cancelled'));
+      return;
+    }
+    
+    const disposable = token.onCancellationRequested(() => {
+      disposable.dispose();
+      reject(new Error('Operation cancelled'));
+    });
+  });
 
-  return {
-    userName: userName || undefined,
-    userEmail: userEmail || undefined,
-    signingKey: signingKey || undefined,
-  };
+  try {
+    const [userName, userEmail, signingKey] = await Promise.race([
+      configPromise,
+      cancellationPromise,
+    ]);
+
+    return {
+      userName: userName || undefined,
+      userEmail: userEmail || undefined,
+      signingKey: signingKey || undefined,
+    };
+  } catch (error) {
+    // If cancelled, return empty config
+    if (token.isCancellationRequested) {
+      return { userName: undefined, userEmail: undefined, signingKey: undefined };
+    }
+    // Re-throw other errors
+    throw error;
+  }
 }
 
 /**
