@@ -21,5 +21,14 @@
   "No identities configured. Add identities in settings: {0}": "IDが未設定です。設定から追加してください: {0}",
   "Welcome to Git ID Switcher! Configure your identities to get started.": "Git ID Switcherへようこそ！設定からIDを登録して始めましょう。",
   "Open Settings": "設定を開く",
-  "Git ID Switcher: {0}": "Git ID Switcher: {0}"
+  "Git ID Switcher: {0}": "Git ID Switcher: {0}",
+  "This workspace is not trusted. {0} may modify your system. Do you want to proceed?": "このワークスペースは信頼されていません。{0} はシステムを変更する可能性があります。続行しますか？",
+  "Trust Workspace": "ワークスペースを信頼する",
+  "Proceed Anyway": "それでも続行",
+  "Cancel": "キャンセル",
+  "User confirmation required for this operation": "この操作にはユーザーの確認が必要です",
+  "{0} is blocked in untrusted workspaces. {1}": "{0} は信頼されていないワークスペースではブロックされています。{1}",
+  "{0} is blocked in untrusted workspaces. Trust the workspace to enable this operation.": "{0} は信頼されていないワークスペースではブロックされています。この操作を有効にするにはワークスペースを信頼してください。",
+  "Workspace trust not granted": "ワークスペースの信頼が付与されませんでした",
+  "Operation cancelled by user": "ユーザーによって操作がキャンセルされました"
 }

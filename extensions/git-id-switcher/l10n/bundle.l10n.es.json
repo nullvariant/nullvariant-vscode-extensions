@@ -21,5 +21,14 @@
   "No identities configured. Add identities in settings: {0}": "No hay identidades configuradas. Agregue en configuración: {0}",
   "Welcome to Git ID Switcher! Configure your identities to get started.": "¡Bienvenido a Git ID Switcher! Configure sus identidades para comenzar.",
   "Open Settings": "Abrir configuración",
-  "Git ID Switcher: {0}": "Git ID Switcher: {0}"
+  "Git ID Switcher: {0}": "Git ID Switcher: {0}",
+  "This workspace is not trusted. {0} may modify your system. Do you want to proceed?": "Este espacio de trabajo no es de confianza. {0} puede modificar su sistema. ¿Desea continuar?",
+  "Trust Workspace": "Confiar en el espacio de trabajo",
+  "Proceed Anyway": "Continuar de todos modos",
+  "Cancel": "Cancelar",
+  "User confirmation required for this operation": "Se requiere confirmación del usuario para esta operación",
+  "{0} is blocked in untrusted workspaces. {1}": "{0} está bloqueado en espacios de trabajo no confiables. {1}",
+  "{0} is blocked in untrusted workspaces. Trust the workspace to enable this operation.": "{0} está bloqueado en espacios de trabajo no confiables. Confíe en el espacio de trabajo para habilitar esta operación.",
+  "Workspace trust not granted": "Confianza del espacio de trabajo no otorgada",
+  "Operation cancelled by user": "Operación cancelada por el usuario"
 }
