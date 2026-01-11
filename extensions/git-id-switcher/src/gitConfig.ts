@@ -95,15 +95,17 @@ export async function getCurrentGitConfig(
     execGitInWorkspace(['config', 'user.signingkey']),
   ]);
 
+  // Track disposable for cleanup
+  let disposable: vscode.Disposable | undefined;
+
   // Create a promise that rejects when cancellation is requested
   const cancellationPromise = new Promise<never>((_, reject) => {
     if (token.isCancellationRequested) {
       reject(new Error('Operation cancelled'));
       return;
     }
-    
-    const disposable = token.onCancellationRequested(() => {
-      disposable.dispose();
+
+    disposable = token.onCancellationRequested(() => {
       reject(new Error('Operation cancelled'));
     });
   });
@@ -126,6 +128,9 @@ export async function getCurrentGitConfig(
     }
     // Re-throw other errors
     throw error;
+  } finally {
+    // Always clean up the event listener to prevent memory leaks
+    disposable?.dispose();
   }
 }
 
