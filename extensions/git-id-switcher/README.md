@@ -57,7 +57,7 @@ While many Git identity switchers exist, **Git ID Switcher** solves the complex 
 > I don't want to discard them just because they are small in number.
 > Even if translations aren't perfect, I hope you can feel our intent to understand and show respect for minority languages.
 
-This extension supports all 17 languages that VSCode supports. Additionally, for README documentation, we're challenging ourselves to translate into minority languages and even joke languages.
+This extension supports all 17 languages that VS Code supports. Additionally, for README documentation, we're challenging ourselves to translate into minority languages and even joke languages.
 
 This isn't just "global support" - it's "respect for linguistic diversity." And I'd be happy if this becomes infrastructure where commits that make the world better come from developers living everywhere, transcending language barriers.
 
@@ -536,6 +536,32 @@ If you previously saved empty settings, they may have synced to the cloud and ar
 | ------------------------------- | ----------------------------- |
 | `Git ID: Select Identity`       | Open the identity picker      |
 | `Git ID: Show Current Identity` | Display current identity info |
+
+---
+
+## Workspace Trust
+
+Git ID Switcher supports VS Code's [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) feature. In untrusted workspaces, dangerous operations are automatically restricted.
+
+### Behavior in Untrusted Workspaces
+
+| Operation               | Behavior                      |
+| ----------------------- | ----------------------------- |
+| View identities         | ✅ Allowed                     |
+| View current Git config | ✅ Allowed                     |
+| Switch identity         | ⚠️ User confirmation required  |
+| Modify Git config       | ❌ Blocked                     |
+| SSH key operations      | ❌ Blocked                     |
+
+### Disabling (Not Recommended)
+
+If you absolutely need to disable workspace trust checks:
+
+1. Open Settings (`Cmd+,` / `Ctrl+,`)
+2. Search for `gitIdSwitcher.disableWorkspaceTrust`
+3. Enable the setting
+
+⚠️ **Warning**: Enabling this setting reduces security. Use only when absolutely necessary.
 
 ---
 

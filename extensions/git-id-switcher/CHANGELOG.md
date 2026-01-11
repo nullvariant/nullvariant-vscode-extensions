@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-01-11
+
+### Security
+
+- **Workspace Trust**: Added support for VS Code Workspace Trust
+  - Dangerous operations (Git config changes, SSH key operations) are blocked in untrusted workspaces
+  - Identity switching requires explicit user confirmation in untrusted workspaces
+  - New setting `gitIdSwitcher.disableWorkspaceTrust` for emergency bypass (not recommended)
+
+### Added
+
+- Confirmation dialog for identity switching in untrusted workspaces
+- Localized trust-related messages in 17 languages
+
+### Documentation
+
+- Added Workspace Trust section to README (en, ja)
+
 ## [0.10.48] - 2026-01-10
 
 ### Fixed
