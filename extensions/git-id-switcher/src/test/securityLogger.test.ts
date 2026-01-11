@@ -331,6 +331,14 @@ function testLogMethodsGracefulDegradation(): void {
   }, 'logCommandTimeout() with cwd should not throw');
 
   assert.doesNotThrow(() => {
+    securityLogger.logOperationBlocked('GIT_CONFIG_WRITE', 'blocked in untrusted workspace');
+  }, 'logOperationBlocked() should not throw without VS Code');
+
+  assert.doesNotThrow(() => {
+    securityLogger.logOperationConfirmed('IDENTITY_SWITCH');
+  }, 'logOperationConfirmed() should not throw without VS Code');
+
+  assert.doesNotThrow(() => {
     securityLogger.logConfigChange('setting.key');
   }, 'logConfigChange() should not throw without VS Code');
 
@@ -1325,6 +1333,58 @@ function testWriteToOutputChannelJsonError(): void {
 }
 
 /**
+ * Test logOperationBlocked console output
+ */
+function testLogOperationBlockedOutput(): void {
+  console.log('Testing logOperationBlocked console output...');
+
+  const consoleCapture = new ConsoleCapture();
+
+  _resetCache();
+  securityLogger.initialize();
+
+  consoleCapture.start();
+  securityLogger.logOperationBlocked('GIT_CONFIG_WRITE', 'blocked in untrusted workspace');
+  consoleCapture.stop();
+
+  const output = consoleCapture.getOutput().join('\n');
+  assert.ok(output.includes('OPERATION_BLOCKED'), 'Should include OPERATION_BLOCKED event type');
+  assert.ok(output.includes('WARNING'), 'Should have WARNING severity');
+  assert.ok(output.includes('GIT_CONFIG_WRITE'), 'Should include operation type');
+  assert.ok(output.includes('workspaceTrusted'), 'Should include workspaceTrusted field');
+
+  _resetCache();
+
+  console.log('✅ logOperationBlocked console output passed!');
+}
+
+/**
+ * Test logOperationConfirmed console output
+ */
+function testLogOperationConfirmedOutput(): void {
+  console.log('Testing logOperationConfirmed console output...');
+
+  const consoleCapture = new ConsoleCapture();
+
+  _resetCache();
+  securityLogger.initialize();
+
+  consoleCapture.start();
+  securityLogger.logOperationConfirmed('IDENTITY_SWITCH');
+  consoleCapture.stop();
+
+  const output = consoleCapture.getOutput().join('\n');
+  assert.ok(output.includes('OPERATION_CONFIRMED'), 'Should include OPERATION_CONFIRMED event type');
+  assert.ok(output.includes('INFO'), 'Should have INFO severity');
+  assert.ok(output.includes('IDENTITY_SWITCH'), 'Should include operation type');
+  assert.ok(output.includes('userConfirmed'), 'Should include userConfirmed field');
+
+  _resetCache();
+
+  console.log('✅ logOperationConfirmed console output passed!');
+}
+
+/**
  * Test sanitizeConfigValue with identities key (non-array previousValue)
  */
 function testSanitizeConfigValueIdentitiesNonArray(): void {
@@ -1437,6 +1497,8 @@ export async function runSecurityLoggerTests(): Promise<void> {
     testErrorNotificationShown();
     testFileLoggingEnabled();
     testWriteToOutputChannelJsonError();
+    testLogOperationBlockedOutput();
+    testLogOperationConfirmedOutput();
     testSanitizeConfigValueIdentitiesNonArray();
     testSanitizeConfigValueIdentities();
 
