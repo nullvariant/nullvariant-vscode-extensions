@@ -21,6 +21,7 @@ import { runConfigChangeDetectorTests } from './configChangeDetector.test';
 import { runCommandAllowlistTests } from './commandAllowlist.test';
 import { runDocumentationTests } from './documentation.test';
 import { runWorkspaceTrustTests } from './workspaceTrust.test';
+import { runOperationGuardTests } from './operationGuard.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -78,6 +79,9 @@ async function main(): Promise<void> {
 
     // Run workspace trust tests
     await runWorkspaceTrustTests();
+
+    // Run operation guard tests
+    await runOperationGuardTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
