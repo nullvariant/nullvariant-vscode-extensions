@@ -410,4 +410,79 @@ describe('Git Config E2E Test Suite', function () {
       assert.ok(fs.existsSync(gitDir), '.git directory should exist');
     });
   });
+
+  describe('Cancellation Handling', () => {
+    // Import once for all tests in this describe block
+    let getCurrentGitConfig: typeof import('../../gitConfig.js').getCurrentGitConfig;
+
+    before(async () => {
+      const module = await import('../../gitConfig.js');
+      getCurrentGitConfig = module.getCurrentGitConfig;
+    });
+
+    it('should handle cancellation token that is already cancelled', async () => {
+      // Create a cancellation token that's already cancelled
+      const tokenSource = new vscode.CancellationTokenSource();
+      tokenSource.cancel();
+
+      const startTime = Date.now();
+      const config = await getCurrentGitConfig(tokenSource.token);
+      const duration = Date.now() - startTime;
+
+      // Should return empty config immediately
+      assert.strictEqual(config.userName, undefined, 'userName should be undefined');
+      assert.strictEqual(config.userEmail, undefined, 'userEmail should be undefined');
+      assert.strictEqual(config.signingKey, undefined, 'signingKey should be undefined');
+
+      // Should complete very quickly (within 100ms)
+      assert.ok(duration < 100, `Should return immediately for cancelled token, took ${duration}ms`);
+
+      tokenSource.dispose();
+    });
+
+    it('should handle cancellation during operation', async () => {
+      // Create a cancellation token
+      const tokenSource = new vscode.CancellationTokenSource();
+
+      // Start the operation
+      const configPromise = getCurrentGitConfig(tokenSource.token);
+
+      // Cancel immediately (simulating quick workspace switch)
+      tokenSource.cancel();
+
+      const config = await configPromise;
+
+      // Should return empty config when cancelled
+      assert.strictEqual(config.userName, undefined, 'userName should be undefined after cancellation');
+      assert.strictEqual(config.userEmail, undefined, 'userEmail should be undefined after cancellation');
+      assert.strictEqual(config.signingKey, undefined, 'signingKey should be undefined after cancellation');
+
+      tokenSource.dispose();
+    });
+
+    it('should complete normally without cancellation', async () => {
+      // Create a cancellation token but don't cancel it
+      const tokenSource = new vscode.CancellationTokenSource();
+
+      const config = await getCurrentGitConfig(tokenSource.token);
+
+      // Should return a valid config object (values may be undefined in CI without git config)
+      assert.ok(typeof config === 'object', 'Should return a config object');
+      assert.ok('userName' in config, 'Config should have userName property');
+      assert.ok('userEmail' in config, 'Config should have userEmail property');
+      assert.ok('signingKey' in config, 'Config should have signingKey property');
+
+      tokenSource.dispose();
+    });
+
+    it('should work without cancellation token', async () => {
+      // Call without token
+      const config = await getCurrentGitConfig();
+
+      // Should return a valid config object (values may be undefined in CI without git config)
+      assert.ok(typeof config === 'object', 'Should return a config object');
+      assert.ok('userName' in config, 'Config should have userName property');
+      assert.ok('userEmail' in config, 'Config should have userEmail property');
+    });
+  });
 });
