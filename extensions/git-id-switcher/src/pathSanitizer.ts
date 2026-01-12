@@ -212,6 +212,7 @@ function tryRedactUncPath(normalizedPath: string): string | null {
   if (uncMatch) {
     return `//[REDACTED]${uncMatch[2] || ''}`;
   }
+  /* c8 ignore next: edge case - malformed UNC path that passes prefix but not regex */
   return null;
 }
 

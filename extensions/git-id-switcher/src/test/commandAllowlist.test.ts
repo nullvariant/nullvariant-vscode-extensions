@@ -103,10 +103,14 @@ export async function runCommandAllowlistTests(): Promise<void> {
     const result1 = isCommandAllowed('ssh-keygen', ['-lf', '/path/to/key']);
     assert.strictEqual(result1.allowed, true, 'Should allow combined flag -lf');
 
-    // Invalid combination
-    // Assuming -x is not allowed
+    // Invalid combination - -x is not allowed
     const result2 = isCommandAllowed('ssh-keygen', ['-lx', '/path/to/key']);
     assert.strictEqual(result2.allowed, false, 'Should block invalid combined flag');
+
+    // Combined flag in different order (-fl) is blocked because
+    // ALLOWED_COMBINED_PATTERNS requires exact match ('lf' not 'fl')
+    const result3 = isCommandAllowed('ssh-keygen', ['-fl', '/path/to/key']);
+    assert.strictEqual(result3.allowed, false, 'Should block -fl (only lf pattern allowed)');
   }
 
   // Test 9: Block flag-like value after allowedOptionsWithValues

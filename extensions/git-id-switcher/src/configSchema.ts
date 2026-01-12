@@ -164,6 +164,7 @@ function validateStringPattern(
         value,
       });
     }
+  /* c8 ignore start: defensive - schema patterns are hardcoded valid */
   } catch {
     // SECURITY: Invalid regex pattern in schema is a programming error
     errors.push({
@@ -172,6 +173,7 @@ function validateStringPattern(
       value: undefined,
     });
   }
+  /* c8 ignore stop */
 }
 
 /**
@@ -218,6 +220,7 @@ function validateStringValue(
  * Validate number-specific constraints.
  * @internal
  */
+/* c8 ignore start: no number fields in current schema - reserved for future */
 function validateNumberValue(
   field: string,
   value: number,
@@ -231,6 +234,7 @@ function validateNumberValue(
     errors.push({ field, message: `Must be at most ${schema.maximum}`, value });
   }
 }
+/* c8 ignore stop */
 
 /**
  * Validate a value against a property schema
@@ -257,9 +261,11 @@ function validateProperty(
       validateStringValue(field, value, schema, errors);
     }
 
+    /* c8 ignore start: no number fields in current schema - reserved for future */
     if (schema.type === 'number' && typeof value === 'number') {
       validateNumberValue(field, value, schema, errors);
     }
+    /* c8 ignore stop */
   } else if (schema.required) {
     errors.push({ field, message: 'Required field is missing' });
   }

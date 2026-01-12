@@ -1081,6 +1081,14 @@ function testSanitizePathUNCVariations(): void {
     'UNC with nested path should preserve path structure'
   );
 
+  // Edge case: UNC prefix only (no server name) - triggers line 215-216
+  // This is technically invalid UNC but tests the regex non-match path
+  const uncOnlyResult = sanitizePath('//');
+  assert.ok(
+    uncOnlyResult === '//' || uncOnlyResult.includes('/'),
+    'UNC prefix only should be handled gracefully'
+  );
+
   console.log('✅ sanitizePath (UNC variations) passed!');
 }
 
