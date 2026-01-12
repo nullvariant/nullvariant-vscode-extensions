@@ -404,6 +404,54 @@ Gitの設定には3つのレイヤーがあり、下位の設定を上位が上�
 ローカル設定はリポジトリ単位のため、サブモジュールには自動的に適用されません。
 そのため、本拡張機能はサブモジュールへの伝播機能を提供しています（詳細は「上級者向け: サブモジュールサポート」を参照）。
 
+### SSH鍵管理の詳細
+
+Git ID Switcherは`ssh-agent`を通じてSSH鍵を管理します：
+
+| 操作     | 実行コマンド              |
+| -------- | ------------------------- |
+| 鍵を追加 | `ssh-add <keyPath>`       |
+| 鍵を削除 | `ssh-add -d <keyPath>`    |
+| 鍵の一覧 | `ssh-add -l`              |
+
+**重要:** この拡張機能は `~/.ssh/config` を**変更しません**。SSH configの設定は手動で行う必要があります（「クイックスタート」のステップ2を参照）。
+
+### 既存のSSH設定との相互作用
+
+すでにSSH設定がある場合、Git ID Switcherは以下のように動作します：
+
+| あなたの設定                             | Git ID Switcherの動作                                  |
+| ---------------------------------------- | ------------------------------------------------------ |
+| `~/.ssh/config` で `IdentityFile` を指定 | 両方が使用可能；`IdentitiesOnly yes` で競合を防止      |
+| 環境変数 `GIT_SSH_COMMAND` を設定        | カスタムSSHコマンドを使用；ssh-agentは引き続き動作     |
+| `git config core.sshCommand` を設定      | 上記と同様                                             |
+| direnvでSSH関連の環境変数を設定          | 共存可能；ssh-agentは独立して動作                      |
+
+**推奨:** SSH configでは常に `IdentitiesOnly yes` を設定してください。これにより、SSHが複数の鍵を試行することを防ぎます。
+
+### なぜ `IdentitiesOnly yes`？
+
+この設定がない場合、SSHは以下の順序で鍵を試行する可能性があります：
+
+1. ssh-agentに読み込まれた鍵（Git ID Switcherが管理）
+2. `~/.ssh/config` で指定された鍵
+3. デフォルトの鍵（`~/.ssh/id_rsa`, `~/.ssh/id_ed25519` など）
+
+これにより、認証失敗や意図しない鍵の使用が発生する可能性があります。
+
+`IdentitiesOnly yes` を設定すると、SSHは**指定された鍵のみ**を使用します。これにより、Git ID Switcherで設定した鍵が確実に使用されます。
+
+```ssh-config
+# 推奨される設定
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← この行が重要
+```
+
+この設定により、`github-work` ホストへの接続時には `~/.ssh/id_ed25519_work` のみが使用され、他の鍵は試行されません。
+
 ---
 
 ## 上級者向け: サブモジュールサポート

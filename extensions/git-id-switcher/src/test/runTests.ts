@@ -22,6 +22,7 @@ import { runCommandAllowlistTests } from './commandAllowlist.test';
 import { runDocumentationTests } from './documentation.test';
 import { runWorkspaceTrustTests } from './workspaceTrust.test';
 import { runOperationGuardTests } from './operationGuard.test';
+import { runConfigSchemaTests } from './configSchema.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -82,6 +83,9 @@ async function main(): Promise<void> {
 
     // Run operation guard tests
     await runOperationGuardTests();
+
+    // Run config schema tests
+    runConfigSchemaTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');

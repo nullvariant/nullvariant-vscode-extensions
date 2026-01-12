@@ -404,6 +404,54 @@ When you switch identities, the extension does (in order):
 Local settings are per-repository, so they don't automatically apply to submodules.
 That's why this extension provides submodule propagation (see "Advanced: Submodule Support" for details).
 
+### SSH Key Management Details
+
+Git ID Switcher manages SSH keys through `ssh-agent`:
+
+| Operation  | Command                   |
+| ---------- | ------------------------- |
+| Add key    | `ssh-add <keyPath>`       |
+| Remove key | `ssh-add -d <keyPath>`    |
+| List keys  | `ssh-add -l`              |
+
+**Important:** This extension does **NOT** modify `~/.ssh/config`. You need to set up your SSH config manually (see Step 2 in "Quick Start").
+
+### Interaction with Existing SSH Config
+
+If you already have SSH configuration, Git ID Switcher works alongside it:
+
+| Your Setup                               | Git ID Switcher Behavior                                        |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| `~/.ssh/config` with `IdentityFile`      | Both can be used; use `IdentitiesOnly yes` to prevent conflicts |
+| `GIT_SSH_COMMAND` environment variable   | Git uses your custom SSH command; ssh-agent still works         |
+| `git config core.sshCommand`             | Same as above                                                   |
+| direnv with SSH-related env vars         | Works alongside; ssh-agent operates independently               |
+
+**Recommended:** Always use `IdentitiesOnly yes` in your SSH config. This prevents SSH from trying multiple keys.
+
+### Why `IdentitiesOnly yes`?
+
+Without this setting, SSH may try keys in this order:
+
+1. Keys loaded in ssh-agent (managed by Git ID Switcher)
+2. Keys specified in `~/.ssh/config`
+3. Default keys (`~/.ssh/id_rsa`, `~/.ssh/id_ed25519`, etc.)
+
+This can cause authentication failures or unintended key usage.
+
+With `IdentitiesOnly yes`, SSH uses **only the specified key**. This ensures the key you configured in Git ID Switcher is used reliably.
+
+```ssh-config
+# Recommended configuration
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← This line is important
+```
+
+With this configuration, connections to the `github-work` host will only use `~/.ssh/id_ed25519_work`, and no other keys will be tried.
+
 ---
 
 ## Advanced: Submodule Support

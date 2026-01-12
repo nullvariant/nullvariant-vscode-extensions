@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-01-12
+
+### Fixed
+
+- **Empty String Validation**
+  - Empty strings in optional fields (`service`, `sshKeyPath`, `sshHost`, `gpgKeyId`) are now treated as "not set" instead of triggering validation errors
+  - This eliminates unnecessary warnings when using default settings
+  - Required fields (`id`, `name`, `email`) still correctly reject empty strings
+
+### Added
+
+- **configSchema Tests**
+  - Added comprehensive test suite for `configSchema.ts` (68 test cases)
+  - Covers empty string handling, malicious value rejection, format validation, and edge cases
+  - Test coverage improved to 92.99%
+
+### Documentation
+
+- **SSH Interaction Sections (en, ja)**
+  - Added "SSH Key Management Details" section explaining ssh-agent commands
+  - Added "Interaction with Existing SSH Config" section for compatibility guide
+  - Added "Why `IdentitiesOnly yes`?" section with recommended configuration
+
 ## [0.11.0] - 2026-01-11
 
 ### Security
