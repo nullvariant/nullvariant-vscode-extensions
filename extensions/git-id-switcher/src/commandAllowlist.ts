@@ -138,6 +138,80 @@ export interface AllowlistCheckResult {
 }
 
 /**
+ * Resolve subcommand config if applicable.
+ * @internal
+ */
+function resolveSubcommandConfig(
+  commandConfig: CommandConfig,
+  command: string,
+  args: string[]
+): { config: CommandConfig | SubcommandConfig; argsToValidate: string[] } | AllowlistCheckResult {
+  if (!commandConfig.subcommands) {
+    return { config: commandConfig, argsToValidate: args };
+  }
+
+  const subcommand = args[0];
+  const subConfig = commandConfig.subcommands[subcommand];
+
+  if (subConfig) {
+    if (!subConfig.allowed) {
+      return { allowed: false, reason: `Subcommand '${command} ${subcommand}' is disabled` };
+    }
+    return { config: subConfig, argsToValidate: args.slice(1) };
+  }
+
+  if (command === 'git') {
+    return { allowed: false, reason: `Git subcommand '${subcommand}' is not in the allowlist` };
+  }
+
+  return { config: commandConfig, argsToValidate: args };
+}
+
+/**
+ * Check if arg is a value for a previous option that expects values.
+ * @internal
+ */
+function isValueForPreviousOption(
+  arg: string,
+  index: number,
+  argsToValidate: string[],
+  allowedOptionsWithValues: readonly string[]
+): AllowlistCheckResult | 'is_value' | 'not_value' {
+  if (index === 0) {
+    return 'not_value';
+  }
+  const prevArg = argsToValidate[index - 1];
+  if (!allowedOptionsWithValues.includes(prevArg)) {
+    return 'not_value';
+  }
+  // Security: reject if value looks like a flag
+  if (arg.startsWith('-')) {
+    return { allowed: false, reason: `Value for '${prevArg}' cannot mean a flag ('${arg}')` };
+  }
+  return 'is_value';
+}
+
+/**
+ * Validate a flag argument.
+ * @internal
+ */
+function validateFlagArgument(
+  arg: string,
+  command: string,
+  allowedArgs: readonly string[]
+): AllowlistCheckResult | 'allowed' {
+  // Check for combined flags (only if it's not a long option --)
+  if (!arg.startsWith('--') && arg.length > 2) {
+    const flagResult = validateCombinedFlags(arg, command, allowedArgs);
+    if (flagResult.valid) {
+      return 'allowed';
+    }
+    return { allowed: false, reason: flagResult.reason || 'Invalid combined flag' };
+  }
+  return { allowed: false, reason: `Flag '${arg}' is not allowed for this command` };
+}
+
+/**
  * Check if a command is in the allowlist
  */
 export function isCommandAllowed(command: string, args: string[]): AllowlistCheckResult {
@@ -159,27 +233,14 @@ export function isCommandAllowed(command: string, args: string[]): AllowlistChec
     return { allowed: false, reason: 'Too many arguments' };
   }
 
-  let currentConfig: CommandConfig | SubcommandConfig = commandConfig;
-  let argsToValidate = args;
-
-  // Check subcommands if defined
-  if (commandConfig.subcommands) {
-    const subcommand = args[0];
-    const subConfig = commandConfig.subcommands[subcommand];
-
-    if (subConfig) {
-      if (!subConfig.allowed) {
-        return { allowed: false, reason: `Subcommand '${command} ${subcommand}' is disabled` };
-      }
-      currentConfig = subConfig;
-      argsToValidate = args.slice(1);
-    } else if (command === 'git') {
-      // Git requires valid subcommand
-      return { allowed: false, reason: `Git subcommand '${subcommand}' is not in the allowlist` };
-    }
+  // Resolve subcommand config
+  const subResult = resolveSubcommandConfig(commandConfig, command, args);
+  if ('allowed' in subResult) {
+    return subResult;
   }
+  const { config: currentConfig, argsToValidate } = subResult;
 
-  // Validate arguments
+  // Extract config options
   const allowedArgs = currentConfig.allowedArgs || [];
   const allowAnyPositional = currentConfig.allowAnyPositional || false;
   const allowPathPositionals = currentConfig.allowPathPositionals || false;
@@ -193,8 +254,7 @@ export function isCommandAllowed(command: string, args: string[]): AllowlistChec
       return { allowed: false, reason: 'Argument exceeds maximum length' };
     }
 
-    // Path Safety Check (Always run if it looks like a path)
-    // Note: Also check args containing '/' for relative paths like 'path/to/submodule'
+    // Path Safety Check
     const looksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
     if (looksLikePathForSecurity) {
       const pathResult = isSecurePath(arg);
@@ -203,58 +263,36 @@ export function isCommandAllowed(command: string, args: string[]): AllowlistChec
       }
     }
 
-    // 1. Is this argument a value for a previous option?
-    // Check previous argument ONLY if there is one
-    if (i > 0) {
-      const prevArg = argsToValidate[i - 1];
-      if (allowedOptionsWithValues.includes(prevArg)) {
-        // Security: Even if it's a value, reject it if it looks like a flag
-        // This prevents confusion and potential flag injection if the parser is loose
-        if (arg.startsWith('-')) {
-          return { allowed: false, reason: `Value for '${prevArg}' cannot mean a flag ('${arg}')` };
-        }
-
-        // This arg is a value for a permitted option (e.g. "user.name" -> "John")
-        // It is allowed regardless of content (as long as path checks passed above)
-        continue;
-      }
+    // 1. Check if this is a value for a previous option
+    const valueCheck = isValueForPreviousOption(arg, i, argsToValidate, allowedOptionsWithValues);
+    if (valueCheck === 'is_value') {
+      continue;
+    }
+    if (typeof valueCheck === 'object') {
+      return valueCheck;
     }
 
-    // 2. Exact Match Allowlist (Flags or fixed positionals)
+    // 2. Exact Match Allowlist
     if (allowedArgs.includes(arg)) {
       continue;
     }
 
     // 3. Strict Flag Validation
-    // If it looks like a flag (starts with -), it MUST be explicitly allowed or a valid combined flag.
-    // We do NOT allow flags to fall through to allowAnyPositional.
     if (arg.startsWith('-')) {
-      // Check for combined flags (only if it's not a long option --)
-      if (!arg.startsWith('--') && arg.length > 2) {
-        const flagResult = validateCombinedFlags(arg, command, allowedArgs);
-        if (flagResult.valid) {
-          continue;
-        }
-        return { allowed: false, reason: flagResult.reason || 'Invalid combined flag' };
+      const flagCheck = validateFlagArgument(arg, command, allowedArgs);
+      if (flagCheck === 'allowed') {
+        continue;
       }
-
-      // If we are here, it's a flag (short or long) that is NOT in allowedArgs
-      // and NOT a valid combined flag. reject it.
-      return { allowed: false, reason: `Flag '${arg}' is not allowed for this command` };
+      return flagCheck;
     }
 
     // 4. Fallback: arbitrary positionals allowed?
     if (allowAnyPositional) {
-      // It's a non-flag positional argument (e.g. "John Doe", "email@example.com", "/path/to/key")
-      // Allowed by allowAnyPositional=true
-      // NOTE: Flags (starting with -) are already handled/rejected in Step 3.
       continue;
     }
 
     // 5. Path-only positionals allowed?
     if (allowPathPositionals && looksLikePathForSecurity) {
-      // Path-like arguments are allowed (already validated by isSecurePath above)
-      // This prevents non-path strings like 'update', 'init', 'add' from being allowed
       continue;
     }
 

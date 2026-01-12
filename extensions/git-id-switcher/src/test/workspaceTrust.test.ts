@@ -210,7 +210,9 @@ function testFailSafeBehavior(): void {
         },
         onDidGrantWorkspaceTrust: () => ({ dispose: () => {} }),
       };
-      void errorWorkspace.isTrusted;
+      // Intentionally access getter to trigger error
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      errorWorkspace.isTrusted;
     } catch {
       // On error, should default to untrusted
       safeDefault = false;

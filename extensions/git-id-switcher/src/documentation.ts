@@ -635,8 +635,6 @@ async function handleBack(
 export async function showDocumentation(
   context: vscode.ExtensionContext
 ): Promise<void> {
-  // Reserved for future use (e.g., caching, state management)
-  void context;
 
   const locale = getDocumentLocale();
   const initialPath = `docs/i18n/${locale}/README.md`;
