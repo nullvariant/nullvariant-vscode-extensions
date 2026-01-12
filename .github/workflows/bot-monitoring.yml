@@ -59,7 +59,7 @@ jobs:
                 requirePrActivity: true
               },
               {
-                name: 'codecov[bot]',
+                name: 'codecov-commenter',
                 activityType: 'pr_comment',
                 maxSilentDays: 14,
                 requirePrActivity: true
@@ -85,7 +85,7 @@ jobs:
               },
               {
                 name: 'pre-commit-ci[bot]',
-                activityType: 'check_run',
+                activityType: 'commit_status',
                 maxSilentDays: 14,
                 requirePrActivity: true
               },
@@ -115,13 +115,8 @@ jobs:
                 activityType: 'pr_create',
                 maxSilentDays: 60,
                 requirePrActivity: false
-              },
-              {
-                name: 'allcontributors[bot]',
-                activityType: 'pr_comment',
-                maxSilentDays: 60,
-                requirePrActivity: true
               }
+              // Note: allcontributors[bot] excluded - trigger-based (only responds to @all-contributors commands)
             ];
 
             const owner = context.repo.owner;
@@ -254,6 +249,28 @@ jobs:
                 }
               } catch (e) {
                 console.log(`Warning: Could not fetch check runs for PR #${pr.number}: ${e.message}`);
+              }
+
+              // Check commit statuses (for bots that use legacy status API like pre-commit-ci)
+              try {
+                const statuses = await github.rest.repos.listCommitStatusesForRef({
+                  owner,
+                  repo,
+                  ref: pr.head.sha,
+                  per_page: 100
+                });
+
+                for (const status of statuses.data) {
+                  const creator = status.creator?.login;
+                  if (creator && botActivity[creator] && botActivity[creator].config.activityType === 'commit_status') {
+                    const statusDate = new Date(status.created_at);
+                    if (!botActivity[creator].lastSeen || statusDate > botActivity[creator].lastSeen) {
+                      botActivity[creator].lastSeen = statusDate;
+                    }
+                  }
+                }
+              } catch (e) {
+                console.log(`Warning: Could not fetch commit statuses for PR #${pr.number}: ${e.message}`);
               }
             }
 
