@@ -74,6 +74,7 @@ This section documents all secrets used in CI/CD workflows.
 | CODECOV_TOKEN | Coverage reporting | ci.yml | As needed | Medium |
 | CLOUDFLARE_API_TOKEN | Cloudflare Pages/R2 deployment | deploy-docs.yml, publish.yml | Annual | High |
 | CLOUDFLARE_ACCOUNT_ID | Cloudflare account identifier (public) | deploy-docs.yml, publish.yml | Never | Low (public ID) |
+| SLACK_WEBHOOK | Bot monitoring alerts | bot-monitoring.yml | As needed | Medium |
 
 ### GitHub App Secrets (6 bots × 2 secrets each)
 
@@ -118,6 +119,7 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 | CLOUDFLARE_API_TOKEN | Cloudflare | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) | No expiration |
 | CODECOV_TOKEN | Codecov | [Codecov Settings](https://app.codecov.io/account/gh/nullvariant/settings) | No expiration |
 | GitHub App Keys | GitHub | [GitHub Apps](https://github.com/settings/apps) | No expiration |
+| SLACK_WEBHOOK | Slack | [Slack Apps](https://api.slack.com/apps) | No expiration |
 
 **Token Details**:
 
