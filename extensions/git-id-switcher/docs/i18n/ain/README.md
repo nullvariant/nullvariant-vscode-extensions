@@ -555,6 +555,32 @@ VS Code 設定スキーマ メモリ キャッシュ、"Reload Window" ウン re
 
 ---
 
+## Workspace Trust
+
+Git ID Switcher VS Code ウン [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) サポート。Trust ソモ ウン workspace オッタ、ウェン オペレーション 自動 ブロック。
+
+### Trust ソモ ウン Workspace オッタ
+
+| オペレーション        | 動作                   |
+| --------------------- | ---------------------- |
+| ID エヌカㇻ           | ✅ ピㇼカ               |
+| エネアン Git config   | ✅ ピㇼカ               |
+| ID チェンジ           | ⚠️ ユーザー確認 イル    |
+| Git config 変更       | ❌ ブロック             |
+| SSH 鍵 オペレーション | ❌ ブロック             |
+
+### 無効化（レコンメンド ソモ）
+
+Workspace trust チェック 無効 イル:
+
+1. Settings (`Cmd+,` / `Ctrl+,`)
+2. `gitIdSwitcher.disableWorkspaceTrust` サーチ
+3. 設定 有効
+
+⚠️ **ウェン:** クコロ 設定 セキュリティ ウェン。イル ネㇷ゚キ コロ ユース。
+
+---
+
 ## Design Philosophy
 
 > 「クアニ ネノ ネ?」— クコロ extension ネイタ ハウェアン。
