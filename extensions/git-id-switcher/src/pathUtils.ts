@@ -405,46 +405,18 @@ export function containsSymlinks(inputPath: string): boolean {
 /**
  * Validate an SSH key path specifically
  *
- * Additional checks for SSH key paths:
- * - Must be in allowed directories (~/.ssh, /etc/ssh, etc.)
- * - File extension checks (optional)
+ * Performs path validation with symlink resolution enabled.
+ * SSH keys can be stored in any location (not restricted to ~/.ssh or /etc/ssh).
  */
 export function validateSshKeyPath(
   keyPath: string,
   options: NormalizePathOptions = {}
 ): NormalizedPathResult {
-  // First, do general path validation
-  const result = normalizeAndValidatePath(keyPath, {
+  // Validate path with symlink resolution enabled for SSH keys
+  return normalizeAndValidatePath(keyPath, {
     ...options,
     resolveSymlinks: true, // Always resolve symlinks for SSH keys
   });
-
-  if (!result.valid) {
-    return result;
-  }
-
-  const normalizedPath = result.normalizedPath!;
-  const homeDir = os.homedir();
-
-  // SSH key paths should typically be in:
-  // - ~/.ssh/
-  // - /etc/ssh/ (system keys)
-  // - Custom paths (allowed but logged)
-  const allowedPrefixes = [
-    path.join(homeDir, '.ssh'),
-    '/etc/ssh',
-  ];
-
-  const isInAllowedLocation = allowedPrefixes.some(prefix =>
-    normalizedPath.startsWith(prefix + path.sep) || normalizedPath === prefix
-  );
-
-  if (!isInAllowedLocation) {
-    // Not an error, but worth noting - custom SSH key location
-    // Could add logging here in the future
-  }
-
-  return result;
 }
 
 /**

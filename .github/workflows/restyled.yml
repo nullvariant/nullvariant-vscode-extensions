@@ -23,7 +23,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          # SECURITY: Use SHA (immutable) instead of branch ref (user-controlled)
+          # to prevent potential injection attacks via malicious branch names.
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Setup branch for commits
+        env:
+          # SECURITY: Pass user-controlled data via environment variable
+          # to prevent shell injection
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          # Validate branch name format (alphanumeric, _, -, /, .)
+          if [[ ! "$HEAD_REF" =~ ^[a-zA-Z0-9_/.@-]+$ ]]; then
+            echo "::error::Invalid branch name format"
+            exit 1
+          fi
+          git checkout -B "$HEAD_REF"
 
       - name: Setup Restyled
         uses: restyled-io/actions/setup@e90fee4e224c2f8118e07245c5264f916bcc52b6 # v4.4.8
