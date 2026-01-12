@@ -50,8 +50,15 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
           DRY_RUN: ${{ inputs.dry_run }}
+          # SECURITY: Pass user input via environment variable to prevent injection
+          VERSIONS: ${{ inputs.versions }}
         run: |
-          for version in ${{ inputs.versions }}; do
+          # SECURITY: Validate version format (semver: major.minor.patch)
+          for version in $VERSIONS; do
+            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+              echo "::error::Invalid version format: $version"
+              exit 1
+            fi
             echo "Processing version: $version"
             if [ "$DRY_RUN" = "true" ]; then
               echo "  [DRY RUN] Would unpublish nullvariant.git-id-switcher@$version from VS Code Marketplace"
@@ -67,8 +74,15 @@ jobs:
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
           DRY_RUN: ${{ inputs.dry_run }}
+          # SECURITY: Pass user input via environment variable to prevent injection
+          VERSIONS: ${{ inputs.versions }}
         run: |
-          for version in ${{ inputs.versions }}; do
+          # SECURITY: Validate version format (semver: major.minor.patch)
+          for version in $VERSIONS; do
+            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+              echo "::error::Invalid version format: $version"
+              exit 1
+            fi
             echo "Processing version: $version"
             if [ "$DRY_RUN" = "true" ]; then
               echo "  [DRY RUN] Would unpublish nullvariant.git-id-switcher $version from Open VSX"
@@ -83,16 +97,26 @@ jobs:
           done
 
       - name: Summary
+        env:
+          # SECURITY: Pass user input via environment variable to prevent injection
+          DRY_RUN: ${{ inputs.dry_run }}
+          VERSIONS: ${{ inputs.versions }}
         run: |
           echo "## Unpublish Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
+          if [ "$DRY_RUN" = "true" ]; then
             echo "**Mode:** Dry Run (no actual deletions)" >> $GITHUB_STEP_SUMMARY
           else
             echo "**Mode:** Live Run" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Versions processed:**" >> $GITHUB_STEP_SUMMARY
-          for version in ${{ inputs.versions }}; do
-            echo "- $version" >> $GITHUB_STEP_SUMMARY
+          # SECURITY: Validate version format before displaying
+          for version in $VERSIONS; do
+            if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+              echo "- $version" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- ~$version~ (skipped: invalid format)" >> $GITHUB_STEP_SUMMARY
+              echo "::warning::Skipped invalid version in summary: $version"
+            fi
           done
