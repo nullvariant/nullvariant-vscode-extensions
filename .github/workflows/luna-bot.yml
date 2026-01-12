@@ -44,17 +44,23 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
+      # SECURITY: Use environment variable to prevent script injection
+      # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injection
       - name: 📝 Leave a discovery note
+        env:
+          USER_MESSAGE: ${{ github.event.inputs.message }}
         run: |
           mkdir -p docs
-          cat > docs/LUNA.md << EOF
+          cat > docs/LUNA.md << 'EOF'
           # 👧 Luna's Discovery Journal
 
           > "Every bug is just an undocumented feature waiting to be found!"
 
           ## Today's Discovery
 
-          ${{ github.event.inputs.message }}
+          EOF
+          printf '%s\n' "${USER_MESSAGE}" >> docs/LUNA.md
+          cat >> docs/LUNA.md << 'EOF'
 
           ### Fun Fact
           Did you know? HTTP 418 "I'm a teapot" is a real status code!
@@ -62,12 +68,16 @@ jobs:
 
           ---
 
-          *Last explored: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+          EOF
+          echo "*Last explored: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*" >> docs/LUNA.md
+          cat >> docs/LUNA.md << 'EOF'
 
           > Botに418返そうよ！
           EOF
 
       - name: 📬 Create PR with verified commit
+        env:
+          USER_MESSAGE: ${{ github.event.inputs.message }}
         uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 # v7
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -77,7 +87,7 @@ jobs:
           commit-message: |
             👧 New discovery logged!
 
-            ${{ github.event.inputs.message }}
+            ${{ env.USER_MESSAGE }}
 
             ~Luna was here~ ✨
           branch: luna/discovery-${{ github.run_number }}
@@ -86,7 +96,7 @@ jobs:
           body: |
             ## 👧 ✨ LOOK WHAT I FOUND! ✨
 
-            ${{ github.event.inputs.message }}
+            ${{ env.USER_MESSAGE }}
 
             ---
 
