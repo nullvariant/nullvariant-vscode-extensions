@@ -537,6 +537,32 @@ Jeśli wcześniej zapisałeś puste ustawienia, mogły zostać zsynchronizowane 
 
 ---
 
+## Zaufanie obszaru roboczego
+
+Git ID Switcher obsługuje funkcję [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) w VS Code. W niezaufanych obszarach roboczych niebezpieczne operacje są automatycznie ograniczane.
+
+### Zachowanie w niezaufanych obszarach roboczych
+
+| Operacja                       | Zachowanie                      |
+| ------------------------------ | ------------------------------- |
+| Wyświetlanie tożsamości        | ✅ Dozwolone                    |
+| Wyświetlanie bieżącej konfiguracji Git | ✅ Dozwolone            |
+| Zmiana tożsamości              | ⚠️ Wymaga potwierdzenia użytkownika |
+| Modyfikacja konfiguracji Git   | ❌ Zablokowane                  |
+| Operacje na kluczach SSH       | ❌ Zablokowane                  |
+
+### Wyłączanie (niezalecane)
+
+Jeśli naprawdę musisz wyłączyć sprawdzanie zaufania obszaru roboczego:
+
+1. Otwórz Ustawienia (`Cmd+,` / `Ctrl+,`)
+2. Wyszukaj `gitIdSwitcher.disableWorkspaceTrust`
+3. Włącz ustawienie
+
+⚠️ **Ostrzeżenie**: Włączenie tego ustawienia zmniejsza bezpieczeństwo. Używaj tylko gdy jest to absolutnie konieczne.
+
+---
+
 ## Filozofia projektowania
 
 > "Kim jestem?" — Jedyne pytanie, na które odpowiada to rozszerzenie.
