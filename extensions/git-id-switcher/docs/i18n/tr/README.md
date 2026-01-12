@@ -535,6 +535,32 @@ Geçmişte boş ayarlar kaydettiyseniz, bu ayarlar buluta senkronize edilmiş ve
 
 ---
 
+## Çalışma Alanı Güveni
+
+Git ID Switcher, VS Code'un [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) özelliğini destekler. Güvenilmeyen çalışma alanlarında tehlikeli işlemler otomatik olarak kısıtlanır.
+
+### Güvenilmeyen Çalışma Alanlarındaki Davranış
+
+| İşlem                           | Davranış                         |
+| ------------------------------- | -------------------------------- |
+| Kimlikleri görüntüle            | ✅ İzin verildi                  |
+| Mevcut Git yapılandırmasını gör | ✅ İzin verildi                  |
+| Kimlik değiştir                 | ⚠️ Kullanıcı onayı gerekiyor     |
+| Git yapılandırmasını değiştir   | ❌ Engellendi                    |
+| SSH anahtarı işlemleri          | ❌ Engellendi                    |
+
+### Devre Dışı Bırakma (Önerilmez)
+
+Çalışma alanı güven kontrollerini kesinlikle devre dışı bırakmanız gerekiyorsa:
+
+1. Ayarları açın (`Cmd+,` / `Ctrl+,`)
+2. `gitIdSwitcher.disableWorkspaceTrust` araması yapın
+3. Ayarı etkinleştirin
+
+⚠️ **Uyarı**: Bu ayarı etkinleştirmek güvenliği azaltır. Yalnızca kesinlikle gerekli olduğunda kullanın.
+
+---
+
 ## Tasarım Felsefesi
 
 > "Ben kimim?" — Bu uzantının yanıtladığı tek soru.

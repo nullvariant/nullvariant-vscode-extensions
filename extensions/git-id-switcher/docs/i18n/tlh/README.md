@@ -549,6 +549,32 @@ Past empty settings save, cloud sync, new install default values override.
 
 ---
 
+## Workspace Trust (yItlhab'eghmoH)
+
+extension [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) VS Code quvmoH.
+
+**yItlhab'eghmoHbe'** workspace, operations puS Hutlhlu':
+
+| Operation | yItlhab'eghmoH Workspace | yItlhab'eghmoHbe' Workspace |
+|-----------|--------------------------|----------------------------|
+| 🔀 Git ID choH | ✅ chaw'lu' | ⚠️ confirmation neH |
+| 🔑 SSH key choH | ✅ chaw'lu' | ⚠️ confirmation neH |
+| ⌨️ SSH command run | ✅ chaw'lu' | ⚠️ confirmation neH |
+| 📁 Git config choH | ✅ chaw'lu' | ⚠️ confirmation neH |
+| 👁️ ID legh neH | ✅ chaw'lu' | ✅ chaw'lu' |
+
+### yItlhab'eghmoH check mev
+
+check mev neH:
+
+1. VS Code Settings yIpoS
+2. `gitIdSwitcher.security.requireWorkspaceTrust` yISam
+3. setting yImev
+
+> ⚠️ **yIqIm**: mev DaneHchugh, external commands trust check Hutlhlu'. trusted environments neH yIlo'.
+
+---
+
 ## Design Philosophy (meqba' QeD)
 
 > "jIH 'Iv?" — wa' yu'wI' neH jang extension.
