@@ -129,7 +129,10 @@ function validateProperty(
   errors: SchemaError[]
 ): void {
   // Type check
-  if (value !== undefined && value !== null) {
+  // Empty string is treated as "not set" for optional fields.
+  // This allows default config with "" values to pass validation without errors.
+  // SECURITY: Required fields (id, name, email) are still protected via else-if below.
+  if (value !== undefined && value !== null && value !== '') {
     if (typeof value !== schema.type) {
       errors.push({
         field,
