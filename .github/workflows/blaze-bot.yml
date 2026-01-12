@@ -43,26 +43,36 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
+      # SECURITY: Use environment variable to prevent script injection
+      # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injection
       - name: 📝 Leave a fired-up message
+        env:
+          USER_MESSAGE: ${{ github.event.inputs.message }}
         run: |
           mkdir -p docs
-          cat > docs/BLAZE.md << EOF
+          cat > docs/BLAZE.md << 'EOF'
           # 🐗 Blaze's Battle Cry
 
           > "Don't think, just DO IT!"
 
           ## Today's War Cry
 
-          ${{ github.event.inputs.message }}
+          EOF
+          printf '%s\n' "${USER_MESSAGE}" >> docs/BLAZE.md
+          cat >> docs/BLAZE.md << 'EOF'
 
           ---
 
-          *Last charged: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+          EOF
+          echo "*Last charged: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*" >> docs/BLAZE.md
+          cat >> docs/BLAZE.md << 'EOF'
 
           > よっしゃ！デプロイしまくるぞ！
           EOF
 
       - name: 📬 Create PR with verified commit
+        env:
+          USER_MESSAGE: ${{ github.event.inputs.message }}
         uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 # v7
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -72,7 +82,7 @@ jobs:
           commit-message: |
             🐗 CHARGE!!! Updated battle cry
 
-            ${{ github.event.inputs.message }}
+            ${{ env.USER_MESSAGE }}
 
             NO RETREAT! FULL SPEED AHEAD!
           branch: blaze/charge-${{ github.run_number }}
@@ -81,7 +91,7 @@ jobs:
           body: |
             ## 🐗 LETS GOOOO!!!
 
-            ${{ github.event.inputs.message }}
+            ${{ env.USER_MESSAGE }}
 
             ---
 

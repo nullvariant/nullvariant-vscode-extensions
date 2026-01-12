@@ -44,17 +44,23 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
+      # SECURITY: Use environment variable to prevent script injection
+      # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injection
       - name: 📝 Leave a verdict
+        env:
+          USER_MESSAGE: ${{ github.event.inputs.message }}
         run: |
           mkdir -p docs
-          cat > docs/JUSTICE.md << EOF
+          cat > docs/JUSTICE.md << 'EOF'
           # 👮 Justice's Code Review
 
           > "The law applies equally to all code."
 
           ## Today's Verdict
 
-          ${{ github.event.inputs.message }}
+          EOF
+          printf '%s\n' "${USER_MESSAGE}" >> docs/JUSTICE.md
+          cat >> docs/JUSTICE.md << 'EOF'
 
           ### Checklist
           - [ ] Tests written?
@@ -64,12 +70,16 @@ jobs:
 
           ---
 
-          *Last inspected: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+          EOF
+          echo "*Last inspected: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*" >> docs/JUSTICE.md
+          cat >> docs/JUSTICE.md << 'EOF'
 
           > テストは？型定義は？エラーハンドリングは？
           EOF
 
       - name: 📬 Create PR with verified commit
+        env:
+          USER_MESSAGE: ${{ github.event.inputs.message }}
         uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 # v7
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -79,7 +89,7 @@ jobs:
           commit-message: |
             👮 Code inspection complete
 
-            ${{ github.event.inputs.message }}
+            ${{ env.USER_MESSAGE }}
 
             Remember: Tests? Types? Error handling?
           branch: justice/verdict-${{ github.run_number }}
@@ -88,7 +98,7 @@ jobs:
           body: |
             ## 👮 ⚖️ VERDICT ⚖️
 
-            ${{ github.event.inputs.message }}
+            ${{ env.USER_MESSAGE }}
 
             ---
 

@@ -43,26 +43,36 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
+      # SECURITY: Use environment variable to prevent script injection
+      # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injection
       - name: 📝 Leave a peaceful message
+        env:
+          USER_MESSAGE: ${{ github.event.inputs.message }}
         run: |
           mkdir -p docs
-          cat > docs/CIEL.md << EOF
+          cat > docs/CIEL.md << 'EOF'
           # 🕊️ Ciel's Sky Notes
 
           > "The sky sees all, judges none."
 
           ## Today's Whisper
 
-          ${{ github.event.inputs.message }}
+          EOF
+          printf '%s\n' "${USER_MESSAGE}" >> docs/CIEL.md
+          cat >> docs/CIEL.md << 'EOF'
 
           ---
 
-          *Last descended: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+          EOF
+          echo "*Last descended: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*" >> docs/CIEL.md
+          cat >> docs/CIEL.md << 'EOF'
 
           > まあまあ、ほどほどに。
           EOF
 
       - name: 📬 Create PR with verified commit
+        env:
+          USER_MESSAGE: ${{ github.event.inputs.message }}
         uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 # v7
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -72,7 +82,7 @@ jobs:
           commit-message: |
             🕊️ A message from above
 
-            ${{ github.event.inputs.message }}
+            ${{ env.USER_MESSAGE }}
 
             ~~ drifting back to the clouds ~~
           branch: ciel/whisper-${{ github.run_number }}
@@ -81,7 +91,7 @@ jobs:
           body: |
             ## 🕊️ *A gentle breeze*
 
-            ${{ github.event.inputs.message }}
+            ${{ env.USER_MESSAGE }}
 
             ---
 
