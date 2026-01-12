@@ -555,6 +555,32 @@ Se vi antaŭe konservis malplenajn agordojn, ili estis sinkronigitaj al la nubo 
 
 ---
 
+## Laborspaca Fido
+
+Ĉi tiu etendaĵo respektas la [Laborspaca Fido](https://code.visualstudio.com/docs/editor/workspace-trust) funkcion de VS Code.
+
+En **nefidataj laborspacoj**, iuj operacioj estas limigitaj por protekti vian sistemon:
+
+| Operacio | Fidata Laborspaco | Nefidata Laborspaco |
+|----------|-------------------|---------------------|
+| 🔀 Ŝanĝo de Git-identeco | ✅ Permesita | ⚠️ Postulas konfirmon |
+| 🔑 SSH-ŝlosila ŝanĝo | ✅ Permesita | ⚠️ Postulas konfirmon |
+| ⌨️ Ekzekuto de SSH-komando | ✅ Permesita | ⚠️ Postulas konfirmon |
+| 📁 Ŝanĝo de Git-agordoj | ✅ Permesita | ⚠️ Postulas konfirmon |
+| 👁️ Nur-lega vido de identeco | ✅ Permesita | ✅ Permesita |
+
+### Malŝalti laborspacan fido-kontrolon
+
+Se vi volas malŝalti la kontrolon, sekvu ĉi tiujn paŝojn:
+
+1. Malfermu VS Code-agordojn
+2. Serĉu `gitIdSwitcher.security.requireWorkspaceTrust`
+3. Malŝaltu la agordon
+
+> ⚠️ **Averto**: Malŝalti ĉi tiun funkcion permesas eksterajn komandojn sen fidkontrolo. Uzu nur en fidataj medioj.
+
+---
+
 ## Dezajna Filozofio
 
 > "Kiu mi estas?" — La sola demando, kiun ĉi tiu etendaĵo respondas.

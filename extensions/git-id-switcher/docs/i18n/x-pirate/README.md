@@ -443,6 +443,32 @@ If ye use VS Code Settings Sync and have different identities on different ships
 
 ---
 
+## Workspace Trust
+
+This here extension respects the [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) feature of VS Code, arr!
+
+In **untrusted workspaces**, some operations be restricted to protect yer ship:
+
+| Operation | Trusted Waters | Untrusted Waters |
+|-----------|----------------|------------------|
+| 🔀 Switch Git identity | ✅ Aye | ⚠️ Needs yer confirmation |
+| 🔑 Switch SSH key | ✅ Aye | ⚠️ Needs yer confirmation |
+| ⌨️ Run SSH command | ✅ Aye | ⚠️ Needs yer confirmation |
+| 📁 Modify Git config | ✅ Aye | ⚠️ Needs yer confirmation |
+| 👁️ View identity only | ✅ Aye | ✅ Aye |
+
+### Disablin' the Workspace Trust Check
+
+If ye want to disable the check, follow these steps, matey:
+
+1. Open VS Code Settings
+2. Search fer `gitIdSwitcher.security.requireWorkspaceTrust`
+3. Turn off the settin'
+
+> ⚠️ **Avast!**: Disablin' this lets external commands run without trust check. Only use in trusted waters, savvy?
+
+---
+
 ## Design Philosophy
 
 > "Who be I?" — That be the only question this here extension answers, savvy?
