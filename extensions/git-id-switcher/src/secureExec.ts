@@ -138,6 +138,75 @@ function isValidCommandName(cmd: string): boolean {
 }
 
 /**
+ * Log validation failure safely (handles logger unavailability)
+ * @internal
+ */
+function logValidationFailureSafe(
+  field: string,
+  message: string,
+  value: unknown
+): void {
+  try {
+    securityLogger.logValidationFailure(field, message, value);
+  } catch {
+    console.warn(`[Security] ${message}`);
+  }
+}
+
+/**
+ * Result of timeout entry validation
+ */
+type TimeoutValidationResult =
+  | { valid: true; timeout: number }
+  | { valid: false };
+
+/**
+ * Validate a single timeout entry from user configuration
+ * @internal
+ */
+function validateTimeoutEntry(
+  cmd: string,
+  timeout: number
+): TimeoutValidationResult {
+  // SECURITY: Validate command name
+  if (!isValidCommandName(cmd)) {
+    logValidationFailureSafe(
+      'commandTimeouts',
+      'Invalid command name in timeout config',
+      cmd
+    );
+    return { valid: false };
+  }
+
+  // SECURITY: Validate timeout value
+  if (
+    typeof timeout !== 'number' ||
+    !Number.isFinite(timeout) ||
+    timeout < TIMEOUT_LIMITS.MIN ||
+    timeout > TIMEOUT_LIMITS.MAX
+  ) {
+    logValidationFailureSafe(
+      'commandTimeouts',
+      `Invalid timeout value (must be ${TIMEOUT_LIMITS.MIN}-${TIMEOUT_LIMITS.MAX}ms)`,
+      { command: cmd, timeout }
+    );
+    return { valid: false };
+  }
+
+  // SECURITY: Ensure timeout is an integer
+  const timeoutInt = Math.floor(timeout);
+  if (timeoutInt !== timeout) {
+    logValidationFailureSafe(
+      'commandTimeouts',
+      'Timeout value is not an integer, rounding',
+      { command: cmd, original: timeout, rounded: timeoutInt }
+    );
+  }
+
+  return { valid: true, timeout: timeoutInt };
+}
+
+/**
  * Get user-configured command timeouts from VS Code settings
  *
  * SECURITY: Validates all user-provided values to prevent:
@@ -155,7 +224,6 @@ function getUserConfiguredTimeouts(): Record<string, number> {
   try {
     const workspace = getWorkspace();
     if (!workspace) {
-      // VS Code API not available (e.g., in tests)
       return {};
     }
     const config = workspace.getConfiguration('gitIdSwitcher');
@@ -164,93 +232,67 @@ function getUserConfiguredTimeouts(): Record<string, number> {
     // SECURITY: Limit number of entries to prevent DoS
     const entries = Object.entries(userTimeouts);
     if (entries.length > COMMAND_NAME_LIMITS.MAX_ENTRIES) {
-      // Log but don't throw - just use first MAX_ENTRIES
-      // SECURITY: Use securityLogger if available, otherwise console.warn
-      try {
-        securityLogger.logValidationFailure(
-          'commandTimeouts',
-          `Too many timeout entries (${entries.length}), limiting to ${COMMAND_NAME_LIMITS.MAX_ENTRIES}`,
-          entries.length
-        );
-      } catch {
-        // Fallback to console if logger not available
-        console.warn(
-          `[Security] Too many timeout entries (${entries.length}), limiting to ${COMMAND_NAME_LIMITS.MAX_ENTRIES}`
-        );
-      }
+      logValidationFailureSafe(
+        'commandTimeouts',
+        `Too many timeout entries (${entries.length}), limiting to ${COMMAND_NAME_LIMITS.MAX_ENTRIES}`,
+        entries.length
+      );
     }
 
     // Validate and sanitize user-provided values
     const sanitized: Record<string, number> = {};
     let count = 0;
+
     for (const [cmd, timeout] of entries) {
-      // DoS protection: limit number of entries processed
       if (count >= COMMAND_NAME_LIMITS.MAX_ENTRIES) {
         break;
       }
 
-      // SECURITY: Validate command name
-      if (!isValidCommandName(cmd)) {
-        // Skip invalid command names (log for debugging)
-        try {
-          securityLogger.logValidationFailure(
-            'commandTimeouts',
-            'Invalid command name in timeout config',
-            cmd
-          );
-        } catch {
-          console.warn(`[Security] Invalid command name in timeout config: ${cmd}`);
-        }
-        continue;
+      const result = validateTimeoutEntry(cmd, timeout);
+      if (result.valid) {
+        sanitized[cmd] = result.timeout;
+        count++;
       }
-
-      // SECURITY: Validate timeout value
-      if (
-        typeof timeout !== 'number' ||
-        !Number.isFinite(timeout) || // Rejects NaN and Infinity
-        timeout < TIMEOUT_LIMITS.MIN ||
-        timeout > TIMEOUT_LIMITS.MAX
-      ) {
-        // Skip invalid timeout values (log for debugging)
-        try {
-          securityLogger.logValidationFailure(
-            'commandTimeouts',
-            `Invalid timeout value (must be ${TIMEOUT_LIMITS.MIN}-${TIMEOUT_LIMITS.MAX}ms)`,
-            { command: cmd, timeout }
-          );
-        } catch {
-          console.warn(
-            `[Security] Invalid timeout value for command '${cmd}': ${timeout} (must be ${TIMEOUT_LIMITS.MIN}-${TIMEOUT_LIMITS.MAX}ms)`
-          );
-        }
-        continue;
-      }
-
-      // SECURITY: Ensure timeout is an integer (prevent precision attacks)
-      const timeoutInt = Math.floor(timeout);
-      if (timeoutInt !== timeout) {
-        // Round to nearest integer (log for debugging)
-        try {
-          securityLogger.logValidationFailure(
-            'commandTimeouts',
-            'Timeout value is not an integer, rounding',
-            { command: cmd, original: timeout, rounded: timeoutInt }
-          );
-        } catch {
-          console.warn(
-            `[Security] Timeout value for command '${cmd}' is not an integer, rounding: ${timeout} -> ${timeoutInt}`
-          );
-        }
-      }
-
-      sanitized[cmd] = timeoutInt;
-      count++;
     }
+
     return sanitized;
   } catch {
-    // VS Code API not available (e.g., in tests)
     return {};
   }
+}
+
+/**
+ * Validate and return override timeout if valid.
+ * @internal
+ * @returns validated timeout or null if invalid/not provided
+ */
+function validateOverrideTimeout(overrideTimeout?: number): number | null {
+  if (overrideTimeout === undefined || overrideTimeout <= 0) {
+    return null;
+  }
+
+  // SECURITY: Validate that timeout is finite (rejects NaN and Infinity)
+  if (!Number.isFinite(overrideTimeout)) {
+    logValidationFailureSafe(
+      'commandTimeout',
+      'Invalid override timeout (not finite)',
+      overrideTimeout
+    );
+    return null;
+  }
+
+  // SECURITY: Validate range
+  if (overrideTimeout < TIMEOUT_LIMITS.MIN || overrideTimeout > TIMEOUT_LIMITS.MAX) {
+    logValidationFailureSafe(
+      'commandTimeout',
+      `Override timeout out of range (must be ${TIMEOUT_LIMITS.MIN}-${TIMEOUT_LIMITS.MAX}ms)`,
+      overrideTimeout
+    );
+    return null;
+  }
+
+  // SECURITY: Ensure integer (prevent precision attacks)
+  return Math.floor(overrideTimeout);
 }
 
 /**
@@ -279,56 +321,14 @@ export function getCommandTimeout(
   overrideTimeout?: number
 ): number {
   // SECURITY: Validate override timeout if provided
-  if (overrideTimeout !== undefined) {
-    // Check for positive value
-    if (overrideTimeout > 0) {
-      // SECURITY: Validate that timeout is finite (rejects NaN and Infinity)
-      if (!Number.isFinite(overrideTimeout)) {
-        // Log validation failure (use securityLogger if available)
-        try {
-          securityLogger.logValidationFailure(
-            'commandTimeout',
-            'Invalid override timeout (not finite)',
-            overrideTimeout
-          );
-        } catch {
-          console.warn(
-            `[Security] Invalid override timeout (${overrideTimeout}), using default`
-          );
-        }
-        // Fall through to default behavior
-      } else {
-        // SECURITY: Validate range
-        if (
-          overrideTimeout >= TIMEOUT_LIMITS.MIN &&
-          overrideTimeout <= TIMEOUT_LIMITS.MAX
-        ) {
-          // SECURITY: Ensure integer (prevent precision attacks)
-          return Math.floor(overrideTimeout);
-        } else {
-          // Log validation failure (use securityLogger if available)
-          try {
-            securityLogger.logValidationFailure(
-              'commandTimeout',
-              `Override timeout out of range (must be ${TIMEOUT_LIMITS.MIN}-${TIMEOUT_LIMITS.MAX}ms)`,
-              overrideTimeout
-            );
-          } catch {
-            console.warn(
-              `[Security] Override timeout (${overrideTimeout}) out of range, using default`
-            );
-          }
-          // Fall through to default behavior
-        }
-      }
-    }
-    // If overrideTimeout is 0 or negative, fall through to default behavior
+  const validatedOverride = validateOverrideTimeout(overrideTimeout);
+  if (validatedOverride !== null) {
+    return validatedOverride;
   }
 
   // Check user-configured timeouts from VS Code settings
   const userTimeouts = getUserConfiguredTimeouts();
   if (userTimeouts[command] !== undefined) {
-    // User timeouts are already validated in getUserConfiguredTimeouts()
     return userTimeouts[command];
   }
 

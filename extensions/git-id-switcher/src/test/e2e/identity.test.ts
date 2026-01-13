@@ -47,6 +47,79 @@ interface OriginalConfig {
   submoduleDepth: number;
 }
 
+/**
+ * Helper to create a promise that detects configuration changes.
+ * Resolves to true if change is detected, false on timeout.
+ */
+function createConfigChangePromise(
+  configKey: string,
+  timeoutMs: number = 5000
+): { promise: Promise<boolean>; cleanup: () => void } {
+  let disposable: vscode.Disposable | undefined;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let resolved = false;
+
+  const promise = new Promise<boolean>((resolve) => {
+    disposable = vscode.workspace.onDidChangeConfiguration((e) => {
+      if (!resolved && e.affectsConfiguration(configKey)) {
+        resolved = true;
+        resolve(true);
+      }
+    });
+
+    timeoutId = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        resolve(false);
+      }
+    }, timeoutMs);
+  });
+
+  const cleanup = () => {
+    disposable?.dispose();
+    if (timeoutId) clearTimeout(timeoutId);
+  };
+
+  return { promise, cleanup };
+}
+
+/**
+ * Helper to wait for any configuration change and capture its effects.
+ */
+function createConfigChangeCapture(
+  timeoutMs: number = 5000
+): {
+  promise: Promise<vscode.ConfigurationChangeEvent | null>;
+  cleanup: () => void;
+} {
+  let disposable: vscode.Disposable | undefined;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let resolved = false;
+
+  const promise = new Promise<vscode.ConfigurationChangeEvent | null>((resolve) => {
+    disposable = vscode.workspace.onDidChangeConfiguration((e) => {
+      if (!resolved) {
+        resolved = true;
+        resolve(e);
+      }
+    });
+
+    timeoutId = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        resolve(null);
+      }
+    }, timeoutMs);
+  });
+
+  const cleanup = () => {
+    disposable?.dispose();
+    if (timeoutId) clearTimeout(timeoutId);
+  };
+
+  return { promise, cleanup };
+}
+
 describe('Identity E2E Test Suite', function () {
   // Set suite-level timeout for all tests
   this.timeout(10000);
@@ -287,68 +360,49 @@ describe('Identity E2E Test Suite', function () {
   describe('Configuration Change Detection', () => {
     it('should detect configuration changes via onDidChangeConfiguration', async () => {
       const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-
-      // Save current state
       const currentValue = config.get<boolean>('showNotifications', true);
 
-      // Create a promise that resolves when configuration changes
-      const changeDetected = new Promise<boolean>((resolve) => {
-        const disposable = vscode.workspace.onDidChangeConfiguration((e) => {
-          if (e.affectsConfiguration(`${CONFIG_SECTION}.showNotifications`)) {
-            disposable.dispose();
-            resolve(true);
-          }
-        });
+      // Use helper to create config change detection
+      const { promise: changeDetected, cleanup } = createConfigChangePromise(
+        `${CONFIG_SECTION}.showNotifications`
+      );
 
-        // Timeout after 5 seconds
-        setTimeout(() => {
-          disposable.dispose();
-          resolve(false);
-        }, 5000);
-      });
+      try {
+        // Trigger configuration change
+        await config.update('showNotifications', !currentValue, vscode.ConfigurationTarget.Global);
 
-      // Trigger configuration change
-      await config.update('showNotifications', !currentValue, vscode.ConfigurationTarget.Global);
-
-      // Wait for change detection
-      const detected = await changeDetected;
-      assert.strictEqual(detected, true, 'Configuration change should be detected');
-
-      // Restore
-      await config.update('showNotifications', currentValue, vscode.ConfigurationTarget.Global);
+        // Wait for change detection
+        const detected = await changeDetected;
+        assert.strictEqual(detected, true, 'Configuration change should be detected');
+      } finally {
+        cleanup();
+        // Restore
+        await config.update('showNotifications', currentValue, vscode.ConfigurationTarget.Global);
+      }
     });
 
     it('should correctly identify affected configuration sections', async () => {
       const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
       const currentValue = config.get<string>('defaultIdentity', '');
 
-      let affectsGitIdSwitcher = false;
-      let affectsOther = false;
+      // Use helper to capture config change event
+      const { promise: changePromise, cleanup } = createConfigChangeCapture();
 
-      const changePromise = new Promise<void>((resolve) => {
-        const disposable = vscode.workspace.onDidChangeConfiguration((e) => {
-          affectsGitIdSwitcher = e.affectsConfiguration(CONFIG_SECTION);
-          affectsOther = e.affectsConfiguration('someOtherExtension');
-          disposable.dispose();
-          resolve();
-        });
+      try {
+        // Trigger change
+        await config.update('defaultIdentity', 'test-value', vscode.ConfigurationTarget.Global);
+        const event = await changePromise;
 
-        // Timeout
-        setTimeout(() => {
-          disposable.dispose();
-          resolve();
-        }, 5000);
-      });
+        const affectsGitIdSwitcher = event?.affectsConfiguration(CONFIG_SECTION) ?? false;
+        const affectsOther = event?.affectsConfiguration('someOtherExtension') ?? false;
 
-      // Trigger change
-      await config.update('defaultIdentity', 'test-value', vscode.ConfigurationTarget.Global);
-      await changePromise;
-
-      assert.strictEqual(affectsGitIdSwitcher, true, 'Should affect gitIdSwitcher configuration');
-      assert.strictEqual(affectsOther, false, 'Should not affect other extensions');
-
-      // Restore
-      await config.update('defaultIdentity', currentValue, vscode.ConfigurationTarget.Global);
+        assert.strictEqual(affectsGitIdSwitcher, true, 'Should affect gitIdSwitcher configuration');
+        assert.strictEqual(affectsOther, false, 'Should not affect other extensions');
+      } finally {
+        cleanup();
+        // Restore
+        await config.update('defaultIdentity', currentValue, vscode.ConfigurationTarget.Global);
+      }
     });
   });
 

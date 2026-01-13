@@ -161,6 +161,88 @@ export function deactivate(): void {
 }
 
 /**
+ * Result type for identity detection operations
+ */
+type DetectionResult = { found: true; identity: Identity } | { found: false };
+
+/**
+ * Try to restore saved identity from workspace state.
+ * @internal
+ */
+function tryRestoreSavedIdentity(context: vscode.ExtensionContext): DetectionResult {
+  const savedIdentityId = context.workspaceState.get<string>('currentIdentityId');
+  if (!savedIdentityId) {
+    return { found: false };
+  }
+  const savedIdentity = getIdentityById(savedIdentityId);
+  if (savedIdentity) {
+    return { found: true, identity: savedIdentity };
+  }
+  return { found: false };
+}
+
+/**
+ * Try to detect identity from Git config.
+ * @internal
+ */
+async function tryDetectFromGit(token: vscode.CancellationToken): Promise<DetectionResult | 'cancelled'> {
+  if (!await isGitRepository(token)) {
+    return { found: false };
+  }
+
+  if (token.isCancellationRequested) {
+    console.debug('[Git ID Switcher] Initialization cancelled after isGitRepository');
+    return 'cancelled';
+  }
+
+  const detectedIdentity = await detectCurrentIdentity(token);
+
+  if (token.isCancellationRequested) {
+    console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentity');
+    return 'cancelled';
+  }
+
+  if (detectedIdentity) {
+    return { found: true, identity: detectedIdentity };
+  }
+  return { found: false };
+}
+
+/**
+ * Try to detect identity from SSH agent.
+ * @internal
+ */
+async function tryDetectFromSsh(token: vscode.CancellationToken): Promise<DetectionResult | 'cancelled'> {
+  const sshIdentity = await detectCurrentIdentityFromSsh(token);
+
+  if (token.isCancellationRequested) {
+    console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentityFromSsh');
+    return 'cancelled';
+  }
+
+  if (sshIdentity) {
+    return { found: true, identity: sshIdentity };
+  }
+  return { found: false };
+}
+
+/**
+ * Apply detected identity to state and status bar.
+ * @internal
+ */
+async function applyDetectedIdentity(
+  identity: Identity,
+  context: vscode.ExtensionContext,
+  saveToWorkspace: boolean
+): Promise<void> {
+  currentIdentity = identity;
+  statusBar.setIdentity(identity);
+  if (saveToWorkspace) {
+    await context.workspaceState.update('currentIdentityId', identity.id);
+  }
+}
+
+/**
  * Initialize state from saved settings and current Git config
  */
 async function initializeState(context: vscode.ExtensionContext): Promise<void> {
@@ -186,51 +268,30 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     // First-run welcome notification: detect example-only state
     const hasShownWelcome = context.globalState.get<boolean>('hasShownWelcome', false);
     if (!hasShownWelcome && identities.length === 1 && identities[0].id === 'example') {
-      // Show welcome notification (non-blocking)
       showWelcomeNotification();
       await context.globalState.update('hasShownWelcome', true);
     }
 
     // Try to restore saved identity
-    const savedIdentityId = context.workspaceState.get<string>('currentIdentityId');
-    if (savedIdentityId) {
-      const savedIdentity = getIdentityById(savedIdentityId);
-      if (savedIdentity) {
-        currentIdentity = savedIdentity;
-        statusBar.setIdentity(savedIdentity);
-        return;
-      }
-    }
-
-    // Try to detect from Git config (pass token to async functions)
-    if (await isGitRepository(token)) {
-      if (token.isCancellationRequested) {
-        console.debug('[Git ID Switcher] Initialization cancelled after isGitRepository');
-        return;
-      }
-      const detectedIdentity = await detectCurrentIdentity(token);
-      if (token.isCancellationRequested) {
-        console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentity');
-        return;
-      }
-      if (detectedIdentity) {
-        currentIdentity = detectedIdentity;
-        statusBar.setIdentity(detectedIdentity);
-        await context.workspaceState.update('currentIdentityId', detectedIdentity.id);
-        return;
-      }
-    }
-
-    // Try to detect from SSH agent (pass token to async function)
-    const sshIdentity = await detectCurrentIdentityFromSsh(token);
-    if (token.isCancellationRequested) {
-      console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentityFromSsh');
+    const savedResult = tryRestoreSavedIdentity(context);
+    if (savedResult.found) {
+      await applyDetectedIdentity(savedResult.identity, context, false);
       return;
     }
-    if (sshIdentity) {
-      currentIdentity = sshIdentity;
-      statusBar.setIdentity(sshIdentity);
-      await context.workspaceState.update('currentIdentityId', sshIdentity.id);
+
+    // Try to detect from Git config
+    const gitResult = await tryDetectFromGit(token);
+    if (gitResult === 'cancelled') return;
+    if (gitResult.found) {
+      await applyDetectedIdentity(gitResult.identity, context, true);
+      return;
+    }
+
+    // Try to detect from SSH agent
+    const sshResult = await tryDetectFromSsh(token);
+    if (sshResult === 'cancelled') return;
+    if (sshResult.found) {
+      await applyDetectedIdentity(sshResult.identity, context, true);
       return;
     }
 

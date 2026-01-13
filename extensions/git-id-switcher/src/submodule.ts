@@ -51,6 +51,64 @@ export interface Submodule {
 const SUBMODULE_STATUS_REGEX = /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^\x00-\x1f\x7f)]+\))?$/;
 
 /**
+ * Parse and validate a single submodule entry from git status output.
+ * @internal
+ */
+function parseSubmoduleEntry(
+  line: string,
+  workspacePath: string
+): Submodule | null {
+  const match = line.match(SUBMODULE_STATUS_REGEX);
+
+  if (!match) {
+    if (line.trim()) {
+      securityLogger.logValidationFailure(
+        'submoduleStatusLine',
+        'Unexpected git submodule status line format',
+        undefined
+      );
+    }
+    return null;
+  }
+
+  const [, status, commitHash, submodulePath] = match;
+  const initialized = status !== '-';
+
+  // SECURITY: Defensive check for commit hash length
+  if (commitHash.length !== 40) {
+    securityLogger.logValidationFailure(
+      'submoduleCommitHash',
+      `Invalid commit hash length: ${commitHash.length} (expected 40)`,
+      commitHash
+    );
+    return null;
+  }
+
+  // Skip uninitialized submodules
+  if (!initialized) {
+    return null;
+  }
+
+  // SECURITY: Validate and normalize submodule path
+  const pathResult = validateSubmodulePath(submodulePath, workspacePath);
+  if (!pathResult.valid || !pathResult.normalizedPath) {
+    securityLogger.logValidationFailure(
+      'submodulePath',
+      pathResult.reason ?? 'Unknown validation failure',
+      submodulePath
+    );
+    return null;
+  }
+
+  return {
+    path: submodulePath,
+    absolutePath: pathResult.normalizedPath,
+    commitHash,
+    initialized,
+  };
+}
+
+/**
  * List all submodules in the workspace
  *
  * Uses `git submodule status` to get submodule information.
@@ -58,10 +116,9 @@ const SUBMODULE_STATUS_REGEX = /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:
  */
 export async function listSubmodules(workspacePath: string): Promise<Submodule[]> {
   // SECURITY: Validate workspace path before use
-  // This prevents path traversal if workspacePath itself is malicious
   const workspaceValidation = normalizeAndValidatePath(workspacePath, {
-    resolveSymlinks: false, // Don't resolve workspace symlinks (performance)
-    requireExists: true, // Workspace must exist
+    resolveSymlinks: false,
+    requireExists: true,
   });
 
   if (!workspaceValidation.valid || !workspaceValidation.normalizedPath) {
@@ -76,7 +133,6 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
   const validatedWorkspacePath = workspaceValidation.normalizedPath;
 
   try {
-    // SECURITY: Using gitExec with array args
     const stdout = await gitExec(['submodule', 'status'], validatedWorkspacePath);
 
     if (!stdout.trim()) {
@@ -87,69 +143,23 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
     const submodules: Submodule[] = [];
 
     for (const line of lines) {
-      // SECURITY: Use strict regex pattern for parsing
-      const match = line.match(SUBMODULE_STATUS_REGEX);
-
-      if (match) {
-        const [, status, commitHash, submodulePath] = match;
-        const initialized = status !== '-';
-
-        // SECURITY: Double-check commit hash length (regex already validates, but defensive)
-        // This prevents potential regex bypass or malformed input
-        if (commitHash.length !== 40) {
-          securityLogger.logValidationFailure(
-            'submoduleCommitHash',
-            `Invalid commit hash length: ${commitHash.length} (expected 40)`,
-            commitHash
-          );
-          continue;
-        }
-
-        if (initialized) {
-          // SECURITY: Validate and normalize submodule path to prevent path traversal
-          // This also checks for symlink escapes
-          // Use validated workspace path (not original) for consistency
-          const pathResult = validateSubmodulePath(submodulePath, validatedWorkspacePath);
-          if (pathResult.valid && pathResult.normalizedPath) {
-            submodules.push({
-              path: submodulePath,
-              absolutePath: pathResult.normalizedPath,
-              commitHash,
-              initialized,
-            });
-          } else {
-            // Log security violation through security logger
-            securityLogger.logValidationFailure(
-              'submodulePath',
-              pathResult.reason ?? 'Unknown validation failure',
-              submodulePath
-            );
-          }
-        }
-      } else if (line.trim()) {
-        // Line didn't match expected format - potential malformed input
-        securityLogger.logValidationFailure(
-          'submoduleStatusLine',
-          'Unexpected git submodule status line format',
-          undefined
-        );
+      const submodule = parseSubmoduleEntry(line, validatedWorkspacePath);
+      if (submodule) {
+        submodules.push(submodule);
       }
     }
 
     return submodules;
   } catch (error) {
-    // SECURITY: Log unexpected errors for security auditing
-    // Don't expose full error details to prevent information leakage
+    // SECURITY: Log unexpected errors (except ENOENT for non-git directories)
     const errorCode = (error as NodeJS.ErrnoException).code;
     if (errorCode !== 'ENOENT' && errorCode !== undefined) {
-      // Only log non-ENOENT errors (ENOENT is expected for non-git directories)
       securityLogger.logValidationFailure(
         'submoduleList',
         `Failed to list submodules: ${errorCode}`,
         undefined
       );
     }
-    // Not a git repository or no submodules - return empty array
     return [];
   }
 }
