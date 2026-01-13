@@ -120,6 +120,123 @@ export interface SchemaError {
 }
 
 /**
+ * Validate string length constraints.
+ * @internal
+ */
+function validateStringLength(
+  field: string,
+  value: string,
+  schema: PropertySchema,
+  errors: SchemaError[]
+): void {
+  if (schema.minLength !== undefined && value.length < schema.minLength) {
+    errors.push({
+      field,
+      message: `Must be at least ${schema.minLength} characters`,
+      value,
+    });
+  }
+  if (schema.maxLength !== undefined && value.length > schema.maxLength) {
+    errors.push({
+      field,
+      message: `Exceeds maximum length of ${schema.maxLength}`,
+      value,
+    });
+  }
+}
+
+/**
+ * Validate string pattern constraint.
+ * @internal
+ */
+function validateStringPattern(
+  field: string,
+  value: string,
+  pattern: string,
+  errors: SchemaError[]
+): void {
+  try {
+    const regex = new RegExp(pattern);
+    if (!regex.test(value)) {
+      errors.push({
+        field,
+        message: `Does not match required pattern`,
+        value,
+      });
+    }
+  /* c8 ignore start: defensive - schema patterns are hardcoded valid */
+  } catch {
+    // SECURITY: Invalid regex pattern in schema is a programming error
+    errors.push({
+      field,
+      message: 'Invalid validation pattern (internal error)',
+      value: undefined,
+    });
+  }
+  /* c8 ignore stop */
+}
+
+/**
+ * Validate string format constraint.
+ * @internal
+ */
+function validateStringFormat(
+  field: string,
+  value: string,
+  format: PropertySchema['format'],
+  errors: SchemaError[]
+): void {
+  if (format === 'email' && !isValidEmail(value)) {
+    errors.push({ field, message: 'Invalid email format', value });
+  }
+  if (format === 'hex' && !isValidHex(value)) {
+    errors.push({ field, message: 'Must be hexadecimal', value });
+  }
+  if (format === 'single-grapheme' && !isSingleGrapheme(value)) {
+    errors.push({ field, message: 'Must be a single visible character (emoji or letter)', value });
+  }
+}
+
+/**
+ * Validate string-specific constraints.
+ * @internal
+ */
+function validateStringValue(
+  field: string,
+  value: string,
+  schema: PropertySchema,
+  errors: SchemaError[]
+): void {
+  validateStringLength(field, value, schema, errors);
+  if (schema.pattern) {
+    validateStringPattern(field, value, schema.pattern, errors);
+  }
+  if (schema.format) {
+    validateStringFormat(field, value, schema.format, errors);
+  }
+}
+
+/**
+ * Validate number-specific constraints.
+ * @internal
+ */
+/* c8 ignore start: no number fields in current schema - reserved for future */
+function validateNumberValue(
+  field: string,
+  value: number,
+  schema: PropertySchema,
+  errors: SchemaError[]
+): void {
+  if (schema.minimum !== undefined && value < schema.minimum) {
+    errors.push({ field, message: `Must be at least ${schema.minimum}`, value });
+  }
+  if (schema.maximum !== undefined && value > schema.maximum) {
+    errors.push({ field, message: `Must be at most ${schema.maximum}`, value });
+  }
+}
+/* c8 ignore stop */
+
+/**
  * Validate a value against a property schema
  */
 function validateProperty(
@@ -128,9 +245,7 @@ function validateProperty(
   schema: PropertySchema,
   errors: SchemaError[]
 ): void {
-  // Type check
   // Empty string is treated as "not set" for optional fields.
-  // This allows default config with "" values to pass validation without errors.
   // SECURITY: Required fields (id, name, email) are still protected via else-if below.
   if (value !== undefined && value !== null && value !== '') {
     if (typeof value !== schema.type) {
@@ -142,98 +257,17 @@ function validateProperty(
       return;
     }
 
-    // String-specific validations
     if (schema.type === 'string' && typeof value === 'string') {
-      // Length checks
-      if (schema.minLength !== undefined && value.length < schema.minLength) {
-        errors.push({
-          field,
-          message: `Must be at least ${schema.minLength} characters`,
-          value,
-        });
-      }
-
-      if (schema.maxLength !== undefined && value.length > schema.maxLength) {
-        errors.push({
-          field,
-          message: `Exceeds maximum length of ${schema.maxLength}`,
-          value,
-        });
-      }
-
-      // Pattern check
-      // SECURITY: Compile regex once per validation to prevent ReDoS
-      // All patterns in IDENTITY_SCHEMA are simple and safe (no nested quantifiers)
-      if (schema.pattern) {
-        try {
-          const regex = new RegExp(schema.pattern);
-          if (!regex.test(value)) {
-            errors.push({
-              field,
-              message: `Does not match required pattern`,
-              value,
-            });
-          }
-        } catch (error) {
-          // SECURITY: Invalid regex pattern in schema is a programming error
-          // Log but don't expose to user
-          errors.push({
-            field,
-            message: 'Invalid validation pattern (internal error)',
-            value: undefined, // Don't log potentially sensitive value on schema error
-          });
-        }
-      }
-
-      // Format checks
-      if (schema.format === 'email' && !isValidEmail(value)) {
-        errors.push({
-          field,
-          message: 'Invalid email format',
-          value,
-        });
-      }
-
-      if (schema.format === 'hex' && !isValidHex(value)) {
-        errors.push({
-          field,
-          message: 'Must be hexadecimal',
-          value,
-        });
-      }
-
-      if (schema.format === 'single-grapheme' && !isSingleGrapheme(value)) {
-        errors.push({
-          field,
-          message: 'Must be a single visible character (emoji or letter)',
-          value,
-        });
-      }
+      validateStringValue(field, value, schema, errors);
     }
 
-    // Number-specific validations
+    /* c8 ignore start: no number fields in current schema - reserved for future */
     if (schema.type === 'number' && typeof value === 'number') {
-      if (schema.minimum !== undefined && value < schema.minimum) {
-        errors.push({
-          field,
-          message: `Must be at least ${schema.minimum}`,
-          value,
-        });
-      }
-
-      if (schema.maximum !== undefined && value > schema.maximum) {
-        errors.push({
-          field,
-          message: `Must be at most ${schema.maximum}`,
-          value,
-        });
-      }
+      validateNumberValue(field, value, schema, errors);
     }
+    /* c8 ignore stop */
   } else if (schema.required) {
-    errors.push({
-      field,
-      message: 'Required field is missing',
-    });
+    errors.push({ field, message: 'Required field is missing' });
   }
 }
 
