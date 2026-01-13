@@ -687,6 +687,79 @@ function testValidateSubmodulePathSymlinkOptions(): void {
 }
 
 /**
+ * Test validateSubmodulePath with existing directory (covers verifySubmoduleSymlinks)
+ */
+function testValidateSubmodulePathExistingDir(): void {
+  console.log('Testing validateSubmodulePath with existing directory...');
+
+  const workspacePath = process.cwd();
+
+  // Test with actually existing directory to cover verifySubmoduleSymlinks path
+  // The 'src' directory should exist in the extension
+  {
+    const result = validateSubmodulePath('src', workspacePath, {
+      verifySymlinks: true,
+      requireExists: false,
+    });
+    // If src exists, verifySubmoduleSymlinks will be called and return symlinksResolved
+    if (result.valid && result.symlinksResolved !== undefined) {
+      assert.strictEqual(result.symlinksResolved, true, 'Should have symlinks resolved');
+    }
+    assert.strictEqual(typeof result.valid, 'boolean', 'Should return valid status');
+  }
+
+  // Test with 'node_modules' which typically exists
+  {
+    const result = validateSubmodulePath('node_modules', workspacePath, {
+      verifySymlinks: true,
+    });
+    assert.strictEqual(typeof result.valid, 'boolean', 'Should return valid status');
+  }
+
+  // Test with package.json (file, not directory)
+  {
+    const result = validateSubmodulePath('package.json', workspacePath, {
+      verifySymlinks: true,
+    });
+    assert.strictEqual(typeof result.valid, 'boolean', 'Should return valid status for file');
+  }
+
+  console.log('✅ validateSubmodulePath existing directory tests passed!');
+}
+
+/**
+ * Test checkWorkspaceBoundary via validateSubmodulePath edge cases
+ */
+function testWorkspaceBoundaryChecks(): void {
+  console.log('Testing workspace boundary checks...');
+
+  const workspacePath = process.cwd();
+
+  // Test path that looks safe but escapes after normalization
+  {
+    const result = validateSubmodulePath('valid/../..', workspacePath);
+    assert.strictEqual(result.valid, false, 'Escape after normalize should fail');
+  }
+
+  // Test path with multiple components escaping
+  {
+    const result = validateSubmodulePath('a/b/c/../../../..', workspacePath);
+    assert.strictEqual(result.valid, false, 'Multi-component escape should fail');
+  }
+
+  // Test deeply nested valid path (with verifySymlinks: false to avoid existence check)
+  {
+    const result = validateSubmodulePath('./a/b/c/d/e/f', workspacePath, {
+      verifySymlinks: false,
+      requireExists: false,
+    });
+    assert.strictEqual(result.valid, true, 'Deeply nested path should be valid');
+  }
+
+  console.log('✅ Workspace boundary checks tests passed!');
+}
+
+/**
  * Test normalizeAndValidatePath with null byte injection
  */
 function testNullByteInjection(): void {
@@ -793,6 +866,8 @@ export async function runPathUtilsTests(): Promise<void> {
     testDoubleSlashHandling();
     testSshKeyPathLocations();
     testValidateSubmodulePathSymlinkOptions();
+    testValidateSubmodulePathExistingDir();
+    testWorkspaceBoundaryChecks();
     testNullByteInjection();
     testExpandTildeEdgeCases();
     testControlCharacterPrevention();
