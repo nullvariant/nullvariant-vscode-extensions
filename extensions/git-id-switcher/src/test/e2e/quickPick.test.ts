@@ -47,6 +47,20 @@ import { Identity, getIdentityLabel, getIdentityDetail } from '../../identity';
 const EXTENSION_ID = 'nullvariant.git-id-switcher';
 
 /**
+ * Race a promise against a timeout, returning undefined if timeout wins.
+ * This helper reduces nesting depth in async tests.
+ */
+function raceWithTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = 500
+): Promise<T | undefined> {
+  const timeoutPromise = new Promise<undefined>((resolve) => {
+    setTimeout(() => resolve(undefined), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]);
+}
+
+/**
  * Test identity fixtures
  */
 const TEST_IDENTITIES = {
@@ -322,14 +336,9 @@ describe('QuickPick E2E Test Suite', function () {
 
       // showIdentityQuickPick should return undefined when no identities
       // Note: This will show a warning message (cannot verify UI, but behavior is correct)
-      const resultPromise = showIdentityQuickPick();
-
       // The function returns a Promise that resolves to undefined when no identities
       // Since it shows a warning and doesn't create QuickPick, it resolves immediately
-      const result = await Promise.race([
-        resultPromise,
-        new Promise<undefined>(resolve => setTimeout(() => resolve(undefined), 500)),
-      ]);
+      const result = await raceWithTimeout(showIdentityQuickPick());
 
       assert.strictEqual(result, undefined, 'Should return undefined when no identities');
     });
@@ -339,12 +348,7 @@ describe('QuickPick E2E Test Suite', function () {
       await config.update('identities', [], vscode.ConfigurationTarget.Global);
 
       // Even with a current identity, should return undefined if no identities configured
-      const resultPromise = showIdentityQuickPick(TEST_IDENTITIES.basic);
-
-      const result = await Promise.race([
-        resultPromise,
-        new Promise<undefined>(resolve => setTimeout(() => resolve(undefined), 500)),
-      ]);
+      const result = await raceWithTimeout(showIdentityQuickPick(TEST_IDENTITIES.basic));
 
       assert.strictEqual(result, undefined, 'Should return undefined even with currentIdentity param');
     });

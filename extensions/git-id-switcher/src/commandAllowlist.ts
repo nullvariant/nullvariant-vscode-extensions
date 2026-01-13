@@ -219,6 +219,94 @@ function validateFlagArgument(
 }
 
 /**
+ * Validate path safety for an argument.
+ * @internal
+ */
+function validatePathSafety(arg: string): AllowlistCheckResult | 'safe' {
+  const looksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
+  if (looksLikePathForSecurity) {
+    const pathResult = isSecurePath(arg);
+    if (!pathResult.valid) {
+      return { allowed: false, reason: `Path argument rejected: ${pathResult.reason}` };
+    }
+  }
+  return 'safe';
+}
+
+/**
+ * Result of single argument validation
+ */
+type ArgValidationResult = AllowlistCheckResult | 'continue';
+
+/**
+ * Validate a single argument against allowlist rules.
+ * @internal
+ */
+function validateSingleArgument(
+  arg: string,
+  index: number,
+  argsToValidate: string[],
+  command: string,
+  config: {
+    allowedArgs: readonly string[];
+    allowAnyPositional: boolean;
+    allowPathPositionals: boolean;
+    allowedOptionsWithValues: readonly string[];
+  }
+): ArgValidationResult {
+  const { allowedArgs, allowAnyPositional, allowPathPositionals, allowedOptionsWithValues } = config;
+
+  // Length check (path arguments are checked separately)
+  if (!isPathArgument(arg) && arg.length > MAX_ARG_LENGTH) {
+    return { allowed: false, reason: 'Argument exceeds maximum length' };
+  }
+
+  // Path Safety Check
+  const pathCheck = validatePathSafety(arg);
+  if (pathCheck !== 'safe') {
+    return pathCheck;
+  }
+  const looksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
+
+  // 1. Check if this is a value for a previous option
+  const valueCheck = isValueForPreviousOption(arg, index, argsToValidate, allowedOptionsWithValues);
+  if (valueCheck === 'is_value') {
+    return 'continue';
+  }
+  if (typeof valueCheck === 'object') {
+    return valueCheck;
+  }
+
+  // 2. Exact Match Allowlist
+  if (allowedArgs.includes(arg)) {
+    return 'continue';
+  }
+
+  // 3. Strict Flag Validation
+  if (arg.startsWith('-')) {
+    const flagCheck = validateFlagArgument(arg, command, allowedArgs);
+    /* c8 ignore start: combined patterns also in allowedArgs - matches earlier */
+    if (flagCheck === 'allowed') {
+      return 'continue';
+    }
+    /* c8 ignore stop */
+    return flagCheck;
+  }
+
+  // 4. Fallback: arbitrary positionals allowed?
+  if (allowAnyPositional) {
+    return 'continue';
+  }
+
+  // 5. Path-only positionals allowed?
+  if (allowPathPositionals && looksLikePathForSecurity) {
+    return 'continue';
+  }
+
+  return { allowed: false, reason: `Argument '${arg}' is not allowed for this command` };
+}
+
+/**
  * Check if a command is in the allowlist
  */
 export function isCommandAllowed(command: string, args: string[]): AllowlistCheckResult {
@@ -249,65 +337,29 @@ export function isCommandAllowed(command: string, args: string[]): AllowlistChec
   }
   const { config: currentConfig, argsToValidate } = subResult;
 
-  // Extract config options
-  const allowedArgs = currentConfig.allowedArgs || [];
-  const allowAnyPositional = currentConfig.allowAnyPositional || false;
-  const allowPathPositionals = currentConfig.allowPathPositionals || false;
-  const allowedOptionsWithValues = currentConfig.allowedOptionsWithValues || [];
+  // Extract config options for argument validation
+  const validationConfig = {
+    allowedArgs: currentConfig.allowedArgs || [],
+    allowAnyPositional: currentConfig.allowAnyPositional || false,
+    allowPathPositionals: currentConfig.allowPathPositionals || false,
+    allowedOptionsWithValues: currentConfig.allowedOptionsWithValues || [],
+  };
 
+  // Validate each argument
   for (let i = 0; i < argsToValidate.length; i++) {
-    const arg = argsToValidate[i];
+    const result = validateSingleArgument(
+      argsToValidate[i],
+      i,
+      argsToValidate,
+      command,
+      validationConfig
+    );
 
-    // Length check
-    if (!isPathArgument(arg) && arg.length > MAX_ARG_LENGTH) {
-      return { allowed: false, reason: 'Argument exceeds maximum length' };
-    }
-
-    // Path Safety Check
-    const looksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
-    if (looksLikePathForSecurity) {
-      const pathResult = isSecurePath(arg);
-      if (!pathResult.valid) {
-        return { allowed: false, reason: `Path argument rejected: ${pathResult.reason}` };
-      }
-    }
-
-    // 1. Check if this is a value for a previous option
-    const valueCheck = isValueForPreviousOption(arg, i, argsToValidate, allowedOptionsWithValues);
-    if (valueCheck === 'is_value') {
+    if (result === 'continue') {
       continue;
     }
-    if (typeof valueCheck === 'object') {
-      return valueCheck;
-    }
-
-    // 2. Exact Match Allowlist
-    if (allowedArgs.includes(arg)) {
-      continue;
-    }
-
-    // 3. Strict Flag Validation
-    if (arg.startsWith('-')) {
-      const flagCheck = validateFlagArgument(arg, command, allowedArgs);
-      /* c8 ignore start: combined patterns also in allowedArgs - matches earlier */
-      if (flagCheck === 'allowed') {
-        continue;
-      }
-      /* c8 ignore stop */
-      return flagCheck;
-    }
-
-    // 4. Fallback: arbitrary positionals allowed?
-    if (allowAnyPositional) {
-      continue;
-    }
-
-    // 5. Path-only positionals allowed?
-    if (allowPathPositionals && looksLikePathForSecurity) {
-      continue;
-    }
-
-    return { allowed: false, reason: `Argument '${arg}' is not allowed for this command` };
+    // Result is AllowlistCheckResult (not allowed)
+    return result;
   }
 
   return { allowed: true };

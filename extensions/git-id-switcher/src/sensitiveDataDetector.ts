@@ -81,6 +81,75 @@ export function looksLikeSensitiveData(value: string): boolean {
 }
 
 /**
+ * Check if a string looks like a file path.
+ * @internal
+ */
+function looksLikePath(value: string): boolean {
+  return (
+    value.startsWith('/') ||
+    value.startsWith('~') ||
+    /^[A-Za-z]:/.test(value) ||
+    /^\\\\/.test(value)
+  );
+}
+
+/**
+ * Sanitize a string value for safe logging.
+ * @internal
+ */
+function sanitizeStringValue(value: string): string {
+  // Empty strings are safe
+  if (value.length === 0) {
+    return value;
+  }
+
+  // Sanitize paths first (Windows UNC paths, drive letters, Unix paths)
+  if (looksLikePath(value)) {
+    return sanitizePath(value);
+  }
+
+  // Check for sensitive-looking data
+  if (looksLikeSensitiveData(value)) {
+    return '[REDACTED:SENSITIVE_VALUE]';
+  }
+
+  // Truncate long strings for security
+  if (value.length > MAX_LOG_STRING_LENGTH) {
+    return value.slice(0, MAX_LOG_STRING_LENGTH) + '...[truncated]';
+  }
+
+  return value;
+}
+
+/**
+ * Sanitize an object value for safe logging.
+ * @internal
+ */
+function sanitizeObjectValue(value: object): string {
+  // For arrays, show length only (contents might be sensitive)
+  if (Array.isArray(value)) {
+    return `[Array(${value.length})]`;
+  }
+
+  // For objects, sanitize keys and show key count
+  const keys = Object.keys(value);
+  const sanitizedKeys = keys.map(key =>
+    looksLikeSensitiveData(key) ? '[REDACTED_KEY]' : key
+  );
+  const safeKeys = sanitizedKeys.filter(k => k !== '[REDACTED_KEY]');
+
+  // All keys are safe, show them (limited to 5 for readability)
+  if (safeKeys.length === keys.length) {
+    const keyList = safeKeys.slice(0, 5).join(', ');
+    const suffix = safeKeys.length > 5 ? '...' : '';
+    return `[Object(${keys.length} keys: ${keyList}${suffix})]`;
+  }
+
+  // Some keys are sensitive, only show count
+  return `[Object(${keys.length} keys)]`;
+}
+
+/**
  * Sanitize a value for safe logging
  * Removes or masks potentially sensitive information.
  *
@@ -99,36 +168,7 @@ export function sanitizeValue(value: unknown): unknown {
   }
 
   if (typeof value === 'string') {
-    // Empty strings are safe
-    if (value.length === 0) {
-      return value;
-    }
-
-    // Sanitize paths first
-    // SECURITY: Check for Windows UNC paths (\\server\share) and drive letters
-    if (
-      value.startsWith('/') ||
-      value.startsWith('~') ||
-      /^[A-Za-z]:/.test(value) ||
-      /^\\\\/.test(value)
-    ) {
-      return sanitizePath(value);
-    }
-
-    // Check for sensitive-looking data
-    if (looksLikeSensitiveData(value)) {
-      return '[REDACTED:SENSITIVE_VALUE]';
-    }
-
-    // Truncate long strings for security
-    if (value.length > MAX_LOG_STRING_LENGTH) {
-      return (
-        value.slice(0, MAX_LOG_STRING_LENGTH) +
-        '...[truncated]'
-      );
-    }
-
-    return value;
+    return sanitizeStringValue(value);
   }
 
   if (typeof value === 'number' || typeof value === 'boolean') {
@@ -136,27 +176,7 @@ export function sanitizeValue(value: unknown): unknown {
   }
 
   if (typeof value === 'object') {
-    // For arrays, show length only (contents might be sensitive)
-    if (Array.isArray(value)) {
-      return `[Array(${value.length})]`;
-    }
-    // For objects, sanitize keys and show key count
-    // SECURITY: Sanitize object keys to prevent information leakage
-    // SECURITY: Do not recursively sanitize nested objects to prevent
-    // infinite recursion and performance issues. Nested objects are abstracted.
-    const keys = Object.keys(value);
-    const sanitizedKeys = keys.map(key =>
-      looksLikeSensitiveData(key) ? '[REDACTED_KEY]' : key
-    );
-    // Show sanitized key names if they're safe, otherwise just count
-    const safeKeys = sanitizedKeys.filter(k => k !== '[REDACTED_KEY]');
-    if (safeKeys.length === keys.length) {
-      // All keys are safe, show them (limited to 5 for readability)
-      return `[Object(${keys.length} keys: ${safeKeys.slice(0, 5).join(', ')}${safeKeys.length > 5 ? '...' : ''})]`;
-    } else {
-      // Some keys are sensitive, only show count
-      return `[Object(${keys.length} keys)]`;
-    }
+    return sanitizeObjectValue(value);
   }
 
   // For functions and symbols, just show type

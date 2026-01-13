@@ -76,6 +76,51 @@ export function expandTilde(inputPath: string): string {
 }
 
 /**
+ * Validate path length against PATH_MAX.
+ * @internal
+ */
+function validatePathLength(
+  pathToCheck: string,
+  inputPath: string,
+  context: string
+): NormalizedPathResult | null {
+  const byteLength = Buffer.byteLength(pathToCheck, 'utf8');
+  if (byteLength > PATH_MAX) {
+    return {
+      valid: false,
+      originalPath: inputPath,
+      reason: `${context} exceeds maximum length (${byteLength} > ${PATH_MAX} bytes)`,
+    };
+  }
+  return null;
+}
+
+/**
+ * Resolve symlinks securely and re-validate the result.
+ * @internal
+ * @returns Object with resolvedPath on success, or invalidResult if validation fails
+ */
+function resolveAndValidateSymlinks(
+  normalizedPath: string,
+  inputPath: string
+): { resolvedPath: string; invalidResult?: undefined } | { resolvedPath?: undefined; invalidResult: NormalizedPathResult } {
+  const symlinkResult = resolveSymlinksSecurely(normalizedPath);
+  if (!symlinkResult.valid) {
+    return { invalidResult: { valid: false, originalPath: inputPath, reason: symlinkResult.reason } };
+  }
+
+  const resolvedPath = symlinkResult.resolvedPath ?? normalizedPath;
+
+  // Re-validate after symlink resolution
+  const symlinkCheck = isSecurePathAfterNormalization(resolvedPath, inputPath);
+  if (!symlinkCheck.valid) {
+    return { invalidResult: { valid: false, originalPath: inputPath, reason: `Post-symlink check failed: ${symlinkCheck.reason}` } };
+  }
+
+  return { resolvedPath };
+}
+
+/**
  * Normalize and validate a path for security
  *
  * This function performs:
@@ -98,144 +143,72 @@ export function normalizeAndValidatePath(
   inputPath: string,
   options: NormalizePathOptions = {}
 ): NormalizedPathResult {
-  const {
-    resolveSymlinks = false,
-    requireExists = false,
-    baseDir = process.cwd(),
-  } = options;
+  const { resolveSymlinks = false, requireExists = false, baseDir = process.cwd() } = options;
 
   // Step 1: Basic input validation
   if (!inputPath || inputPath.length === 0) {
-    return {
-      valid: false,
-      originalPath: inputPath,
-      reason: 'Path is empty or undefined',
-    };
+    return { valid: false, originalPath: inputPath, reason: 'Path is empty or undefined' };
   }
 
   // Step 2: Check PATH_MAX before any processing
-  const inputByteLength = Buffer.byteLength(inputPath, 'utf8');
-  if (inputByteLength > PATH_MAX) {
-    return {
-      valid: false,
-      originalPath: inputPath,
-      reason: `Path exceeds maximum length (${inputByteLength} > ${PATH_MAX} bytes)`,
-    };
-  }
+  const inputLengthCheck = validatePathLength(inputPath, inputPath, 'Path');
+  if (inputLengthCheck) return inputLengthCheck;
 
   // Step 3: Pre-normalization security check on raw input
   const preCheck = isSecurePath(inputPath);
   if (!preCheck.valid) {
-    return {
-      valid: false,
-      originalPath: inputPath,
-      reason: `Pre-normalization check failed: ${preCheck.reason}`,
-    };
+    return { valid: false, originalPath: inputPath, reason: `Pre-normalization check failed: ${preCheck.reason}` };
   }
 
-  // Step 4: Expand tilde
+  // Step 4: Expand tilde and resolve to absolute path
   const expandedPath = expandTilde(inputPath);
+  const resolvedAbsolutePath = path.isAbsolute(expandedPath)
+    ? path.resolve(expandedPath)
+    : path.resolve(baseDir, expandedPath);
 
-  // Step 5: Resolve to absolute path if relative
-  // SECURITY: Always resolve relative paths to absolute paths for consistency
-  // This prevents path traversal attacks and ensures consistent normalization
-  let resolvedAbsolutePath: string;
-  if (path.isAbsolute(expandedPath)) {
-    resolvedAbsolutePath = path.resolve(expandedPath);
-  } else {
-    resolvedAbsolutePath = path.resolve(baseDir, expandedPath);
-  }
-
-  // Step 6: Normalize the path (resolve ., .., //)
-  // path.normalize() removes redundant separators and resolves . and ..
-  // path.resolve() already does this, but we normalize again for consistency
+  // Step 5: Normalize the path (resolve ., .., //)
   let normalizedPath = path.normalize(resolvedAbsolutePath);
 
-  // Step 6.5: Verify normalization consistency
-  // Double-check that path.resolve() and path.normalize() produce consistent results
-  // This is a defensive check to catch any edge cases
-  const doubleCheckResolved = path.resolve(normalizedPath);
-  const doubleCheckNormalized = path.normalize(doubleCheckResolved);
+  // Step 5.5: Verify normalization consistency (defensive check)
+  const doubleCheckNormalized = path.normalize(path.resolve(normalizedPath));
   if (normalizedPath !== doubleCheckNormalized) {
-    // If they differ, use the double-checked version (more strict)
-    // This should rarely happen, but defensive programming
     normalizedPath = doubleCheckNormalized;
   }
 
-  // Step 7: Post-normalization security check
-  // This catches any traversal that survived normalization
+  // Step 6: Post-normalization security check
   const postCheck = isSecurePathAfterNormalization(normalizedPath, inputPath);
   if (!postCheck.valid) {
-    return {
-      valid: false,
-      originalPath: inputPath,
-      reason: `Post-normalization check failed: ${postCheck.reason}`,
-    };
+    return { valid: false, originalPath: inputPath, reason: `Post-normalization check failed: ${postCheck.reason}` };
   }
 
-  // Step 8: Check PATH_MAX after normalization (can change length)
-  const normalizedByteLength = Buffer.byteLength(normalizedPath, 'utf8');
-  if (normalizedByteLength > PATH_MAX) {
-    return {
-      valid: false,
-      originalPath: inputPath,
-      reason: `Normalized path exceeds maximum length (${normalizedByteLength} > ${PATH_MAX} bytes)`,
-    };
-  }
+  // Step 7: Check PATH_MAX after normalization
+  const normalizedLengthCheck = validatePathLength(normalizedPath, inputPath, 'Normalized path');
+  if (normalizedLengthCheck) return normalizedLengthCheck;
 
-  // Step 9: Optionally resolve symlinks
+  // Step 8: Optionally resolve symlinks
   let symlinksResolved = false;
   if (resolveSymlinks) {
-    const symlinkResult = resolveSymlinksSecurely(normalizedPath);
-    if (!symlinkResult.valid) {
-      return {
-        valid: false,
-        originalPath: inputPath,
-        reason: symlinkResult.reason,
-      };
+    const symlinkResult = resolveAndValidateSymlinks(normalizedPath, inputPath);
+    if (symlinkResult.invalidResult) {
+      return symlinkResult.invalidResult;
     }
-    if (symlinkResult.resolvedPath) {
+    if (symlinkResult.resolvedPath !== normalizedPath) {
       normalizedPath = symlinkResult.resolvedPath;
       symlinksResolved = true;
-
-      // Re-validate after symlink resolution
-      const symlinkCheck = isSecurePathAfterNormalization(normalizedPath, inputPath);
-      if (!symlinkCheck.valid) {
-        return {
-          valid: false,
-          originalPath: inputPath,
-          reason: `Post-symlink check failed: ${symlinkCheck.reason}`,
-        };
-      }
     }
   }
 
-  // Step 10: Optionally check file existence
-  // SECURITY NOTE: This check is subject to TOCTOU (Time-of-check-time-of-use) race conditions.
-  // The file might be created/deleted/modified between this check and actual use.
-  // However, this is acceptable for our use case as we're validating paths, not file contents.
-  // For critical operations, the caller should re-validate immediately before use.
+  // Step 9: Optionally check file existence (TOCTOU note: acceptable for validation)
   if (requireExists) {
     try {
       fs.accessSync(normalizedPath);
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code;
-      // SECURITY: Don't include the actual path in error message
-      return {
-        valid: false,
-        originalPath: inputPath,
-        normalizedPath,
-        reason: `Path does not exist or is not accessible: ${code}`,
-      };
+      return { valid: false, originalPath: inputPath, normalizedPath, reason: `Path does not exist or is not accessible: ${code}` };
     }
   }
 
-  return {
-    valid: true,
-    originalPath: inputPath,
-    normalizedPath,
-    symlinksResolved,
-  };
+  return { valid: true, originalPath: inputPath, normalizedPath, symlinksResolved };
 }
 
 /**
