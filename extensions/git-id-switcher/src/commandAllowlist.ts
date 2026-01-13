@@ -212,6 +212,7 @@ function validateFlagArgument(
       return 'allowed';
     }
     /* c8 ignore stop */
+    /* c8 ignore next: fallback never used - validateCombinedFlags always provides reason */
     return { allowed: false, reason: flagResult.reason || 'Invalid combined flag' };
   }
   return { allowed: false, reason: `Flag '${arg}' is not allowed for this command` };
