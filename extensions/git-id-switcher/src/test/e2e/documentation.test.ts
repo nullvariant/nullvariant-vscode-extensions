@@ -46,6 +46,17 @@ const EXTENSION_ID = 'nullvariant.git-id-switcher';
 const DOCUMENTATION_COMMAND = 'git-id-switcher.showDocumentation';
 
 /**
+ * Execute documentation command and wait for specified delay.
+ * Reduces nesting depth in tests using assert.doesNotReject.
+ */
+async function executeDocCommandWithDelay(delayMs: number = 0): Promise<void> {
+  await vscode.commands.executeCommand(DOCUMENTATION_COMMAND);
+  if (delayMs > 0) {
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+  }
+}
+
+/**
  * Supported locale fixtures for testing
  */
 const SUPPORTED_LOCALE_PATTERNS = [
@@ -116,9 +127,7 @@ describe('Documentation E2E Test Suite', function () {
     it('should execute command multiple times without error', async () => {
       // First execution
       await assert.doesNotReject(
-        async () => {
-          await vscode.commands.executeCommand(DOCUMENTATION_COMMAND);
-        },
+        () => executeDocCommandWithDelay(),
         'First documentation command should execute without error'
       );
 
@@ -126,9 +135,7 @@ describe('Documentation E2E Test Suite', function () {
 
       // Second execution (should create a new panel or focus existing)
       await assert.doesNotReject(
-        async () => {
-          await vscode.commands.executeCommand(DOCUMENTATION_COMMAND);
-        },
+        () => executeDocCommandWithDelay(),
         'Second documentation command should execute without error'
       );
     });
@@ -149,9 +156,7 @@ describe('Documentation E2E Test Suite', function () {
 
       // Execute command - panel title should be set to document name (e.g., "README")
       await assert.doesNotReject(
-        async () => {
-          await vscode.commands.executeCommand(DOCUMENTATION_COMMAND);
-        },
+        () => executeDocCommandWithDelay(),
         'Panel should be created with title'
       );
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -168,9 +173,7 @@ describe('Documentation E2E Test Suite', function () {
 
       // Execute command
       await assert.doesNotReject(
-        async () => {
-          await vscode.commands.executeCommand(DOCUMENTATION_COMMAND);
-        },
+        () => executeDocCommandWithDelay(),
         'Command should not throw during loading state'
       );
 
@@ -201,10 +204,7 @@ describe('Documentation E2E Test Suite', function () {
 
       // Execute command - even if network fails, panel should be created
       await assert.doesNotReject(
-        async () => {
-          await vscode.commands.executeCommand(DOCUMENTATION_COMMAND);
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        },
+        () => executeDocCommandWithDelay(1000),
         'Documentation command should handle network errors gracefully'
       );
 
@@ -238,9 +238,7 @@ describe('Documentation E2E Test Suite', function () {
 
       // Execute command to create panel with enableScripts: true
       await assert.doesNotReject(
-        async () => {
-          await vscode.commands.executeCommand(DOCUMENTATION_COMMAND);
-        },
+        () => executeDocCommandWithDelay(),
         'Panel creation with scripts should not throw'
       );
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -289,9 +287,7 @@ describe('Documentation E2E Test Suite', function () {
 
       // Create new panel - should work without issues
       await assert.doesNotReject(
-        async () => {
-          await vscode.commands.executeCommand(DOCUMENTATION_COMMAND);
-        },
+        () => executeDocCommandWithDelay(),
         'New panel should be created after previous one was disposed'
       );
 

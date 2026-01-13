@@ -410,45 +410,12 @@ export interface ValidateSubmodulePathOptions {
 }
 
 /**
- * Validate a submodule path specifically
- *
- * Submodule paths come from git output and need special handling:
- * - Must be relative to workspace root
- * - Must not contain path traversal
- * - Must be normalized before joining with workspace path
- * - Symlinks must not escape workspace (if verifySymlinks is true)
- *
- * @param submodulePath - Relative path from git submodule status
- * @param workspacePath - Absolute path to workspace root
- * @param options - Validation options
- * @returns NormalizedPathResult with validation status
+ * Pre-validation checks for submodule path.
+ * @internal
  */
-export function validateSubmodulePath(
-  submodulePath: string,
-  workspacePath: string,
-  options: ValidateSubmodulePathOptions = {}
-): NormalizedPathResult {
-  const { verifySymlinks = true, requireExists = false } = options;
-
-  // First, validate the workspace path itself
-  const workspaceResult = normalizeAndValidatePath(workspacePath, {
-    resolveSymlinks: false, // Don't resolve workspace path symlinks
-    requireExists: true, // Workspace must exist
-  });
-
-  if (!workspaceResult.valid) {
-    // SECURITY: Don't expose full workspace path in error message
-    // Only include the validation reason, which is already sanitized
-    return {
-      valid: false,
-      originalPath: submodulePath,
-      reason: `Invalid workspace path: ${workspaceResult.reason ?? 'validation failed'}`,
-    };
-  }
-
-  const normalizedWorkspace = workspaceResult.normalizedPath!;
-
-  // Validate the submodule path (relative path from git)
+function validateSubmodulePathPreChecks(
+  submodulePath: string
+): NormalizedPathResult | null {
   // Pre-check: submodule path should not be empty
   if (!submodulePath || submodulePath.trim().length === 0) {
     return {
@@ -488,10 +455,138 @@ export function validateSubmodulePath(
     };
   }
 
+  return null; // All pre-checks passed
+}
+
+/**
+ * Check if normalized path is within workspace boundary.
+ * @internal
+ */
+function checkWorkspaceBoundary(
+  normalizedPath: string,
+  workspacePath: string,
+  originalPath: string
+): NormalizedPathResult | null {
+  const workspaceWithSep = workspacePath + path.sep;
+  if (
+    !normalizedPath.startsWith(workspaceWithSep) &&
+    normalizedPath !== workspacePath
+  ) {
+    return {
+      valid: false,
+      originalPath,
+      reason: 'Submodule path escapes workspace root after normalization',
+    };
+  }
+  return null; // Within boundary
+}
+
+/**
+ * Verify symlinks don't escape workspace.
+ * @internal
+ * @returns Resolved path result, or null if path doesn't exist (acceptable)
+ */
+function verifySubmoduleSymlinks(
+  normalizedSubmodulePath: string,
+  normalizedWorkspace: string,
+  originalPath: string
+): NormalizedPathResult | null {
+  try {
+    // SECURITY: Check if the path exists before trying to resolve symlinks
+    fs.accessSync(normalizedSubmodulePath);
+
+    // SECURITY: Resolve symlinks atomically to minimize TOCTOU window
+    const symlinkResult = normalizeAndValidatePath(normalizedSubmodulePath, {
+      resolveSymlinks: true,
+      requireExists: true,
+    });
+
+    if (!symlinkResult.valid) {
+      return {
+        valid: false,
+        originalPath,
+        reason: `Symlink resolution failed: ${symlinkResult.reason ?? 'unknown error'}`,
+        symlinksResolved: true,
+      };
+    }
+
+    const resolvedPath = symlinkResult.normalizedPath!;
+
+    // SECURITY: Re-check workspace boundary after symlink resolution
+    const boundaryCheck = checkWorkspaceBoundary(resolvedPath, normalizedWorkspace, originalPath);
+    if (boundaryCheck) {
+      return {
+        valid: false,
+        originalPath,
+        reason: 'Submodule symlink target escapes workspace root',
+        symlinksResolved: true,
+      };
+    }
+
+    // Return the symlink-resolved path for maximum security
+    return {
+      valid: true,
+      originalPath,
+      normalizedPath: resolvedPath,
+      symlinksResolved: true,
+    };
+  } catch (error) {
+    // Path doesn't exist - that's OK, submodule might not be initialized
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== 'ENOENT') {
+      // Non-ENOENT errors are logged by caller if needed
+    }
+    return null; // Path doesn't exist, caller should return normalized path
+  }
+}
+
+/**
+ * Validate a submodule path specifically
+ *
+ * Submodule paths come from git output and need special handling:
+ * - Must be relative to workspace root
+ * - Must not contain path traversal
+ * - Must be normalized before joining with workspace path
+ * - Symlinks must not escape workspace (if verifySymlinks is true)
+ *
+ * @param submodulePath - Relative path from git submodule status
+ * @param workspacePath - Absolute path to workspace root
+ * @param options - Validation options
+ * @returns NormalizedPathResult with validation status
+ */
+export function validateSubmodulePath(
+  submodulePath: string,
+  workspacePath: string,
+  options: ValidateSubmodulePathOptions = {}
+): NormalizedPathResult {
+  const { verifySymlinks = true, requireExists = false } = options;
+
+  // First, validate the workspace path itself
+  const workspaceResult = normalizeAndValidatePath(workspacePath, {
+    resolveSymlinks: false,
+    requireExists: true,
+  });
+
+  if (!workspaceResult.valid) {
+    return {
+      valid: false,
+      originalPath: submodulePath,
+      reason: `Invalid workspace path: ${workspaceResult.reason ?? 'validation failed'}`,
+    };
+  }
+
+  const normalizedWorkspace = workspaceResult.normalizedPath!;
+
+  // Run pre-validation checks
+  const preCheckResult = validateSubmodulePathPreChecks(submodulePath);
+  if (preCheckResult) {
+    return preCheckResult;
+  }
+
   // Normalize and validate the submodule path relative to workspace
   const result = normalizeAndValidatePath(submodulePath, {
-    resolveSymlinks: false, // First pass: don't resolve symlinks
-    requireExists: false, // Submodule might not be initialized yet
+    resolveSymlinks: false,
+    requireExists: false,
     baseDir: normalizedWorkspace,
   });
 
@@ -502,85 +597,18 @@ export function validateSubmodulePath(
   const normalizedSubmodulePath = result.normalizedPath!;
 
   // SECURITY: Ensure the normalized path is still within workspace
-  // This prevents path traversal attacks like "../../etc/passwd"
-  // Use path.resolve() for consistent comparison across platforms (Windows/Unix)
-  const workspaceWithSep = normalizedWorkspace + path.sep;
-  if (
-    !normalizedSubmodulePath.startsWith(workspaceWithSep) &&
-    normalizedSubmodulePath !== normalizedWorkspace
-  ) {
-    return {
-      valid: false,
-      originalPath: submodulePath,
-      reason: 'Submodule path escapes workspace root after normalization',
-    };
+  const boundaryCheck = checkWorkspaceBoundary(normalizedSubmodulePath, normalizedWorkspace, submodulePath);
+  if (boundaryCheck) {
+    return boundaryCheck;
   }
 
-  // Verify symlinks don't escape workspace (if enabled and path exists)
+  // Verify symlinks don't escape workspace (if enabled)
   if (verifySymlinks) {
-    try {
-      // SECURITY: Check if the path exists before trying to resolve symlinks
-      // Note: This is subject to TOCTOU (Time-of-check-time-of-use) race conditions.
-      // The path might be created/deleted/modified between this check and symlink resolution.
-      // However, fs.realpathSync.native() inside normalizeAndValidatePath will handle
-      // non-existent paths gracefully (returns normalized path), so this is acceptable.
-      fs.accessSync(normalizedSubmodulePath);
-
-      // SECURITY: Resolve symlinks atomically to minimize TOCTOU window
-      // normalizeAndValidatePath with resolveSymlinks: true uses fs.realpathSync.native()
-      // which resolves symlinks in a single system call, reducing race condition window
-      const symlinkResult = normalizeAndValidatePath(normalizedSubmodulePath, {
-        resolveSymlinks: true,
-        requireExists: true,
-      });
-
-      if (!symlinkResult.valid) {
-        // SECURITY: Don't expose full symlink resolution error details
-        // The reason is already sanitized by normalizeAndValidatePath
-        return {
-          valid: false,
-          originalPath: submodulePath,
-          reason: `Symlink resolution failed: ${symlinkResult.reason ?? 'unknown error'}`,
-          symlinksResolved: true,
-        };
-      }
-
-      const resolvedPath = symlinkResult.normalizedPath!;
-
-      // SECURITY: Re-check workspace boundary after symlink resolution
-      // This prevents symlinks from pointing outside the workspace
-      // Use the same workspaceWithSep variable defined earlier for consistency
-      if (
-        !resolvedPath.startsWith(workspaceWithSep) &&
-        resolvedPath !== normalizedWorkspace
-      ) {
-        return {
-          valid: false,
-          originalPath: submodulePath,
-          reason: 'Submodule symlink target escapes workspace root',
-          symlinksResolved: true,
-        };
-      }
-
-      // Return the symlink-resolved path for maximum security
-      return {
-        valid: true,
-        originalPath: submodulePath,
-        normalizedPath: resolvedPath,
-        symlinksResolved: true,
-      };
-    } catch (error) {
-      // Path doesn't exist - that's OK, submodule might not be initialized
-      // SECURITY: Log the error code for debugging, but don't expose full error details
-      const code = (error as NodeJS.ErrnoException).code;
-      // Only log non-ENOENT errors (ENOENT is expected for uninitialized submodules)
-      if (code !== 'ENOENT') {
-        // This will be handled by the caller's error handling
-        // We return the normalized path without symlink resolution
-      }
-      // Return the normalized (non-resolved) path
-      // The caller should re-validate if the path is created later
+    const symlinkResult = verifySubmoduleSymlinks(normalizedSubmodulePath, normalizedWorkspace, submodulePath);
+    if (symlinkResult) {
+      return symlinkResult;
     }
+    // null means path doesn't exist, continue to requireExists check
   }
 
   // Optionally check if path exists
