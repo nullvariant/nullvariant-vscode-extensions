@@ -80,6 +80,43 @@ const SENSITIVE_PATTERNS = [
 ] as const;
 
 /**
+ * Check if path components contain a sequence of sensitive components
+ * starting at any position.
+ *
+ * @internal
+ */
+function matchesComponentSequence(
+  pathComponents: string[],
+  sensitiveComponents: string[]
+): boolean {
+  const maxStartIndex = pathComponents.length - sensitiveComponents.length;
+  for (let i = 0; i <= maxStartIndex; i++) {
+    if (componentsMatchAt(pathComponents, sensitiveComponents, i)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Check if sensitive components match path components at a given start index.
+ *
+ * @internal
+ */
+function componentsMatchAt(
+  pathComponents: string[],
+  sensitiveComponents: string[],
+  startIndex: number
+): boolean {
+  for (let j = 0; j < sensitiveComponents.length; j++) {
+    if (pathComponents[startIndex + j] !== sensitiveComponents[j]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Check if a path contains sensitive directory patterns
  * The input path should already be normalized (forward slashes only)
  *
@@ -110,19 +147,8 @@ export function containsSensitiveDir(normalizedPath: string): boolean {
     // Split sensitive dir into components (may contain multiple levels like '.config/gcloud')
     const sensitiveComponents = normalizedSensitive.split('/').filter(c => c.length > 0);
 
-    // Check if path components contain the sensitive directory components as a sequence
-    // This ensures we match whole directory names, not substrings
-    for (let i = 0; i <= pathComponents.length - sensitiveComponents.length; i++) {
-      let matches = true;
-      for (let j = 0; j < sensitiveComponents.length; j++) {
-        if (pathComponents[i + j] !== sensitiveComponents[j]) {
-          matches = false;
-          break;
-        }
-      }
-      if (matches) {
-        return true;
-      }
+    if (matchesComponentSequence(pathComponents, sensitiveComponents)) {
+      return true;
     }
   }
 
@@ -152,6 +178,62 @@ export function matchesSensitivePattern(inputPath: string): boolean {
 }
 
 /**
+ * Get home directory path in a platform-aware manner.
+ *
+ * @internal
+ */
+function getHomeDirectory(): string {
+  if (process.platform === 'win32') {
+    // Windows: HOMEDRIVE + HOMEPATH (e.g., C: + \Users\username)
+    const homeDrive = process.env.HOMEDRIVE || '';
+    const homePath = process.env.HOMEPATH || '';
+    if (homeDrive && homePath) {
+      return homeDrive + homePath;
+    }
+    return process.env.USERPROFILE || '';
+  }
+  return process.env.HOME || '';
+}
+
+/**
+ * Try to redact UNC path server name for privacy.
+ * Returns null if not a UNC path.
+ *
+ * @internal
+ */
+function tryRedactUncPath(normalizedPath: string): string | null {
+  // SECURITY: UNC paths start with // (but not ///)
+  const isUncPath = normalizedPath.startsWith('//') && !normalizedPath.startsWith('///');
+  if (!isUncPath) {
+    return null;
+  }
+  // Redact UNC server name: //server/share -> //[REDACTED]/share
+  const uncMatch = normalizedPath.match(/^\/\/([^/]+)(\/.*)?$/);
+  if (uncMatch) {
+    return `//[REDACTED]${uncMatch[2] || ''}`;
+  }
+  /* c8 ignore next: edge case - malformed UNC path that passes prefix but not regex */
+  return null;
+}
+
+/**
+ * Replace home directory with ~ for privacy.
+ *
+ * @internal
+ */
+function replaceHomeWithTilde(normalizedPath: string, home: string): string | null {
+  if (!home) {
+    return null;
+  }
+  const normalizedHome = home.replace(/\\/g, '/');
+  // SECURITY: Ensure we match at path component boundary
+  if (normalizedPath === normalizedHome || normalizedPath.startsWith(normalizedHome + '/')) {
+    return '~' + normalizedPath.slice(normalizedHome.length);
+  }
+  return null;
+}
+
+/**
  * Sanitize path for logging (don't expose full path structure)
  *
  * Sensitive paths are redacted to prevent information leakage.
@@ -176,18 +258,12 @@ export function sanitizePath(inputPath: string): string {
   }
 
   // Normalize path separators for consistent checking
-  // SECURITY: Handle Windows UNC paths (\\server\share -> //server/share)
-  // Preserve UNC prefix for proper detection
   const normalizedPath = inputPath.replace(/\\/g, '/');
-  // SECURITY: UNC paths start with // (but not ///)
-  // For UNC paths, we should redact the server name for privacy
-  const isUncPath = normalizedPath.startsWith('//') && !normalizedPath.startsWith('///');
-  if (isUncPath) {
-    // Redact UNC server name: //server/share -> //[REDACTED]/share
-    const uncMatch = normalizedPath.match(/^\/\/([^/]+)(\/.*)?$/);
-    if (uncMatch) {
-      return `//[REDACTED]${uncMatch[2] || ''}`;
-    }
+
+  // SECURITY: Handle Windows UNC paths
+  const redactedUnc = tryRedactUncPath(normalizedPath);
+  if (redactedUnc !== null) {
+    return redactedUnc;
   }
 
   // Check for sensitive patterns first (highest priority)
@@ -201,34 +277,11 @@ export function sanitizePath(inputPath: string): string {
   }
 
   // Replace home directory with ~ for privacy
-  // SECURITY: Handle Windows HOMEDRIVE + HOMEPATH combination
-  let home = '';
-  if (process.platform === 'win32') {
-    // Windows: HOMEDRIVE + HOMEPATH (e.g., C: + \Users\username)
-    const homeDrive = process.env.HOMEDRIVE || '';
-    const homePath = process.env.HOMEPATH || '';
-    if (homeDrive && homePath) {
-      home = homeDrive + homePath;
-    } else {
-      home = process.env.USERPROFILE || '';
-    }
-  } else {
-    home = process.env.HOME || '';
-  }
-
-  if (home) {
-    const normalizedHome = home.replace(/\\/g, '/');
-    // SECURITY: Ensure we match at path component boundary
-    // Check exact match or match followed by /
-    if (
-      normalizedPath === normalizedHome ||
-      normalizedPath.startsWith(normalizedHome + '/')
-    ) {
-      return '~' + normalizedPath.slice(normalizedHome.length);
-    }
+  const homeReplaced = replaceHomeWithTilde(normalizedPath, getHomeDirectory());
+  if (homeReplaced !== null) {
+    return homeReplaced;
   }
 
   // SECURITY: Return normalized path (not original) for consistency
-  // This ensures path separators are consistent in logs
   return normalizedPath;
 }
