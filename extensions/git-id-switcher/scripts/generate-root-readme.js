@@ -9,8 +9,8 @@
  * Usage: node scripts/generate-root-readme.js
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const GITHUB_BASE = 'https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main';
 const EXTENSION_PATH = 'extensions/git-id-switcher';
@@ -30,7 +30,7 @@ const AUTO_GENERATED_HEADER = `<!-- 🚨 AUTO-GENERATED FILE - DO NOT EDIT DIREC
  */
 function transformLanguageLinks(content) {
   // Match href="../XX/README.md" or href="../XX-YY/README.md"
-  return content.replace(
+  return content.replaceAll(
     /href="\.\.\/([a-zA-Z-]+)\/README\.md"/g,
     `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/i18n/$1/README.md"`
   );
@@ -41,7 +41,7 @@ function transformLanguageLinks(content) {
  * ../../LANGUAGES.md -> https://github.com/.../docs/LANGUAGES.md
  */
 function transformLanguagesLink(content) {
-  return content.replace(
+  return content.replaceAll(
     /href="\.\.\/\.\.\/LANGUAGES\.md"/g,
     `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/LANGUAGES.md"`
   );
@@ -53,7 +53,7 @@ function transformLanguagesLink(content) {
  * quickpick-en.png -> quickpick.png
  */
 function removeEnSuffixFromImages(content) {
-  return content.replace(/-en\.png/g, '.png');
+  return content.replaceAll('-en.png', '.png');
 }
 
 /**
@@ -61,7 +61,7 @@ function removeEnSuffixFromImages(content) {
  * ../../CONTRIBUTING.md -> https://github.com/.../CONTRIBUTING.md
  */
 function transformContributingLink(content) {
-  return content.replace(
+  return content.replaceAll(
     /\[CONTRIBUTING\.md\]\([^)]+\)/g,
     `[CONTRIBUTING.md](${GITHUB_BASE}/CONTRIBUTING.md)`
   );
@@ -72,7 +72,7 @@ function transformContributingLink(content) {
  * ../../../../../LICENSE -> https://github.com/.../LICENSE
  */
 function transformLicenseLink(content) {
-  return content.replace(
+  return content.replaceAll(
     /\[LICENSE\]\([^)]+\)/g,
     `[LICENSE](${GITHUB_BASE}/LICENSE)`
   );
@@ -85,12 +85,12 @@ function transformLicenseLink(content) {
  */
 function transformDesignPhilosophyLink(content) {
   // Transform markdown-style links to absolute GitHub URL
-  content = content.replace(
+  content = content.replaceAll(
     /\(\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md\)/g,
     `(${GITHUB_BASE}/${EXTENSION_PATH}/docs/DESIGN_PHILOSOPHY.md)`
   );
   // Transform HTML href attributes to absolute GitHub URL
-  content = content.replace(
+  content = content.replaceAll(
     /href="\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md"/g,
     `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/DESIGN_PHILOSOPHY.md"`
   );
