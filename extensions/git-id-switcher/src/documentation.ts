@@ -11,7 +11,7 @@
  */
 
 import * as vscode from 'vscode';
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 
 // Import internal functions (testable without VS Code)
 import {
@@ -435,7 +435,7 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
     if (response.ok) {
       // DoS prevention: Check Content-Length header before reading body
       const contentLength = response.headers.get('content-length');
-      if (contentLength && parseInt(contentLength, 10) > MAX_CONTENT_SIZE) {
+      if (contentLength && Number.parseInt(contentLength, 10) > MAX_CONTENT_SIZE) {
         console.warn('[Git ID Switcher] Documentation too large, rejecting');
         return null;
       }

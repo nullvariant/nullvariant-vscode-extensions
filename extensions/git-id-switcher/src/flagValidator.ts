@@ -108,7 +108,7 @@ function checkCombinedFlagAllowlist(
 ): CombinedFlagResult {
   // Check if this command has allowed combined patterns
   const commandPatterns = ALLOWED_COMBINED_PATTERNS[command];
-  if (commandPatterns && commandPatterns.includes(flagChars)) {
+  if (commandPatterns?.includes(flagChars)) {
     return { valid: true };
   }
 

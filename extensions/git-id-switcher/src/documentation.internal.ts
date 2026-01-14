@@ -236,8 +236,10 @@ export function renderMarkdown(raw: string): string {
       const rows = bodyRows.trim().split(/\r?\n/);
       const bodyHtml = rows.map((row: string) => {
         // Remove leading/trailing | then split, keeping empty cells
-        const cells = row.replace(/^\||\|$/g, '').split('|').map((c: string) => c.trim());
-        return `<tr>${cells.map((c: string) => `<td>${c}</td>`).join('')}</tr>`;
+        // Regex uses non-capturing groups for explicit precedence: (^|) OR (|$)
+        const cells = row.replace(/(?:^\|)|(?:\|$)/g, '').split('|').map((c: string) => c.trim());
+        const cellsHtml = cells.map((c: string) => '<td>' + c + '</td>').join('');
+        return '<tr>' + cellsHtml + '</tr>';
       }).join('');
       return `<table><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
     }
@@ -279,12 +281,12 @@ export function renderMarkdown(raw: string): string {
 
   // Step 13: Restore inline code
   html = html.replace(/%%INLINECODE_(\d+)%%/g, (_match, index: string) => {
-    return inlineCodes[parseInt(index, 10)];
+    return inlineCodes[Number.parseInt(index, 10)];
   });
 
   // Step 14: Restore code blocks
   html = html.replace(/%%CODEBLOCK_(\d+)%%/g, (_match, index: string) => {
-    return codeBlocks[parseInt(index, 10)];
+    return codeBlocks[Number.parseInt(index, 10)];
   });
 
   // Step 15: Convert double newlines to paragraph breaks

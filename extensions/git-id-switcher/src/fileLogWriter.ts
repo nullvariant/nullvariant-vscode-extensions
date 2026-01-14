@@ -5,8 +5,8 @@
  * Provides file-based log persistence for audit trails.
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import type { StructuredLog, ILogWriter, FileLogConfig } from './logTypes';
 import { isSecurePath } from './pathSecurity';
 
@@ -19,7 +19,7 @@ import { isSecurePath } from './pathSecurity';
  * - Clean up old log files
  */
 export class FileLogWriter implements ILogWriter {
-  private config: FileLogConfig;
+  private readonly config: FileLogConfig;
   private currentFilePath: string = '';
   private writeStream: fs.WriteStream | null = null;
   private currentFileSize: number = 0;

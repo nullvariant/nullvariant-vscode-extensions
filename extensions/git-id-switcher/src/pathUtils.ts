@@ -5,9 +5,9 @@
  * Designed to prevent path traversal and symlink-based attacks.
  */
 
-import * as os from 'os';
-import * as path from 'path';
-import * as fs from 'fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 import { isSecurePath, SecurePathResult } from './pathSecurity';
 import { PATH_MAX } from './constants';
 import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasPathTraversal } from './validators/common';

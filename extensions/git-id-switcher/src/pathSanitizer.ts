@@ -7,7 +7,7 @@
  * Separated from SecurityLogger for Single Responsibility Principle.
  */
 
-import * as path from 'path';
+import * as path from 'node:path';
 import { PATH_MAX, MAX_PATTERN_CHECK_LENGTH } from './constants';
 import { CONTROL_CHAR_REGEX_ALL } from './validators/common';
 
