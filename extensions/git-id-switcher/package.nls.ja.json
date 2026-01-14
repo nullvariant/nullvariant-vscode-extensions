@@ -33,7 +33,5 @@
   "config.logging.maxFileSize": "ローテーション前の最大ファイルサイズ（バイト単位、デフォルト：10MB）",
   "config.logging.maxFiles": "保持するローテーションファイルの最大数（デフォルト：5）",
   "config.commandTimeouts": "コマンドのカスタムタイムアウト値（ミリ秒単位）",
-  "config.commandTimeouts.markdown": "デフォルトのコマンドタイムアウトを上書きします。例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nデフォルト値：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、その他=30000ms",
-  "config.disableWorkspaceTrust": "ワークスペースの信頼チェックを無効にする（非推奨）",
-  "config.disableWorkspaceTrust.markdown": "**セキュリティ警告:** この拡張機能のワークスペースの信頼制限を無効にします。\n\n有効にすると、信頼されていないワークスペースでも危険な操作（Git設定の変更、SSH鍵操作）が許可されます。\n\nやむを得ない場合のみ使用し、必要最小限にとどめてください。"
+  "config.commandTimeouts.markdown": "デフォルトのコマンドタイムアウトを上書きします。例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nデフォルト値：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、その他=30000ms"
 }

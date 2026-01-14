@@ -33,7 +33,5 @@
   "config.logging.maxFileSize": "Rotasyondan önce maksimum dosya boyutu (bayt, varsayılan: 10MB)",
   "config.logging.maxFiles": "Saklanacak maksimum rotasyonlu dosya sayısı (varsayılan: 5)",
   "config.commandTimeouts": "Komutlar için özel zaman aşımı değerleri (milisaniye)",
-  "config.commandTimeouts.markdown": "Varsayılan komut zaman aşımlarını geçersiz kıl. Örnek:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVarsayılan değerler: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, diğerleri=30000ms",
-  "config.disableWorkspaceTrust": "Çalışma alanı güven denetimlerini devre dışı bırak (önerilmez)",
-  "config.disableWorkspaceTrust.markdown": "**Güvenlik uyarısı:** Bu uzantı için çalışma alanı güven kısıtlamalarını devre dışı bırakır.\n\nEtkinleştirildiğinde, tehlikeli işlemler (Git yapılandırma değişiklikleri, SSH anahtar işlemleri) güvenilmeyen çalışma alanlarında izin verilecektir.\n\nYalnızca kesinlikle gerekli olduğunda kullanın ve kullanımı minimumda tutun."
+  "config.commandTimeouts.markdown": "Varsayılan komut zaman aşımlarını geçersiz kıl. Örnek:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVarsayılan değerler: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, diğerleri=30000ms"
 }

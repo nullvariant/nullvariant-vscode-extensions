@@ -536,32 +536,6 @@ Wenn Sie zuvor leere Einstellungen gespeichert haben, wurden sie möglicherweise
 
 ---
 
-## Arbeitsbereich-Vertrauen
-
-Git ID Switcher unterstützt die [Arbeitsbereich-Vertrauen](https://code.visualstudio.com/docs/editor/workspace-trust)-Funktion von VS Code. In nicht vertrauenswürdigen Arbeitsbereichen werden gefährliche Operationen automatisch eingeschränkt.
-
-### Verhalten in nicht vertrauenswürdigen Arbeitsbereichen
-
-| Operation                   | Verhalten                    |
-| --------------------------- | ---------------------------- |
-| Identitäten anzeigen        | ✅ Erlaubt                    |
-| Aktuelle Git-Konfig anzeigen | ✅ Erlaubt                   |
-| Identität wechseln          | ⚠️ Benutzerbestätigung nötig  |
-| Git-Konfig ändern           | ❌ Blockiert                  |
-| SSH-Schlüssel-Operationen   | ❌ Blockiert                  |
-
-### Deaktivierung (nicht empfohlen)
-
-Falls Sie die Arbeitsbereich-Vertrauensprüfung unbedingt deaktivieren müssen:
-
-1. Öffnen Sie die Einstellungen (`Cmd+,` / `Strg+,`)
-2. Suchen Sie nach `gitIdSwitcher.disableWorkspaceTrust`
-3. Aktivieren Sie die Einstellung
-
-⚠️ **Warnung**: Die Aktivierung dieser Einstellung verringert die Sicherheit. Verwenden Sie sie nur, wenn es unbedingt erforderlich ist.
-
----
-
 ## Designphilosophie
 
 > „Wer bin ich?" — Die einzige Frage, die diese Erweiterung beantwortet.

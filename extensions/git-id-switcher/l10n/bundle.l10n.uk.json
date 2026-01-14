@@ -22,13 +22,7 @@
   "Welcome to Git ID Switcher! Configure your identities to get started.": "Ласкаво просимо до Git ID Switcher! Налаштуйте свої ідентифікатори, щоб почати.",
   "Open Settings": "Відкрити налаштування",
   "Git ID Switcher: {0}": "Git ID Switcher: {0}",
-  "This workspace is not trusted. {0} may modify your system. Do you want to proceed?": "Цей робочий простір не є довіреним. {0} може змінити вашу систему. Бажаєте продовжити?",
-  "Trust Workspace": "Довіряти робочому простору",
-  "Proceed Anyway": "Продовжити в будь-якому разі",
   "Cancel": "Скасувати",
-  "User confirmation required for this operation": "Для цієї операції потрібне підтвердження користувача",
-  "{0} is blocked in untrusted workspaces. {1}": "{0} заблоковано в недовірених робочих просторах. {1}",
-  "{0} is blocked in untrusted workspaces. Trust the workspace to enable this operation.": "{0} заблоковано в недовірених робочих просторах. Довіртесь робочому простору, щоб увімкнути цю операцію.",
-  "Workspace trust not granted": "Довіру до робочого простору не надано",
-  "Operation cancelled by user": "Операцію скасовано користувачем"
+  "Internal document not found. Open on GitHub?": "Внутрішній документ не знайдено. Відкрити на GitHub?",
+  "Open on GitHub": "Відкрити на GitHub"
 }

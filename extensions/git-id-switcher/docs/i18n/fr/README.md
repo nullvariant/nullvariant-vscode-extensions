@@ -536,32 +536,6 @@ Si vous avez précédemment sauvegardé des paramètres vides, ils peuvent avoir
 
 ---
 
-## Confiance de l'espace de travail
-
-Git ID Switcher prend en charge la fonctionnalité [Confiance de l'espace de travail](https://code.visualstudio.com/docs/editor/workspace-trust) de VS Code. Dans les espaces de travail non approuvés, les opérations dangereuses sont automatiquement restreintes.
-
-### Comportement dans les espaces de travail non approuvés
-
-| Opération                  | Comportement                  |
-| -------------------------- | ----------------------------- |
-| Afficher les identités     | ✅ Autorisé                    |
-| Afficher le Git config     | ✅ Autorisé                    |
-| Changer d'identité         | ⚠️ Confirmation requise        |
-| Modifier le Git config     | ❌ Bloqué                      |
-| Opérations sur les clés SSH | ❌ Bloqué                     |
-
-### Désactivation (non recommandé)
-
-Si vous devez absolument désactiver les vérifications de confiance de l'espace de travail :
-
-1. Ouvrez les Paramètres (`Cmd+,` / `Ctrl+,`)
-2. Recherchez `gitIdSwitcher.disableWorkspaceTrust`
-3. Activez le paramètre
-
-⚠️ **Avertissement** : L'activation de ce paramètre réduit la sécurité. N'utilisez-le qu'en cas de nécessité absolue.
-
----
-
 ## Philosophie de conception
 
 > « Qui suis-je ? » — La seule question à laquelle cette extension répond.

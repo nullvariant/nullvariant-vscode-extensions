@@ -22,13 +22,7 @@
   "Welcome to Git ID Switcher! Configure your identities to get started.": "歡迎使用 Git ID Switcher！請設定您的身分以開始使用。",
   "Open Settings": "開啟設定",
   "Git ID Switcher: {0}": "Git ID Switcher: {0}",
-  "This workspace is not trusted. {0} may modify your system. Do you want to proceed?": "此工作區不受信任。{0} 可能會修改您的系統。是否繼續？",
-  "Trust Workspace": "信任工作區",
-  "Proceed Anyway": "仍然繼續",
   "Cancel": "取消",
-  "User confirmation required for this operation": "此操作需要使用者確認",
-  "{0} is blocked in untrusted workspaces. {1}": "{0} 在不受信任的工作區中被封鎖。{1}",
-  "{0} is blocked in untrusted workspaces. Trust the workspace to enable this operation.": "{0} 在不受信任的工作區中被封鎖。信任工作區以啟用此操作。",
-  "Workspace trust not granted": "工作區信任未授予",
-  "Operation cancelled by user": "操作已被使用者取消"
+  "Internal document not found. Open on GitHub?": "內部文件未找到。是否在 GitHub 上開啟？",
+  "Open on GitHub": "在 GitHub 上開啟"
 }

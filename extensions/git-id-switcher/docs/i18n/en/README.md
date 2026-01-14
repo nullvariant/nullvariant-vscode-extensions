@@ -584,32 +584,6 @@ If you previously saved empty settings, they may have synced to the cloud and ar
 
 ---
 
-## Workspace Trust
-
-Git ID Switcher supports VS Code's [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) feature. In untrusted workspaces, dangerous operations are automatically restricted.
-
-### Behavior in Untrusted Workspaces
-
-| Operation               | Behavior                      |
-| ----------------------- | ----------------------------- |
-| View identities         | ✅ Allowed                     |
-| View current Git config | ✅ Allowed                     |
-| Switch identity         | ⚠️ User confirmation required  |
-| Modify Git config       | ❌ Blocked                     |
-| SSH key operations      | ❌ Blocked                     |
-
-### Disabling (Not Recommended)
-
-If you absolutely need to disable workspace trust checks:
-
-1. Open Settings (`Cmd+,` / `Ctrl+,`)
-2. Search for `gitIdSwitcher.disableWorkspaceTrust`
-3. Enable the setting
-
-⚠️ **Warning**: Enabling this setting reduces security. Use only when absolutely necessary.
-
----
-
 ## Design Philosophy
 
 > "Who am I?" — That's the only question this extension answers.

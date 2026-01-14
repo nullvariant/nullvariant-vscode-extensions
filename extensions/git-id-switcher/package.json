@@ -248,13 +248,6 @@
               "maximum": 300000
             },
             "markdownDescription": "%config.commandTimeouts.markdown%"
-          },
-          "gitIdSwitcher.disableWorkspaceTrust": {
-            "order": 2,
-            "type": "boolean",
-            "default": false,
-            "description": "%config.disableWorkspaceTrust%",
-            "markdownDescription": "%config.disableWorkspaceTrust.markdown%"
           }
         }
       }

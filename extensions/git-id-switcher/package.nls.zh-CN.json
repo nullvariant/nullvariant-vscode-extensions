@@ -33,7 +33,5 @@
   "config.logging.maxFileSize": "轮换前的最大文件大小（字节，默认：10MB）",
   "config.logging.maxFiles": "保留的轮换文件最大数量（默认：5）",
   "config.commandTimeouts": "命令的自定义超时值（毫秒）",
-  "config.commandTimeouts.markdown": "覆盖默认命令超时。示例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n默认值：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、其他=30000ms",
-  "config.disableWorkspaceTrust": "禁用工作区信任检查（不推荐）",
-  "config.disableWorkspaceTrust.markdown": "**安全警告:** 禁用此扩展的工作区信任限制。\n\n启用后，将允许在不受信任的工作区中执行危险操作（Git 配置更改、SSH 密钥操作）。\n\n仅在绝对必要时使用，并将使用控制在最低限度。"
+  "config.commandTimeouts.markdown": "覆盖默认命令超时。示例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n默认值：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、其他=30000ms"
 }

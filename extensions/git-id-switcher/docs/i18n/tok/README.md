@@ -554,32 +554,6 @@ tenpo pini la, settings ala li lon la, cloud sync li ante e open ijo.
 
 ---
 
-## ma pali pi wile pona (Workspace Trust)
-
-ilo ni li pona e [ma pali pi wile pona](https://code.visualstudio.com/docs/editor/workspace-trust) pi VS Code.
-
-lon **ma pali pi wile pona ala**, pali mute li ken ala tawa nasin awen:
-
-| pali | ma pali pi wile pona | ma pali pi wile pona ala |
-|------|---------------------|-------------------------|
-| 🔀 ante nimi Git | ✅ ken | ⚠️ wile toki "pona" |
-| 🔑 ante ilo SSH | ✅ ken | ⚠️ wile toki "pona" |
-| ⌨️ pali SSH | ✅ ken | ⚠️ wile toki "pona" |
-| 📁 ante lipu Git | ✅ ken | ⚠️ wile toki "pona" |
-| 👁️ lukin nimi taso | ✅ ken | ✅ ken |
-
-### o pini e wile pona
-
-sina wile pini e ni la, o pali e ni:
-
-1. o open e lipu sona VS Code
-2. o alasa e `gitIdSwitcher.security.requireWorkspaceTrust`
-3. o pini e ona
-
-> ⚠️ **sona ike**: sina pini e ni la, ilo ante li ken pali. o pali lon ma pona taso.
-
----
-
 ## nasin pali (Design Philosophy)
 
 > "mi seme?" — wile ni taso li jo e toki.

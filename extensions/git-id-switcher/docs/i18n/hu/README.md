@@ -536,32 +536,6 @@ Ha korábban üres beállításokat mentett, azok szinkronizálódtak a felhőbe
 
 ---
 
-## Munkaterület megbízhatósága
-
-A Git ID Switcher támogatja a VS Code [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) funkcióját. Nem megbízható munkaterületeken a veszélyes műveletek automatikusan korlátozva vannak.
-
-### Viselkedés nem megbízható munkaterületeken
-
-| Művelet                         | Viselkedés                       |
-| ------------------------------- | -------------------------------- |
-| Azonosítók megtekintése         | ✅ Engedélyezett                 |
-| Aktuális Git konfig megtekintése | ✅ Engedélyezett                |
-| Azonosító váltása               | ⚠️ Felhasználói megerősítés szükséges |
-| Git konfig módosítása           | ❌ Blokkolva                     |
-| SSH-kulcs műveletek             | ❌ Blokkolva                     |
-
-### Letiltás (nem ajánlott)
-
-Ha feltétlenül le kell tiltania a munkaterület megbízhatósági ellenőrzését:
-
-1. Nyissa meg a Beállításokat (`Cmd+,` / `Ctrl+,`)
-2. Keressen rá: `gitIdSwitcher.disableWorkspaceTrust`
-3. Engedélyezze a beállítást
-
-⚠️ **Figyelmeztetés**: A beállítás engedélyezése csökkenti a biztonságot. Csak akkor használja, ha feltétlenül szükséges.
-
----
-
 ## Tervezési filozófia
 
 > "Ki vagyok én?" — Az egyetlen kérdés, amire ez a bővítmény válaszol.
