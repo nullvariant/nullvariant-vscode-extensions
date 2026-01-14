@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.3] - 2026-01-14
+
+### Added
+
+- **SonarCloud Quality Gate Badge**
+  - Added SonarCloud Quality Gate Status badge to all 28 README files (monorepo root + 27 language variants)
+  - Badge positioned between codecov and Harden-Runner badges
+
 ## [0.11.2] - 2026-01-14
 
 ### Added
@@ -1141,7 +1149,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.2...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.3...HEAD
+[0.11.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.2...git-id-switcher-v0.11.3
 [0.11.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.1...git-id-switcher-v0.11.2
 [0.11.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.0...git-id-switcher-v0.11.1
 [0.11.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.48...git-id-switcher-v0.11.0
