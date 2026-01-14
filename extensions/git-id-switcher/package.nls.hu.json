@@ -3,6 +3,7 @@
   "extension.description": "Váltás Git identitások (profilok) között egy kattintással. SSH kulcsok és GPG aláírás összekapcsolva, almodulokra alkalmazható.",
   "command.selectIdentity": "Git ID: Identitás kiválasztása",
   "command.showCurrentIdentity": "Git ID: Jelenlegi identitás megjelenítése",
+  "command.showDocumentation": "Dokumentáció megjelenítése",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Azonosító",
   "config.category.submodule": "Git ID Switcher: Almodul",
@@ -32,5 +33,7 @@
   "config.logging.maxFileSize": "Maximális fájlméret rotáció előtt (bájt, alapértelmezett: 10MB)",
   "config.logging.maxFiles": "Megtartandó rotált fájlok száma (alapértelmezett: 5)",
   "config.commandTimeouts": "Egyéni időtúllépési értékek parancsokhoz (milliszekundumban)",
-  "config.commandTimeouts.markdown": "Alapértelmezett parancs időtúllépések felülírása. Példa:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nAlapértelmezett értékek: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, egyéb=30000ms"
+  "config.commandTimeouts.markdown": "Alapértelmezett parancs időtúllépések felülírása. Példa:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nAlapértelmezett értékek: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, egyéb=30000ms",
+  "config.disableWorkspaceTrust": "Munkaterület megbízhatósági ellenőrzések letiltása (nem ajánlott)",
+  "config.disableWorkspaceTrust.markdown": "**Biztonsági figyelmeztetés:** Letiltja a munkaterület megbízhatósági korlátozásait ehhez a bővítményhez.\n\nHa engedélyezve van, a veszélyes műveletek (Git konfiguráció változtatások, SSH kulcs műveletek) engedélyezve lesznek nem megbízható munkaterületeken.\n\nCsak feltétlenül szükséges esetben használja, és korlátozza a használatot a minimumra."
 }

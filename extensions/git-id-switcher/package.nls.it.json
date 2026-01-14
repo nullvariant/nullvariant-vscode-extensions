@@ -3,6 +3,7 @@
   "extension.description": "Cambia tra identità Git (profili) con un clic. Chiavi SSH e firma GPG collegate, applicabile ai sottomoduli.",
   "command.selectIdentity": "Git ID: Seleziona identità",
   "command.showCurrentIdentity": "Git ID: Mostra identità corrente",
+  "command.showDocumentation": "Mostra documentazione",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Identità",
   "config.category.submodule": "Git ID Switcher: Sottomodulo",
@@ -32,5 +33,7 @@
   "config.logging.maxFileSize": "Dimensione massima del file prima della rotazione (byte, predefinito: 10MB)",
   "config.logging.maxFiles": "Numero massimo di file ruotati da conservare (predefinito: 5)",
   "config.commandTimeouts": "Valori di timeout personalizzati per i comandi (in millisecondi)",
-  "config.commandTimeouts.markdown": "Sovrascrivi i timeout predefiniti dei comandi. Esempio:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValori predefiniti: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, altri=30000ms"
+  "config.commandTimeouts.markdown": "Sovrascrivi i timeout predefiniti dei comandi. Esempio:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValori predefiniti: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, altri=30000ms",
+  "config.disableWorkspaceTrust": "Disattiva i controlli di attendibilità dell'area di lavoro (non consigliato)",
+  "config.disableWorkspaceTrust.markdown": "**Avviso di sicurezza:** Disattiva le restrizioni di attendibilità dell'area di lavoro per questa estensione.\n\nQuando attivato, le operazioni pericolose (modifiche della configurazione Git, operazioni chiavi SSH) saranno consentite nelle aree di lavoro non attendibili.\n\nUsare solo quando assolutamente necessario e limitare l'uso al minimo."
 }

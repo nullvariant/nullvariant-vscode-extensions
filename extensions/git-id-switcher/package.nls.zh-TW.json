@@ -3,6 +3,7 @@
   "extension.description": "一鍵切換多個 Git 身分（設定檔）。SSH 金鑰和 GPG 簽署聯動，支援子模組批次套用。",
   "command.selectIdentity": "Git ID: 選擇身分",
   "command.showCurrentIdentity": "Git ID: 顯示目前身分",
+  "command.showDocumentation": "顯示說明文件",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: 身份管理",
   "config.category.submodule": "Git ID Switcher: 子模組",
@@ -32,5 +33,7 @@
   "config.logging.maxFileSize": "輪換前的最大檔案大小（位元組，預設：10MB）",
   "config.logging.maxFiles": "保留的輪換檔案最大數量（預設：5）",
   "config.commandTimeouts": "命令的自訂逾時值（毫秒）",
-  "config.commandTimeouts.markdown": "覆寫預設命令逾時。範例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n預設值：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、其他=30000ms"
+  "config.commandTimeouts.markdown": "覆寫預設命令逾時。範例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n預設值：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、其他=30000ms",
+  "config.disableWorkspaceTrust": "停用工作區信任檢查（不建議）",
+  "config.disableWorkspaceTrust.markdown": "**安全警告:** 停用此擴充功能的工作區信任限制。\n\n啟用後，將允許在不受信任的工作區中執行危險操作（Git 設定變更、SSH 金鑰操作）。\n\n僅在絕對必要時使用，並將使用控制在最低限度。"
 }

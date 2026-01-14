@@ -3,6 +3,7 @@
   "extension.description": "Mehrere Git-Identitäten (Profile) mit einem Klick wechseln. SSH-Schlüssel und GPG-Signierung sind verknüpft, auch auf Submodule anwendbar.",
   "command.selectIdentity": "Git ID: Identität auswählen",
   "command.showCurrentIdentity": "Git ID: Aktuelle Identität anzeigen",
+  "command.showDocumentation": "Dokumentation anzeigen",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Identität",
   "config.category.submodule": "Git ID Switcher: Submodul",
@@ -32,5 +33,7 @@
   "config.logging.maxFileSize": "Maximale Dateigröße vor Rotation (Bytes, Standard: 10MB)",
   "config.logging.maxFiles": "Maximale Anzahl der zu behaltenden rotierten Dateien (Standard: 5)",
   "config.commandTimeouts": "Benutzerdefinierte Timeout-Werte für Befehle (in Millisekunden)",
-  "config.commandTimeouts.markdown": "Standard-Befehls-Timeouts überschreiben. Beispiel:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nStandardwerte: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, andere=30000ms"
+  "config.commandTimeouts.markdown": "Standard-Befehls-Timeouts überschreiben. Beispiel:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nStandardwerte: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, andere=30000ms",
+  "config.disableWorkspaceTrust": "Arbeitsbereichsvertrauen-Prüfungen deaktivieren (nicht empfohlen)",
+  "config.disableWorkspaceTrust.markdown": "**Sicherheitswarnung:** Deaktiviert die Arbeitsbereichsvertrauen-Einschränkungen für diese Erweiterung.\n\nWenn aktiviert, werden gefährliche Operationen (Git-Konfigurationsänderungen, SSH-Schlüssel-Operationen) in nicht vertrauenswürdigen Arbeitsbereichen erlaubt.\n\nNur verwenden, wenn unbedingt erforderlich, und die Nutzung auf ein Minimum beschränken."
 }
