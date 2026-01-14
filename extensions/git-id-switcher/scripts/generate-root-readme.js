@@ -9,14 +9,22 @@
  * Usage: node scripts/generate-root-readme.js
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("node:fs");
+const path = require("node:path");
 
-const GITHUB_BASE = 'https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main';
-const EXTENSION_PATH = 'extensions/git-id-switcher';
+const GITHUB_BASE =
+  "https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main";
+const EXTENSION_PATH = "extensions/git-id-switcher";
 
-const SOURCE_PATH = path.join(__dirname, '..', 'docs', 'i18n', 'en', 'README.md');
-const OUTPUT_PATH = path.join(__dirname, '..', 'README.md');
+const SOURCE_PATH = path.join(
+  __dirname,
+  "..",
+  "docs",
+  "i18n",
+  "en",
+  "README.md",
+);
+const OUTPUT_PATH = path.join(__dirname, "..", "README.md");
 
 const AUTO_GENERATED_HEADER = `<!-- 🚨 AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY 🚨
      Source: docs/i18n/en/README.md
@@ -25,100 +33,70 @@ const AUTO_GENERATED_HEADER = `<!-- 🚨 AUTO-GENERATED FILE - DO NOT EDIT DIREC
 `;
 
 /**
- * Transform relative language links to absolute GitHub URLs
- * ../ja/README.md -> https://github.com/.../docs/i18n/ja/README.md
+ * All link transformations to apply.
+ * Each transformation has a pattern (regex) and replacement (string or function).
  */
-function transformLanguageLinks(content) {
-  // Match href="../XX/README.md" or href="../XX-YY/README.md"
-  return content.replace(
-    /href="\.\.\/([a-zA-Z-]+)\/README\.md"/g,
-    `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/i18n/$1/README.md"`
-  );
-}
+const TRANSFORMATIONS = [
+  // Transform relative language links: ../ja/README.md -> absolute GitHub URL
+  {
+    pattern: /href="\.\.\/([a-zA-Z-]+)\/README\.md"/g,
+    replacement: `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/i18n/$1/README.md"`,
+  },
+  // Transform LANGUAGES.md link: ../../LANGUAGES.md -> absolute GitHub URL
+  {
+    pattern: /href="\.\.\/\.\.\/LANGUAGES\.md"/g,
+    replacement: `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/LANGUAGES.md"`,
+  },
+  // Remove -en suffix from image filenames: demo-en.png -> demo.png
+  {
+    pattern: /-en\.png/g,
+    replacement: ".png",
+  },
+  // Transform CONTRIBUTING.md markdown link to absolute GitHub URL
+  {
+    pattern: /\[CONTRIBUTING\.md\]\([^)]+\)/g,
+    replacement: `[CONTRIBUTING.md](${GITHUB_BASE}/CONTRIBUTING.md)`,
+  },
+  // Transform LICENSE markdown link to absolute GitHub URL
+  {
+    pattern: /\[LICENSE\]\([^)]+\)/g,
+    replacement: `[LICENSE](${GITHUB_BASE}/LICENSE)`,
+  },
+  // Transform DESIGN_PHILOSOPHY.md markdown-style link to absolute GitHub URL
+  {
+    pattern: /\(\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md\)/g,
+    replacement: `(${GITHUB_BASE}/${EXTENSION_PATH}/docs/DESIGN_PHILOSOPHY.md)`,
+  },
+  // Transform DESIGN_PHILOSOPHY.md HTML href to absolute GitHub URL
+  {
+    pattern: /href="\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md"/g,
+    replacement: `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/DESIGN_PHILOSOPHY.md"`,
+  },
+];
 
 /**
- * Transform LANGUAGES.md link to absolute GitHub URL
- * ../../LANGUAGES.md -> https://github.com/.../docs/LANGUAGES.md
+ * Apply all transformations to content
+ * @param {string} content - The content to transform
+ * @returns {string} - The transformed content
  */
-function transformLanguagesLink(content) {
-  return content.replace(
-    /href="\.\.\/\.\.\/LANGUAGES\.md"/g,
-    `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/LANGUAGES.md"`
+function applyTransformations(content) {
+  return TRANSFORMATIONS.reduce(
+    (text, { pattern, replacement }) => text.replaceAll(pattern, replacement),
+    content,
   );
-}
-
-/**
- * Remove -en suffix from image filenames
- * demo-en.png -> demo.png
- * quickpick-en.png -> quickpick.png
- */
-function removeEnSuffixFromImages(content) {
-  return content.replace(/-en\.png/g, '.png');
-}
-
-/**
- * Transform CONTRIBUTING.md link to absolute GitHub URL
- * ../../CONTRIBUTING.md -> https://github.com/.../CONTRIBUTING.md
- */
-function transformContributingLink(content) {
-  return content.replace(
-    /\[CONTRIBUTING\.md\]\([^)]+\)/g,
-    `[CONTRIBUTING.md](${GITHUB_BASE}/CONTRIBUTING.md)`
-  );
-}
-
-/**
- * Transform LICENSE link to absolute GitHub URL
- * ../../../../../LICENSE -> https://github.com/.../LICENSE
- */
-function transformLicenseLink(content) {
-  return content.replace(
-    /\[LICENSE\]\([^)]+\)/g,
-    `[LICENSE](${GITHUB_BASE}/LICENSE)`
-  );
-}
-
-/**
- * Transform DESIGN_PHILOSOPHY.md link to absolute GitHub URL
- * ../../DESIGN_PHILOSOPHY.md -> https://github.com/.../docs/DESIGN_PHILOSOPHY.md
- * Handles both markdown links (...) and HTML href="..."
- */
-function transformDesignPhilosophyLink(content) {
-  // Transform markdown-style links to absolute GitHub URL
-  content = content.replace(
-    /\(\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md\)/g,
-    `(${GITHUB_BASE}/${EXTENSION_PATH}/docs/DESIGN_PHILOSOPHY.md)`
-  );
-  // Transform HTML href attributes to absolute GitHub URL
-  content = content.replace(
-    /href="\.\.\/\.\.\/DESIGN_PHILOSOPHY\.md"/g,
-    `href="${GITHUB_BASE}/${EXTENSION_PATH}/docs/DESIGN_PHILOSOPHY.md"`
-  );
-  return content;
 }
 
 function main() {
-  // Read source file
   if (!fs.existsSync(SOURCE_PATH)) {
     console.error(`Error: Source file not found: ${SOURCE_PATH}`);
     process.exit(1);
   }
 
-  let content = fs.readFileSync(SOURCE_PATH, 'utf-8');
-
-  // Apply transformations
-  content = transformLanguageLinks(content);
-  content = transformLanguagesLink(content);
-  content = removeEnSuffixFromImages(content);
-  content = transformContributingLink(content);
-  content = transformLicenseLink(content);
-  content = transformDesignPhilosophyLink(content);
-
-  // Add auto-generated header
+  let content = fs.readFileSync(SOURCE_PATH, "utf-8");
+  content = applyTransformations(content);
   content = AUTO_GENERATED_HEADER + content;
 
-  // Write output file
-  fs.writeFileSync(OUTPUT_PATH, content, 'utf-8');
+  fs.writeFileSync(OUTPUT_PATH, content, "utf-8");
 
   console.log(`✅ Generated ${OUTPUT_PATH}`);
   console.log(`   Source: ${SOURCE_PATH}`);
