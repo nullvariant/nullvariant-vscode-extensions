@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.3] - 2026-01-14
+
+### Changed
+
+- **SonarCloud CI Integration**: Switched from automatic analysis to CI-based analysis
+  - Added GitHub Actions workflow for SonarCloud scanning
+  - Enables `sonar-project.properties` configuration (ignored by automatic analysis)
+  - Includes test coverage reporting to SonarCloud
+  - Test files properly excluded from duplication detection via `sonar.cpd.exclusions`
+
 ## [0.12.2] - 2026-01-14
 
 ### Fixed
@@ -1183,7 +1193,9 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.1...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.3...HEAD
+[0.12.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.2...git-id-switcher-v0.12.3
+[0.12.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.1...git-id-switcher-v0.12.2
 [0.12.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.0...git-id-switcher-v0.12.1
 [0.12.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.3...git-id-switcher-v0.12.0
 [0.11.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.2...git-id-switcher-v0.11.3
