@@ -556,32 +556,6 @@ Inā mālama ʻoe i nā hoʻonohonoho hakahaka ma mua, ua sync ʻia lākou i ka 
 
 ---
 
-## Hilinaʻi Wahi Hana (Workspace Trust)
-
-Kākoʻo ʻo Git ID Switcher i ka hiʻohiʻona [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) o VS Code. Ma nā wahi hana ʻaʻole hilinaʻi ʻia, hoʻokapu ʻia nā hana pilikia.
-
-### Ka Hana ma nā Wahi Hana ʻAʻole Hilinaʻi ʻia
-
-| Hana                            | Hana                             |
-| ------------------------------- | -------------------------------- |
-| Nānā i nā ID                    | ✅ ʻAe ʻia                       |
-| Nānā i ka Git config o kēia manawa | ✅ ʻAe ʻia                    |
-| Hoʻololi ID                     | ⚠️ Pono ka hōʻoia mea hoʻohana   |
-| Hoʻololi Git config             | ❌ Paʻa ʻia                      |
-| Nā hana kī SSH                  | ❌ Paʻa ʻia                      |
-
-### Ka Hoʻopau (ʻAʻole ʻĀpono ʻia)
-
-Inā pono loa ʻoe e hoʻopau i nā nānā hilinaʻi wahi hana:
-
-1. E wehe i nā Hoʻonohonoho (`Cmd+,` / `Ctrl+,`)
-2. E ʻimi i `gitIdSwitcher.disableWorkspaceTrust`
-3. E hoʻā i ka hoʻonohonoho
-
-⚠️ **Aʻohe ʻOiaʻiʻo**: ʻO ka hoʻā ʻana i kēia hoʻonohonoho e hōʻemi i ka palekana. E hoʻohana wale inā pono loa.
-
----
-
 ## Ke Kumu Hoʻolālā (Design Philosophy)
 
 > "ʻO wai au?" — ʻO ia wale nō ka nīnau a kēia hoʻonui e pane ai.

@@ -31,9 +31,6 @@ import {
 import { showDocumentation } from './documentation';
 import { securityLogger } from './securityLogger';
 import { getUserSafeMessage, isFatalError } from './errors';
-import { getOperationGuard, WorkspaceTrustError, __resetOperationGuard } from './operationGuard';
-import { OperationType } from './operationClassification';
-import { __resetWorkspaceTrustManager } from './workspaceTrust';
 
 // Global state
 let statusBar: IdentityStatusBar;
@@ -150,10 +147,6 @@ export function deactivate(): void {
     initializeCancellation.dispose();
     initializeCancellation = undefined;
   }
-
-  // Dispose workspace trust related singletons
-  __resetOperationGuard();
-  __resetWorkspaceTrustManager();
 
   securityLogger.logDeactivation();
   securityLogger.dispose();
@@ -377,26 +370,11 @@ function showCurrentIdentityCommand(): void {
 
 /**
  * Switch to a specific identity
- *
- * SECURITY: This operation is guarded by workspace trust.
- * In untrusted workspaces, user confirmation is required.
  */
 async function switchToIdentity(
   identity: Identity,
   context: vscode.ExtensionContext
 ): Promise<void> {
-  // SECURITY: Check workspace trust before switching identity
-  const guard = getOperationGuard();
-  const guardResult = await guard.checkOperationAsync(OperationType.IDENTITY_SWITCH, true);
-
-  if (!guardResult.allowed) {
-    // User cancelled or operation blocked
-    throw new WorkspaceTrustError(
-      OperationType.IDENTITY_SWITCH,
-      guardResult.reason ?? vscode.l10n.t('Operation cancelled')
-    );
-  }
-
   statusBar.setLoading();
 
   const previousIdentityId = currentIdentity?.id ?? null;

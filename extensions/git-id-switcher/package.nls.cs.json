@@ -33,7 +33,5 @@
   "config.logging.maxFileSize": "Maximální velikost souboru před rotací (bajty, výchozí: 10MB)",
   "config.logging.maxFiles": "Maximální počet rotovaných souborů (výchozí: 5)",
   "config.commandTimeouts": "Vlastní hodnoty časového limitu pro příkazy (v milisekundách)",
-  "config.commandTimeouts.markdown": "Přepsat výchozí časové limity příkazů. Příklad:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVýchozí hodnoty: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, ostatní=30000ms",
-  "config.disableWorkspaceTrust": "Zakázat kontroly důvěryhodnosti pracovního prostoru (nedoporučeno)",
-  "config.disableWorkspaceTrust.markdown": "**Bezpečnostní varování:** Zakáže omezení důvěryhodnosti pracovního prostoru pro toto rozšíření.\n\nPokud je povoleno, nebezpečné operace (změny konfigurace Git, operace s SSH klíči) budou povoleny v nedůvěryhodných pracovních prostorech.\n\nPoužívejte pouze v případě absolutní nutnosti a omezte použití na minimum."
+  "config.commandTimeouts.markdown": "Přepsat výchozí časové limity příkazů. Příklad:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVýchozí hodnoty: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, ostatní=30000ms"
 }

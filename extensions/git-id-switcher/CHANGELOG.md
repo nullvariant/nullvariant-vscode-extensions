@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-01-14
+
+### Removed
+
+- **Workspace Trust**: Removed custom Workspace Trust implementation (introduced in v0.11.0)
+  - VS Code's default behavior (complete extension disable in untrusted workspaces) is more secure than partial functionality restrictions
+  - Removed `gitIdSwitcher.disableWorkspaceTrust` setting
+  - Removed confirmation dialogs for untrusted workspaces
+  - Removed trust-related localized messages from all 17 languages
+  - Removed Workspace Trust section from all 26 README documentation files
+
+### Security
+
+- **Improved Security Posture**: Relying on VS Code's native Workspace Trust (complete disable) instead of custom partial restrictions provides stronger security guarantees
+
 ## [0.11.3] - 2026-01-14
 
 ### Added

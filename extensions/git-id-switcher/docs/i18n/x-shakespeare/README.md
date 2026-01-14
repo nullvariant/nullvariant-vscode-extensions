@@ -448,32 +448,6 @@ If thou usest VS Code Settings Sync and hast different identities upon different
 
 ---
 
-## Workspace Trust
-
-This extension doth respect the [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) feature of VS Code.
-
-In **untrusted workspaces**, certain operations art restricted to protect thy system:
-
-| Operation | Trusted Realm | Untrusted Realm |
-|-----------|---------------|-----------------|
-| 🔀 Switch Git identity | ✅ Permitted | ⚠️ Requireth confirmation |
-| 🔑 Switch SSH key | ✅ Permitted | ⚠️ Requireth confirmation |
-| ⌨️ Run SSH command | ✅ Permitted | ⚠️ Requireth confirmation |
-| 📁 Modify Git config | ✅ Permitted | ⚠️ Requireth confirmation |
-| 👁️ View identity only | ✅ Permitted | ✅ Permitted |
-
-### To Disable Workspace Trust Verification
-
-Shouldst thou wish to disable the verification, follow these steps:
-
-1. Open VS Code Settings
-2. Search for `gitIdSwitcher.security.requireWorkspaceTrust`
-3. Disable the setting
-
-> ⚠️ **Heed this warning**: Disabling this doth permit external commands to execute without trust verification. Use only in trusted environs.
-
----
-
 ## Design Philosophy
 
 > "Who art I?" — That is the sole question this extension doth answer.

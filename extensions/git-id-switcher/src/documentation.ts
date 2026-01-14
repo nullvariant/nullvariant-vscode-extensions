@@ -566,12 +566,13 @@ async function handleNavigation(
         } else {
           // Document not found - offer to open on GitHub
           const githubUrl = `${GITHUB_BASE_URL}/${classification.resolvedPath}`;
+          const openOnGitHubButton = vscode.l10n.t('Open on GitHub');
           const choice = await vscode.window.showWarningMessage(
-            `Document not found on R2. Open on GitHub?`,
-            'Open on GitHub',
-            'Cancel'
+            vscode.l10n.t('Internal document not found. Open on GitHub?'),
+            openOnGitHubButton,
+            vscode.l10n.t('Cancel')
           );
-          if (choice === 'Open on GitHub') {
+          if (choice === openOnGitHubButton) {
             vscode.env.openExternal(vscode.Uri.parse(githubUrl));
           }
           // Restore current view

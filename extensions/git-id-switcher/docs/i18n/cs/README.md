@@ -535,32 +535,6 @@ Pokud jste dříve uložili prázdná nastavení, mohla být synchronizována do
 
 ---
 
-## Důvěra pracovního prostoru
-
-Git ID Switcher podporuje funkci [Workspace Trust](https://code.visualstudio.com/docs/editor/workspace-trust) ve VS Code. V nedůvěryhodných pracovních prostorech jsou nebezpečné operace automaticky omezeny.
-
-### Chování v nedůvěryhodných pracovních prostorech
-
-| Operace                     | Chování                        |
-| --------------------------- | ------------------------------ |
-| Zobrazení identit           | ✅ Povoleno                    |
-| Zobrazení aktuální Git konfigurace | ✅ Povoleno             |
-| Přepnutí identity           | ⚠️ Vyžaduje potvrzení uživatele |
-| Změna Git konfigurace       | ❌ Blokováno                   |
-| Operace s SSH klíči         | ❌ Blokováno                   |
-
-### Zakázání (nedoporučeno)
-
-Pokud opravdu potřebujete zakázat kontrolu důvěry pracovního prostoru:
-
-1. Otevřete Nastavení (`Cmd+,` / `Ctrl+,`)
-2. Vyhledejte `gitIdSwitcher.disableWorkspaceTrust`
-3. Zapněte nastavení
-
-⚠️ **Varování**: Zapnutí tohoto nastavení snižuje bezpečnost. Používejte pouze v nezbytných případech.
-
----
-
 ## Filozofie návrhu
 
 > "Kdo jsem?" — Jediná otázka, na kterou toto rozšíření odpovídá.

@@ -20,8 +20,6 @@ import { runPathSanitizerTests } from './pathSanitizer.test';
 import { runConfigChangeDetectorTests } from './configChangeDetector.test';
 import { runCommandAllowlistTests } from './commandAllowlist.test';
 import { runDocumentationTests } from './documentation.test';
-import { runWorkspaceTrustTests } from './workspaceTrust.test';
-import { runOperationGuardTests } from './operationGuard.test';
 import { runConfigSchemaTests } from './configSchema.test';
 import { runI18nTests } from './i18n.test';
 
@@ -78,12 +76,6 @@ async function main(): Promise<void> {
 
     // Run documentation module tests
     await runDocumentationTests();
-
-    // Run workspace trust tests
-    await runWorkspaceTrustTests();
-
-    // Run operation guard tests
-    await runOperationGuardTests();
 
     // Run config schema tests
     runConfigSchemaTests();

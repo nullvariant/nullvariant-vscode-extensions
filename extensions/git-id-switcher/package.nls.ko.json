@@ -33,7 +33,5 @@
   "config.logging.maxFileSize": "로테이션 전 최대 파일 크기 (바이트, 기본값: 10MB)",
   "config.logging.maxFiles": "유지할 로테이션 파일의 최대 수 (기본값: 5)",
   "config.commandTimeouts": "명령의 사용자 지정 시간 초과 값 (밀리초)",
-  "config.commandTimeouts.markdown": "기본 명령 시간 초과를 재정의합니다. 예:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n기본값: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, 기타=30000ms",
-  "config.disableWorkspaceTrust": "작업 영역 신뢰 검사 비활성화 (권장하지 않음)",
-  "config.disableWorkspaceTrust.markdown": "**보안 경고:** 이 확장의 작업 영역 신뢰 제한을 비활성화합니다.\n\n활성화하면 신뢰할 수 없는 작업 영역에서도 위험한 작업(Git 구성 변경, SSH 키 작업)이 허용됩니다.\n\n반드시 필요한 경우에만 사용하고, 사용을 최소한으로 제한하세요."
+  "config.commandTimeouts.markdown": "기본 명령 시간 초과를 재정의합니다. 예:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n기본값: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, 기타=30000ms"
 }
