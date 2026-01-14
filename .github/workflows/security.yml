@@ -153,16 +153,16 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v3
+        uses: github/codeql-action/init@4bdb89f48054571735e3792627da6195c57459e2 # v3
         with:
           languages: typescript
           config-file: ./.github/codeql-config.yml
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v3
+        uses: github/codeql-action/autobuild@4bdb89f48054571735e3792627da6195c57459e2 # v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v3
+        uses: github/codeql-action/analyze@4bdb89f48054571735e3792627da6195c57459e2 # v3
         with:
           category: "/language:typescript"
 
@@ -195,6 +195,6 @@ jobs:
           publish_results: true
 
       - name: Upload Scorecard results to Security tab
-        uses: github/codeql-action/upload-sarif@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v3
+        uses: github/codeql-action/upload-sarif@4bdb89f48054571735e3792627da6195c57459e2 # v3
         with:
           sarif_file: results.sarif
