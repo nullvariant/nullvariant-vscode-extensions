@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.3] - 2026-01-14
+
+### Changed
+
+- **SonarCloud CI Integration**: Switched from automatic analysis to CI-based analysis
+  - Added GitHub Actions workflow for SonarCloud scanning
+  - Enables `sonar-project.properties` configuration (ignored by automatic analysis)
+  - Includes test coverage reporting to SonarCloud
+  - Test files properly excluded from duplication detection via `sonar.cpd.exclusions`
+
 ## [0.12.2] - 2026-01-14
 
 ### Fixed
