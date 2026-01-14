@@ -19,7 +19,7 @@
  * Total: 3 test functions
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 

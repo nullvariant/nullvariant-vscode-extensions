@@ -4,7 +4,7 @@
  * Tests the centralized validation utilities in validators/common.ts
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
   hasNullByte,
   hasControlChars,

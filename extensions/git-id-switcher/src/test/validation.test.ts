@@ -4,7 +4,7 @@
  * Tests that malicious input is properly rejected.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import { validateIdentity, validateIdentities, isPathSafe } from '../validation';
 import { Identity } from '../identity';
 

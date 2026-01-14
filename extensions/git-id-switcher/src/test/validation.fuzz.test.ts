@@ -15,7 +15,7 @@
  * @see https://github.com/dubzzz/fast-check
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as fc from 'fast-check';
 import { validateIdentity, validateIdentities, isPathSafe } from '../validation';
 import { Identity } from '../identity';

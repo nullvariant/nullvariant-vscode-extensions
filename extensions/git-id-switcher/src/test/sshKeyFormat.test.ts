@@ -5,7 +5,7 @@
  * These tests do NOT depend on the vscode module and can run standalone.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';

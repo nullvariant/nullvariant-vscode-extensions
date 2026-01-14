@@ -44,7 +44,7 @@
  *     - Creating reliable timeout conditions is non-deterministic
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as os from 'node:os';
 import {
   secureExec,

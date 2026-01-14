@@ -19,7 +19,7 @@
  * Each test restores original configuration values after execution.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as vscode from 'vscode';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';

@@ -36,7 +36,7 @@
  * Total: 20 test functions covering all code paths.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
   looksLikeSensitiveData,
   sanitizeValue,

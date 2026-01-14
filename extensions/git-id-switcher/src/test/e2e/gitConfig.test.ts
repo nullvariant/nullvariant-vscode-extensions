@@ -23,7 +23,7 @@
  * Each test restores original configuration values after execution.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as vscode from 'vscode';
 import * as path from 'node:path';
 import * as fs from 'node:fs';

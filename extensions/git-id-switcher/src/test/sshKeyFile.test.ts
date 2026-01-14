@@ -8,7 +8,7 @@
  * - File permission checks (Unix)
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';

@@ -4,7 +4,7 @@
  * Tests the lazy loading mechanism for VS Code APIs
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
   getVSCode,
   getWorkspace,

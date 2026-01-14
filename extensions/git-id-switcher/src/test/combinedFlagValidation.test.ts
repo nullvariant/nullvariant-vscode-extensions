@@ -25,7 +25,7 @@
  *   rare in practice. The pre-normalization checks catch virtually all cases.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import { validateCombinedFlags } from '../flagValidator';
 import { isCommandAllowed } from '../commandAllowlist';
 

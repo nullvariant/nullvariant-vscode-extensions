@@ -4,7 +4,7 @@
  * Tests the strict validation logic for command allowlisting.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import { isCommandAllowed } from '../commandAllowlist';
 
 export async function runCommandAllowlistTests(): Promise<void> {
