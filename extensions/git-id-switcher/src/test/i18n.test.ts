@@ -32,321 +32,188 @@ import * as path from 'path';
  * These match the package.nls.*.json and l10n/bundle.l10n.*.json files
  */
 const SUPPORTED_LANGUAGES = [
-  'ja',
-  'zh-CN',
-  'zh-TW',
-  'ko',
-  'de',
-  'fr',
-  'it',
-  'es',
-  'pt-BR',
-  'ru',
-  'hu',
-  'cs',
-  'pl',
-  'bg',
-  'uk',
-  'tr',
+  'ja', 'zh-CN', 'zh-TW', 'ko', 'de', 'fr', 'it', 'es',
+  'pt-BR', 'ru', 'hu', 'cs', 'pl', 'bg', 'uk', 'tr',
 ] as const;
 
 /**
  * Extension root path (relative to compiled test output)
  */
 function getExtensionRoot(): string {
-  // When compiled, this file is at out/test/i18n.test.js
-  // Extension root is 2 levels up
   return path.resolve(__dirname, '..', '..');
+}
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface TranslationConfig {
+  name: string;
+  baseFile: string;
+  getLanguageFile: (lang: string) => string;
+}
+
+interface KeyGap {
+  lang: string;
+  keys: string[];
+}
+
+interface AggregatedKeyGap {
+  key: string;
+  languages: string[];
 }
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
 
-/**
- * Read and parse a JSON file
- */
 function readJsonFile(filePath: string): Record<string, string> {
-  try {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(content);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to read JSON file: ${filePath} (${message})`);
-  }
+  const content = fs.readFileSync(filePath, 'utf-8');
+  return JSON.parse(content);
 }
 
-/**
- * Get keys from a JSON file
- */
 function getKeysFromFile(filePath: string): string[] {
-  const json = readJsonFile(filePath);
-  return Object.keys(json);
+  return Object.keys(readJsonFile(filePath));
 }
 
-/**
- * Find missing keys between base and translation
- */
-function findMissingKeys(baseKeys: string[], translationKeys: string[]): string[] {
-  const translationKeySet = new Set(translationKeys);
-  return baseKeys.filter(key => !translationKeySet.has(key));
+function findKeyDifference(source: string[], target: string[]): string[] {
+  const targetSet = new Set(target);
+  return source.filter(key => !targetSet.has(key));
 }
 
-/**
- * Find extra keys in translation that don't exist in base
- */
-function findExtraKeys(baseKeys: string[], translationKeys: string[]): string[] {
-  const baseKeySet = new Set(baseKeys);
-  return translationKeys.filter(key => !baseKeySet.has(key));
-}
-
-/**
- * Aggregate missing keys across all languages to identify common gaps
- */
-function aggregateMissingKeys(
-  allMissing: { lang: string; missingKeys: string[] }[]
-): { key: string; languages: string[] }[] {
+function aggregateKeyGaps(gaps: KeyGap[]): AggregatedKeyGap[] {
   const keyToLanguages = new Map<string, string[]>();
-
-  for (const { lang, missingKeys } of allMissing) {
-    for (const key of missingKeys) {
+  for (const { lang, keys } of gaps) {
+    for (const key of keys) {
       if (key === 'FILE_NOT_FOUND') continue;
       const langs = keyToLanguages.get(key) || [];
       langs.push(lang);
       keyToLanguages.set(key, langs);
     }
   }
-
   return Array.from(keyToLanguages.entries())
     .map(([key, languages]) => ({ key, languages }))
     .sort((a, b) => b.languages.length - a.languages.length);
 }
 
 // ============================================================================
-// Test Functions
+// Core Test Logic
 // ============================================================================
 
 /**
- * Test 1: package.nls.*.json key coverage
- *
- * Validates that all keys in package.nls.json (English base) exist in
- * all 16 language-specific package.nls.{lang}.json files.
+ * Generic key coverage test for any translation file type.
+ * Returns gaps found, or throws assertion error if gaps exist.
  */
+function testKeyCoverage(config: TranslationConfig): void {
+  console.log(`Testing ${config.name} key coverage...`);
+  const extensionRoot = getExtensionRoot();
+  const baseFilePath = path.join(extensionRoot, config.baseFile);
+  const baseKeys = getKeysFromFile(baseFilePath);
+  console.log(`  Base file: ${baseKeys.length} keys`);
+
+  const gaps: KeyGap[] = [];
+  for (const lang of SUPPORTED_LANGUAGES) {
+    const langFilePath = path.join(extensionRoot, config.getLanguageFile(lang));
+    if (!fs.existsSync(langFilePath)) {
+      gaps.push({ lang, keys: ['FILE_NOT_FOUND'] });
+      console.log(`  [FAIL] ${lang}: FILE NOT FOUND`);
+      continue;
+    }
+    const langKeys = getKeysFromFile(langFilePath);
+    const missing = findKeyDifference(baseKeys, langKeys);
+    if (missing.length > 0) {
+      gaps.push({ lang, keys: missing });
+      console.log(`  [FAIL] ${lang}: ${missing.length} missing - ${missing.join(', ')}`);
+    } else {
+      console.log(`  [PASS] ${lang}: ${langKeys.length} keys (complete)`);
+    }
+  }
+
+  if (gaps.length > 0) {
+    const aggregated = aggregateKeyGaps(gaps);
+    const summary = aggregated.map(g => `"${g.key}" (${g.languages.length} langs)`).join(', ');
+    assert.fail(`${config.name} coverage failed: ${summary}`);
+  }
+  console.log(`  All ${SUPPORTED_LANGUAGES.length} languages complete.`);
+}
+
+/**
+ * Detect obsolete keys in translations that don't exist in base.
+ */
+function detectObsoleteKeys(config: TranslationConfig): KeyGap[] {
+  const extensionRoot = getExtensionRoot();
+  const baseKeys = getKeysFromFile(path.join(extensionRoot, config.baseFile));
+  const extras: KeyGap[] = [];
+  for (const lang of SUPPORTED_LANGUAGES) {
+    const langFilePath = path.join(extensionRoot, config.getLanguageFile(lang));
+    if (fs.existsSync(langFilePath)) {
+      const extra = findKeyDifference(getKeysFromFile(langFilePath), baseKeys);
+      if (extra.length > 0) {
+        extras.push({ lang, keys: extra });
+        console.log(`  [WARN] ${config.name} ${lang}: ${extra.length} obsolete - ${extra.join(', ')}`);
+      }
+    }
+  }
+  return extras;
+}
+
+// ============================================================================
+// Translation Configurations
+// ============================================================================
+
+const PACKAGE_NLS_CONFIG: TranslationConfig = {
+  name: 'package.nls',
+  baseFile: 'package.nls.json',
+  getLanguageFile: (lang) => `package.nls.${lang}.json`,
+};
+
+const BUNDLE_L10N_CONFIG: TranslationConfig = {
+  name: 'bundle.l10n',
+  baseFile: path.join('l10n', 'bundle.l10n.json'),
+  getLanguageFile: (lang) => path.join('l10n', `bundle.l10n.${lang}.json`),
+};
+
+// ============================================================================
+// Exported Test Functions
+// ============================================================================
+
 function testPackageNlsKeyCoverage(): void {
-  console.log('Testing package.nls.*.json key coverage...');
-
-  const extensionRoot = getExtensionRoot();
-  const baseFilePath = path.join(extensionRoot, 'package.nls.json');
-  const baseKeys = getKeysFromFile(baseFilePath);
-
-  console.log(`  Base file (package.nls.json): ${baseKeys.length} keys`);
-
-  const allMissing: { lang: string; missingKeys: string[] }[] = [];
-
-  for (const lang of SUPPORTED_LANGUAGES) {
-    const langFilePath = path.join(extensionRoot, `package.nls.${lang}.json`);
-
-    // Check if file exists
-    if (!fs.existsSync(langFilePath)) {
-      allMissing.push({ lang, missingKeys: ['FILE_NOT_FOUND'] });
-      console.log(`  [FAIL] package.nls.${lang}.json: FILE NOT FOUND`);
-      continue;
-    }
-
-    const langKeys = getKeysFromFile(langFilePath);
-    const missingKeys = findMissingKeys(baseKeys, langKeys);
-
-    if (missingKeys.length > 0) {
-      allMissing.push({ lang, missingKeys });
-      console.log(`  [FAIL] package.nls.${lang}.json: ${missingKeys.length} missing keys`);
-      missingKeys.forEach(key => console.log(`         - ${key}`));
-    } else {
-      console.log(`  [PASS] package.nls.${lang}.json: ${langKeys.length} keys (complete)`);
-    }
-  }
-
-  if (allMissing.length > 0) {
-    const totalMissingKeys = allMissing.reduce((sum, { missingKeys }) => sum + missingKeys.length, 0);
-    const aggregated = aggregateMissingKeys(allMissing);
-    const keysSummary = aggregated
-      .map(({ key, languages }) => `  - "${key}" (missing in ${languages.length} languages)`)
-      .join('\n');
-
-    assert.fail(
-      `package.nls.*.json translation key coverage failed!\n` +
-        `\nMissing keys (sorted by frequency):\n${keysSummary}\n\n` +
-        `Summary: ${aggregated.length} unique key(s) missing, ${totalMissingKeys} total gap(s) across ${allMissing.length}/${SUPPORTED_LANGUAGES.length} languages.`
-    );
-  }
-
-  console.log(
-    `  All ${SUPPORTED_LANGUAGES.length} languages have complete package.nls translations.`
-  );
+  testKeyCoverage(PACKAGE_NLS_CONFIG);
 }
 
-/**
- * Test 2: l10n/bundle.l10n.*.json key coverage
- *
- * Validates that all keys in l10n/bundle.l10n.json (English base) exist in
- * all 16 language-specific l10n/bundle.l10n.{lang}.json files.
- */
 function testBundleL10nKeyCoverage(): void {
-  console.log('Testing l10n/bundle.l10n.*.json key coverage...');
-
-  const extensionRoot = getExtensionRoot();
-  const baseFilePath = path.join(extensionRoot, 'l10n', 'bundle.l10n.json');
-  const baseKeys = getKeysFromFile(baseFilePath);
-
-  console.log(`  Base file (bundle.l10n.json): ${baseKeys.length} keys`);
-
-  const allMissing: { lang: string; missingKeys: string[] }[] = [];
-
-  for (const lang of SUPPORTED_LANGUAGES) {
-    const langFilePath = path.join(extensionRoot, 'l10n', `bundle.l10n.${lang}.json`);
-
-    // Check if file exists
-    if (!fs.existsSync(langFilePath)) {
-      allMissing.push({ lang, missingKeys: ['FILE_NOT_FOUND'] });
-      console.log(`  [FAIL] bundle.l10n.${lang}.json: FILE NOT FOUND`);
-      continue;
-    }
-
-    const langKeys = getKeysFromFile(langFilePath);
-    const missingKeys = findMissingKeys(baseKeys, langKeys);
-
-    if (missingKeys.length > 0) {
-      allMissing.push({ lang, missingKeys });
-      console.log(`  [FAIL] bundle.l10n.${lang}.json: ${missingKeys.length} missing keys`);
-      missingKeys.forEach(key => console.log(`         - ${key}`));
-    } else {
-      console.log(`  [PASS] bundle.l10n.${lang}.json: ${langKeys.length} keys (complete)`);
-    }
-  }
-
-  if (allMissing.length > 0) {
-    const totalMissingKeys = allMissing.reduce((sum, { missingKeys }) => sum + missingKeys.length, 0);
-    const aggregated = aggregateMissingKeys(allMissing);
-    const keysSummary = aggregated
-      .map(({ key, languages }) => `  - "${key}" (missing in ${languages.length} languages)`)
-      .join('\n');
-
-    assert.fail(
-      `l10n/bundle.l10n.*.json translation key coverage failed!\n` +
-        `\nMissing keys (sorted by frequency):\n${keysSummary}\n\n` +
-        `Summary: ${aggregated.length} unique key(s) missing, ${totalMissingKeys} total gap(s) across ${allMissing.length}/${SUPPORTED_LANGUAGES.length} languages.`
-    );
-  }
-
-  console.log(
-    `  All ${SUPPORTED_LANGUAGES.length} languages have complete bundle.l10n translations.`
-  );
+  testKeyCoverage(BUNDLE_L10N_CONFIG);
 }
 
-/**
- * Test 3: No extra (obsolete) keys in translations
- *
- * Detects keys that exist in translation files but not in the English base.
- * These are likely obsolete keys from removed features.
- */
 function testNoExtraKeysInTranslations(): void {
-  console.log('Testing for obsolete keys in translations...');
-
-  const extensionRoot = getExtensionRoot();
-
-  // Check package.nls files
-  const packageNlsBaseKeys = getKeysFromFile(path.join(extensionRoot, 'package.nls.json'));
-  const packageNlsExtras: { lang: string; extraKeys: string[] }[] = [];
-
-  for (const lang of SUPPORTED_LANGUAGES) {
-    const langFilePath = path.join(extensionRoot, `package.nls.${lang}.json`);
-    if (fs.existsSync(langFilePath)) {
-      const langKeys = getKeysFromFile(langFilePath);
-      const extraKeys = findExtraKeys(packageNlsBaseKeys, langKeys);
-      if (extraKeys.length > 0) {
-        packageNlsExtras.push({ lang, extraKeys });
-        console.log(`  [WARN] package.nls.${lang}.json: ${extraKeys.length} obsolete keys`);
-        extraKeys.forEach(key => console.log(`         - ${key}`));
-      }
-    }
-  }
-
-  // Check l10n files
-  const l10nBaseKeys = getKeysFromFile(path.join(extensionRoot, 'l10n', 'bundle.l10n.json'));
-  const l10nExtras: { lang: string; extraKeys: string[] }[] = [];
-
-  for (const lang of SUPPORTED_LANGUAGES) {
-    const langFilePath = path.join(extensionRoot, 'l10n', `bundle.l10n.${lang}.json`);
-    if (fs.existsSync(langFilePath)) {
-      const langKeys = getKeysFromFile(langFilePath);
-      const extraKeys = findExtraKeys(l10nBaseKeys, langKeys);
-      if (extraKeys.length > 0) {
-        l10nExtras.push({ lang, extraKeys });
-        console.log(`  [WARN] bundle.l10n.${lang}.json: ${extraKeys.length} obsolete keys`);
-        extraKeys.forEach(key => console.log(`         - ${key}`));
-      }
-    }
-  }
-
-  // This is a warning test - we don't fail on extra keys, just report them
-  const totalExtras = packageNlsExtras.length + l10nExtras.length;
-  if (totalExtras === 0) {
-    console.log('  No obsolete keys found in any translation files.');
-  } else {
-    console.log(`  Found obsolete keys in ${totalExtras} files. Consider cleanup.`);
-  }
+  console.log('Testing for obsolete keys...');
+  const nlsExtras = detectObsoleteKeys(PACKAGE_NLS_CONFIG);
+  const l10nExtras = detectObsoleteKeys(BUNDLE_L10N_CONFIG);
+  const total = nlsExtras.length + l10nExtras.length;
+  console.log(total === 0 ? '  No obsolete keys found.' : `  Found obsolete keys in ${total} files.`);
 }
 
-// ============================================================================
-// Test Runner
-// ============================================================================
-
-/**
- * Run all i18n tests
- *
- * Runs all tests and collects errors, then reports them at the end.
- * This ensures all tests run even if some fail.
- */
 export function runI18nTests(): void {
   console.log('='.repeat(70));
   console.log('i18n Translation Key Coverage Tests');
   console.log('='.repeat(70));
 
   const errors: Error[] = [];
-
-  // Run package.nls tests
-  try {
-    testPackageNlsKeyCoverage();
-  } catch (error) {
-    errors.push(error instanceof Error ? error : new Error(String(error)));
-  }
-
-  // Run bundle.l10n tests
-  try {
-    testBundleL10nKeyCoverage();
-  } catch (error) {
-    errors.push(error instanceof Error ? error : new Error(String(error)));
-  }
-
-  // Run obsolete keys detection (this doesn't throw)
+  [testPackageNlsKeyCoverage, testBundleL10nKeyCoverage].forEach(test => {
+    try { test(); } catch (e) { errors.push(e instanceof Error ? e : new Error(String(e))); }
+  });
   testNoExtraKeysInTranslations();
 
   console.log('='.repeat(70));
-
   if (errors.length > 0) {
-    console.log(`i18n tests completed with ${errors.length} failure(s).`);
-    console.log('='.repeat(70));
-    // Re-throw the first error to fail the test suite
+    console.log(`${errors.length} failure(s).`);
     throw errors[0];
   }
-
   console.log('All i18n tests passed!');
-  console.log('='.repeat(70));
 }
 
-// Export individual test functions for VS Code test runner
 export { testPackageNlsKeyCoverage, testBundleL10nKeyCoverage, testNoExtraKeysInTranslations };
 
-// Run tests when executed directly
 if (require.main === module) {
   runI18nTests();
 }
