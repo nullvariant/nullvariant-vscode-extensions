@@ -3,6 +3,7 @@
   "extension.description": "Alterne entre identidades Git (perfis) com um clique. Chaves SSH e assinatura GPG vinculadas, aplicável a submódulos.",
   "command.selectIdentity": "Git ID: Selecionar Identidade",
   "command.showCurrentIdentity": "Git ID: Mostrar Identidade Atual",
+  "command.showDocumentation": "Mostrar Documentação",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Identidade",
   "config.category.submodule": "Git ID Switcher: Submódulo",
@@ -32,5 +33,7 @@
   "config.logging.maxFileSize": "Tamanho máximo do arquivo antes da rotação (bytes, padrão: 10MB)",
   "config.logging.maxFiles": "Número máximo de arquivos rotacionados a manter (padrão: 5)",
   "config.commandTimeouts": "Valores de timeout personalizados para comandos (em milissegundos)",
-  "config.commandTimeouts.markdown": "Substituir os timeouts padrão de comandos. Exemplo:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValores padrão: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, outros=30000ms"
+  "config.commandTimeouts.markdown": "Substituir os timeouts padrão de comandos. Exemplo:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValores padrão: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, outros=30000ms",
+  "config.disableWorkspaceTrust": "Desativar verificações de confiança do espaço de trabalho (não recomendado)",
+  "config.disableWorkspaceTrust.markdown": "**Aviso de segurança:** Desativa as restrições de confiança do espaço de trabalho para esta extensão.\n\nQuando ativado, operações perigosas (alterações de configuração Git, operações de chaves SSH) serão permitidas em espaços de trabalho não confiáveis.\n\nUsar apenas quando absolutamente necessário e limitar o uso ao mínimo."
 }

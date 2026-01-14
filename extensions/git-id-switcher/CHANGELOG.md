@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.2] - 2026-01-14
+
+### Added
+
+- **i18n: Complete Translation Coverage**
+  - Added missing `command.showDocumentation` translations to 15 languages (zh-CN, zh-TW, ko, de, fr, es, it, pt-BR, ru, pl, hu, cs, bg, uk, tr)
+  - All package.nls translation keys now have 100% coverage across 17 languages
+  - Test coverage added to verify i18n key consistency
+
 ## [0.11.1] - 2026-01-12
 
 ### Fixed
@@ -1132,7 +1141,17 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.41...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.2...HEAD
+[0.11.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.1...git-id-switcher-v0.11.2
+[0.11.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.0...git-id-switcher-v0.11.1
+[0.11.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.48...git-id-switcher-v0.11.0
+[0.10.48]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.47...git-id-switcher-v0.10.48
+[0.10.47]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.46...git-id-switcher-v0.10.47
+[0.10.46]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.45...git-id-switcher-v0.10.46
+[0.10.45]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.44...git-id-switcher-v0.10.45
+[0.10.44]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.43...git-id-switcher-v0.10.44
+[0.10.43]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.42...git-id-switcher-v0.10.43
+[0.10.42]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.41...git-id-switcher-v0.10.42
 [0.10.41]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.40...git-id-switcher-v0.10.41
 [0.10.40]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.39...git-id-switcher-v0.10.40
 [0.10.39]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.10.38...git-id-switcher-v0.10.39

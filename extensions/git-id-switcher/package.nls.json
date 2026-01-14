@@ -35,5 +35,5 @@
   "config.commandTimeouts": "Custom timeout values for commands (in milliseconds)",
   "config.commandTimeouts.markdown": "Override default command timeouts. Example:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nDefault values: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, others=30000ms",
   "config.disableWorkspaceTrust": "Disable workspace trust checks (not recommended)",
-  "config.disableWorkspaceTrust.markdown": "**Security Warning:** Disables workspace trust restrictions for this extension.\n\nWhen enabled, dangerous operations (Git config changes, SSH key operations) will be allowed in untrusted workspaces.\n\nThis is a rollback mechanism for problematic cases. Use with caution."
+  "config.disableWorkspaceTrust.markdown": "**Security Warning:** Disables workspace trust restrictions for this extension.\n\nWhen enabled, dangerous operations (Git config changes, SSH key operations) will be allowed in untrusted workspaces.\n\nUse only when absolutely necessary."
 }

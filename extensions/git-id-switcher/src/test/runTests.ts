@@ -23,6 +23,7 @@ import { runDocumentationTests } from './documentation.test';
 import { runWorkspaceTrustTests } from './workspaceTrust.test';
 import { runOperationGuardTests } from './operationGuard.test';
 import { runConfigSchemaTests } from './configSchema.test';
+import { runI18nTests } from './i18n.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -86,6 +87,9 @@ async function main(): Promise<void> {
 
     // Run config schema tests
     runConfigSchemaTests();
+
+    // Run i18n translation key coverage tests
+    runI18nTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
