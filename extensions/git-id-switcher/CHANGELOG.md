@@ -1193,7 +1193,9 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.1...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.3...HEAD
+[0.12.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.2...git-id-switcher-v0.12.3
+[0.12.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.1...git-id-switcher-v0.12.2
 [0.12.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.0...git-id-switcher-v0.12.1
 [0.12.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.3...git-id-switcher-v0.12.0
 [0.11.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.2...git-id-switcher-v0.11.3
