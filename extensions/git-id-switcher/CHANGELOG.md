@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.2] - 2026-01-14
+
+### Fixed
+
+- **SonarCloud Quality Gate**: Fixed duplication detection configuration
+  - Added `.sonarcloud.properties` for automatic analysis (GitHub App)
+  - `sonar-project.properties` is ignored by automatic analysis
+  - Excluded test directory from duplication detection
+  - Test code intentionally has duplication for readability and isolation
+
 ## [0.12.1] - 2026-01-14
 
 ### Internal
