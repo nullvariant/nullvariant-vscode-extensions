@@ -25,10 +25,10 @@
 
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
-import * as os from 'os';
-import { execFileSync } from 'child_process';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import { execFileSync } from 'node:child_process';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';
 
@@ -358,7 +358,7 @@ describe('Git Config E2E Test Suite', function () {
   describe('Repository State', () => {
     it('should report repository has at least one commit', () => {
       const commitCount = gitSync(['rev-list', '--count', 'HEAD'], tempRepoPath);
-      const count = parseInt(commitCount, 10);
+      const count = Number.parseInt(commitCount, 10);
       assert.ok(!isNaN(count) && count >= 1, `Repository should have at least one commit, got: ${commitCount}`);
     });
 

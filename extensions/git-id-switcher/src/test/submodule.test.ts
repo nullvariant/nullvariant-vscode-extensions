@@ -5,8 +5,8 @@
  */
 
 import * as assert from 'assert';
-import * as os from 'os';
-import * as path from 'path';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import { validateSubmodulePath } from '../pathUtils';
 import { getMaxSubmoduleDepth } from '../submodule';
 
