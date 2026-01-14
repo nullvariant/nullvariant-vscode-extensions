@@ -14,8 +14,8 @@
  * @see https://nodejs.org/api/child_process.html#child_processexecfilefile-args-options-callback
  */
 
-import { execFile, ExecFileException } from 'child_process';
-import { promisify } from 'util';
+import { execFile, ExecFileException } from 'node:child_process';
+import { promisify } from 'node:util';
 import { isCommandAllowed } from './commandAllowlist';
 import { securityLogger, type ISecurityLogger } from './securityLogger';
 import { getWorkspace } from './vscodeLoader';

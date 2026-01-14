@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-01-14
+
+### Internal
+
+- **Code Quality Improvements**: Use `node:` prefix for Node.js built-in modules
+  - `child_process` → `node:child_process` in secureExec.ts
+  - `util` → `node:util` in secureExec.ts
+  - `assert` → `node:assert` in all test files
+
 ## [0.12.0] - 2026-01-14
 
 ### Removed
@@ -1164,7 +1173,9 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.3...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.1...HEAD
+[0.12.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.12.0...git-id-switcher-v0.12.1
+[0.12.0]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.3...git-id-switcher-v0.12.0
 [0.11.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.2...git-id-switcher-v0.11.3
 [0.11.2]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.1...git-id-switcher-v0.11.2
 [0.11.1]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.11.0...git-id-switcher-v0.11.1

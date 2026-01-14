@@ -4,7 +4,7 @@
  * Tests submodule path validation, symlink protection, and depth limiting.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { validateSubmodulePath } from '../pathUtils';

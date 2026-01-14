@@ -39,7 +39,7 @@
  * - Test panel lifecycle (creation, close, re-creation)
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as vscode from 'vscode';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';

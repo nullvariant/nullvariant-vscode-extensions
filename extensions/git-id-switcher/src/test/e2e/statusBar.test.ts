@@ -27,7 +27,7 @@
  * test-only accessor methods to statusBar.ts in a future phase.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as vscode from 'vscode';
 import { createStatusBar, IdentityStatusBar } from '../../statusBar';
 import { Identity } from '../../identity';

@@ -12,7 +12,7 @@
  * that methods can be called without errors and console output is correct.
  */
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
   securityLogger,
   SecurityEventType,
