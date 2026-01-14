@@ -43,6 +43,7 @@ This repository contains VS Code extensions with the following security measures
 
 - **Dependency Pinning**: GitHub Actions are pinned to commit SHAs
 - **Automated Security Scanning**: CodeQL analysis runs on every push
+- **Static Code Analysis**: [SonarCloud](https://sonarcloud.io/project/overview?id=nullvariant_nullvariant-vscode-extensions) runs on every push and PR (CI-based analysis)
 - **Daily Vulnerability Scans**: `npm audit` runs daily via scheduled workflow
 - **Fork Protection**: Sensitive workflows skip on fork repositories
 - **Runtime Security Monitoring**: [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) monitors all workflow runs for suspicious network egress, file access, and process execution
@@ -72,6 +73,7 @@ This section documents all secrets used in CI/CD workflows.
 | VSCE_PAT | VS Code Marketplace publishing | publish.yml, unpublish.yml | Annual | High |
 | OVSX_PAT | Open VSX publishing | publish.yml, unpublish.yml | Annual | High |
 | CODECOV_TOKEN | Coverage reporting | ci.yml | As needed | Medium |
+| SONAR_TOKEN | SonarCloud code analysis | sonarcloud.yml | As needed | Medium |
 | CLOUDFLARE_API_TOKEN | Cloudflare Pages/R2 deployment | deploy-docs.yml, publish.yml | Annual | High |
 | CLOUDFLARE_ACCOUNT_ID | Cloudflare account identifier (public) | deploy-docs.yml, publish.yml | Never | Low (public ID) |
 | SLACK_WEBHOOK | Bot monitoring alerts | bot-monitoring.yml | As needed | Medium |
@@ -118,6 +120,7 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 | OVSX_PAT | Open VSX | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens) | No expiration |
 | CLOUDFLARE_API_TOKEN | Cloudflare | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) | No expiration |
 | CODECOV_TOKEN | Codecov | [Codecov Settings](https://app.codecov.io/account/gh/nullvariant/settings) | No expiration |
+| SONAR_TOKEN | SonarCloud | [SonarCloud Security](https://sonarcloud.io/account/security) | No expiration |
 | GitHub App Keys | GitHub | [GitHub Apps](https://github.com/settings/apps) | No expiration |
 | SLACK_WEBHOOK | Slack | [Slack Apps](https://api.slack.com/apps) | No expiration |
 
