@@ -1,0 +1,100 @@
+name: Auto Tag on Version Change
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'extensions/*/package.json'
+
+permissions: {}
+
+jobs:
+  auto-tag:
+    runs-on: ubuntu-latest
+    # Prevent forks from creating tags
+    if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
+    permissions:
+      contents: write
+
+    strategy:
+      # Stop all jobs if one fails (consistent state)
+      fail-fast: true
+      matrix:
+        # Monorepo support: add new extensions here
+        # Format: { dir: "extension-dir", prefix: "tag-prefix-v" }
+        extension:
+          - { dir: "git-id-switcher", prefix: "git-id-switcher-v" }
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Check if package.json changed
+        id: changed
+        run: |
+          PACKAGE_JSON="extensions/${{ matrix.extension.dir }}/package.json"
+
+          # Handle initial commit (no HEAD~1)
+          if ! git rev-parse HEAD~1 >/dev/null 2>&1; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "ℹ️ Initial commit detected, treating as changed"
+            exit 0
+          fi
+
+          # Check if this specific package.json was in the changed files
+          if git diff --name-only HEAD~1 HEAD | grep -q "^${PACKAGE_JSON}$"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "✓ $PACKAGE_JSON was changed"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ $PACKAGE_JSON was not changed in this push"
+          fi
+
+      - name: Get version from package.json
+        id: version
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          PACKAGE_JSON="extensions/${{ matrix.extension.dir }}/package.json"
+          VERSION=$(jq -r '.version' "$PACKAGE_JSON")
+
+          # Validate version format (semver)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "::error::Invalid version format: $VERSION (expected semver)"
+            exit 1
+          fi
+
+          TAG="${{ matrix.extension.prefix }}$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "📦 Extension: ${{ matrix.extension.dir }}, Version: $VERSION, Tag: $TAG"
+
+      - name: Check if tag exists
+        id: check
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "ℹ️ Tag $TAG already exists, skipping"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "🏷️ Tag $TAG does not exist, will create"
+          fi
+
+      - name: Create and push tag
+        if: steps.changed.outputs.changed == 'true' && steps.check.outputs.exists == 'false'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "✅ Created and pushed tag: $TAG"
