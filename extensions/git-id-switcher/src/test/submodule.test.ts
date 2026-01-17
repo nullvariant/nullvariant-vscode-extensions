@@ -409,7 +409,7 @@ function testGetSubmoduleDepthClamping(): void {
     const mockVSCode = {
       workspace: {
         getConfiguration: () => ({
-          get: <T>(_key: string, _defaultValue: T) => 100 as unknown as T, // Very high depth
+          get: <T>() => 100 as unknown as T, // Very high depth
         }),
       },
       l10n: undefined,
@@ -431,7 +431,7 @@ function testGetSubmoduleDepthClamping(): void {
     const mockVSCode = {
       workspace: {
         getConfiguration: () => ({
-          get: <T>(_key: string, _defaultValue: T) => -5 as unknown as T, // Negative depth
+          get: <T>() => -5 as unknown as T, // Negative depth
         }),
       },
       l10n: undefined,
@@ -453,7 +453,7 @@ function testGetSubmoduleDepthClamping(): void {
     const mockVSCode = {
       workspace: {
         getConfiguration: () => ({
-          get: <T>(_key: string, _defaultValue: T) => 3 as unknown as T, // Valid depth
+          get: <T>() => 3 as unknown as T, // Valid depth
         }),
       },
       l10n: undefined,
