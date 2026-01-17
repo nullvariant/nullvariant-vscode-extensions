@@ -45,8 +45,10 @@ export async function activate(
 ): Promise<void> {
   console.log('[Git ID Switcher] Activating...');
 
-  // Initialize security logger
-  securityLogger.initialize();
+  // Initialize security logger with context for secure file logging
+  // SECURITY: Pass globalStorageUri to ensure log files are written
+  // only to the extension's secure storage, not arbitrary paths
+  securityLogger.initializeWithContext(context.globalStorageUri.fsPath);
   securityLogger.logActivation();
 
   // Create status bar

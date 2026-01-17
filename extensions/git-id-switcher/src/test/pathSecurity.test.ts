@@ -11,9 +11,13 @@
  */
 
 import * as assert from 'node:assert';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as os from 'node:os';
 import {
   isSecurePath,
   isPathArgument,
+  isSecureLogPath,
 } from '../pathSecurity';
 import { isCommandAllowed } from '../commandAllowlist';
 
@@ -631,6 +635,219 @@ function testAbsolutePathWithRelativeTraversal(): void {
   console.log('✅ Absolute path with relative traversal blocked!');
 }
 
+// ============================================================================
+// Secure Log Path Tests
+// ============================================================================
+
+/**
+ * Test isSecureLogPath rejects paths outside allowed directory
+ */
+function testSecureLogPathOutsideAllowed(): void {
+  console.log('Testing isSecureLogPath rejects paths outside allowed directory...');
+
+  // Use realpath to resolve any system symlinks (e.g., /var -> /private/var on macOS)
+  const baseTempDir = fs.realpathSync(os.tmpdir());
+  const tempDir = fs.mkdtempSync(path.join(baseTempDir, 'securelogpath-allowed-test-'));
+
+  try {
+    // Create a subdirectory outside the allowed directory
+    const outsideDir = fs.mkdtempSync(path.join(baseTempDir, 'securelogpath-outside-test-'));
+    const outsidePaths = [
+      path.join(outsideDir, 'malicious.log'),
+      path.join(outsideDir, 'subdir', 'file.log'),
+    ];
+
+    for (const filePath of outsidePaths) {
+      const result = isSecureLogPath(filePath, tempDir);
+      assert.strictEqual(
+        result.valid,
+        false,
+        `Path outside allowed directory should be rejected: "${filePath}"`
+      );
+      assert.ok(
+        result.reason?.includes('not under allowed directory'),
+        `Should mention path is not under allowed directory for: "${filePath}", got: "${result.reason}"`
+      );
+    }
+
+    fs.rmSync(outsideDir, { recursive: true, force: true });
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+
+  console.log('✅ Paths outside allowed directory rejected!');
+}
+
+/**
+ * Test isSecureLogPath allows paths under allowed directory
+ */
+function testSecureLogPathUnderAllowed(): void {
+  console.log('Testing isSecureLogPath allows paths under allowed directory...');
+
+  // Use realpath to resolve any system symlinks (e.g., /var -> /private/var on macOS)
+  const baseTempDir = fs.realpathSync(os.tmpdir());
+  const tempDir = fs.mkdtempSync(path.join(baseTempDir, 'securelogpath-test-'));
+
+  try {
+    const validPaths = [
+      path.join(tempDir, 'logs', 'security.log'),
+      path.join(tempDir, 'file.log'),
+      path.join(tempDir, 'subdir', 'nested', 'file.log'),
+    ];
+
+    for (const filePath of validPaths) {
+      const result = isSecureLogPath(filePath, tempDir);
+      assert.strictEqual(
+        result.valid,
+        true,
+        `Path under allowed directory should be allowed: "${filePath}"`
+      );
+      assert.ok(
+        result.resolvedPath,
+        `Should return resolved path for: "${filePath}"`
+      );
+    }
+  } finally {
+    // Cleanup
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+
+  console.log('✅ Paths under allowed directory allowed!');
+}
+
+/**
+ * Test isSecureLogPath rejects symbolic links
+ */
+function testSecureLogPathRejectsSymlinks(): void {
+  console.log('Testing isSecureLogPath rejects symbolic links...');
+
+  // Use realpath to resolve any system symlinks (e.g., /var -> /private/var on macOS)
+  const baseTempDir = fs.realpathSync(os.tmpdir());
+  const tempDir = fs.mkdtempSync(path.join(baseTempDir, 'securelogpath-symlink-test-'));
+
+  try {
+    const realDir = path.join(tempDir, 'real');
+    const symlinkDir = path.join(tempDir, 'symlink');
+    const outsideDir = path.join(baseTempDir, 'outside-target-' + Date.now());
+
+    // Create directories
+    fs.mkdirSync(realDir, { recursive: true });
+    fs.mkdirSync(outsideDir, { recursive: true });
+
+    // Create a symlink pointing to outside directory
+    fs.symlinkSync(outsideDir, symlinkDir);
+
+    // Test: symlink in path should be rejected
+    const symlinkPath = path.join(symlinkDir, 'malicious.log');
+    const result = isSecureLogPath(symlinkPath, tempDir);
+
+    assert.strictEqual(
+      result.valid,
+      false,
+      'Path with symlink should be rejected'
+    );
+    assert.ok(
+      result.reason?.includes('symbolic link'),
+      `Should mention symbolic link, got: "${result.reason}"`
+    );
+
+    // Cleanup outside directory
+    fs.rmSync(outsideDir, { recursive: true, force: true });
+  } finally {
+    // Cleanup temp directory
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+
+  console.log('✅ Symbolic links rejected!');
+}
+
+/**
+ * Test isSecureLogPath rejects path traversal
+ */
+function testSecureLogPathRejectsTraversal(): void {
+  console.log('Testing isSecureLogPath rejects path traversal...');
+
+  const allowedDir = '/home/user/.vscode/globalStorage/extension';
+  const traversalPaths = [
+    '/home/user/.vscode/globalStorage/extension/../../../etc/passwd',
+    '/home/user/.vscode/globalStorage/extension/logs/../../..',
+  ];
+
+  for (const filePath of traversalPaths) {
+    const result = isSecureLogPath(filePath, allowedDir);
+    assert.strictEqual(
+      result.valid,
+      false,
+      `Path with traversal should be rejected: "${filePath}"`
+    );
+    assert.ok(
+      result.reason?.includes('traversal'),
+      `Should mention traversal for: "${filePath}"`
+    );
+  }
+
+  console.log('✅ Path traversal rejected!');
+}
+
+/**
+ * Test isSecureLogPath with basic path validation failures
+ */
+function testSecureLogPathBasicValidation(): void {
+  console.log('Testing isSecureLogPath with basic validation failures...');
+
+  const allowedDir = '/home/user/.vscode/globalStorage/extension';
+
+  // Null byte
+  {
+    const result = isSecureLogPath('/home/user\x00.log', allowedDir);
+    assert.strictEqual(result.valid, false, 'Null byte should be rejected');
+    assert.ok(result.reason?.includes('null byte'), 'Should mention null byte');
+  }
+
+  // Control characters
+  {
+    const result = isSecureLogPath('/home/user\x01file.log', allowedDir);
+    assert.strictEqual(result.valid, false, 'Control char should be rejected');
+  }
+
+  // Empty path
+  {
+    const result = isSecureLogPath('', allowedDir);
+    assert.strictEqual(result.valid, false, 'Empty path should be rejected');
+  }
+
+  console.log('✅ Basic validation failures handled!');
+}
+
+/**
+ * Test isSecureLogPath with invalid allowed base directory
+ */
+function testSecureLogPathInvalidBaseDir(): void {
+  console.log('Testing isSecureLogPath with invalid allowed base directory...');
+
+  // Use realpath to resolve any system symlinks
+  const baseTempDir = fs.realpathSync(os.tmpdir());
+  const testFilePath = path.join(baseTempDir, 'test-file.log');
+
+  // Invalid base directory (path traversal)
+  {
+    const result = isSecureLogPath(testFilePath, '../etc');
+    assert.strictEqual(result.valid, false, 'Invalid base dir should be rejected');
+    assert.ok(
+      result.reason?.includes('Invalid allowed base directory'),
+      `Should mention invalid base directory, got: "${result.reason}"`
+    );
+  }
+
+  // Invalid base directory (empty)
+  {
+    const result = isSecureLogPath(testFilePath, '');
+    assert.strictEqual(result.valid, false, 'Empty base dir should be rejected');
+  }
+
+  console.log('✅ Invalid base directory handled!');
+}
+
 /**
  * Run all path security tests
  */
@@ -658,6 +875,14 @@ export async function runPathSecurityTests(): Promise<void> {
     testIsPathArgument();
     testIsPathArgumentEdgeCases();
     testCommandAllowedIntegration();
+
+    // Secure Log Path tests
+    testSecureLogPathOutsideAllowed();
+    testSecureLogPathUnderAllowed();
+    testSecureLogPathRejectsSymlinks();
+    testSecureLogPathRejectsTraversal();
+    testSecureLogPathBasicValidation();
+    testSecureLogPathInvalidBaseDir();
 
     console.log('\n✅ All path security tests passed!\n');
   } catch (error) {

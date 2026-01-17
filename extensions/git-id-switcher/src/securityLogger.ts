@@ -14,7 +14,8 @@ import { MAX_ID_LENGTH } from './constants';
 import { sanitizePath } from './pathSanitizer';
 import { sanitizeValue, sanitizeDetails } from './sensitiveDataDetector';
 import { expandTilde } from './pathUtils';
-import { isSecurePath } from './pathSecurity';
+import * as path from 'node:path';
+import { isSecurePath, isSecureLogPath } from './pathSecurity';
 import {
   LogLevel,
   type StructuredLog,
@@ -86,6 +87,21 @@ class SecurityLoggerImpl implements ISecurityLogger {
   private readonly channelName = 'Git ID Switcher Security';
   private fileLogWriter: ILogWriter | null = null;
   private minLogLevel: LogLevel = LogLevel.INFO;
+  private globalStorageUri: string | null = null;
+
+  /**
+   * Initialize with extension context for secure file logging
+   *
+   * SECURITY: This method must be called with the extension context
+   * to enable secure file logging. The globalStorageUri is used as
+   * the only allowed directory for log files, ignoring workspace settings.
+   *
+   * @param globalStoragePath - The path from context.globalStorageUri.fsPath
+   */
+  initializeWithContext(globalStoragePath: string): void {
+    this.globalStorageUri = globalStoragePath;
+    this.initialize();
+  }
 
   initialize(): void {
     if (!this.outputChannel) {
@@ -102,21 +118,41 @@ class SecurityLoggerImpl implements ISecurityLogger {
     if (!vscode) return;
 
     const config = vscode.workspace.getConfiguration('gitIdSwitcher.logging');
-    const rawFilePath = config.get<string>('filePath', DEFAULT_FILE_LOG_CONFIG.filePath);
-    const expandedPath = rawFilePath ? expandTilde(rawFilePath) : '';
 
-    // Validate file path for security
-    if (expandedPath) {
-      const pathResult = isSecurePath(expandedPath);
+    // SECURITY: Ignore workspace setting for filePath
+    // Always use globalStorageUri to prevent arbitrary file write attacks
+    // via malicious .vscode/settings.json
+    let secureFilePath = '';
+    if (this.globalStorageUri) {
+      // Use fixed path under globalStorageUri
+      // IMPORTANT: Use path.join for cross-platform compatibility (Windows uses \)
+      secureFilePath = path.join(this.globalStorageUri, 'logs', 'security.log');
+
+      // Validate using isSecureLogPath with symlink detection
+      const pathResult = isSecureLogPath(secureFilePath, this.globalStorageUri);
       if (!pathResult.valid) {
         console.error(`[Git ID Switcher] Invalid log file path: ${pathResult.reason}`);
         return;
+      }
+      secureFilePath = pathResult.resolvedPath || secureFilePath;
+    } else {
+      // Fallback: use workspace setting but validate strictly
+      const rawFilePath = config.get<string>('filePath', DEFAULT_FILE_LOG_CONFIG.filePath);
+      const expandedPath = rawFilePath ? expandTilde(rawFilePath) : '';
+
+      if (expandedPath) {
+        const pathResult = isSecurePath(expandedPath);
+        if (!pathResult.valid) {
+          console.error(`[Git ID Switcher] Invalid log file path: ${pathResult.reason}`);
+          return;
+        }
+        secureFilePath = expandedPath;
       }
     }
 
     const fileConfig: FileLogConfig = {
       enabled: config.get<boolean>('fileEnabled', DEFAULT_FILE_LOG_CONFIG.enabled),
-      filePath: expandedPath,
+      filePath: secureFilePath,
       maxFileSizeBytes: config.get<number>('maxFileSize', DEFAULT_FILE_LOG_CONFIG.maxFileSizeBytes),
       maxFiles: config.get<number>('maxFiles', DEFAULT_FILE_LOG_CONFIG.maxFiles),
     };
