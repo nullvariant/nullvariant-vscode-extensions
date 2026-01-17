@@ -9,6 +9,7 @@
  * - Command-specific timeouts (git: 10s, ssh-add: 5s, ssh-keygen: 5s)
  * - Custom TimeoutError class for better error handling
  * - Security logging for timeout events
+ * - Absolute path resolution to prevent PATH pollution attacks
  *
  * @see https://owasp.org/www-community/attacks/Command_Injection
  * @see https://nodejs.org/api/child_process.html#child_processexecfilefile-args-options-callback
@@ -19,6 +20,7 @@ import { promisify } from 'node:util';
 import { isCommandAllowed } from './commandAllowlist';
 import { securityLogger, type ISecurityLogger } from './securityLogger';
 import { getWorkspace } from './vscodeLoader';
+import { getBinaryPath, BinaryResolutionError } from './binaryResolver';
 
 const execFilePromise = promisify(execFile);
 
@@ -397,11 +399,13 @@ export interface ExecResult {
  * - Command injection is not possible
  * - Commands are validated against allowlist (defense-in-depth)
  * - Command-specific timeouts prevent resource exhaustion
+ * - Uses absolute paths to prevent PATH pollution attacks
  *
- * @param command - The command to execute (must be in PATH or absolute)
+ * @param command - The command to execute (must be in allowed list)
  * @param args - Array of arguments (never concatenate user input)
  * @param options - Execution options (cwd, timeout, maxBuffer)
  * @throws TimeoutError if command execution times out
+ * @throws BinaryResolutionError if command path cannot be resolved
  * @throws Error if command execution fails or command not in allowlist
  */
 export async function secureExec(
@@ -420,6 +424,24 @@ export async function secureExec(
     throw error;
   }
 
+  // SECURITY: Resolve absolute path to prevent PATH pollution attacks
+  // This ensures we execute the expected binary, not a malicious one
+  // placed earlier in PATH by an attacker.
+  let absolutePath: string;
+  try {
+    absolutePath = await getBinaryPath(command);
+  } catch (error) {
+    if (error instanceof BinaryResolutionError) {
+      // Log the resolution failure for security audit
+      logger.logValidationFailure(
+        'binary-resolution',
+        `Failed to resolve binary path for ${command}`,
+        error.message
+      );
+    }
+    throw error;
+  }
+
   // Get command-specific timeout (user override takes precedence)
   const timeout = getCommandTimeout(command, options.timeout);
 
@@ -430,7 +452,8 @@ export async function secureExec(
   };
 
   try {
-    const { stdout, stderr } = await execFilePromise(command, args, execOptions);
+    // SECURITY: Execute using absolute path, not command name
+    const { stdout, stderr } = await execFilePromise(absolutePath, args, execOptions);
     return { stdout, stderr };
   } catch (error: unknown) {
     // Handle timeout errors specifically
@@ -522,6 +545,11 @@ export async function sshAgentExec(args: string[]): Promise<ExecResult> {
 export async function sshKeygenExec(args: string[]): Promise<ExecResult> {
   return secureExec('ssh-keygen', args);
 }
+
+/**
+ * Re-export binary resolver utilities for convenience
+ */
+export { BinaryResolutionError, clearPathCache } from './binaryResolver';
 
 /**
  * Test-only exports

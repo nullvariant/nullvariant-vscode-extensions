@@ -6,6 +6,7 @@
 
 import { runSecurityTests } from './validation.test';
 import { runSecureExecTests } from './secureExec.test';
+import { runBinaryResolverTests } from './binaryResolver.test';
 import { runPathSecurityTests } from './pathSecurity.test';
 import { runPathUtilsTests } from './pathUtils.test';
 import { runSshKeyFormatTests } from './sshKeyFormat.test';
@@ -35,6 +36,9 @@ async function main(): Promise<void> {
 
     // Run secure execution tests (async)
     await runSecureExecTests();
+
+    // Run binary resolver tests
+    await runBinaryResolverTests();
 
     // Run path security tests
     await runPathSecurityTests();
