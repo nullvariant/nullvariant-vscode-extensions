@@ -10,6 +10,8 @@
  * @see https://owasp.org/www-project-application-security-verification-standard/
  */
 
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { PATH_MAX } from './constants';
 import {
   CONTROL_CHAR_REGEX_STRICT,
@@ -446,4 +448,215 @@ export function isPathArgument(arg: string): boolean {
     // Windows UNC path pattern (\\server, //server)
     /^[/\\]{2}/.test(arg)
   );
+}
+
+// ============================================================================
+// Secure Log Path Validation
+// ============================================================================
+
+/**
+ * Result of secure log path validation
+ */
+export interface SecureLogPathResult {
+  valid: boolean;
+  reason?: string;
+  resolvedPath?: string;
+}
+
+/**
+ * Check if a path is a symbolic link using lstat
+ *
+ * @param filePath - The path to check
+ * @returns true if the path is a symbolic link
+ */
+function isSymbolicLink(filePath: string): boolean {
+  try {
+    const stats = fs.lstatSync(filePath);
+    return stats.isSymbolicLink();
+  } catch {
+    // File doesn't exist yet, which is fine for new log files
+    return false;
+  }
+}
+
+/**
+ * Check if any component of the path is a symbolic link
+ *
+ * @param filePath - The path to check
+ * @returns object with isSymlink flag and the symlink path if found
+ */
+function hasSymbolicLinkInPath(filePath: string): { isSymlink: boolean; symlinkPath?: string } {
+  // Normalize the path first to handle mixed separators on Windows
+  const normalizedPath = path.normalize(filePath);
+  const parts = normalizedPath.split(path.sep).filter(Boolean);
+
+  // Handle Windows drive letters (e.g., C:) and Unix root (/)
+  let currentPath = '';
+  if (normalizedPath.startsWith(path.sep)) {
+    currentPath = path.sep;
+  } else if (/^[a-zA-Z]:/.test(normalizedPath)) {
+    // Windows drive letter - first part includes the drive
+    currentPath = parts.shift() || '';
+    if (!currentPath.endsWith(path.sep)) {
+      currentPath += path.sep;
+    }
+  }
+
+  for (const part of parts) {
+    currentPath = path.join(currentPath, part);
+    try {
+      const stats = fs.lstatSync(currentPath);
+      if (stats.isSymbolicLink()) {
+        return { isSymlink: true, symlinkPath: currentPath };
+      }
+    } catch {
+      // Path component doesn't exist yet, which is fine
+      break;
+    }
+  }
+
+  return { isSymlink: false };
+}
+
+/**
+ * Resolve the real path, handling non-existent files
+ *
+ * For non-existent files, resolves the parent directory and appends the filename.
+ *
+ * @param filePath - The path to resolve
+ * @returns The resolved real path or null if resolution fails
+ */
+function resolveRealPath(filePath: string): string | null {
+  try {
+    // Try to resolve the full path first
+    return fs.realpathSync(filePath);
+  } catch {
+    // File doesn't exist, try to resolve parent directory
+    const dir = path.dirname(filePath);
+    const basename = path.basename(filePath);
+    try {
+      const resolvedDir = fs.realpathSync(dir);
+      return path.join(resolvedDir, basename);
+    } catch {
+      // Parent directory also doesn't exist
+      // In this case, just normalize the path
+      return path.resolve(filePath);
+    }
+  }
+}
+
+/**
+ * Check if a path is under an allowed base directory
+ *
+ * @param resolvedPath - The resolved real path to check
+ * @param allowedBaseDir - The allowed base directory
+ * @returns true if the path is under the allowed base directory
+ */
+function isUnderAllowedDir(resolvedPath: string, allowedBaseDir: string): boolean {
+  // Normalize both paths for comparison
+  const normalizedPath = path.normalize(resolvedPath);
+  const normalizedBase = path.normalize(allowedBaseDir);
+
+  // Ensure base directory ends with separator for proper prefix matching
+  const baseWithSep = normalizedBase.endsWith(path.sep)
+    ? normalizedBase
+    : normalizedBase + path.sep;
+
+  // Check if path starts with base directory or is exactly the base directory
+  return normalizedPath === normalizedBase || normalizedPath.startsWith(baseWithSep);
+}
+
+/**
+ * Validate a log file path for security
+ *
+ * This function performs comprehensive security checks on log file paths:
+ * - First performs basic path validation via isSecurePath()
+ * - Detects and rejects symbolic links in the path (TOCTOU mitigation)
+ * - Resolves to real path and validates it's under allowed directory
+ *
+ * SECURITY: This function mitigates:
+ * - Arbitrary file write via workspace settings
+ * - Symlink following attacks
+ *
+ * @param filePath - The log file path to validate
+ * @param allowedBaseDir - The allowed base directory (e.g., globalStorageUri)
+ * @returns SecureLogPathResult indicating if path is safe and the resolved path
+ *
+ * @example
+ * // Valid: path under allowed directory
+ * isSecureLogPath('/home/user/.vscode/globalStorage/ext/logs/security.log', '/home/user/.vscode/globalStorage/ext')
+ * // { valid: true, resolvedPath: '/home/user/.vscode/globalStorage/ext/logs/security.log' }
+ *
+ * // Invalid: path outside allowed directory
+ * isSecureLogPath('/etc/passwd', '/home/user/.vscode/globalStorage/ext')
+ * // { valid: false, reason: 'Path is not under allowed directory' }
+ *
+ * // Invalid: symlink detected
+ * isSecureLogPath('/home/user/symlink-to-etc/passwd', '/home/user')
+ * // { valid: false, reason: 'Path contains symbolic link: /home/user/symlink-to-etc' }
+ */
+export function isSecureLogPath(filePath: string, allowedBaseDir: string): SecureLogPathResult {
+  // Step 1: Basic path validation
+  const basicResult = isSecurePath(filePath);
+  if (!basicResult.valid) {
+    return { valid: false, reason: basicResult.reason };
+  }
+
+  // Step 2: Check for symbolic links in the path
+  // SECURITY: Detect symlinks before resolving to prevent TOCTOU attacks
+  const symlinkCheck = hasSymbolicLinkInPath(filePath);
+  if (symlinkCheck.isSymlink) {
+    return {
+      valid: false,
+      reason: `Path contains symbolic link: ${symlinkCheck.symlinkPath}`,
+    };
+  }
+
+  // Also check the file itself if it exists
+  if (isSymbolicLink(filePath)) {
+    return {
+      valid: false,
+      reason: 'Log file path is a symbolic link',
+    };
+  }
+
+  // Step 3: Resolve real path
+  const resolvedPath = resolveRealPath(filePath);
+  if (!resolvedPath) {
+    return {
+      valid: false,
+      reason: 'Failed to resolve path',
+    };
+  }
+
+  // Step 4: Validate allowed base directory
+  const baseDirResult = isSecurePath(allowedBaseDir);
+  if (!baseDirResult.valid) {
+    return {
+      valid: false,
+      reason: `Invalid allowed base directory: ${baseDirResult.reason}`,
+    };
+  }
+
+  // Step 5: Resolve allowed base directory
+  const resolvedBaseDir = resolveRealPath(allowedBaseDir);
+  if (!resolvedBaseDir) {
+    return {
+      valid: false,
+      reason: 'Failed to resolve allowed base directory',
+    };
+  }
+
+  // Step 6: Check if path is under allowed directory
+  if (!isUnderAllowedDir(resolvedPath, resolvedBaseDir)) {
+    return {
+      valid: false,
+      reason: 'Path is not under allowed directory',
+    };
+  }
+
+  return {
+    valid: true,
+    resolvedPath,
+  };
 }
