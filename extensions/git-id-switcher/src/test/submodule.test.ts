@@ -698,6 +698,40 @@ async function testSetIdentityForSubmodulesWithRepo(): Promise<void> {
 }
 
 /**
+ * Test listSubmodules with git repo that has no submodules (empty stdout path)
+ *
+ * Coverage target: listSubmodules() empty stdout path (line 153-155)
+ * Note: The full success path (lines 157-168) requires fixing a bug in gitExec
+ * where stdout.trim() removes the leading status character from submodule output.
+ */
+async function testListSubmodulesEmptyResult(): Promise<void> {
+  console.log('Testing listSubmodules with repo having no submodules...');
+
+  const { execSync } = await import('node:child_process');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'no-submodules-'));
+
+  try {
+    // Initialize a git repo with no submodules
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.email "test@example.com"', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: tempDir, stdio: 'ignore' });
+    fs.writeFileSync(path.join(tempDir, 'README.md'), '# Test Repo');
+    execSync('git add .', { cwd: tempDir, stdio: 'ignore' });
+    execSync('git commit -m "Initial commit"', { cwd: tempDir, stdio: 'ignore' });
+
+    // Test listSubmodules - should return empty array
+    const submodules = await listSubmodules(tempDir);
+
+    assert.ok(Array.isArray(submodules), 'Should return an array');
+    assert.strictEqual(submodules.length, 0, 'Should find 0 submodules');
+
+    console.log('✅ listSubmodules empty result tests passed!');
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+/**
  * Run all submodule tests
  */
 export async function runSubmoduleTests(): Promise<void> {
@@ -737,6 +771,9 @@ export async function runSubmoduleTests(): Promise<void> {
     // Success path tests with real git repos
     await testSetSubmoduleGitConfigSuccess();
     await testSetIdentityForSubmodulesWithRepo();
+
+    // listSubmodules empty result path with real git repo
+    await testListSubmodulesEmptyResult();
 
     console.log('\n✅ All submodule tests passed!\n');
   } catch (error) {
