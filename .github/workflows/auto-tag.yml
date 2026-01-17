@@ -36,6 +36,9 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
+          # Use PAT to allow tag push to trigger publish workflow
+          # GITHUB_TOKEN pushes don't trigger other workflows (prevents infinite loops)
+          token: ${{ secrets.RELEASE_PAT }}
 
       - name: Check if package.json changed
         id: changed
