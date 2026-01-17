@@ -31,6 +31,10 @@ import {
 import { showDocumentation } from './documentation';
 import { securityLogger } from './securityLogger';
 import { getUserSafeMessage, isFatalError } from './errors';
+import {
+  initializeWorkspaceTrust,
+  requireWorkspaceTrust,
+} from './workspaceTrust';
 
 // Global state
 let statusBar: IdentityStatusBar;
@@ -51,11 +55,11 @@ export async function activate(
   securityLogger.initializeWithContext(context.globalStorageUri.fsPath);
   securityLogger.logActivation();
 
-  // Create status bar
+  // Create status bar (always create for visual feedback)
   statusBar = createStatusBar();
   context.subscriptions.push(statusBar);
 
-  // Register commands
+  // Register commands (always register, but guard execution with trust check)
   const selectCommand = vscode.commands.registerCommand(
     'git-id-switcher.selectIdentity',
     () => selectIdentityCommand(context)
@@ -73,6 +77,36 @@ export async function activate(
 
   context.subscriptions.push(selectCommand, showCurrentCommand, showDocsCommand);
 
+  // SECURITY: Check workspace trust before initializing sensitive operations
+  // If workspace is not trusted, defer initialization until trust is granted
+  const isTrusted = initializeWorkspaceTrust(context, async () => {
+    // This callback is called when workspace trust is granted
+    await performTrustedInitialization(context);
+  });
+
+  if (isTrusted) {
+    // Workspace is trusted, proceed with full initialization
+    await performTrustedInitialization(context);
+  } else {
+    // Workspace is not trusted - show disabled state in status bar
+    statusBar.setNoIdentity();
+    console.log('[Git ID Switcher] Activated in restricted mode (untrusted workspace)');
+    return;
+  }
+
+  console.log('[Git ID Switcher] Activated');
+}
+
+/**
+ * Perform initialization that requires workspace trust
+ *
+ * SECURITY: This function should only be called after confirming
+ * the workspace is trusted. It reads workspace configuration and
+ * executes Git/SSH commands.
+ */
+async function performTrustedInitialization(
+  context: vscode.ExtensionContext
+): Promise<void> {
   // Initialize state
   await initializeState(context);
 
@@ -135,8 +169,6 @@ export async function activate(
       }
     })
   );
-
-  console.log('[Git ID Switcher] Activated');
 }
 
 /**
@@ -323,6 +355,11 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
 async function selectIdentityCommand(
   context: vscode.ExtensionContext
 ): Promise<void> {
+  // SECURITY: Block command execution in untrusted workspaces
+  if (!requireWorkspaceTrust()) {
+    return;
+  }
+
   try {
     // Show quick pick
     const selectedIdentity = await showIdentityQuickPick(currentIdentity);
