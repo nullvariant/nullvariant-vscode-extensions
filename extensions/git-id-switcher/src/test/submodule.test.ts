@@ -19,6 +19,7 @@ import {
   listSubmodules,
   listSubmodulesRecursive,
   setSubmoduleGitConfig,
+  setIdentityForSubmodules,
   isSubmoduleSupportEnabled,
   getSubmoduleDepth,
 } from '../submodule';
@@ -526,6 +527,177 @@ async function testListSubmodulesRecursiveDepth(): Promise<void> {
 }
 
 /**
+ * Test isSubmoduleSupportEnabled with mocked workspace
+ *
+ * Coverage target: isSubmoduleSupportEnabled() with workspace available
+ */
+function testIsSubmoduleSupportEnabledWithMock(): void {
+  console.log('Testing isSubmoduleSupportEnabled with mock...');
+
+  // Test with applyToSubmodules = false
+  {
+    const mockVSCode = {
+      workspace: {
+        getConfiguration: () => ({
+          get: <T>() => false as unknown as T,
+        }),
+      },
+      l10n: undefined,
+      window: undefined,
+      extensions: undefined,
+    };
+
+    try {
+      _setMockVSCode(mockVSCode as never);
+      const result = isSubmoduleSupportEnabled();
+      assert.strictEqual(result, false, 'Should return false when configured as false');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test with applyToSubmodules = true
+  {
+    const mockVSCode = {
+      workspace: {
+        getConfiguration: () => ({
+          get: <T>() => true as unknown as T,
+        }),
+      },
+      l10n: undefined,
+      window: undefined,
+      extensions: undefined,
+    };
+
+    try {
+      _setMockVSCode(mockVSCode as never);
+      const result = isSubmoduleSupportEnabled();
+      assert.strictEqual(result, true, 'Should return true when configured as true');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  console.log('✅ isSubmoduleSupportEnabled with mock tests passed!');
+}
+
+/**
+ * Test setIdentityForSubmodules with empty array
+ *
+ * Coverage target: setIdentityForSubmodules() edge case
+ */
+async function testSetIdentityForSubmodulesEmpty(): Promise<void> {
+  console.log('Testing setIdentityForSubmodules with empty array...');
+
+  // Test with empty submodules array
+  const result = await setIdentityForSubmodules([], 'Test User', 'test@example.com');
+
+  assert.strictEqual(result.success, 0, 'Should have 0 success with empty array');
+  assert.strictEqual(result.failed, 0, 'Should have 0 failed with empty array');
+
+  console.log('✅ setIdentityForSubmodules empty array tests passed!');
+}
+
+/**
+ * Test setSubmoduleGitConfig success path with real git repo
+ *
+ * Coverage target: setSubmoduleGitConfig() success return (line 255)
+ */
+async function testSetSubmoduleGitConfigSuccess(): Promise<void> {
+  console.log('Testing setSubmoduleGitConfig success path...');
+
+  const { execSync } = await import('node:child_process');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gitconfig-success-'));
+
+  try {
+    // Initialize a git repo
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+
+    // Test setting user.name (should succeed)
+    const result = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
+    assert.strictEqual(result, true, 'setSubmoduleGitConfig should return true on success');
+
+    // Test setting user.email (should succeed)
+    const result2 = await setSubmoduleGitConfig(tempDir, 'user.email', 'test@example.com');
+    assert.strictEqual(result2, true, 'setSubmoduleGitConfig should return true on success');
+
+    console.log('✅ setSubmoduleGitConfig success path tests passed!');
+  } finally {
+    // Cleanup
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Test setIdentityForSubmodules with real git repo (success and failure paths)
+ *
+ * Coverage target: setIdentityForSubmodules() internal logic (lines 274-314)
+ */
+async function testSetIdentityForSubmodulesWithRepo(): Promise<void> {
+  console.log('Testing setIdentityForSubmodules with real repo...');
+
+  const { execSync } = await import('node:child_process');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'identity-test-'));
+
+  try {
+    // Initialize a git repo
+    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+
+    // Create a mock submodule object pointing to the temp git repo
+    const mockSubmodule = {
+      path: 'test-submodule',
+      absolutePath: tempDir,
+      commitHash: 'abc123',
+      initialized: true,
+    };
+
+    // Test with a single valid submodule (no GPG key)
+    const result1 = await setIdentityForSubmodules(
+      [mockSubmodule],
+      'Test User',
+      'test@example.com'
+    );
+    assert.strictEqual(result1.success, 1, 'Should have 1 success');
+    assert.strictEqual(result1.failed, 0, 'Should have 0 failed');
+
+    // Test with GPG key (covers gpgKeyId branch)
+    const result2 = await setIdentityForSubmodules(
+      [mockSubmodule],
+      'Test User',
+      'test@example.com',
+      'ABCD1234'
+    );
+    assert.strictEqual(result2.success, 1, 'Should have 1 success with GPG key');
+    assert.strictEqual(result2.failed, 0, 'Should have 0 failed');
+
+    // Test with invalid submodule (non-git directory)
+    const nonGitDir = fs.mkdtempSync(path.join(os.tmpdir(), 'non-git-'));
+    const invalidSubmodule = {
+      path: 'invalid',
+      absolutePath: nonGitDir,
+      commitHash: 'def456',
+      initialized: false,
+    };
+
+    try {
+      const result3 = await setIdentityForSubmodules(
+        [invalidSubmodule],
+        'Test User',
+        'test@example.com'
+      );
+      assert.strictEqual(result3.success, 0, 'Should have 0 success for non-git dir');
+      assert.strictEqual(result3.failed, 1, 'Should have 1 failed for non-git dir');
+    } finally {
+      fs.rmSync(nonGitDir, { recursive: true, force: true });
+    }
+
+    console.log('✅ setIdentityForSubmodules with real repo tests passed!');
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+/**
  * Run all submodule tests
  */
 export async function runSubmoduleTests(): Promise<void> {
@@ -555,6 +727,16 @@ export async function runSubmoduleTests(): Promise<void> {
 
     // Recursive depth handling tests
     await testListSubmodulesRecursiveDepth();
+
+    // Mocked workspace tests
+    testIsSubmoduleSupportEnabledWithMock();
+
+    // setIdentityForSubmodules tests
+    await testSetIdentityForSubmodulesEmpty();
+
+    // Success path tests with real git repos
+    await testSetSubmoduleGitConfigSuccess();
+    await testSetIdentityForSubmodulesWithRepo();
 
     console.log('\n✅ All submodule tests passed!\n');
   } catch (error) {
