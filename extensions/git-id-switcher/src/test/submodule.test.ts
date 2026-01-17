@@ -1,14 +1,28 @@
 /**
  * Security Tests for Submodule Handling
  *
- * Tests submodule path validation, symlink protection, and depth limiting.
+ * Tests submodule path validation, symlink protection, depth limiting,
+ * and GitExecResult error handling.
+ *
+ * Note: submodule.ts uses vscodeLoader for lazy loading, enabling unit testing
+ * without VS Code extension host. The workspace-dependent functions gracefully
+ * handle missing VS Code API by returning defaults.
  */
 
 import * as assert from 'node:assert';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import * as fs from 'node:fs';
 import { validateSubmodulePath } from '../pathUtils';
-import { getMaxSubmoduleDepth } from '../submodule';
+import {
+  getMaxSubmoduleDepth,
+  listSubmodules,
+  listSubmodulesRecursive,
+  setSubmoduleGitConfig,
+  isSubmoduleSupportEnabled,
+  getSubmoduleDepth,
+} from '../submodule';
+import { _resetCache, _setMockVSCode } from '../vscodeLoader';
 
 /**
  * Test submodule path validation basics
@@ -162,7 +176,7 @@ function testSymlinkEscapePrevention(): void {
 }
 
 /**
- * Test MAX_SUBMODULE_DEPTH constant
+ * Test MAX_SUBMODULE_DEPTH constant from submodule.ts
  */
 function testMaxSubmoduleDepth(): void {
   console.log('Testing MAX_SUBMODULE_DEPTH...');
@@ -282,12 +296,243 @@ function testInvalidWorkspacePaths(): void {
 }
 
 /**
+ * Test listSubmodules GitExecResult error handling
+ *
+ * Coverage target: listSubmodules() error path (lines 137-148)
+ * Tests that git command failures are handled gracefully.
+ */
+async function testListSubmodulesErrorHandling(): Promise<void> {
+  console.log('Testing listSubmodules error handling...');
+
+  // Test 1: Non-git directory returns empty array (not throw)
+  {
+    // Create a temporary directory that is NOT a git repository
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'submodule-test-'));
+    try {
+      const result = await listSubmodules(tempDir);
+      assert.ok(Array.isArray(result), 'Should return an array');
+      assert.strictEqual(result.length, 0, 'Non-git directory should return empty array');
+    } finally {
+      // Cleanup
+      fs.rmdirSync(tempDir);
+    }
+  }
+
+  // Test 2: Non-existent path returns empty array (validation fails first)
+  {
+    const result = await listSubmodules('/non/existent/path/xyz123');
+    assert.ok(Array.isArray(result), 'Should return an array');
+    assert.strictEqual(result.length, 0, 'Non-existent path should return empty array');
+  }
+
+  // Test 3: Empty string returns empty array
+  {
+    const result = await listSubmodules('');
+    assert.ok(Array.isArray(result), 'Should return an array');
+    assert.strictEqual(result.length, 0, 'Empty path should return empty array');
+  }
+
+  console.log('✅ listSubmodules error handling tests passed!');
+}
+
+/**
+ * Test setSubmoduleGitConfig GitExecResult error handling
+ *
+ * Coverage target: setSubmoduleGitConfig() error path (lines 241-251)
+ * Tests that git config failures are handled gracefully.
+ */
+async function testSetSubmoduleGitConfigErrorHandling(): Promise<void> {
+  console.log('Testing setSubmoduleGitConfig error handling...');
+
+  // Test 1: Non-git directory returns false (not throw)
+  {
+    // Create a temporary directory that is NOT a git repository
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gitconfig-test-'));
+    try {
+      const result = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
+      assert.strictEqual(result, false, 'Non-git directory should return false');
+    } finally {
+      // Cleanup
+      fs.rmdirSync(tempDir);
+    }
+  }
+
+  // Test 2: Non-existent path returns false
+  {
+    const result = await setSubmoduleGitConfig(
+      '/non/existent/path/xyz123',
+      'user.name',
+      'Test User'
+    );
+    assert.strictEqual(result, false, 'Non-existent path should return false');
+  }
+
+  console.log('✅ setSubmoduleGitConfig error handling tests passed!');
+}
+
+/**
+ * Test VS Code API fallback behavior
+ *
+ * Tests that functions work correctly when VS Code API is not available.
+ */
+function testVSCodeApiFallback(): void {
+  console.log('Testing VS Code API fallback behavior...');
+
+  // Reset cache to ensure clean state
+  _resetCache();
+
+  // isSubmoduleSupportEnabled should return true by default
+  {
+    const result = isSubmoduleSupportEnabled();
+    assert.strictEqual(result, true, 'Should default to enabled when VS Code not available');
+  }
+
+  // getSubmoduleDepth should return 1 by default
+  {
+    const result = getSubmoduleDepth();
+    assert.strictEqual(result, 1, 'Should default to 1 when VS Code not available');
+  }
+
+  console.log('✅ VS Code API fallback tests passed!');
+}
+
+/**
+ * Test getSubmoduleDepth with mocked workspace (depth clamping)
+ *
+ * Coverage target: getSubmoduleDepth() clamping logic
+ */
+function testGetSubmoduleDepthClamping(): void {
+  console.log('Testing getSubmoduleDepth clamping...');
+
+  // Test with depth > MAX_SUBMODULE_DEPTH (should be clamped to 5)
+  {
+    const mockVSCode = {
+      workspace: {
+        getConfiguration: () => ({
+          get: <T>(_key: string, _defaultValue: T) => 100 as unknown as T, // Very high depth
+        }),
+      },
+      l10n: undefined,
+      window: undefined,
+      extensions: undefined,
+    };
+
+    try {
+      _setMockVSCode(mockVSCode as never);
+      const result = getSubmoduleDepth();
+      assert.strictEqual(result, 5, 'Depth > MAX should be clamped to 5');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test with negative depth (should be clamped to 0)
+  {
+    const mockVSCode = {
+      workspace: {
+        getConfiguration: () => ({
+          get: <T>(_key: string, _defaultValue: T) => -5 as unknown as T, // Negative depth
+        }),
+      },
+      l10n: undefined,
+      window: undefined,
+      extensions: undefined,
+    };
+
+    try {
+      _setMockVSCode(mockVSCode as never);
+      const result = getSubmoduleDepth();
+      assert.strictEqual(result, 0, 'Negative depth should be clamped to 0');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test with valid depth (should return as-is)
+  {
+    const mockVSCode = {
+      workspace: {
+        getConfiguration: () => ({
+          get: <T>(_key: string, _defaultValue: T) => 3 as unknown as T, // Valid depth
+        }),
+      },
+      l10n: undefined,
+      window: undefined,
+      extensions: undefined,
+    };
+
+    try {
+      _setMockVSCode(mockVSCode as never);
+      const result = getSubmoduleDepth();
+      assert.strictEqual(result, 3, 'Valid depth should be returned as-is');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  console.log('✅ getSubmoduleDepth clamping tests passed!');
+}
+
+/**
+ * Test listSubmodulesRecursive with various depths
+ *
+ * Coverage target: listSubmodulesRecursive() depth handling
+ */
+async function testListSubmodulesRecursiveDepth(): Promise<void> {
+  console.log('Testing listSubmodulesRecursive depth handling...');
+
+  // Reset cache
+  _resetCache();
+
+  // Test with depth 0 (should return empty array)
+  {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'recursive-test-'));
+    try {
+      const result = await listSubmodulesRecursive(tempDir, 0);
+      assert.ok(Array.isArray(result), 'Should return an array');
+      assert.strictEqual(result.length, 0, 'Depth 0 should return empty array');
+    } finally {
+      fs.rmdirSync(tempDir);
+    }
+  }
+
+  // Test with negative depth (should be clamped to 0, return empty)
+  {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'recursive-test-'));
+    try {
+      const result = await listSubmodulesRecursive(tempDir, -5);
+      assert.ok(Array.isArray(result), 'Should return an array');
+      assert.strictEqual(result.length, 0, 'Negative depth should return empty array');
+    } finally {
+      fs.rmdirSync(tempDir);
+    }
+  }
+
+  // Test with very high depth (should be clamped to MAX_SUBMODULE_DEPTH)
+  {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'recursive-test-'));
+    try {
+      // This won't find any submodules, but should not throw
+      const result = await listSubmodulesRecursive(tempDir, 100);
+      assert.ok(Array.isArray(result), 'Should return an array');
+      // Non-git directory returns empty array
+      assert.strictEqual(result.length, 0, 'Non-git directory should return empty array');
+    } finally {
+      fs.rmdirSync(tempDir);
+    }
+  }
+
+  console.log('✅ listSubmodulesRecursive depth handling tests passed!');
+}
+
+/**
  * Run all submodule tests
  */
 export async function runSubmoduleTests(): Promise<void> {
   console.log('\n=== Submodule Security Tests ===\n');
 
   try {
+    // Path validation tests
     testSubmodulePathValidation();
     testTraversalPrevention();
     testAbsolutePathRejection();
@@ -298,9 +543,22 @@ export async function runSubmoduleTests(): Promise<void> {
     testRegexPatternStrictness();
     testInvalidWorkspacePaths();
 
-    console.log('\n  All submodule tests passed!\n');
+    // VS Code API fallback tests
+    testVSCodeApiFallback();
+
+    // Depth clamping tests (with mocked workspace)
+    testGetSubmoduleDepthClamping();
+
+    // GitExecResult error handling tests
+    await testListSubmodulesErrorHandling();
+    await testSetSubmoduleGitConfigErrorHandling();
+
+    // Recursive depth handling tests
+    await testListSubmodulesRecursiveDepth();
+
+    console.log('\n✅ All submodule tests passed!\n');
   } catch (error) {
-    console.error('\n  Test failed:', error);
+    console.error('\n❌ Test failed:', error);
     process.exit(1);
   }
 }

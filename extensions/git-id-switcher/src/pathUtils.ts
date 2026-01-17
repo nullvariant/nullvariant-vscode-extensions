@@ -583,8 +583,15 @@ export function validateSubmodulePath(
     return preCheckResult;
   }
 
+  // Prepend './' to submodule paths that don't start with a recognized prefix
+  // Git submodule paths are typically 'vendor/lib', not './vendor/lib'
+  // isSecurePath requires paths to start with '/', '~/', or './'
+  const prefixedSubmodulePath = submodulePath.startsWith('./')
+    ? submodulePath
+    : './' + submodulePath;
+
   // Normalize and validate the submodule path relative to workspace
-  const result = normalizeAndValidatePath(submodulePath, {
+  const result = normalizeAndValidatePath(prefixedSubmodulePath, {
     resolveSymlinks: false,
     requireExists: false,
     baseDir: normalizedWorkspace,

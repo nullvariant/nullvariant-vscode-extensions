@@ -7,7 +7,8 @@
  * without the vscode dependency.
  *
  * This module centralizes VS Code API loading to eliminate duplication
- * across secureExec.ts, securityLogger.ts, and configChangeDetector.ts.
+ * across gitConfig.ts, submodule.ts, secureExec.ts, securityLogger.ts,
+ * configChangeDetector.ts, and workspaceTrust.ts.
  */
 
 // Type-only import (stripped at compile time, no runtime dependency)

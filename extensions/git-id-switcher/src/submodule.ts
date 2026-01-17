@@ -5,9 +5,11 @@
  * Allows identity settings to propagate to all submodules.
  *
  * SECURITY: Uses execFile() via secureExec to prevent command injection.
+ *
+ * Note: Uses vscodeLoader for lazy loading VS Code APIs to enable unit testing.
  */
 
-import * as vscode from 'vscode';
+import { getWorkspace } from './vscodeLoader';
 import { gitExec } from './secureExec';
 import { validateSubmodulePath, normalizeAndValidatePath } from './pathUtils';
 import { securityLogger } from './securityLogger';
@@ -319,9 +321,14 @@ export async function setIdentityForSubmodules(
 
 /**
  * Check if submodule support is enabled in settings
+ * Returns true by default if VS Code API is not available (for testing)
  */
 export function isSubmoduleSupportEnabled(): boolean {
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const workspace = getWorkspace();
+  if (!workspace) {
+    return true; // Default to enabled for testing
+  }
+  const config = workspace.getConfiguration('gitIdSwitcher');
   return config.get<boolean>('applyToSubmodules', true);
 }
 
@@ -330,9 +337,14 @@ export function isSubmoduleSupportEnabled(): boolean {
  *
  * SECURITY: Returns value clamped to MAX_SUBMODULE_DEPTH (5) to prevent DoS.
  * Invalid or negative values default to 1.
+ * Returns 1 if VS Code API is not available (for testing).
  */
 export function getSubmoduleDepth(): number {
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const workspace = getWorkspace();
+  if (!workspace) {
+    return 1; // Default depth for testing
+  }
+  const config = workspace.getConfiguration('gitIdSwitcher');
   const configuredDepth = config.get<number>('submoduleDepth', 1);
 
   // SECURITY: Clamp to valid range [0, MAX_SUBMODULE_DEPTH]
