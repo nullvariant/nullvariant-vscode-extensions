@@ -39,6 +39,7 @@ import {
   BinaryResolutionError,
   __testExports,
 } from '../binaryResolver';
+import { _setMockVSCode, _resetCache } from '../vscodeLoader';
 
 const {
   ALLOWED_COMMANDS,
@@ -705,6 +706,167 @@ async function testGetBinaryPathDefensiveErrorWrapping(): Promise<void> {
 }
 
 /**
+ * Test getVSCodeGitPath with mock VS Code workspace
+ *
+ * This tests the VS Code git.path setting handling (lines 225-236).
+ * When git.path is configured in VS Code settings, it should be prioritized
+ * over PATH resolution.
+ *
+ * Coverage target: getVSCodeGitPath() and resolveCommandPath() git.path branch
+ */
+async function testGetVSCodeGitPathWithMock(): Promise<void> {
+  console.log('Testing getVSCodeGitPath with mock VS Code workspace...');
+
+  // Clear caches to ensure clean state
+  clearPathCache();
+  _resetCache();
+
+  // Test 1: Valid git.path setting (using actual git path if available)
+  {
+    // First, resolve the real git path
+    let realGitPath: string | undefined;
+    try {
+      clearPathCache();
+      realGitPath = await getBinaryPath('git');
+    } catch {
+      console.log('  git not available, skipping valid path test');
+    }
+
+    if (realGitPath) {
+      // Create mock VS Code with git.path pointing to real git
+      const mockConfig = {
+        get: (key: string) => {
+          if (key === 'path') {
+            return realGitPath;
+          }
+          return undefined;
+        },
+      };
+
+      const mockWorkspace = {
+        getConfiguration: (section: string) => {
+          if (section === 'git') {
+            return mockConfig;
+          }
+          return { get: () => undefined };
+        },
+      };
+
+      const mockVSCode = { workspace: mockWorkspace };
+
+      // Clear cache and inject mock
+      clearPathCache();
+      _setMockVSCode(mockVSCode as never);
+
+      try {
+        const gitPath = await getBinaryPath('git');
+        assert.strictEqual(gitPath, realGitPath, 'Should use VS Code git.path');
+        console.log(`  ✓ VS Code git.path (${realGitPath}) was used`);
+      } finally {
+        // Clean up
+        _resetCache();
+        clearPathCache();
+      }
+    }
+  }
+
+  // Test 2: Invalid git.path setting (non-existent path)
+  {
+    const invalidPath = '/nonexistent/invalid/git/path';
+
+    const mockConfig = {
+      get: (key: string) => {
+        if (key === 'path') {
+          return invalidPath;
+        }
+        return undefined;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'git') {
+          return mockConfig;
+        }
+        return { get: () => undefined };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    // Clear cache and inject mock
+    clearPathCache();
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      // Should fall back to PATH resolution
+      const gitPath = await getBinaryPath('git');
+      // If we get here, git was found via PATH (invalid VS Code path was skipped)
+      assert.ok(gitPath !== invalidPath, 'Should not use invalid VS Code path');
+      assert.ok(path.isAbsolute(gitPath), 'Should return absolute path from PATH');
+      console.log(`  ✓ Invalid VS Code git.path was skipped, found: ${gitPath}`);
+    } catch (error) {
+      // This is also acceptable if git is not in PATH
+      if (error instanceof BinaryResolutionError) {
+        console.log('  ✓ git not in PATH after invalid VS Code path (expected)');
+      } else {
+        throw error;
+      }
+    } finally {
+      // Clean up
+      _resetCache();
+      clearPathCache();
+    }
+  }
+
+  // Test 3: Empty git.path setting
+  {
+    const mockConfig = {
+      get: (key: string) => {
+        if (key === 'path') {
+          return '';
+        }
+        return undefined;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'git') {
+          return mockConfig;
+        }
+        return { get: () => undefined };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    // Clear cache and inject mock
+    clearPathCache();
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      // Empty path should fall back to PATH resolution
+      const gitPath = await getBinaryPath('git');
+      assert.ok(path.isAbsolute(gitPath), 'Should return absolute path from PATH');
+      console.log(`  ✓ Empty VS Code git.path was skipped, found: ${gitPath}`);
+    } catch (error) {
+      if (error instanceof BinaryResolutionError) {
+        console.log('  ✓ git not in PATH (expected)');
+      } else {
+        throw error;
+      }
+    } finally {
+      // Clean up
+      _resetCache();
+      clearPathCache();
+    }
+  }
+
+  console.log('✅ getVSCodeGitPath with mock VS Code workspace tests passed!');
+}
+
+/**
  * Run all binary resolver tests
  */
 export async function runBinaryResolverTests(): Promise<void> {
@@ -729,6 +891,7 @@ export async function runBinaryResolverTests(): Promise<void> {
     await testCheckBinaryAvailabilityWithFailures();
     await testResolveAllBinaryPathsWithFailure();
     await testGetBinaryPathDefensiveErrorWrapping();
+    await testGetVSCodeGitPathWithMock();
 
     console.log('\n✅ All binary resolver tests passed!\n');
   } catch (error) {

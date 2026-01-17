@@ -61,6 +61,7 @@ import {
   clearPathCache,
 } from '../secureExec';
 import { __testExports as binaryResolverTestExports } from '../binaryResolver';
+import { _setMockVSCode, _resetCache } from '../vscodeLoader';
 
 const { pathCache } = binaryResolverTestExports;
 
@@ -889,6 +890,217 @@ async function testSecureExecSshKeygenResolutionError(): Promise<void> {
 }
 
 /**
+ * Test getUserConfiguredTimeouts with mock VS Code workspace
+ *
+ * This tests the VS Code commandTimeouts setting handling (lines 225-264).
+ * When commandTimeouts is configured in VS Code settings, it should be used
+ * for command-specific timeouts.
+ *
+ * Coverage target: getUserConfiguredTimeouts() and related validation
+ */
+function testGetCommandTimeoutWithMockVSCode(): void {
+  console.log('Testing getCommandTimeout with mock VS Code workspace...');
+
+  // Test 1: Valid user-configured timeout
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return { git: 15000, 'ssh-add': 8000 } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    // Inject mock
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      // User-configured timeout should be used
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, 15000, 'Should use user-configured git timeout');
+
+      const sshAddTimeout = getCommandTimeout('ssh-add');
+      assert.strictEqual(sshAddTimeout, 8000, 'Should use user-configured ssh-add timeout');
+
+      // Command without user config should use built-in
+      const sshKeygenTimeout = getCommandTimeout('ssh-keygen');
+      assert.strictEqual(sshKeygenTimeout, COMMAND_TIMEOUTS['ssh-keygen'], 'Should use built-in timeout');
+
+      console.log('  ✓ User-configured timeouts were used');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test 2: Invalid timeout values (out of range)
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return {
+            git: 500, // Too low (min is 1000)
+            'ssh-add': 500000, // Too high (max is 300000)
+          } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      // Invalid values should fall back to built-in
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, COMMAND_TIMEOUTS['git'], 'Should use built-in for out-of-range value');
+
+      const sshAddTimeout = getCommandTimeout('ssh-add');
+      assert.strictEqual(sshAddTimeout, COMMAND_TIMEOUTS['ssh-add'], 'Should use built-in for out-of-range value');
+
+      console.log('  ✓ Invalid timeout values were rejected');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test 3: Invalid command name in config (security validation)
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return {
+            '../../../etc/passwd': 5000, // Invalid: path traversal
+            'git;rm -rf /': 5000, // Invalid: injection attempt
+            git: 12000, // Valid
+          } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      // Valid config should be used
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, 12000, 'Valid git config should be used');
+
+      console.log('  ✓ Invalid command names were filtered out');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test 4: Non-integer timeout (should be floored)
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return { git: 5500.7 } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, 5500, 'Float timeout should be floored');
+      console.log('  ✓ Float timeout was floored to integer');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test 5: NaN and Infinity values
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return {
+            git: NaN,
+            'ssh-add': Infinity,
+          } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, COMMAND_TIMEOUTS['git'], 'NaN should use built-in');
+
+      const sshAddTimeout = getCommandTimeout('ssh-add');
+      assert.strictEqual(sshAddTimeout, COMMAND_TIMEOUTS['ssh-add'], 'Infinity should use built-in');
+
+      console.log('  ✓ NaN and Infinity values were rejected');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  console.log('✅ getCommandTimeout with mock VS Code workspace tests passed!');
+}
+
+/**
  * Run all secure execution tests
  */
 export async function runSecureExecTests(): Promise<void> {
@@ -901,6 +1113,7 @@ export async function runSecureExecTests(): Promise<void> {
     testGetCommandTimeout();
     testGetCommandTimeoutEdgeCases();
     testCommandTimeoutsConstants();
+    testGetCommandTimeoutWithMockVSCode();
     await testSecureExecNoShellInterpretation();
     await testGitExec();
     testArgumentSeparation();
