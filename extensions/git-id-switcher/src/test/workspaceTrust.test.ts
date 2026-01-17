@@ -518,6 +518,150 @@ async function testHandlerDisposedAfterTrustGranted(): Promise<void> {
 }
 
 /**
+ * Test isWorkspaceTrusted returns false when VS Code API is unavailable
+ */
+function testIsWorkspaceTrustedNoVSCode(): void {
+  console.log('Testing isWorkspaceTrusted without VS Code API...');
+
+  // Reset cache to ensure VS Code API is not available
+  _resetCache();
+
+  const result = isWorkspaceTrusted();
+
+  assert.strictEqual(result, false, 'Should return false when VS Code API is unavailable');
+
+  console.log('✅ isWorkspaceTrusted without VS Code API passed!');
+}
+
+/**
+ * Test showUntrustedWorkspaceWarning when l10n is unavailable (fallback message)
+ */
+function testShowUntrustedWorkspaceWarningNoL10n(): void {
+  console.log('Testing showUntrustedWorkspaceWarning without l10n...');
+
+  let warningMessage = '';
+
+  const mockVSCode = {
+    workspace: {
+      isTrusted: false,
+    },
+    window: {
+      showWarningMessage: (message: string) => {
+        warningMessage = message;
+        return Promise.resolve(undefined);
+      },
+    },
+    // No l10n property
+  };
+  _setMockVSCode(mockVSCode as never);
+
+  showUntrustedWorkspaceWarning();
+
+  assert.ok(
+    warningMessage.includes('disabled in untrusted workspaces'),
+    'Should show fallback message when l10n is unavailable'
+  );
+
+  _resetCache();
+  console.log('✅ showUntrustedWorkspaceWarning without l10n passed!');
+}
+
+/**
+ * Test requireWorkspaceTrust when l10n is unavailable (fallback message)
+ */
+function testRequireWorkspaceTrustNoL10n(): void {
+  console.log('Testing requireWorkspaceTrust without l10n...');
+
+  let warningMessage = '';
+
+  const mockVSCode = {
+    workspace: {
+      isTrusted: false,
+    },
+    window: {
+      showWarningMessage: (message: string) => {
+        warningMessage = message;
+        return Promise.resolve(undefined);
+      },
+    },
+    // No l10n property
+  };
+  _setMockVSCode(mockVSCode as never);
+
+  const result = requireWorkspaceTrust();
+
+  assert.strictEqual(result, false, 'Should return false for untrusted workspace');
+  assert.ok(
+    warningMessage.includes('requires a trusted workspace'),
+    'Should show fallback message when l10n is unavailable'
+  );
+
+  _resetCache();
+  console.log('✅ requireWorkspaceTrust without l10n passed!');
+}
+
+/**
+ * Test showUntrustedWorkspaceWarning when VS Code window API is unavailable
+ */
+function testShowUntrustedWorkspaceWarningNoWindow(): void {
+  console.log('Testing showUntrustedWorkspaceWarning without window API...');
+
+  // Reset cache to ensure VS Code API is not available
+  _resetCache();
+
+  const consoleLogs: string[] = [];
+  const originalLog = console.log;
+  console.log = (...args: unknown[]) => {
+    consoleLogs.push(args.map(a => String(a)).join(' '));
+  };
+
+  // Should not throw and should log to console
+  showUntrustedWorkspaceWarning();
+
+  console.log = originalLog;
+
+  // Check that fallback log was written
+  const hasLog = consoleLogs.some(log =>
+    log.includes('VS Code window API unavailable')
+  );
+  assert.ok(hasLog, 'Should log fallback message when window API is unavailable');
+
+  console.log('✅ showUntrustedWorkspaceWarning without window API passed!');
+}
+
+/**
+ * Test initializeWorkspaceTrust when VS Code workspace API is unavailable
+ */
+function testInitializeWorkspaceTrustNoWorkspace(): void {
+  console.log('Testing initializeWorkspaceTrust without workspace API...');
+
+  _resetForTesting();
+  // Reset cache to ensure VS Code API is not available
+  _resetCache();
+
+  const consoleLogs: string[] = [];
+  const originalLog = console.log;
+  console.log = (...args: unknown[]) => {
+    consoleLogs.push(args.map(a => String(a)).join(' '));
+  };
+
+  const mockContext = createMockContext();
+  let callbackCalled = false;
+
+  const result = initializeWorkspaceTrust(mockContext, async () => {
+    callbackCalled = true;
+  });
+
+  console.log = originalLog;
+
+  assert.strictEqual(result, false, 'Should return false when VS Code API is unavailable');
+  assert.strictEqual(callbackCalled, false, 'Callback should not be called');
+
+  _resetForTesting();
+  console.log('✅ initializeWorkspaceTrust without workspace API passed!');
+}
+
+/**
  * Run all workspace trust tests
  */
 export async function runWorkspaceTrustTests(): Promise<void> {
@@ -528,13 +672,18 @@ export async function runWorkspaceTrustTests(): Promise<void> {
   try {
     testIsWorkspaceTrustedTrue();
     testIsWorkspaceTrustedFalse();
+    testIsWorkspaceTrustedNoVSCode();
     testShowUntrustedWorkspaceWarning();
+    testShowUntrustedWorkspaceWarningNoL10n();
+    testShowUntrustedWorkspaceWarningNoWindow();
     testInitializeWorkspaceTrustTrusted();
     testInitializeWorkspaceTrustUntrusted();
+    testInitializeWorkspaceTrustNoWorkspace();
     await testInitializeWorkspaceTrustCallback();
     testInitializeWorkspaceTrustIdempotent();
     testRequireWorkspaceTrustTrusted();
     testRequireWorkspaceTrustUntrusted();
+    testRequireWorkspaceTrustNoL10n();
     testResetForTesting();
     await testCallbackErrorHandling();
     await testHandlerDisposedAfterTrustGranted();
