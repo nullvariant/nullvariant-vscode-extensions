@@ -48,18 +48,25 @@ export interface GitConfig {
 }
 
 /**
+ * Get the current workspace path
+ * @throws ConfigError if no workspace folder is open
+ */
+function getWorkspacePath(): string {
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  if (!workspaceFolder) {
+    throw createConfigError(vscode.l10n.t('No workspace folder open'));
+  }
+  return workspaceFolder.uri.fsPath;
+}
+
+/**
  * Execute a git command in the current workspace
  *
  * @param args - Git arguments as array (NOT a string command)
  * @returns stdout on success, undefined on failure
  */
 async function execGitInWorkspace(args: string[]): Promise<string | undefined> {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  if (!workspaceFolder) {
-    throw createConfigError(vscode.l10n.t('No workspace folder open'));
-  }
-
-  const cwd = workspaceFolder.uri.fsPath;
+  const cwd = getWorkspacePath();
   const result = await gitExec(args, cwd);
   return result.success ? result.stdout : undefined;
 }
@@ -71,12 +78,7 @@ async function execGitInWorkspace(args: string[]): Promise<string | undefined> {
  * @throws Error if command fails
  */
 async function execGitInWorkspaceOrThrow(args: string[]): Promise<void> {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  if (!workspaceFolder) {
-    throw createConfigError(vscode.l10n.t('No workspace folder open'));
-  }
-
-  const cwd = workspaceFolder.uri.fsPath;
+  const cwd = getWorkspacePath();
   const result = await gitExec(args, cwd);
   if (!result.success) {
     throw result.error;

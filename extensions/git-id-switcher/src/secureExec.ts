@@ -506,7 +506,7 @@ export async function secureExec(
  * Executes git commands securely with proper argument handling.
  * Uses command-specific timeout (10 seconds for git).
  *
- * BREAKING CHANGE (Phase 4): Returns GitExecResult instead of string.
+ * BREAKING CHANGE: Returns GitExecResult instead of string.
  * This allows callers to distinguish between:
  * - Successful command with empty output (success: true, stdout: '')
  * - Failed command (success: false, error: Error)
