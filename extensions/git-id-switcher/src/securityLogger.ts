@@ -53,6 +53,7 @@ export enum SecurityEventType {
   VALIDATION_FAILURE = 'VALIDATION_FAILURE',
   COMMAND_BLOCKED = 'COMMAND_BLOCKED',
   COMMAND_TIMEOUT = 'COMMAND_TIMEOUT',
+  COMMAND_ERROR = 'COMMAND_ERROR',
   CONFIG_CHANGE = 'CONFIG_CHANGE',
   EXTENSION_ACTIVATE = 'EXTENSION_ACTIVATE',
   EXTENSION_DEACTIVATE = 'EXTENSION_DEACTIVATE',
@@ -76,6 +77,7 @@ export { LogLevel } from './logTypes';
 export interface ISecurityLogger {
   logCommandTimeout(command: string, args: string[], timeoutMs: number, cwd?: string): void;
   logCommandBlocked(command: string, args: string[], reason: string): void;
+  logCommandError(command: string, args: string[], error: Error, cwd?: string): void;
   logValidationFailure(field: string, reason: string, value?: unknown): void;
 }
 
@@ -316,6 +318,20 @@ class SecurityLoggerImpl implements ISecurityLogger {
         command: sanitizeValue(command),
         args: this.buildArgsDetails(args),
         timeoutMs,
+        cwd: cwd ? sanitizePath(cwd) : undefined,
+      },
+    });
+  }
+
+  logCommandError(command: string, args: string[], error: Error, cwd?: string): void {
+    this.log({
+      type: SecurityEventType.COMMAND_ERROR,
+      severity: 'warning',
+      details: {
+        command: sanitizeValue(command),
+        args: this.buildArgsDetails(args),
+        errorName: error.name,
+        errorMessage: sanitizeValue(error.message),
         cwd: cwd ? sanitizePath(cwd) : undefined,
       },
     });

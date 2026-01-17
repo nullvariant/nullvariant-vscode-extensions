@@ -132,27 +132,11 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
 
   const validatedWorkspacePath = workspaceValidation.normalizedPath;
 
-  try {
-    const stdout = await gitExec(['submodule', 'status'], validatedWorkspacePath);
+  const result = await gitExec(['submodule', 'status'], validatedWorkspacePath);
 
-    if (!stdout.trim()) {
-      return [];
-    }
-
-    const lines = stdout.trim().split('\n');
-    const submodules: Submodule[] = [];
-
-    for (const line of lines) {
-      const submodule = parseSubmoduleEntry(line, validatedWorkspacePath);
-      if (submodule) {
-        submodules.push(submodule);
-      }
-    }
-
-    return submodules;
-  } catch (error) {
+  if (!result.success) {
     // SECURITY: Log unexpected errors (except ENOENT for non-git directories)
-    const errorCode = (error as NodeJS.ErrnoException).code;
+    const errorCode = (result.error as NodeJS.ErrnoException).code;
     if (errorCode !== 'ENOENT' && errorCode !== undefined) {
       securityLogger.logValidationFailure(
         'submoduleList',
@@ -162,6 +146,23 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
     }
     return [];
   }
+
+  const stdout = result.stdout;
+  if (!stdout.trim()) {
+    return [];
+  }
+
+  const lines = stdout.trim().split('\n');
+  const submodules: Submodule[] = [];
+
+  for (const line of lines) {
+    const submodule = parseSubmoduleEntry(line, validatedWorkspacePath);
+    if (submodule) {
+      submodules.push(submodule);
+    }
+  }
+
+  return submodules;
 }
 
 /**
@@ -234,13 +235,13 @@ export async function setSubmoduleGitConfig(
   key: string,
   value: string
 ): Promise<boolean> {
-  try {
-    // SECURITY: Using gitExec with array args prevents command injection
-    // The key and value are passed as separate array elements, not interpolated
-    await gitExec(['config', '--local', key, value], submodulePath);
-    return true;
-  } catch (error) {
+  // SECURITY: Using gitExec with array args prevents command injection
+  // The key and value are passed as separate array elements, not interpolated
+  const result = await gitExec(['config', '--local', key, value], submodulePath);
+
+  if (!result.success) {
     // Log failure through security logger (sanitizes path)
+    // Note: gitExec already logs the error, but we add context about the submodule operation
     securityLogger.logValidationFailure(
       `submoduleGitConfig.${key}`,
       'Failed to set git config in submodule',
@@ -248,6 +249,8 @@ export async function setSubmoduleGitConfig(
     );
     return false;
   }
+
+  return true;
 }
 
 /**

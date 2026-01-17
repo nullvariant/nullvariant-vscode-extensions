@@ -51,15 +51,36 @@ export interface GitConfig {
  * Execute a git command in the current workspace
  *
  * @param args - Git arguments as array (NOT a string command)
+ * @returns stdout on success, undefined on failure
  */
-async function execGitInWorkspace(args: string[]): Promise<string> {
+async function execGitInWorkspace(args: string[]): Promise<string | undefined> {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
   if (!workspaceFolder) {
     throw createConfigError(vscode.l10n.t('No workspace folder open'));
   }
 
   const cwd = workspaceFolder.uri.fsPath;
-  return gitExec(args, cwd);
+  const result = await gitExec(args, cwd);
+  return result.success ? result.stdout : undefined;
+}
+
+/**
+ * Execute a git command in the current workspace, throwing on failure
+ *
+ * @param args - Git arguments as array (NOT a string command)
+ * @throws Error if command fails
+ */
+async function execGitInWorkspaceOrThrow(args: string[]): Promise<void> {
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  if (!workspaceFolder) {
+    throw createConfigError(vscode.l10n.t('No workspace folder open'));
+  }
+
+  const cwd = workspaceFolder.uri.fsPath;
+  const result = await gitExec(args, cwd);
+  if (!result.success) {
+    throw result.error;
+  }
 }
 
 /**
@@ -164,21 +185,19 @@ export async function setGitConfigForIdentity(identity: Identity): Promise<void>
     throw createConfigError(vscode.l10n.t('Not in a Git repository'));
   }
 
-  const cwd = workspaceFolder.uri.fsPath;
-
   // Set user.name (icon is only included if includeIconInGitConfig is true)
   const userName = buildGitUserName(identity);
 
-  // SECURITY: Using gitExec with array args prevents command injection
-  await gitExec(['config', '--local', 'user.name', userName], cwd);
+  // SECURITY: Using execGitInWorkspaceOrThrow with array args prevents command injection
+  await execGitInWorkspaceOrThrow(['config', '--local', 'user.name', userName]);
 
   // Set user.email
-  await gitExec(['config', '--local', 'user.email', identity.email], cwd);
+  await execGitInWorkspaceOrThrow(['config', '--local', 'user.email', identity.email]);
 
   // Set GPG signing key if available
   if (identity.gpgKeyId) {
-    await gitExec(['config', '--local', 'user.signingkey', identity.gpgKeyId], cwd);
-    await gitExec(['config', '--local', 'commit.gpgsign', 'true'], cwd);
+    await execGitInWorkspaceOrThrow(['config', '--local', 'user.signingkey', identity.gpgKeyId]);
+    await execGitInWorkspaceOrThrow(['config', '--local', 'commit.gpgsign', 'true']);
   }
 
   // Propagate to submodules if enabled

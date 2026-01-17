@@ -71,6 +71,7 @@ function testSecurityEventTypeEnum(): void {
     'VALIDATION_FAILURE',
     'COMMAND_BLOCKED',
     'COMMAND_TIMEOUT',
+    'COMMAND_ERROR',
     'CONFIG_CHANGE',
     'EXTENSION_ACTIVATE',
     'EXTENSION_DEACTIVATE',
