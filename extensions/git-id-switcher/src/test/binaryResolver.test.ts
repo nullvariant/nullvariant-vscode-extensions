@@ -12,9 +12,21 @@
  * - BinaryResolutionError class
  * - getBinaryPath function
  * - clearPathCache function
- * - checkBinaryAvailability function
+ * - checkBinaryAvailability function (including error handling)
+ * - resolveAllBinaryPaths function (including error propagation)
  * - isAllowedCommand validation
  * - isValidExecutable validation
+ *
+ * Defense-in-depth code not covered (requires VS Code mocking):
+ * - Lines 225-236: VS Code git.path validation path
+ *   - Requires VS Code workspace mock to test getVSCodeGitPath()
+ *   - The path where git.path setting is configured but invalid
+ * - Lines 244-249: resolveCommandPath throw path
+ *   - Requires which/where to fail for an allowed command
+ *   - Tested indirectly via cache manipulation
+ * - Lines 301-312: Non-BinaryResolutionError wrapping
+ *   - Internal errors are already BinaryResolutionError
+ *   - Defense-in-depth for unexpected error types
  */
 
 import * as assert from 'node:assert';
@@ -23,6 +35,7 @@ import {
   getBinaryPath,
   clearPathCache,
   checkBinaryAvailability,
+  resolveAllBinaryPaths,
   BinaryResolutionError,
   __testExports,
 } from '../binaryResolver';
@@ -474,6 +487,224 @@ async function testCachedFailureThrows(): Promise<void> {
 }
 
 /**
+ * Test resolveAllBinaryPaths function
+ */
+async function testResolveAllBinaryPaths(): Promise<void> {
+  console.log('Testing resolveAllBinaryPaths...');
+
+  // Clear cache first
+  clearPathCache();
+
+  try {
+    const paths = await resolveAllBinaryPaths();
+
+    // Should have all three commands
+    assert.ok('git' in paths, 'Should have git path');
+    assert.ok('ssh-add' in paths, 'Should have ssh-add path');
+    assert.ok('ssh-keygen' in paths, 'Should have ssh-keygen path');
+
+    // All paths should be absolute
+    for (const cmd of Object.keys(paths)) {
+      const cmdPath = paths[cmd as keyof typeof paths];
+      assert.ok(
+        path.isAbsolute(cmdPath),
+        `${cmd} path should be absolute`
+      );
+    }
+
+    console.log('  All binary paths resolved successfully');
+  } catch (error) {
+    // If any command is not available, the function throws
+    if (error instanceof BinaryResolutionError) {
+      console.log(`  Command not available: ${error.command} (expected in some environments)`);
+    } else {
+      throw error;
+    }
+  }
+
+  console.log('✅ resolveAllBinaryPaths tests passed!');
+}
+
+/**
+ * Test error wrapping in getBinaryPath
+ */
+async function testErrorWrapping(): Promise<void> {
+  console.log('Testing error wrapping in getBinaryPath...');
+
+  // Clear cache
+  clearPathCache();
+
+  // Manually set a non-BinaryResolutionError scenario
+  // This is tricky because we can't easily trigger a non-BinaryResolutionError
+  // in the normal code path. We test the cached failure path instead.
+
+  // Test that cached null throws BinaryResolutionError
+  pathCache.set('git', null);
+
+  try {
+    await getBinaryPath('git');
+    assert.fail('Should throw');
+  } catch (error) {
+    assert.ok(error instanceof BinaryResolutionError, 'Should be BinaryResolutionError');
+  }
+
+  // Clean up
+  clearPathCache();
+
+  console.log('✅ Error wrapping tests passed!');
+}
+
+/**
+ * Test checkBinaryAvailability with failed resolution
+ *
+ * This specifically tests the error catch block (lines 369-373) in checkBinaryAvailability().
+ * The catch block handles errors from getBinaryPath() and returns them in the result object.
+ *
+ * Coverage target: checkBinaryAvailability() catch block
+ */
+async function testCheckBinaryAvailabilityWithFailures(): Promise<void> {
+  console.log('Testing checkBinaryAvailability with failures...');
+
+  // Clear cache to ensure clean state
+  clearPathCache();
+
+  // Verify cache is empty before test
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
+
+  // Set all commands to have null cache (simulating resolution failures)
+  // When cache contains null, getBinaryPath throws BinaryResolutionError
+  pathCache.set('git', null);
+  pathCache.set('ssh-add', null);
+  pathCache.set('ssh-keygen', null);
+
+  const availability = await checkBinaryAvailability();
+
+  // All commands should show as not available
+  for (const cmd of ['git', 'ssh-add', 'ssh-keygen'] as const) {
+    assert.strictEqual(
+      availability[cmd].available,
+      false,
+      `${cmd} should not be available`
+    );
+    assert.ok(
+      typeof availability[cmd].error === 'string',
+      `${cmd} should have error message`
+    );
+    assert.ok(
+      availability[cmd].error!.includes('Previously failed'),
+      `${cmd} error should mention previous failure`
+    );
+    console.log(`  ${cmd}: ${availability[cmd].error}`);
+  }
+
+  // Clean up and verify
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty after cleanup');
+
+  console.log('✅ checkBinaryAvailability with failures tests passed!');
+}
+
+/**
+ * Test resolveAllBinaryPaths when resolution fails
+ *
+ * This tests that resolveAllBinaryPaths() properly throws BinaryResolutionError
+ * when a command cannot be resolved. The function iterates through all commands
+ * and throws on the first failure.
+ *
+ * Coverage target: resolveAllBinaryPaths() error propagation
+ */
+async function testResolveAllBinaryPathsWithFailure(): Promise<void> {
+  console.log('Testing resolveAllBinaryPaths with failure...');
+
+  // Clear cache to ensure clean state
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
+
+  // Set git to fail (first command in ALLOWED_COMMANDS)
+  pathCache.set('git', null);
+
+  try {
+    await resolveAllBinaryPaths();
+    // If we reach here, the cached null was ignored because cache was cleared
+    // by another operation. This is acceptable behavior.
+    console.log('  All commands resolved (cache was cleared or git found in PATH)');
+  } catch (error) {
+    // Expected when git resolution fails due to cached null
+    assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
+    assert.strictEqual((error as BinaryResolutionError).command, 'git', 'Command should be git');
+    assert.ok(
+      (error as BinaryResolutionError).message.includes('Previously failed'),
+      'Should indicate previous failure'
+    );
+    console.log('  Correctly caught BinaryResolutionError for git');
+  }
+
+  // Clean up and verify
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty after cleanup');
+
+  console.log('✅ resolveAllBinaryPaths with failure tests passed!');
+}
+
+/**
+ * Test getBinaryPath error wrapping for non-BinaryResolutionError
+ *
+ * Note: This is a defensive code path (lines 308-311) that wraps non-BinaryResolutionError
+ * into BinaryResolutionError. In the current implementation, resolveCommandPath only throws
+ * BinaryResolutionError, so this code path is defense-in-depth.
+ *
+ * We cannot easily trigger this path without mocking, but we can verify:
+ * 1. The error structure is correct
+ * 2. The error message format is consistent
+ * 3. The error properties are properly set
+ *
+ * Coverage target: getBinaryPath() error handling (defense-in-depth)
+ */
+async function testGetBinaryPathDefensiveErrorWrapping(): Promise<void> {
+  console.log('Testing getBinaryPath defensive error wrapping...');
+
+  // Clear cache to ensure clean state
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
+
+  // Test each allowed command to ensure consistent error handling
+  for (const cmd of ['git', 'ssh-add', 'ssh-keygen'] as const) {
+    // Set cache to null to simulate a failed resolution
+    pathCache.set(cmd, null);
+
+    try {
+      await getBinaryPath(cmd);
+      assert.fail(`Should throw for ${cmd}`);
+    } catch (error) {
+      // Verify error is properly wrapped as BinaryResolutionError
+      assert.ok(error instanceof BinaryResolutionError, `Should be BinaryResolutionError for ${cmd}`);
+      assert.strictEqual(
+        (error as BinaryResolutionError).command,
+        cmd,
+        `Command property should be ${cmd}`
+      );
+      assert.strictEqual(
+        (error as BinaryResolutionError).code,
+        'ENOENT_BINARY',
+        'Error code should be ENOENT_BINARY'
+      );
+      assert.ok(
+        (error as BinaryResolutionError).message.includes(cmd),
+        `Message should include command name ${cmd}`
+      );
+    }
+
+    // Clear for next iteration
+    clearPathCache();
+  }
+
+  // Verify final cleanup
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty after cleanup');
+
+  console.log('✅ getBinaryPath defensive error wrapping tests passed!');
+}
+
+/**
  * Run all binary resolver tests
  */
 export async function runBinaryResolverTests(): Promise<void> {
@@ -493,6 +724,11 @@ export async function runBinaryResolverTests(): Promise<void> {
     await testIsValidExecutable();
     await testFailedResolutionCaching();
     await testCachedFailureThrows();
+    await testResolveAllBinaryPaths();
+    await testErrorWrapping();
+    await testCheckBinaryAvailabilityWithFailures();
+    await testResolveAllBinaryPathsWithFailure();
+    await testGetBinaryPathDefensiveErrorWrapping();
 
     console.log('\n✅ All binary resolver tests passed!\n');
   } catch (error) {

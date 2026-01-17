@@ -10,6 +10,7 @@
  * - Shell interpretation prevention
  * - Timeout handling and error detection
  * - SSH command wrappers (sshAgentExec, sshKeygenExec)
+ * - BinaryResolutionError handling in secureExec (lines 434-443)
  *
  * 🔒 Defense-in-depth code not covered (requires VS Code mocking or actual timeouts):
  *
@@ -33,7 +34,7 @@
  *     - Requires mocking securityLogger to throw
  *
  * Actual timeout required:
- *   Lines 438-447: Timeout error handling in secureExec()
+ *   Lines 461-470: Timeout error handling in secureExec()
  *     - Only allowed commands can reach this code: git, ssh-add, ssh-keygen
  *     - These commands complete quickly (< timeout)
  *     - Would need:
@@ -56,7 +57,12 @@ import {
   COMMAND_TIMEOUTS,
   DEFAULT_TIMEOUT,
   __testExports,
+  BinaryResolutionError,
+  clearPathCache,
 } from '../secureExec';
+import { __testExports as binaryResolverTestExports } from '../binaryResolver';
+
+const { pathCache } = binaryResolverTestExports;
 
 /**
  * Test that secureExec uses execFile (no shell interpretation)
@@ -747,6 +753,142 @@ function testIsTimeoutError(): void {
 }
 
 /**
+ * Test secureExec handles BinaryResolutionError correctly
+ *
+ * This tests the binary resolution error handling path (lines 434-443) in secureExec().
+ * When getBinaryPath() throws BinaryResolutionError, secureExec should:
+ * 1. Log the failure using securityLogger.logValidationFailure()
+ * 2. Re-throw the original BinaryResolutionError
+ *
+ * Coverage target: secureExec() binary resolution error handling
+ */
+async function testSecureExecBinaryResolutionError(): Promise<void> {
+  console.log('Testing secureExec BinaryResolutionError handling...');
+
+  // Clear cache to ensure clean state
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
+
+  // Set git to fail by caching null (simulates resolution failure)
+  pathCache.set('git', null);
+
+  try {
+    await secureExec('git', ['--version']);
+    assert.fail('Should have thrown BinaryResolutionError');
+  } catch (error) {
+    // Verify error type and properties
+    assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
+    assert.strictEqual(
+      (error as BinaryResolutionError).command,
+      'git',
+      'Error should have command property set to git'
+    );
+    assert.strictEqual(
+      (error as BinaryResolutionError).code,
+      'ENOENT_BINARY',
+      'Error code should be ENOENT_BINARY'
+    );
+    assert.ok(
+      (error as BinaryResolutionError).message.includes('git'),
+      'Error message should include command name'
+    );
+  }
+
+  // Clean up and verify
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty after cleanup');
+
+  console.log('✅ secureExec BinaryResolutionError handling tests passed!');
+}
+
+/**
+ * Test secureExec with BinaryResolutionError for ssh-add
+ *
+ * Tests that sshAgentExec wrapper properly propagates BinaryResolutionError
+ * when the ssh-add binary cannot be resolved.
+ *
+ * Coverage target: sshAgentExec() with binary resolution failure
+ */
+async function testSecureExecSshAddResolutionError(): Promise<void> {
+  console.log('Testing secureExec ssh-add resolution error...');
+
+  // Clear cache to ensure clean state
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
+
+  // Set ssh-add to fail by caching null
+  pathCache.set('ssh-add', null);
+
+  try {
+    await sshAgentExec(['-l']);
+    assert.fail('Should have thrown BinaryResolutionError');
+  } catch (error) {
+    // Verify error type and properties
+    assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
+    assert.strictEqual(
+      (error as BinaryResolutionError).command,
+      'ssh-add',
+      'Error should have command property set to ssh-add'
+    );
+    assert.strictEqual(
+      (error as BinaryResolutionError).code,
+      'ENOENT_BINARY',
+      'Error code should be ENOENT_BINARY'
+    );
+  }
+
+  // Clean up and verify
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty after cleanup');
+
+  console.log('✅ secureExec ssh-add resolution error tests passed!');
+}
+
+/**
+ * Test secureExec with BinaryResolutionError for ssh-keygen
+ *
+ * Tests that sshKeygenExec wrapper properly propagates BinaryResolutionError
+ * when the ssh-keygen binary cannot be resolved.
+ *
+ * Coverage target: sshKeygenExec() with binary resolution failure
+ */
+async function testSecureExecSshKeygenResolutionError(): Promise<void> {
+  console.log('Testing secureExec ssh-keygen resolution error...');
+
+  // Clear cache to ensure clean state
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
+
+  // Set ssh-keygen to fail by caching null
+  pathCache.set('ssh-keygen', null);
+
+  try {
+    // Use -lf with a dummy path (valid flags for ssh-keygen fingerprint operation)
+    await sshKeygenExec(['-lf', '/nonexistent/key']);
+    assert.fail('Should have thrown BinaryResolutionError');
+  } catch (error) {
+    // Verify error type and properties
+    assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
+    assert.strictEqual(
+      (error as BinaryResolutionError).command,
+      'ssh-keygen',
+      'Error should have command property set to ssh-keygen'
+    );
+    assert.strictEqual(
+      (error as BinaryResolutionError).code,
+      'ENOENT_BINARY',
+      'Error code should be ENOENT_BINARY'
+    );
+  }
+
+  // Clean up and verify
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty after cleanup');
+
+  console.log('✅ secureExec ssh-keygen resolution error tests passed!');
+}
+
+/**
  * Run all secure execution tests
  */
 export async function runSecureExecTests(): Promise<void> {
@@ -771,6 +913,9 @@ export async function runSecureExecTests(): Promise<void> {
     await testSecureExecVariousCommands();
     await testErrorRethrowing();
     await testSecureExecEmptyArgs();
+    await testSecureExecBinaryResolutionError();
+    await testSecureExecSshAddResolutionError();
+    await testSecureExecSshKeygenResolutionError();
 
     console.log('\n✅ All secure execution tests passed!\n');
   } catch (error) {
