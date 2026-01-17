@@ -5,9 +5,11 @@
  * Allows identity settings to propagate to all submodules.
  *
  * SECURITY: Uses execFile() via secureExec to prevent command injection.
+ *
+ * Note: Uses vscodeLoader for lazy loading VS Code APIs to enable unit testing.
  */
 
-import * as vscode from 'vscode';
+import { getWorkspace } from './vscodeLoader';
 import { gitExec } from './secureExec';
 import { validateSubmodulePath, normalizeAndValidatePath } from './pathUtils';
 import { securityLogger } from './securityLogger';
@@ -132,27 +134,11 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
 
   const validatedWorkspacePath = workspaceValidation.normalizedPath;
 
-  try {
-    const stdout = await gitExec(['submodule', 'status'], validatedWorkspacePath);
+  const result = await gitExec(['submodule', 'status'], validatedWorkspacePath);
 
-    if (!stdout.trim()) {
-      return [];
-    }
-
-    const lines = stdout.trim().split('\n');
-    const submodules: Submodule[] = [];
-
-    for (const line of lines) {
-      const submodule = parseSubmoduleEntry(line, validatedWorkspacePath);
-      if (submodule) {
-        submodules.push(submodule);
-      }
-    }
-
-    return submodules;
-  } catch (error) {
+  if (!result.success) {
     // SECURITY: Log unexpected errors (except ENOENT for non-git directories)
-    const errorCode = (error as NodeJS.ErrnoException).code;
+    const errorCode = (result.error as NodeJS.ErrnoException).code;
     if (errorCode !== 'ENOENT' && errorCode !== undefined) {
       securityLogger.logValidationFailure(
         'submoduleList',
@@ -162,6 +148,23 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
     }
     return [];
   }
+
+  const stdout = result.stdout;
+  if (!stdout.trim()) {
+    return [];
+  }
+
+  const lines = stdout.trim().split('\n');
+  const submodules: Submodule[] = [];
+
+  for (const line of lines) {
+    const submodule = parseSubmoduleEntry(line, validatedWorkspacePath);
+    if (submodule) {
+      submodules.push(submodule);
+    }
+  }
+
+  return submodules;
 }
 
 /**
@@ -234,13 +237,13 @@ export async function setSubmoduleGitConfig(
   key: string,
   value: string
 ): Promise<boolean> {
-  try {
-    // SECURITY: Using gitExec with array args prevents command injection
-    // The key and value are passed as separate array elements, not interpolated
-    await gitExec(['config', '--local', key, value], submodulePath);
-    return true;
-  } catch (error) {
+  // SECURITY: Using gitExec with array args prevents command injection
+  // The key and value are passed as separate array elements, not interpolated
+  const result = await gitExec(['config', '--local', key, value], submodulePath);
+
+  if (!result.success) {
     // Log failure through security logger (sanitizes path)
+    // Note: gitExec already logs the error, but we add context about the submodule operation
     securityLogger.logValidationFailure(
       `submoduleGitConfig.${key}`,
       'Failed to set git config in submodule',
@@ -248,6 +251,8 @@ export async function setSubmoduleGitConfig(
     );
     return false;
   }
+
+  return true;
 }
 
 /**
@@ -316,9 +321,14 @@ export async function setIdentityForSubmodules(
 
 /**
  * Check if submodule support is enabled in settings
+ * Returns true by default if VS Code API is not available (for testing)
  */
 export function isSubmoduleSupportEnabled(): boolean {
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const workspace = getWorkspace();
+  if (!workspace) {
+    return true; // Default to enabled for testing
+  }
+  const config = workspace.getConfiguration('gitIdSwitcher');
   return config.get<boolean>('applyToSubmodules', true);
 }
 
@@ -327,9 +337,14 @@ export function isSubmoduleSupportEnabled(): boolean {
  *
  * SECURITY: Returns value clamped to MAX_SUBMODULE_DEPTH (5) to prevent DoS.
  * Invalid or negative values default to 1.
+ * Returns 1 if VS Code API is not available (for testing).
  */
 export function getSubmoduleDepth(): number {
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const workspace = getWorkspace();
+  if (!workspace) {
+    return 1; // Default depth for testing
+  }
+  const config = workspace.getConfiguration('gitIdSwitcher');
   const configuredDepth = config.get<number>('submoduleDepth', 1);
 
   // SECURITY: Clamp to valid range [0, MAX_SUBMODULE_DEPTH]

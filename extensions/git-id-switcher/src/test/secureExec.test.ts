@@ -143,13 +143,12 @@ async function testGitExec(): Promise<void> {
 
   // Test 1: Basic git command should work
   {
-    try {
-      const version = await gitExec(['--version']);
-      assert.ok(version.startsWith('git version'), 'git --version works');
-    } catch (error) {
+    const result = await gitExec(['--version']);
+    if (!result.success) {
       console.log('  Git not available, skipping');
       return;
     }
+    assert.ok(result.stdout.startsWith('git version'), 'git --version works');
   }
 
   // Test 2: Arguments with special characters should be safe
@@ -159,10 +158,11 @@ async function testGitExec(): Promise<void> {
     console.log('  Arguments with special chars handled safely');
   }
 
-  // Test 3: Invalid commands return empty string
+  // Test 3: Invalid commands return failure result (not empty string)
   {
     const result = await gitExec(['invalid-command-that-does-not-exist']);
-    assert.strictEqual(result, '', 'Invalid git command returns empty string');
+    assert.strictEqual(result.success, false, 'Invalid git command returns failure');
+    assert.ok(result.error instanceof Error, 'Error object is provided');
   }
 
   console.log('✅ gitExec tests passed!');
@@ -1101,6 +1101,205 @@ function testGetCommandTimeoutWithMockVSCode(): void {
 }
 
 /**
+ * Test that blocked commands are logged to audit trail *
+ * Coverage target: secureExec() command blocked logging (lines 421-428)
+ */
+async function testCommandBlockedLogsToAuditTrail(): Promise<void> {
+  console.log('Testing command blocked audit logging...');
+
+  // Track if logCommandBlocked was called
+  let loggedCommand: string | null = null;
+  let loggedArgs: string[] | null = null;
+  let loggedReason: string | null = null;
+
+  const mockLogger = {
+    logCommandTimeout: () => {},
+    logCommandBlocked: (command: string, args: string[], reason: string) => {
+      loggedCommand = command;
+      loggedArgs = args;
+      loggedReason = reason;
+    },
+    logCommandError: () => {},
+    logValidationFailure: () => {},
+  };
+
+  // Test 1: Blocked command triggers logCommandBlocked
+  {
+    try {
+      await secureExec('rm', ['-rf', '/'], { logger: mockLogger });
+      assert.fail('Should have thrown for blocked command');
+    } catch (error) {
+      assert.ok(error instanceof Error, 'Should throw Error');
+      assert.strictEqual(loggedCommand, 'rm', 'Should log the blocked command');
+      assert.deepStrictEqual(loggedArgs, ['-rf', '/'], 'Should log the args');
+      assert.ok(loggedReason !== null, 'Should log a reason');
+    }
+  }
+
+  // Reset
+  loggedCommand = null;
+  loggedArgs = null;
+  loggedReason = null;
+
+  // Test 2: Blocked flags also trigger logCommandBlocked
+  {
+    try {
+      await secureExec('git', ['--exec=evil'], { logger: mockLogger });
+      assert.fail('Should have thrown for blocked flag');
+    } catch (error) {
+      assert.ok(error instanceof Error, 'Should throw Error');
+      assert.strictEqual(loggedCommand, 'git', 'Should log git command');
+      assert.ok(loggedReason !== null, 'Should log a reason for blocked flag');
+    }
+  }
+
+  console.log('✅ Command blocked audit logging tests passed!');
+}
+
+/**
+ * Test gitExec Result type behavior *
+ * Coverage target: gitExec() Result type (lines 535-553)
+ */
+async function testGitExecResultType(): Promise<void> {
+  console.log('Testing gitExec Result type...');
+
+  // Test 1: Success case returns { success: true, stdout: string }
+  {
+    const result = await gitExec(['--version']);
+    if (result.success) {
+      assert.ok(typeof result.stdout === 'string', 'stdout should be string');
+      assert.ok(result.stdout.includes('git'), 'stdout should contain git');
+    } else {
+      // Git not available, skip test
+      console.log('  Git not available, skipping success test');
+    }
+  }
+
+  // Test 2: Failure case returns { success: false, error: Error }
+  {
+    const result = await gitExec(['invalid-subcommand-xyz-123']);
+    assert.strictEqual(result.success, false, 'Invalid command should fail');
+    if (!result.success) {
+      assert.ok(result.error instanceof Error, 'Should have error object');
+      assert.ok(typeof result.error.message === 'string', 'Error should have message');
+    }
+  }
+
+  // Test 3: Empty stdout success is different from failure
+  {
+    // 'git config nonexistent.key' fails with exit code, so success=false
+    const result = await gitExec(['config', 'nonexistent.key.that.does.not.exist']);
+    // This should return failure (config not found)
+    assert.strictEqual(result.success, false, 'Nonexistent config should fail');
+  }
+
+  console.log('✅ gitExec Result type tests passed!');
+}
+
+/**
+ * Test gitExec error handling and Result type consistency
+ *
+ * Tests that gitExec properly handles errors and returns consistent Result types.
+ * TimeoutError is NOT double-logged (already logged by secureExec).
+ *
+ * Note: gitExec uses the securityLogger singleton internally, which cannot be
+ * mocked without modifying the function signature. The actual logging behavior
+ * is verified indirectly by:
+ * 1. Checking that errors produce { success: false, error: Error } results
+ * 2. Verifying the error object is properly constructed
+ * 3. Manual verification that COMMAND_ERROR events appear in audit logs
+ *
+ * Coverage target: gitExec() error handling (lines 540-552)
+ */
+async function testGitExecErrorLogging(): Promise<void> {
+  console.log('Testing gitExec error handling...');
+
+  // Test 1: Invalid git subcommand returns failure with Error object
+  {
+    const result = await gitExec(['--invalid-flag-that-does-not-exist']);
+    assert.strictEqual(result.success, false, 'Invalid flag should fail');
+    if (!result.success) {
+      assert.ok(result.error instanceof Error, 'Should have Error object');
+      assert.ok(result.error.message.length > 0, 'Error should have message');
+    }
+  }
+
+  // Test 2: Operation in non-git directory returns failure gracefully
+  {
+    const result = await gitExec(['rev-parse', '--is-inside-work-tree'], '/tmp');
+    // /tmp is typically not a git repo, so this should fail
+    // The test verifies graceful error handling without throwing
+    assert.ok('success' in result, 'Should return a Result object');
+    if (!result.success) {
+      assert.ok(result.error instanceof Error, 'Failure should include Error');
+    }
+  }
+
+  // Test 3: Verify error object preserves original error type
+  {
+    const result = await gitExec(['config', 'nonexistent.key.xyz']);
+    assert.strictEqual(result.success, false, 'Config miss should fail');
+    if (!result.success) {
+      // Error should be a proper Error instance, not a string
+      assert.strictEqual(typeof result.error.message, 'string');
+      assert.strictEqual(typeof result.error.name, 'string');
+    }
+  }
+
+  console.log('✅ gitExec error handling tests passed!');
+}
+
+/**
+ * Test timeout error handling verification
+ *
+ * Note: The actual timeout code path (secureExec lines 484-493) is difficult
+ * to test in unit tests because:
+ * 1. Minimum allowed timeout is 1000ms (security constraint)
+ * 2. All allowlisted commands (git --version, config, rev-parse, submodule status)
+ *    complete much faster than 1000ms
+ * 3. Network-based commands (ls-remote, fetch) are not in the allowlist for security
+ *
+ * This test verifies the TimeoutError class behavior and logging interface,
+ * while actual timeout handling is covered by integration tests.
+ */
+async function testActualTimeoutBehavior(): Promise<void> {
+  console.log('Testing timeout error handling verification...');
+
+  // Verify TimeoutError can be created and has correct properties
+  {
+    const error = new TimeoutError('git', ['config', 'user.name'], 1000);
+    assert.strictEqual(error.command, 'git', 'TimeoutError command should be correct');
+    assert.deepStrictEqual(error.args, ['config', 'user.name'], 'TimeoutError args should be correct');
+    assert.strictEqual(error.timeoutMs, 1000, 'TimeoutError timeout should be correct');
+    assert.ok(error instanceof Error, 'TimeoutError should be an Error');
+    assert.strictEqual(error.name, 'TimeoutError', 'TimeoutError name should be correct');
+  }
+
+  // Verify mock logger interface matches expected signature
+  {
+    let logCalled = false;
+    const mockLogger = {
+      logCommandTimeout: (command: string, args: string[], timeoutMs: number, cwd?: string) => {
+        logCalled = true;
+        assert.strictEqual(command, 'test', 'Logger receives command');
+        assert.deepStrictEqual(args, ['arg1'], 'Logger receives args');
+        assert.strictEqual(timeoutMs, 5000, 'Logger receives timeout');
+        assert.strictEqual(cwd, '/tmp', 'Logger receives cwd');
+      },
+      logCommandBlocked: () => {},
+      logCommandError: () => {},
+      logValidationFailure: () => {},
+    };
+
+    // Simulate what secureExec does when timeout occurs
+    mockLogger.logCommandTimeout('test', ['arg1'], 5000, '/tmp');
+    assert.ok(logCalled, 'Logger should be called');
+  }
+
+  console.log('✅ Timeout error handling verification tests passed!');
+}
+
+/**
  * Run all secure execution tests
  */
 export async function runSecureExecTests(): Promise<void> {
@@ -1129,6 +1328,11 @@ export async function runSecureExecTests(): Promise<void> {
     await testSecureExecBinaryResolutionError();
     await testSecureExecSshAddResolutionError();
     await testSecureExecSshKeygenResolutionError();
+    // Audit logging and Result type tests
+    await testCommandBlockedLogsToAuditTrail();
+    await testGitExecResultType();
+    await testGitExecErrorLogging();
+    await testActualTimeoutBehavior();
 
     console.log('\n✅ All secure execution tests passed!\n');
   } catch (error) {

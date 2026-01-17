@@ -391,6 +391,26 @@ export interface ExecResult {
 }
 
 /**
+ * Result type for git command execution
+ *
+ * Provides explicit success/failure indication instead of returning empty string on error.
+ * This allows callers to distinguish between:
+ * - Successful command with empty output
+ * - Failed command (e.g., config not set, not a repo, timeout)
+ *
+ * @example
+ * const result = await gitExec(['config', 'user.name'], cwd);
+ * if (result.success) {
+ *   console.log('Name:', result.stdout);
+ * } else {
+ *   console.error('Failed:', result.error.message);
+ * }
+ */
+export type GitExecResult =
+  | { success: true; stdout: string }
+  | { success: false; error: Error };
+
+/**
  * Secure command execution using execFile
  *
  * Security guarantees:
@@ -419,7 +439,10 @@ export async function secureExec(
   // Defense-in-depth: Check command allowlist
   const allowlistCheck = isCommandAllowed(command, args);
   if (!allowlistCheck.allowed) {
-    const error = new Error(`Command blocked: ${allowlistCheck.reason}`);
+    const reason = allowlistCheck.reason || 'Unknown reason';
+    // SECURITY: Log blocked command to audit trail for attack detection
+    logger.logCommandBlocked(command, args, reason);
+    const error = new Error(`Command blocked: ${reason}`);
     console.error(`[Security] ${error.message}`);
     throw error;
   }
@@ -483,26 +506,49 @@ export async function secureExec(
  * Executes git commands securely with proper argument handling.
  * Uses command-specific timeout (10 seconds for git).
  *
+ * BREAKING CHANGE: Returns GitExecResult instead of string.
+ * This allows callers to distinguish between:
+ * - Successful command with empty output (success: true, stdout: '')
+ * - Failed command (success: false, error: Error)
+ *
+ * Errors are now logged to the security audit trail instead of being silently ignored.
+ *
  * @param args - Git subcommand and arguments as array
  * @param cwd - Working directory (optional, defaults to current)
- * @returns Trimmed stdout output, empty string on error (including timeout)
+ * @returns GitExecResult with success/failure indication
  *
  * @example
  * // Get config value
- * const name = await gitExec(['config', 'user.name'], '/path/to/repo');
+ * const result = await gitExec(['config', 'user.name'], '/path/to/repo');
+ * if (result.success) {
+ *   console.log('Name:', result.stdout);
+ * } else {
+ *   console.error('Failed:', result.error.message);
+ * }
  *
  * // Set config value (safe even with special characters)
- * await gitExec(['config', '--local', 'user.name', 'Name with "quotes"'], cwd);
+ * const setResult = await gitExec(['config', '--local', 'user.name', 'Name with "quotes"'], cwd);
+ * if (!setResult.success) {
+ *   throw setResult.error;
+ * }
  */
-export async function gitExec(args: string[], cwd?: string): Promise<string> {
+export async function gitExec(args: string[], cwd?: string): Promise<GitExecResult> {
   try {
     const { stdout } = await secureExec('git', args, { cwd });
-    return stdout.trim();
+    return { success: true, stdout: stdout.trim() };
   } catch (error) {
     // Git command failed (e.g., config not set, not a repo, timeout)
-    // Timeout errors are already logged by secureExec
-    // Return empty string for backwards compatibility
-    return '';
+    // Timeout errors are already logged by secureExec via logCommandTimeout
+    // Other errors need to be logged here
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+
+    // SECURITY: Log non-timeout errors to audit trail
+    // TimeoutError is already logged by secureExec, skip to avoid duplicate logs
+    if (!(error instanceof TimeoutError)) {
+      securityLogger.logCommandError('git', args, errorObj, cwd);
+    }
+
+    return { success: false, error: errorObj };
   }
 }
 

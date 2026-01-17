@@ -7,9 +7,13 @@
  *
  * SECURITY: Uses execFile() via secureExec to prevent command injection.
  * @see https://owasp.org/www-community/attacks/Command_Injection
+ *
+ * Note: Uses vscodeLoader for lazy loading VS Code APIs to enable unit testing.
  */
 
-import * as vscode from 'vscode';
+// Type-only import for TypeScript (stripped at compile time)
+import type * as vscodeTypes from 'vscode';
+import { getVSCode, getWorkspace } from './vscodeLoader';
 import { Identity, formatGitAuthor, getIdentitiesWithValidation } from './identity';
 import { gitExec, secureExec } from './secureExec';
 import { validateIdentity } from './validation';
@@ -22,11 +26,24 @@ import {
 import { createValidationError, createConfigError } from './errors';
 
 /**
+ * Get localized string using VS Code l10n API
+ * Falls back to the original string if VS Code API is not available
+ */
+function t(message: string): string {
+  const vscode = getVSCode();
+  return vscode?.l10n?.t(message) ?? message;
+}
+
+/**
  * Check if icon should be included in Git config user.name
  * @returns true if icon should be included, false otherwise (default: false)
  */
 function shouldIncludeIconInGitConfig(): boolean {
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const workspace = getWorkspace();
+  if (!workspace) {
+    return false;
+  }
+  const config = workspace.getConfiguration('gitIdSwitcher');
   return config.get<boolean>('includeIconInGitConfig', false);
 }
 
@@ -48,18 +65,42 @@ export interface GitConfig {
 }
 
 /**
+ * Get the current workspace path
+ * @throws ConfigError if no workspace folder is open or VS Code API not available
+ */
+function getWorkspacePath(): string {
+  const workspace = getWorkspace();
+  const workspaceFolder = workspace?.workspaceFolders?.[0];
+  if (!workspaceFolder) {
+    throw createConfigError(t('No workspace folder open'));
+  }
+  return workspaceFolder.uri.fsPath;
+}
+
+/**
  * Execute a git command in the current workspace
  *
  * @param args - Git arguments as array (NOT a string command)
+ * @returns stdout on success, undefined on failure
  */
-async function execGitInWorkspace(args: string[]): Promise<string> {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  if (!workspaceFolder) {
-    throw createConfigError(vscode.l10n.t('No workspace folder open'));
-  }
+async function execGitInWorkspace(args: string[]): Promise<string | undefined> {
+  const cwd = getWorkspacePath();
+  const result = await gitExec(args, cwd);
+  return result.success ? result.stdout : undefined;
+}
 
-  const cwd = workspaceFolder.uri.fsPath;
-  return gitExec(args, cwd);
+/**
+ * Execute a git command in the current workspace, throwing on failure
+ *
+ * @param args - Git arguments as array (NOT a string command)
+ * @throws Error if command fails
+ */
+async function execGitInWorkspaceOrThrow(args: string[]): Promise<void> {
+  const cwd = getWorkspacePath();
+  const result = await gitExec(args, cwd);
+  if (!result.success) {
+    throw result.error;
+  }
 }
 
 /**
@@ -67,7 +108,7 @@ async function execGitInWorkspace(args: string[]): Promise<string> {
  * @param token Optional cancellation token for aborting the operation
  */
 export async function getCurrentGitConfig(
-  token?: vscode.CancellationToken
+  token?: vscodeTypes.CancellationToken
 ): Promise<GitConfig> {
   if (token?.isCancellationRequested) {
     return { userName: undefined, userEmail: undefined, signingKey: undefined };
@@ -96,7 +137,7 @@ export async function getCurrentGitConfig(
   ]);
 
   // Track disposable for cleanup
-  let disposable: vscode.Disposable | undefined;
+  let disposable: vscodeTypes.Disposable | undefined;
 
   // Create a promise that rejects when cancellation is requested
   const cancellationPromise = new Promise<never>((_, reject) => {
@@ -143,16 +184,17 @@ export async function getCurrentGitConfig(
  * SECURITY: Validates identity before applying config
  */
 export async function setGitConfigForIdentity(identity: Identity): Promise<void> {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  const workspace = getWorkspace();
+  const workspaceFolder = workspace?.workspaceFolders?.[0];
   if (!workspaceFolder) {
-    throw createConfigError(vscode.l10n.t('No workspace folder open'));
+    throw createConfigError(t('No workspace folder open'));
   }
 
   // SECURITY: Validate identity before use
   const validation = validateIdentity(identity);
   if (!validation.valid) {
     // SECURITY: Don't expose validation details to users
-    throw createValidationError(vscode.l10n.t('Invalid identity configuration'), {
+    throw createValidationError(t('Invalid identity configuration'), {
       field: 'identity',
       context: { errorCount: validation.errors.length },
     });
@@ -161,24 +203,22 @@ export async function setGitConfigForIdentity(identity: Identity): Promise<void>
   // Check if we're in a git repository
   const isGitRepo = await execGitInWorkspace(['rev-parse', '--is-inside-work-tree']);
   if (isGitRepo !== 'true') {
-    throw createConfigError(vscode.l10n.t('Not in a Git repository'));
+    throw createConfigError(t('Not in a Git repository'));
   }
-
-  const cwd = workspaceFolder.uri.fsPath;
 
   // Set user.name (icon is only included if includeIconInGitConfig is true)
   const userName = buildGitUserName(identity);
 
-  // SECURITY: Using gitExec with array args prevents command injection
-  await gitExec(['config', '--local', 'user.name', userName], cwd);
+  // SECURITY: Using execGitInWorkspaceOrThrow with array args prevents command injection
+  await execGitInWorkspaceOrThrow(['config', '--local', 'user.name', userName]);
 
   // Set user.email
-  await gitExec(['config', '--local', 'user.email', identity.email], cwd);
+  await execGitInWorkspaceOrThrow(['config', '--local', 'user.email', identity.email]);
 
   // Set GPG signing key if available
   if (identity.gpgKeyId) {
-    await gitExec(['config', '--local', 'user.signingkey', identity.gpgKeyId], cwd);
-    await gitExec(['config', '--local', 'commit.gpgsign', 'true'], cwd);
+    await execGitInWorkspaceOrThrow(['config', '--local', 'user.signingkey', identity.gpgKeyId]);
+    await execGitInWorkspaceOrThrow(['config', '--local', 'commit.gpgsign', 'true']);
   }
 
   // Propagate to submodules if enabled
@@ -229,7 +269,7 @@ async function propagateToSubmodules(
  * @param token Optional cancellation token for aborting the operation
  */
 export async function detectCurrentIdentity(
-  token?: vscode.CancellationToken
+  token?: vscodeTypes.CancellationToken
 ): Promise<Identity | undefined> {
   if (token?.isCancellationRequested) {
     return undefined;
@@ -275,7 +315,7 @@ export async function isGitAvailable(): Promise<boolean> {
  * @param token Optional cancellation token for aborting the operation
  */
 export async function isGitRepository(
-  token?: vscode.CancellationToken
+  token?: vscodeTypes.CancellationToken
 ): Promise<boolean> {
   if (token?.isCancellationRequested) {
     return false;
