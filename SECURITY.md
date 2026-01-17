@@ -70,6 +70,7 @@ This section documents all secrets used in CI/CD workflows.
 
 | Name | Purpose | Used In | Rotation | Sensitivity |
 | ---- | ------- | ------- | -------- | ----------- |
+| RELEASE_PAT | Tag push to trigger publish workflow | auto-tag.yml | 90 days | High |
 | VSCE_PAT | VS Code Marketplace publishing | publish.yml, unpublish.yml | Annual | High |
 | OVSX_PAT | Open VSX publishing | publish.yml, unpublish.yml | Annual | High |
 | CODECOV_TOKEN | Coverage reporting | ci.yml | As needed | Medium |
@@ -116,6 +117,7 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 
 | Secret | Provider | Management URL | Expiration |
 | ------ | -------- | -------------- | ---------- |
+| RELEASE_PAT | GitHub | [GitHub Fine-grained PAT](https://github.com/settings/tokens?type=beta) | 2026-04-17 |
 | VSCE_PAT | Azure DevOps | [Azure DevOps Tokens](https://dev.azure.com/nullvariant/_usersSettings/tokens) | 2027-01-08 |
 | OVSX_PAT | Open VSX | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens) | No expiration |
 | CLOUDFLARE_API_TOKEN | Cloudflare | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) | No expiration |
