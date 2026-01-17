@@ -10,6 +10,7 @@
  * - Shell interpretation prevention
  * - Timeout handling and error detection
  * - SSH command wrappers (sshAgentExec, sshKeygenExec)
+ * - BinaryResolutionError handling in secureExec (lines 434-443)
  *
  * 🔒 Defense-in-depth code not covered (requires VS Code mocking or actual timeouts):
  *
@@ -33,7 +34,7 @@
  *     - Requires mocking securityLogger to throw
  *
  * Actual timeout required:
- *   Lines 438-447: Timeout error handling in secureExec()
+ *   Lines 461-470: Timeout error handling in secureExec()
  *     - Only allowed commands can reach this code: git, ssh-add, ssh-keygen
  *     - These commands complete quickly (< timeout)
  *     - Would need:
@@ -56,7 +57,13 @@ import {
   COMMAND_TIMEOUTS,
   DEFAULT_TIMEOUT,
   __testExports,
+  BinaryResolutionError,
+  clearPathCache,
 } from '../secureExec';
+import { __testExports as binaryResolverTestExports } from '../binaryResolver';
+import { _setMockVSCode, _resetCache } from '../vscodeLoader';
+
+const { pathCache } = binaryResolverTestExports;
 
 /**
  * Test that secureExec uses execFile (no shell interpretation)
@@ -747,6 +754,353 @@ function testIsTimeoutError(): void {
 }
 
 /**
+ * Test secureExec handles BinaryResolutionError correctly
+ *
+ * This tests the binary resolution error handling path (lines 434-443) in secureExec().
+ * When getBinaryPath() throws BinaryResolutionError, secureExec should:
+ * 1. Log the failure using securityLogger.logValidationFailure()
+ * 2. Re-throw the original BinaryResolutionError
+ *
+ * Coverage target: secureExec() binary resolution error handling
+ */
+async function testSecureExecBinaryResolutionError(): Promise<void> {
+  console.log('Testing secureExec BinaryResolutionError handling...');
+
+  // Clear cache to ensure clean state
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
+
+  // Set git to fail by caching null (simulates resolution failure)
+  pathCache.set('git', null);
+
+  try {
+    await secureExec('git', ['--version']);
+    assert.fail('Should have thrown BinaryResolutionError');
+  } catch (error) {
+    // Verify error type and properties
+    assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
+    assert.strictEqual(
+      (error as BinaryResolutionError).command,
+      'git',
+      'Error should have command property set to git'
+    );
+    assert.strictEqual(
+      (error as BinaryResolutionError).code,
+      'ENOENT_BINARY',
+      'Error code should be ENOENT_BINARY'
+    );
+    assert.ok(
+      (error as BinaryResolutionError).message.includes('git'),
+      'Error message should include command name'
+    );
+  }
+
+  // Clean up and verify
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty after cleanup');
+
+  console.log('✅ secureExec BinaryResolutionError handling tests passed!');
+}
+
+/**
+ * Test secureExec with BinaryResolutionError for ssh-add
+ *
+ * Tests that sshAgentExec wrapper properly propagates BinaryResolutionError
+ * when the ssh-add binary cannot be resolved.
+ *
+ * Coverage target: sshAgentExec() with binary resolution failure
+ */
+async function testSecureExecSshAddResolutionError(): Promise<void> {
+  console.log('Testing secureExec ssh-add resolution error...');
+
+  // Clear cache to ensure clean state
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
+
+  // Set ssh-add to fail by caching null
+  pathCache.set('ssh-add', null);
+
+  try {
+    await sshAgentExec(['-l']);
+    assert.fail('Should have thrown BinaryResolutionError');
+  } catch (error) {
+    // Verify error type and properties
+    assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
+    assert.strictEqual(
+      (error as BinaryResolutionError).command,
+      'ssh-add',
+      'Error should have command property set to ssh-add'
+    );
+    assert.strictEqual(
+      (error as BinaryResolutionError).code,
+      'ENOENT_BINARY',
+      'Error code should be ENOENT_BINARY'
+    );
+  }
+
+  // Clean up and verify
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty after cleanup');
+
+  console.log('✅ secureExec ssh-add resolution error tests passed!');
+}
+
+/**
+ * Test secureExec with BinaryResolutionError for ssh-keygen
+ *
+ * Tests that sshKeygenExec wrapper properly propagates BinaryResolutionError
+ * when the ssh-keygen binary cannot be resolved.
+ *
+ * Coverage target: sshKeygenExec() with binary resolution failure
+ */
+async function testSecureExecSshKeygenResolutionError(): Promise<void> {
+  console.log('Testing secureExec ssh-keygen resolution error...');
+
+  // Clear cache to ensure clean state
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
+
+  // Set ssh-keygen to fail by caching null
+  pathCache.set('ssh-keygen', null);
+
+  try {
+    // Use -lf with a dummy path (valid flags for ssh-keygen fingerprint operation)
+    await sshKeygenExec(['-lf', '/nonexistent/key']);
+    assert.fail('Should have thrown BinaryResolutionError');
+  } catch (error) {
+    // Verify error type and properties
+    assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
+    assert.strictEqual(
+      (error as BinaryResolutionError).command,
+      'ssh-keygen',
+      'Error should have command property set to ssh-keygen'
+    );
+    assert.strictEqual(
+      (error as BinaryResolutionError).code,
+      'ENOENT_BINARY',
+      'Error code should be ENOENT_BINARY'
+    );
+  }
+
+  // Clean up and verify
+  clearPathCache();
+  assert.strictEqual(pathCache.size, 0, 'Cache should be empty after cleanup');
+
+  console.log('✅ secureExec ssh-keygen resolution error tests passed!');
+}
+
+/**
+ * Test getUserConfiguredTimeouts with mock VS Code workspace
+ *
+ * This tests the VS Code commandTimeouts setting handling (lines 225-264).
+ * When commandTimeouts is configured in VS Code settings, it should be used
+ * for command-specific timeouts.
+ *
+ * Coverage target: getUserConfiguredTimeouts() and related validation
+ */
+function testGetCommandTimeoutWithMockVSCode(): void {
+  console.log('Testing getCommandTimeout with mock VS Code workspace...');
+
+  // Test 1: Valid user-configured timeout
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return { git: 15000, 'ssh-add': 8000 } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    // Inject mock
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      // User-configured timeout should be used
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, 15000, 'Should use user-configured git timeout');
+
+      const sshAddTimeout = getCommandTimeout('ssh-add');
+      assert.strictEqual(sshAddTimeout, 8000, 'Should use user-configured ssh-add timeout');
+
+      // Command without user config should use built-in
+      const sshKeygenTimeout = getCommandTimeout('ssh-keygen');
+      assert.strictEqual(sshKeygenTimeout, COMMAND_TIMEOUTS['ssh-keygen'], 'Should use built-in timeout');
+
+      console.log('  ✓ User-configured timeouts were used');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test 2: Invalid timeout values (out of range)
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return {
+            git: 500, // Too low (min is 1000)
+            'ssh-add': 500000, // Too high (max is 300000)
+          } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      // Invalid values should fall back to built-in
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, COMMAND_TIMEOUTS['git'], 'Should use built-in for out-of-range value');
+
+      const sshAddTimeout = getCommandTimeout('ssh-add');
+      assert.strictEqual(sshAddTimeout, COMMAND_TIMEOUTS['ssh-add'], 'Should use built-in for out-of-range value');
+
+      console.log('  ✓ Invalid timeout values were rejected');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test 3: Invalid command name in config (security validation)
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return {
+            '../../../etc/passwd': 5000, // Invalid: path traversal
+            'git;rm -rf /': 5000, // Invalid: injection attempt
+            git: 12000, // Valid
+          } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      // Valid config should be used
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, 12000, 'Valid git config should be used');
+
+      console.log('  ✓ Invalid command names were filtered out');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test 4: Non-integer timeout (should be floored)
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return { git: 5500.7 } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, 5500, 'Float timeout should be floored');
+      console.log('  ✓ Float timeout was floored to integer');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  // Test 5: NaN and Infinity values
+  {
+    const mockConfig = {
+      get: <T>(key: string, defaultValue?: T): T => {
+        if (key === 'commandTimeouts') {
+          return {
+            git: NaN,
+            'ssh-add': Infinity,
+          } as T;
+        }
+        return defaultValue as T;
+      },
+    };
+
+    const mockWorkspace = {
+      getConfiguration: (section: string) => {
+        if (section === 'gitIdSwitcher') {
+          return mockConfig;
+        }
+        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+      },
+    };
+
+    const mockVSCode = { workspace: mockWorkspace };
+
+    _setMockVSCode(mockVSCode as never);
+
+    try {
+      const gitTimeout = getCommandTimeout('git');
+      assert.strictEqual(gitTimeout, COMMAND_TIMEOUTS['git'], 'NaN should use built-in');
+
+      const sshAddTimeout = getCommandTimeout('ssh-add');
+      assert.strictEqual(sshAddTimeout, COMMAND_TIMEOUTS['ssh-add'], 'Infinity should use built-in');
+
+      console.log('  ✓ NaN and Infinity values were rejected');
+    } finally {
+      _resetCache();
+    }
+  }
+
+  console.log('✅ getCommandTimeout with mock VS Code workspace tests passed!');
+}
+
+/**
  * Run all secure execution tests
  */
 export async function runSecureExecTests(): Promise<void> {
@@ -759,6 +1113,7 @@ export async function runSecureExecTests(): Promise<void> {
     testGetCommandTimeout();
     testGetCommandTimeoutEdgeCases();
     testCommandTimeoutsConstants();
+    testGetCommandTimeoutWithMockVSCode();
     await testSecureExecNoShellInterpretation();
     await testGitExec();
     testArgumentSeparation();
@@ -771,6 +1126,9 @@ export async function runSecureExecTests(): Promise<void> {
     await testSecureExecVariousCommands();
     await testErrorRethrowing();
     await testSecureExecEmptyArgs();
+    await testSecureExecBinaryResolutionError();
+    await testSecureExecSshAddResolutionError();
+    await testSecureExecSshKeygenResolutionError();
 
     console.log('\n✅ All secure execution tests passed!\n');
   } catch (error) {
