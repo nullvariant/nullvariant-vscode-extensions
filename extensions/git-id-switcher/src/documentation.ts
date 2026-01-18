@@ -21,6 +21,8 @@ import {
   getDocumentDisplayName,
   getDocumentLocaleFromString,
   verifyContentHash,
+  logHashFailure,
+  isContentSizeValid,
 } from './documentation.internal';
 
 // ============================================================================
@@ -411,36 +413,6 @@ function isTestEnvironment(): boolean {
 }
 
 /**
- * Log hash verification failure with appropriate message
- */
-function logHashFailure(path: string, hashResult: { expectedHash: string | undefined; actualHash: string }): void {
-  if (hashResult.expectedHash === undefined) {
-    console.warn(`[Git ID Switcher] Unknown document path rejected: ${path}`);
-  } else {
-    console.warn(
-      `[Git ID Switcher] Hash mismatch for ${path}: ` +
-      `expected ${hashResult.expectedHash}, got ${hashResult.actualHash}`
-    );
-  }
-}
-
-/**
- * Validate content size against limits
- * @returns true if content size is valid, false if too large
- */
-function isContentSizeValid(contentLength: string | null, actualLength: number): boolean {
-  if (contentLength && Number.parseInt(contentLength, 10) > MAX_CONTENT_SIZE) {
-    console.warn('[Git ID Switcher] Documentation too large, rejecting');
-    return false;
-  }
-  if (actualLength > MAX_CONTENT_SIZE) {
-    console.warn('[Git ID Switcher] Documentation content too large, rejecting');
-    return false;
-  }
-  return true;
-}
-
-/**
  * Fetch a document by path from R2
  *
  * @param path - Document path relative to extension root (e.g., 'README.md', 'docs/i18n/ja/README.md')
@@ -469,7 +441,7 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
     const contentLength = response.headers.get('content-length');
     const content = await response.text();
 
-    if (!isContentSizeValid(contentLength, content.length)) {
+    if (!isContentSizeValid(contentLength, content.length, MAX_CONTENT_SIZE)) {
       return null;
     }
 

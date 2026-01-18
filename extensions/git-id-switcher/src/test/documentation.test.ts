@@ -54,6 +54,8 @@ import {
   DOCUMENT_HASHES,
   computeSha256Hash,
   verifyContentHash,
+  logHashFailure,
+  isContentSizeValid,
 } from '../documentation.internal';
 
 // ============================================================================
@@ -1099,6 +1101,89 @@ async function testVerifyContentHash(): Promise<void> {
   console.log('  verifyContentHash passed!');
 }
 
+/**
+ * Test logHashFailure function
+ */
+function testLogHashFailure(): void {
+  console.log('Testing logHashFailure...');
+
+  // Test with undefined expectedHash (unknown path)
+  // Should not throw, just log to console
+  logHashFailure('unknown/path.md', {
+    expectedHash: undefined,
+    actualHash: 'abc123',
+  });
+
+  // Test with defined expectedHash (hash mismatch)
+  logHashFailure('README.md', {
+    expectedHash: 'expected123',
+    actualHash: 'actual456',
+  });
+
+  // Function should complete without errors
+  console.log('  logHashFailure passed!');
+}
+
+/**
+ * Test isContentSizeValid function
+ */
+function testIsContentSizeValid(): void {
+  console.log('Testing isContentSizeValid...');
+
+  const MAX_SIZE = 1000;
+
+  // Valid: content length header within limit
+  assert.strictEqual(
+    isContentSizeValid('500', 500, MAX_SIZE),
+    true,
+    'Content within limit should be valid'
+  );
+
+  // Valid: no content length header, actual within limit
+  assert.strictEqual(
+    isContentSizeValid(null, 500, MAX_SIZE),
+    true,
+    'No header, actual within limit should be valid'
+  );
+
+  // Invalid: content length header exceeds limit
+  assert.strictEqual(
+    isContentSizeValid('2000', 500, MAX_SIZE),
+    false,
+    'Header exceeding limit should be invalid'
+  );
+
+  // Invalid: actual length exceeds limit (header missing)
+  assert.strictEqual(
+    isContentSizeValid(null, 2000, MAX_SIZE),
+    false,
+    'Actual exceeding limit should be invalid'
+  );
+
+  // Invalid: actual length exceeds limit (header lies)
+  assert.strictEqual(
+    isContentSizeValid('500', 2000, MAX_SIZE),
+    false,
+    'Actual exceeding limit should be invalid even if header is within'
+  );
+
+  // Edge case: exactly at limit
+  assert.strictEqual(
+    isContentSizeValid('1000', 1000, MAX_SIZE),
+    true,
+    'Exactly at limit should be valid'
+  );
+
+  // Edge case: one over limit
+  assert.strictEqual(
+    isContentSizeValid('1001', 1000, MAX_SIZE),
+    false,
+    'One over limit in header should be invalid'
+  );
+
+  console.log('  isContentSizeValid passed!');
+}
+
 // ============================================================================
 // Test Runner
 // ============================================================================
@@ -1153,6 +1238,8 @@ export async function runDocumentationTests(): Promise<void> {
     testDocumentHashes();
     await testComputeSha256Hash();
     await testVerifyContentHash();
+    testLogHashFailure();
+    testIsContentSizeValid();
 
     console.log('\n========================================');
     console.log('   All documentation tests passed!     ');

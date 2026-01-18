@@ -125,6 +125,50 @@ export async function verifyContentHash(path: string, content: string): Promise<
 }
 
 /**
+ * Log hash verification failure with appropriate message
+ *
+ * @param path - Document path that failed verification
+ * @param hashResult - Result containing expected and actual hashes
+ */
+export function logHashFailure(
+  path: string,
+  hashResult: { expectedHash: string | undefined; actualHash: string }
+): void {
+  if (hashResult.expectedHash === undefined) {
+    console.warn(`[Git ID Switcher] Unknown document path rejected: ${path}`);
+  } else {
+    console.warn(
+      `[Git ID Switcher] Hash mismatch for ${path}: ` +
+        `expected ${hashResult.expectedHash}, got ${hashResult.actualHash}`
+    );
+  }
+}
+
+/**
+ * Validate content size against maximum allowed size
+ *
+ * @param contentLength - Content-Length header value (may be null)
+ * @param actualLength - Actual content length in bytes
+ * @param maxSize - Maximum allowed size in bytes
+ * @returns true if content size is valid, false if too large
+ */
+export function isContentSizeValid(
+  contentLength: string | null,
+  actualLength: number,
+  maxSize: number
+): boolean {
+  if (contentLength && Number.parseInt(contentLength, 10) > maxSize) {
+    console.warn('[Git ID Switcher] Documentation too large, rejecting');
+    return false;
+  }
+  if (actualLength > maxSize) {
+    console.warn('[Git ID Switcher] Documentation content too large, rejecting');
+    return false;
+  }
+  return true;
+}
+
+/**
  * Sanitize HTML to remove dangerous elements while preserving safe HTML
  *
  * SECURITY: CSP with nonce restricts script execution to our inline script only.
