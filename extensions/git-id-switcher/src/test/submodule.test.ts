@@ -701,8 +701,8 @@ async function testSetIdentityForSubmodulesWithRepo(): Promise<void> {
  * Test listSubmodules with git repo that has no submodules (empty stdout path)
  *
  * Coverage target: listSubmodules() empty stdout path (line 153-155)
- * Note: The full success path (lines 157-168) requires fixing a bug in gitExec
- * where stdout.trim() removes the leading status character from submodule output.
+ * Note: The success path test is now in testListSubmodulesWithSubmodule().
+ * Bug fix: gitExecRaw() added to preserve raw stdout.
  */
 async function testListSubmodulesEmptyResult(): Promise<void> {
   console.log('Testing listSubmodules with repo having no submodules...');
@@ -728,6 +728,210 @@ async function testListSubmodulesEmptyResult(): Promise<void> {
     console.log('✅ listSubmodules empty result tests passed!');
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Test listSubmodules with a real submodule
+ *
+ * Coverage target: listSubmodules() success path (lines 152, 157-167)
+ * This test creates a temporary git repo with a submodule to verify
+ * that the parsing logic works correctly after fixing the gitExec trim bug.
+ */
+async function testListSubmodulesWithSubmodule(): Promise<void> {
+  console.log('Testing listSubmodules with real submodule...');
+
+  const { execSync } = await import('node:child_process');
+  // Use realpathSync to resolve /tmp -> /private/tmp on macOS
+  const parentDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'parent-repo-')));
+  const childDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'child-repo-')));
+
+  try {
+    // 1. Create child repo (will become submodule)
+    execSync('git init', { cwd: childDir, stdio: 'ignore' });
+    execSync('git config user.email "test@example.com"', { cwd: childDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: childDir, stdio: 'ignore' });
+    fs.writeFileSync(path.join(childDir, 'README.md'), '# Child Repo');
+    execSync('git add .', { cwd: childDir, stdio: 'ignore' });
+    execSync('git commit -m "Initial commit"', { cwd: childDir, stdio: 'ignore' });
+
+    // 2. Create parent repo
+    execSync('git init', { cwd: parentDir, stdio: 'ignore' });
+    execSync('git config user.email "test@example.com"', { cwd: parentDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: parentDir, stdio: 'ignore' });
+    fs.writeFileSync(path.join(parentDir, 'README.md'), '# Parent Repo');
+    execSync('git add .', { cwd: parentDir, stdio: 'ignore' });
+    execSync('git commit -m "Initial commit"', { cwd: parentDir, stdio: 'ignore' });
+
+    // 3. Add child as submodule (use -c protocol.file.allow=always for git >= 2.38.1)
+    execSync(`git -c protocol.file.allow=always submodule add ${childDir} vendor/child`, { cwd: parentDir, stdio: 'ignore' });
+    execSync('git commit -m "Add submodule"', { cwd: parentDir, stdio: 'ignore' });
+
+    // 4. Call listSubmodules
+    const submodules = await listSubmodules(parentDir);
+
+    // 5. Assertions
+    assert.ok(Array.isArray(submodules), 'Should return an array');
+    assert.strictEqual(submodules.length, 1, 'Should find exactly 1 submodule');
+
+    const sub = submodules[0];
+    assert.strictEqual(sub.path, 'vendor/child', 'Submodule path should be vendor/child');
+    assert.strictEqual(sub.initialized, true, 'Submodule should be initialized');
+    assert.ok(sub.commitHash.match(/^[a-f0-9]{40}$/), 'Commit hash should be 40 hex chars');
+    assert.ok(sub.absolutePath.endsWith('vendor/child'), 'Absolute path should end with vendor/child');
+
+    console.log('✅ listSubmodules with real submodule tests passed!');
+  } finally {
+    fs.rmSync(parentDir, { recursive: true, force: true });
+    fs.rmSync(childDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Test listSubmodules with multiple submodules
+ *
+ * Coverage target: listSubmodules() success path with multiple entries
+ * This test verifies that the gitExecRaw fix works correctly when
+ * there are multiple submodules (the original bug only affected the first).
+ */
+async function testListSubmodulesWithMultipleSubmodules(): Promise<void> {
+  console.log('Testing listSubmodules with multiple submodules...');
+
+  const { execSync } = await import('node:child_process');
+  // Use realpathSync to resolve /tmp -> /private/tmp on macOS
+  const parentDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'parent-multi-')));
+  const childDir1 = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'child1-')));
+  const childDir2 = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'child2-')));
+  const childDir3 = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'child3-')));
+
+  try {
+    // 1. Create child repos (will become submodules)
+    for (const [childDir, name] of [
+      [childDir1, 'child1'],
+      [childDir2, 'child2'],
+      [childDir3, 'child3'],
+    ] as const) {
+      execSync('git init', { cwd: childDir, stdio: 'ignore' });
+      execSync('git config user.email "test@example.com"', { cwd: childDir, stdio: 'ignore' });
+      execSync('git config user.name "Test"', { cwd: childDir, stdio: 'ignore' });
+      fs.writeFileSync(path.join(childDir, 'README.md'), `# ${name}`);
+      execSync('git add .', { cwd: childDir, stdio: 'ignore' });
+      execSync('git commit -m "Initial commit"', { cwd: childDir, stdio: 'ignore' });
+    }
+
+    // 2. Create parent repo
+    execSync('git init', { cwd: parentDir, stdio: 'ignore' });
+    execSync('git config user.email "test@example.com"', { cwd: parentDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: parentDir, stdio: 'ignore' });
+    fs.writeFileSync(path.join(parentDir, 'README.md'), '# Parent Repo');
+    execSync('git add .', { cwd: parentDir, stdio: 'ignore' });
+    execSync('git commit -m "Initial commit"', { cwd: parentDir, stdio: 'ignore' });
+
+    // 3. Add children as submodules (use -c protocol.file.allow=always for git >= 2.38.1)
+    execSync(`git -c protocol.file.allow=always submodule add ${childDir1} vendor/lib1`, { cwd: parentDir, stdio: 'ignore' });
+    execSync(`git -c protocol.file.allow=always submodule add ${childDir2} vendor/lib2`, { cwd: parentDir, stdio: 'ignore' });
+    execSync(`git -c protocol.file.allow=always submodule add ${childDir3} tools/cli`, { cwd: parentDir, stdio: 'ignore' });
+    execSync('git commit -m "Add submodules"', { cwd: parentDir, stdio: 'ignore' });
+
+    // 4. Call listSubmodules
+    const submodules = await listSubmodules(parentDir);
+
+    // 5. Assertions
+    assert.ok(Array.isArray(submodules), 'Should return an array');
+    assert.strictEqual(submodules.length, 3, 'Should find exactly 3 submodules');
+
+    // Verify all submodules are found (order may vary)
+    const paths = submodules.map(s => s.path).sort();
+    assert.deepStrictEqual(paths, ['tools/cli', 'vendor/lib1', 'vendor/lib2'], 'Should find all submodule paths');
+
+    // Verify all are initialized with valid commit hashes
+    for (const sub of submodules) {
+      assert.strictEqual(sub.initialized, true, `Submodule ${sub.path} should be initialized`);
+      assert.ok(sub.commitHash.match(/^[a-f0-9]{40}$/), `Submodule ${sub.path} should have valid commit hash`);
+    }
+
+    console.log('✅ listSubmodules with multiple submodules tests passed!');
+  } finally {
+    fs.rmSync(parentDir, { recursive: true, force: true });
+    fs.rmSync(childDir1, { recursive: true, force: true });
+    fs.rmSync(childDir2, { recursive: true, force: true });
+    fs.rmSync(childDir3, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Test listSubmodulesRecursive with real nested submodules
+ *
+ * Coverage target: listSubmodulesRecursive() with nested submodules
+ * This test verifies that nested submodules are correctly detected at all depth levels.
+ * Creates a 3-level hierarchy: root → level1 → level2
+ */
+async function testListSubmodulesRecursiveWithRealRepos(): Promise<void> {
+  console.log('Testing listSubmodulesRecursive with nested submodules...');
+
+  const { execSync } = await import('node:child_process');
+  // Use realpathSync to resolve /tmp -> /private/tmp on macOS
+  const rootDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'root-')));
+  const level1Dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'level1-')));
+  const level2Dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'level2-')));
+
+  try {
+    // 1. Create level2 repo (deepest)
+    execSync('git init', { cwd: level2Dir, stdio: 'ignore' });
+    execSync('git config user.email "test@example.com"', { cwd: level2Dir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: level2Dir, stdio: 'ignore' });
+    fs.writeFileSync(path.join(level2Dir, 'README.md'), '# Level 2');
+    execSync('git add .', { cwd: level2Dir, stdio: 'ignore' });
+    execSync('git commit -m "Initial commit"', { cwd: level2Dir, stdio: 'ignore' });
+
+    // 2. Create level1 repo with level2 as submodule
+    execSync('git init', { cwd: level1Dir, stdio: 'ignore' });
+    execSync('git config user.email "test@example.com"', { cwd: level1Dir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: level1Dir, stdio: 'ignore' });
+    fs.writeFileSync(path.join(level1Dir, 'README.md'), '# Level 1');
+    execSync('git add .', { cwd: level1Dir, stdio: 'ignore' });
+    execSync('git commit -m "Initial commit"', { cwd: level1Dir, stdio: 'ignore' });
+    execSync(`git -c protocol.file.allow=always submodule add ${level2Dir} nested/level2`, { cwd: level1Dir, stdio: 'ignore' });
+    execSync('git commit -m "Add level2 submodule"', { cwd: level1Dir, stdio: 'ignore' });
+
+    // 3. Create root repo with level1 as submodule
+    execSync('git init', { cwd: rootDir, stdio: 'ignore' });
+    execSync('git config user.email "test@example.com"', { cwd: rootDir, stdio: 'ignore' });
+    execSync('git config user.name "Test"', { cwd: rootDir, stdio: 'ignore' });
+    fs.writeFileSync(path.join(rootDir, 'README.md'), '# Root');
+    execSync('git add .', { cwd: rootDir, stdio: 'ignore' });
+    execSync('git commit -m "Initial commit"', { cwd: rootDir, stdio: 'ignore' });
+    execSync(`git -c protocol.file.allow=always submodule add ${level1Dir} libs/level1`, { cwd: rootDir, stdio: 'ignore' });
+    execSync('git commit -m "Add level1 submodule"', { cwd: rootDir, stdio: 'ignore' });
+
+    // 3.5. Initialize nested submodules recursively
+    execSync('git -c protocol.file.allow=always submodule update --init --recursive', { cwd: rootDir, stdio: 'ignore' });
+
+    // 4. Test with depth=1 (should find only level1)
+    const depth1Results = await listSubmodulesRecursive(rootDir, 1);
+    assert.strictEqual(depth1Results.length, 1, 'Depth 1 should find 1 submodule');
+    assert.strictEqual(depth1Results[0].path, 'libs/level1', 'Should find level1');
+
+    // 5. Test with depth=2 (should find level1 and level2)
+    const depth2Results = await listSubmodulesRecursive(rootDir, 2);
+    assert.strictEqual(depth2Results.length, 2, 'Depth 2 should find 2 submodules');
+    const paths = depth2Results.map(s => s.path).sort();
+    assert.ok(paths.includes('libs/level1'), 'Should find level1');
+    assert.ok(paths.includes('nested/level2'), 'Should find level2');
+
+    // 6. Test with depth=3 (should still find 2, no more nesting)
+    const depth3Results = await listSubmodulesRecursive(rootDir, 3);
+    assert.strictEqual(depth3Results.length, 2, 'Depth 3 should still find 2 submodules (no deeper nesting)');
+
+    // 7. Test with depth=0 (should find nothing)
+    const depth0Results = await listSubmodulesRecursive(rootDir, 0);
+    assert.strictEqual(depth0Results.length, 0, 'Depth 0 should find 0 submodules');
+
+    console.log('✅ listSubmodulesRecursive with nested submodules tests passed!');
+  } finally {
+    fs.rmSync(rootDir, { recursive: true, force: true });
+    fs.rmSync(level1Dir, { recursive: true, force: true });
+    fs.rmSync(level2Dir, { recursive: true, force: true });
   }
 }
 
@@ -774,6 +978,15 @@ export async function runSubmoduleTests(): Promise<void> {
 
     // listSubmodules empty result path with real git repo
     await testListSubmodulesEmptyResult();
+
+    // listSubmodules success path with real submodule
+    await testListSubmodulesWithSubmodule();
+
+    // listSubmodules with multiple submodules (verifies gitExecRaw fix)
+    await testListSubmodulesWithMultipleSubmodules();
+
+    // listSubmodulesRecursive with nested submodules (verifies depth handling)
+    await testListSubmodulesRecursiveWithRealRepos();
 
     console.log('\n✅ All submodule tests passed!\n');
   } catch (error) {
