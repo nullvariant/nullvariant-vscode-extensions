@@ -20,6 +20,7 @@ import {
   classifyUrl,
   getDocumentDisplayName,
   getDocumentLocaleFromString,
+  verifyContentHash,
 } from './documentation.internal';
 
 // ============================================================================
@@ -449,6 +450,20 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
       }
 
       if (content.trim().length > 0) {
+        // Verify content hash for integrity (allowlist approach)
+        const hashResult = await verifyContentHash(path, content);
+        if (!hashResult.valid) {
+          if (hashResult.expectedHash === undefined) {
+            console.warn(`[Git ID Switcher] Unknown document path rejected: ${path}`);
+          } else {
+            console.warn(
+              `[Git ID Switcher] Hash mismatch for ${path}: ` +
+              `expected ${hashResult.expectedHash}, got ${hashResult.actualHash}`
+            );
+          }
+          return null;
+        }
+
         return content;
       }
     }
