@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.4] - 2026-01-18
+
+### Security
+
+- **CDN Content Hash Verification**: Added SHA-256 hash verification for all documentation files
+  - 32 documents now have cryptographic integrity checks (SHA-256)
+  - Uses allowlist approach: unknown paths are rejected
+  - Hash mismatches are logged and content is rejected
+  - Protects against CDN cache poisoning and MITM attacks on documentation
+
 ## [0.13.3] - 2026-01-18
 
 ### Changed

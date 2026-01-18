@@ -51,6 +51,11 @@ import {
   getDocumentLocaleFromString,
   SUPPORTED_LOCALES,
   LOCALE_MAP,
+  DOCUMENT_HASHES,
+  computeSha256Hash,
+  verifyContentHash,
+  logHashFailure,
+  isContentSizeValid,
 } from '../documentation.internal';
 
 // ============================================================================
@@ -825,6 +830,16 @@ function testClassifyUrl(): void {
   const directNonMdResult = classifyUrl('script.js', 'docs/README.md');
   assert.strictEqual(directNonMdResult.type, 'external', 'Direct non-.md filename should be external');
 
+  // Non-http/https URLs with :// (ftp, file, ssh, etc.) - hits final fallback return
+  const ftpResult = classifyUrl('ftp://files.example.com/data', 'docs/README.md');
+  assert.strictEqual(ftpResult.type, 'external', 'FTP links should be external');
+
+  const fileResult = classifyUrl('file:///local/path', 'docs/README.md');
+  assert.strictEqual(fileResult.type, 'external', 'File protocol links should be external');
+
+  const sshResult = classifyUrl('ssh://git@github.com/repo', 'docs/README.md');
+  assert.strictEqual(sshResult.type, 'external', 'SSH links should be external');
+
   console.log('  classifyUrl passed!');
 }
 
@@ -961,6 +976,215 @@ function testEscapeHtmlEntities(): void {
 }
 
 // ============================================================================
+// Hash Verification Tests
+// ============================================================================
+
+/**
+ * Test DOCUMENT_HASHES constant
+ */
+function testDocumentHashes(): void {
+  console.log('Testing DOCUMENT_HASHES...');
+
+  // Should have entries
+  const hashCount = Object.keys(DOCUMENT_HASHES).length;
+  assert.ok(hashCount > 0, 'DOCUMENT_HASHES should have entries');
+  assert.strictEqual(hashCount, 32, 'DOCUMENT_HASHES should have 32 entries');
+
+  // All hashes should be 64-character hex strings (SHA-256)
+  for (const [path, hash] of Object.entries(DOCUMENT_HASHES)) {
+    assert.strictEqual(hash.length, 64, `Hash for ${path} should be 64 characters`);
+    assert.ok(/^[0-9a-f]+$/.test(hash), `Hash for ${path} should be lowercase hex`);
+  }
+
+  // Should include key documents
+  assert.ok('README.md' in DOCUMENT_HASHES, 'Should include README.md');
+  assert.ok('CHANGELOG.md' in DOCUMENT_HASHES, 'Should include CHANGELOG.md');
+  assert.ok('LICENSE' in DOCUMENT_HASHES, 'Should include LICENSE');
+  assert.ok('docs/i18n/en/README.md' in DOCUMENT_HASHES, 'Should include English README');
+  assert.ok('docs/i18n/ja/README.md' in DOCUMENT_HASHES, 'Should include Japanese README');
+
+  console.log('  DOCUMENT_HASHES passed!');
+}
+
+/**
+ * Test computeSha256Hash function
+ */
+async function testComputeSha256Hash(): Promise<void> {
+  console.log('Testing computeSha256Hash...');
+
+  // Known test vector: SHA-256 of empty string
+  const emptyHash = await computeSha256Hash('');
+  assert.strictEqual(
+    emptyHash,
+    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    'Empty string hash should match known value'
+  );
+
+  // Known test vector: SHA-256 of "hello"
+  const helloHash = await computeSha256Hash('hello');
+  assert.strictEqual(
+    helloHash,
+    '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824',
+    'Hash of "hello" should match known value'
+  );
+
+  // Hash should be deterministic
+  const hash1 = await computeSha256Hash('test content');
+  const hash2 = await computeSha256Hash('test content');
+  assert.strictEqual(hash1, hash2, 'Same content should produce same hash');
+
+  // Different content should produce different hash
+  const hashA = await computeSha256Hash('content A');
+  const hashB = await computeSha256Hash('content B');
+  assert.notStrictEqual(hashA, hashB, 'Different content should produce different hash');
+
+  // Hash format validation
+  assert.strictEqual(hash1.length, 64, 'Hash should be 64 characters');
+  assert.ok(/^[0-9a-f]+$/.test(hash1), 'Hash should be lowercase hex');
+
+  // Unicode content
+  const unicodeHash = await computeSha256Hash('日本語テスト');
+  assert.strictEqual(unicodeHash.length, 64, 'Unicode hash should be 64 characters');
+
+  console.log('  computeSha256Hash passed!');
+}
+
+/**
+ * Test verifyContentHash function
+ */
+async function testVerifyContentHash(): Promise<void> {
+  console.log('Testing verifyContentHash...');
+
+  // Unknown path should return invalid with undefined expectedHash
+  const unknownResult = await verifyContentHash('unknown/path.md', 'any content');
+  assert.strictEqual(unknownResult.valid, false, 'Unknown path should be invalid');
+  assert.strictEqual(unknownResult.expectedHash, undefined, 'Unknown path should have undefined expectedHash');
+  assert.strictEqual(unknownResult.actualHash.length, 64, 'Should still compute actual hash');
+
+  // Known path with wrong content should return invalid with hash mismatch
+  const mismatchResult = await verifyContentHash('README.md', 'wrong content');
+  assert.strictEqual(mismatchResult.valid, false, 'Wrong content should be invalid');
+  assert.ok(mismatchResult.expectedHash !== undefined, 'Known path should have expectedHash');
+  assert.notStrictEqual(mismatchResult.expectedHash, mismatchResult.actualHash, 'Hashes should not match');
+
+  // Valid case: create content that matches hash for a test path
+  // Use computeSha256Hash to get the actual hash for test content
+  const testContent = 'test content for hash verification';
+  const testHash = await computeSha256Hash(testContent);
+
+  // Create a temporary test by checking the logic flow
+  // Since we can't modify DOCUMENT_HASHES, test with a real path
+  // by verifying the structure of a valid response
+  const readmeHash = DOCUMENT_HASHES['README.md'];
+  assert.ok(readmeHash !== undefined, 'README.md should have a hash');
+  assert.strictEqual(readmeHash.length, 64, 'Hash should be 64 characters');
+
+  // Test that actualHash is computed correctly
+  const verifyResult = await verifyContentHash('README.md', testContent);
+  assert.strictEqual(verifyResult.actualHash, testHash, 'Actual hash should match computed hash');
+  assert.strictEqual(verifyResult.expectedHash, readmeHash, 'Expected hash should be from DOCUMENT_HASHES');
+
+  // Result structure validation
+  assert.ok('valid' in unknownResult, 'Result should have valid property');
+  assert.ok('expectedHash' in unknownResult, 'Result should have expectedHash property');
+  assert.ok('actualHash' in unknownResult, 'Result should have actualHash property');
+
+  // Edge case: empty content
+  const emptyContentResult = await verifyContentHash('README.md', '');
+  assert.strictEqual(emptyContentResult.valid, false, 'Empty content should not match');
+  assert.strictEqual(
+    emptyContentResult.actualHash,
+    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    'Empty content should have known empty string hash'
+  );
+
+  console.log('  verifyContentHash passed!');
+}
+
+/**
+ * Test logHashFailure function
+ */
+function testLogHashFailure(): void {
+  console.log('Testing logHashFailure...');
+
+  // Test with undefined expectedHash (unknown path)
+  // Should not throw, just log to console
+  logHashFailure('unknown/path.md', {
+    expectedHash: undefined,
+    actualHash: 'abc123',
+  });
+
+  // Test with defined expectedHash (hash mismatch)
+  logHashFailure('README.md', {
+    expectedHash: 'expected123',
+    actualHash: 'actual456',
+  });
+
+  // Function should complete without errors
+  console.log('  logHashFailure passed!');
+}
+
+/**
+ * Test isContentSizeValid function
+ */
+function testIsContentSizeValid(): void {
+  console.log('Testing isContentSizeValid...');
+
+  const MAX_SIZE = 1000;
+
+  // Valid: content length header within limit
+  assert.strictEqual(
+    isContentSizeValid('500', 500, MAX_SIZE),
+    true,
+    'Content within limit should be valid'
+  );
+
+  // Valid: no content length header, actual within limit
+  assert.strictEqual(
+    isContentSizeValid(null, 500, MAX_SIZE),
+    true,
+    'No header, actual within limit should be valid'
+  );
+
+  // Invalid: content length header exceeds limit
+  assert.strictEqual(
+    isContentSizeValid('2000', 500, MAX_SIZE),
+    false,
+    'Header exceeding limit should be invalid'
+  );
+
+  // Invalid: actual length exceeds limit (header missing)
+  assert.strictEqual(
+    isContentSizeValid(null, 2000, MAX_SIZE),
+    false,
+    'Actual exceeding limit should be invalid'
+  );
+
+  // Invalid: actual length exceeds limit (header lies)
+  assert.strictEqual(
+    isContentSizeValid('500', 2000, MAX_SIZE),
+    false,
+    'Actual exceeding limit should be invalid even if header is within'
+  );
+
+  // Edge case: exactly at limit
+  assert.strictEqual(
+    isContentSizeValid('1000', 1000, MAX_SIZE),
+    true,
+    'Exactly at limit should be valid'
+  );
+
+  // Edge case: one over limit
+  assert.strictEqual(
+    isContentSizeValid('1001', 1000, MAX_SIZE),
+    false,
+    'One over limit in header should be invalid'
+  );
+
+  console.log('  isContentSizeValid passed!');
+}
+
+// ============================================================================
 // Test Runner
 // ============================================================================
 
@@ -1008,6 +1232,14 @@ export async function runDocumentationTests(): Promise<void> {
     // Helper Function Tests
     console.log('\n--- Helper Function Tests ---');
     testEscapeHtmlEntities();
+
+    // Hash Verification Tests
+    console.log('\n--- Hash Verification Tests ---');
+    testDocumentHashes();
+    await testComputeSha256Hash();
+    await testVerifyContentHash();
+    testLogHashFailure();
+    testIsContentSizeValid();
 
     console.log('\n========================================');
     console.log('   All documentation tests passed!     ');

@@ -20,6 +20,9 @@ import {
   classifyUrl,
   getDocumentDisplayName,
   getDocumentLocaleFromString,
+  verifyContentHash,
+  logHashFailure,
+  isContentSizeValid,
 } from './documentation.internal';
 
 // ============================================================================
@@ -429,31 +432,31 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
     }
 
     const response = await fetch(url, { signal: controller.signal, headers });
-
     clearTimeout(timeoutId);
 
-    if (response.ok) {
-      // DoS prevention: Check Content-Length header before reading body
-      const contentLength = response.headers.get('content-length');
-      if (contentLength && Number.parseInt(contentLength, 10) > MAX_CONTENT_SIZE) {
-        console.warn('[Git ID Switcher] Documentation too large, rejecting');
-        return null;
-      }
-
-      const content = await response.text();
-
-      // Double-check actual content size (header may be missing or wrong)
-      if (content.length > MAX_CONTENT_SIZE) {
-        console.warn('[Git ID Switcher] Documentation content too large, rejecting');
-        return null;
-      }
-
-      if (content.trim().length > 0) {
-        return content;
-      }
+    if (!response.ok) {
+      return null;
     }
 
-    return null;
+    const contentLength = response.headers.get('content-length');
+    const content = await response.text();
+
+    if (!isContentSizeValid(contentLength, content.length, MAX_CONTENT_SIZE)) {
+      return null;
+    }
+
+    if (content.trim().length === 0) {
+      return null;
+    }
+
+    // Verify content hash for integrity (allowlist approach)
+    const hashResult = await verifyContentHash(path, content);
+    if (!hashResult.valid) {
+      logHashFailure(path, hashResult);
+      return null;
+    }
+
+    return content;
   } catch {
     clearTimeout(timeoutId);
     return null;
