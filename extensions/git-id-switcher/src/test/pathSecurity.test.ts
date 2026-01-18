@@ -652,6 +652,19 @@ function testAbsolutePathWithRelativeTraversal(): void {
 
 // ============================================================================
 // Secure Log Path Tests
+//
+// DESIGN NOTE: isSecureLogPath is designed for Unix-style paths only.
+// Windows drive letters (C:/) and backslashes are rejected by isSecurePath.
+// This is intentional - log file paths should use Unix-style paths for
+// cross-platform compatibility in configuration files.
+//
+// On Windows, these tests are skipped because os.tmpdir() returns a Windows
+// path (e.g., C:\Users\...\Temp) which is rejected before the actual security
+// logic can be tested. The security logic itself is fully tested via
+// Unix-style paths on Unix platforms.
+//
+// For workspace path validation (which needs to accept platform-native paths),
+// use validateWorkspacePath from pathUtils.ts instead.
 // ============================================================================
 
 /**
@@ -659,6 +672,7 @@ function testAbsolutePathWithRelativeTraversal(): void {
  *
  * Note: Skipped on Windows because isSecureLogPath rejects Windows drive letters
  * (C:/) before the "outside allowed directory" check can be reached.
+ * See DESIGN NOTE above for rationale.
  */
 function testSecureLogPathOutsideAllowed(): void {
   console.log('Testing isSecureLogPath rejects paths outside allowed directory...');

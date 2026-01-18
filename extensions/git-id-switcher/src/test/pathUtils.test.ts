@@ -87,6 +87,7 @@ import {
   normalizeAndValidatePath,
   validateSshKeyPath,
   validateSubmodulePath,
+  validateWorkspacePath,
   expandTilde,
   containsSymlinks,
 } from '../pathUtils';
@@ -343,7 +344,7 @@ function testValidateSubmodulePath(): void {
   console.log('Testing validateSubmodulePath...');
 
   // Normalize workspace path to forward slashes for cross-platform compatibility
-  const workspacePath = process.cwd().replace(/\\/g, '/');
+  const workspacePath = process.cwd();
 
   // Test valid relative submodule path
   {
@@ -647,7 +648,7 @@ function testValidateSubmodulePathSymlinkOptions(): void {
   console.log('Testing validateSubmodulePath symlink options...');
 
   // Normalize workspace path to forward slashes for cross-platform compatibility
-  const workspacePath = process.cwd().replace(/\\/g, '/');
+  const workspacePath = process.cwd();
 
   // Test with verifySymlinks: false
   {
@@ -698,7 +699,7 @@ function testValidateSubmodulePathExistingDir(): void {
   console.log('Testing validateSubmodulePath with existing directory...');
 
   // Normalize workspace path to forward slashes for cross-platform compatibility
-  const workspacePath = process.cwd().replace(/\\/g, '/');
+  const workspacePath = process.cwd();
 
   // Test with actually existing directory to cover verifySubmoduleSymlinks path
   // The 'src' directory should exist in the extension
@@ -740,7 +741,7 @@ function testWorkspaceBoundaryChecks(): void {
   console.log('Testing workspace boundary checks...');
 
   // Normalize workspace path to forward slashes for cross-platform compatibility
-  const workspacePath = process.cwd().replace(/\\/g, '/');
+  const workspacePath = process.cwd();
 
   // Test path that looks safe but escapes after normalization
   {
@@ -850,6 +851,117 @@ function testControlCharacterPrevention(): void {
 }
 
 /**
+ * Test validateWorkspacePath function
+ *
+ * This function validates workspace paths in platform-native format.
+ * Unlike normalizeAndValidatePath, it accepts Windows paths (drive letters, backslashes).
+ */
+function testValidateWorkspacePath(): void {
+  console.log('Testing validateWorkspacePath...');
+
+  // Test with current working directory (platform-native)
+  {
+    const result = validateWorkspacePath(process.cwd());
+    assert.strictEqual(result.valid, true, 'CWD should be valid');
+    assert.ok(result.normalizedPath, 'Should have normalized path');
+  }
+
+  // Test empty path
+  {
+    const result = validateWorkspacePath('');
+    assert.strictEqual(result.valid, false, 'Empty path should fail');
+    assert.ok(result.reason?.includes('empty'), 'Should mention empty');
+  }
+
+  // Test null/undefined
+  {
+    const result = validateWorkspacePath(null as unknown as string);
+    assert.strictEqual(result.valid, false, 'Null should fail');
+  }
+
+  // Test whitespace
+  {
+    const result = validateWorkspacePath('  /path  ');
+    assert.strictEqual(result.valid, false, 'Whitespace should fail');
+    assert.ok(result.reason?.includes('whitespace'), 'Should mention whitespace');
+  }
+
+  // Test null byte injection
+  {
+    const result = validateWorkspacePath('/path/to\x00file');
+    assert.strictEqual(result.valid, false, 'Null byte should fail');
+    assert.ok(result.reason?.includes('null byte'), 'Should mention null byte');
+  }
+
+  // Test control characters
+  {
+    const result = validateWorkspacePath('/path/to\x07file');
+    assert.strictEqual(result.valid, false, 'Control char should fail');
+    assert.ok(result.reason?.includes('control'), 'Should mention control characters');
+  }
+
+  // Test invisible Unicode characters
+  {
+    const result = validateWorkspacePath('/path/\u200Bfile'); // Zero-width space
+    assert.strictEqual(result.valid, false, 'Invisible Unicode should fail');
+    assert.ok(result.reason?.includes('invisible'), 'Should mention invisible Unicode');
+  }
+
+  // Test very long path
+  {
+    const longPath = '/' + 'a'.repeat(5000);
+    const result = validateWorkspacePath(longPath);
+    assert.strictEqual(result.valid, false, 'Very long path should fail');
+    assert.ok(result.reason?.includes('maximum length'), 'Should mention length');
+  }
+
+  // Test requireExists with non-existent path
+  {
+    const result = validateWorkspacePath('/nonexistent/path/12345', { requireExists: true });
+    assert.strictEqual(result.valid, false, 'Non-existent path should fail with requireExists');
+    assert.ok(
+      result.reason?.includes('not exist') || result.reason?.includes('ENOENT'),
+      'Should mention not existing'
+    );
+  }
+
+  // Test requireExists with existing path
+  {
+    const result = validateWorkspacePath(os.homedir(), { requireExists: true });
+    assert.strictEqual(result.valid, true, 'Existing path should pass with requireExists');
+  }
+
+  // Platform-specific tests
+  if (process.platform === 'win32') {
+    // Windows: test drive letter paths
+    {
+      const result = validateWorkspacePath('C:\\Users\\test');
+      assert.strictEqual(result.valid, true, 'Windows drive path should be valid');
+    }
+
+    // Windows: test forward slash paths (also valid on Windows)
+    {
+      const result = validateWorkspacePath('C:/Users/test');
+      assert.strictEqual(result.valid, true, 'Windows forward slash path should be valid');
+    }
+  } else {
+    // Unix: test absolute paths
+    {
+      const result = validateWorkspacePath('/home/user');
+      assert.strictEqual(result.valid, true, 'Unix absolute path should be valid');
+    }
+
+    // Unix: test paths with backslash (backslash is valid filename char on Unix)
+    {
+      const result = validateWorkspacePath('/path/with\\backslash');
+      assert.strictEqual(result.valid, true, 'Unix path with backslash should be valid');
+    }
+  }
+
+  console.log('✅ validateWorkspacePath tests passed!');
+}
+
+/**
  * Run all path utils tests
  */
 export async function runPathUtilsTests(): Promise<void> {
@@ -878,6 +990,7 @@ export async function runPathUtilsTests(): Promise<void> {
     testNullByteInjection();
     testExpandTildeEdgeCases();
     testControlCharacterPrevention();
+    testValidateWorkspacePath();
 
     console.log('\n✅ All path utils tests passed!\n');
   } catch (error) {
