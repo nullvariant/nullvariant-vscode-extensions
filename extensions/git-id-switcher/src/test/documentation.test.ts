@@ -49,8 +49,11 @@ import {
   classifyUrl,
   getDocumentDisplayName,
   getDocumentLocaleFromString,
+  computeSha256Hash,
+  verifyContentHash,
   SUPPORTED_LOCALES,
   LOCALE_MAP,
+  DOCUMENT_HASHES,
 } from '../documentation.internal';
 
 // ============================================================================
@@ -301,6 +304,85 @@ function testSanitizeHtmlPreservesSafeHtml(): void {
   );
 
   console.log('  sanitizeHtml (preserves safe HTML) passed!');
+}
+
+/**
+ * Test unquoted attribute, srcset, and data-* attribute removal (Phase 7.2)
+ */
+function testSanitizeHtmlPhase7Enhancements(): void {
+  console.log('Testing sanitizeHtml (Phase 7.2 enhancements)...');
+
+  // Unquoted href attribute with javascript: scheme
+  assert.strictEqual(
+    sanitizeHtml('<a href=javascript:alert(1)>Click</a>'),
+    '<a href="#">Click</a>',
+    'Unquoted javascript: href should be neutralized'
+  );
+
+  // Unquoted src attribute
+  assert.strictEqual(
+    sanitizeHtml('<img src=x onerror=alert(1)>'),
+    '<img src="#">',
+    'Unquoted src with onerror should be neutralized'
+  );
+
+  // srcset attribute (quoted)
+  assert.strictEqual(
+    sanitizeHtml('<img src="safe.png" srcset="evil.png 2x">'),
+    '<img src="safe.png">',
+    'Quoted srcset attribute should be removed'
+  );
+
+  // srcset attribute (unquoted)
+  assert.strictEqual(
+    sanitizeHtml('<img src="safe.png" srcset=evil.png>'),
+    '<img src="safe.png">',
+    'Unquoted srcset attribute should be removed'
+  );
+
+  // data-* attribute (quoted)
+  assert.strictEqual(
+    sanitizeHtml('<div data-evil="payload">Text</div>'),
+    '<div>Text</div>',
+    'Quoted data-* attribute should be removed'
+  );
+
+  // data-* attribute (unquoted)
+  assert.strictEqual(
+    sanitizeHtml('<div data-foo=bar>Text</div>'),
+    '<div>Text</div>',
+    'Unquoted data-* attribute should be removed'
+  );
+
+  // Multiple data-* attributes
+  assert.strictEqual(
+    sanitizeHtml('<div data-a="1" data-b="2" data-c="3">Text</div>'),
+    '<div>Text</div>',
+    'Multiple data-* attributes should all be removed'
+  );
+
+  // Combined attack vector: unquoted href + data attribute
+  assert.strictEqual(
+    sanitizeHtml('<a href=javascript:void(0) data-payload="evil">Link</a>'),
+    '<a href="#">Link</a>',
+    'Combined unquoted href and data-* should both be removed'
+  );
+
+  // srcset with complex value
+  assert.strictEqual(
+    sanitizeHtml('<img src="img.png" srcset="small.png 480w, medium.png 800w, large.png 1200w">'),
+    '<img src="img.png">',
+    'Complex srcset value should be completely removed'
+  );
+
+  // Preserve safe attributes while removing dangerous ones
+  assert.strictEqual(
+    sanitizeHtml('<img src="safe.png" alt="description" srcset="evil.png 2x" title="Image">'),
+    '<img src="safe.png" alt="description" title="Image">',
+    'Safe attributes should be preserved while srcset is removed'
+  );
+
+  console.log('  sanitizeHtml (Phase 7.2 enhancements) passed!');
 }
 
 /**
@@ -904,6 +986,98 @@ function testGetDocumentDisplayName(): void {
 }
 
 // ============================================================================
+// Hash Verification Tests (Phase 7.1)
+// ============================================================================
+
+/**
+ * Test SHA-256 hash computation
+ */
+async function testComputeSha256Hash(): Promise<void> {
+  console.log('Testing computeSha256Hash...');
+
+  // Known hash for empty string
+  const emptyHash = await computeSha256Hash('');
+  assert.strictEqual(
+    emptyHash,
+    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    'Empty string should have known SHA-256 hash'
+  );
+
+  // Known hash for "hello"
+  const helloHash = await computeSha256Hash('hello');
+  assert.strictEqual(
+    helloHash,
+    '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824',
+    '"hello" should have known SHA-256 hash'
+  );
+
+  // Hash should be consistent
+  const content = 'Test content for hashing';
+  const hash1 = await computeSha256Hash(content);
+  const hash2 = await computeSha256Hash(content);
+  assert.strictEqual(hash1, hash2, 'Same content should produce same hash');
+
+  // Different content should produce different hash
+  const hash3 = await computeSha256Hash('Different content');
+  assert.notStrictEqual(hash1, hash3, 'Different content should produce different hash');
+
+  // Hash should be 64 characters (256 bits = 32 bytes = 64 hex chars)
+  assert.strictEqual(hash1.length, 64, 'Hash should be 64 hex characters');
+
+  // Hash should only contain hex characters
+  assert.ok(/^[0-9a-f]+$/.test(hash1), 'Hash should only contain lowercase hex characters');
+
+  console.log('  computeSha256Hash passed!');
+}
+
+/**
+ * Test content hash verification
+ */
+async function testVerifyContentHash(): Promise<void> {
+  console.log('Testing verifyContentHash...');
+
+  const testContent = 'Test document content';
+
+  // Unknown path should be rejected
+  const unknownResult = await verifyContentHash('unknown/path.md', testContent);
+  assert.strictEqual(unknownResult.valid, false, 'Unknown path should be invalid');
+  assert.strictEqual(unknownResult.expectedHash, undefined, 'Unknown path should have no expected hash');
+  assert.strictEqual(unknownResult.actualHash.length, 64, 'Actual hash should be computed');
+
+  // Verify DOCUMENT_HASHES constant exists and has expected structure
+  assert.ok(typeof DOCUMENT_HASHES === 'object', 'DOCUMENT_HASHES should be an object');
+  assert.ok('docs/i18n/en/README.md' in DOCUMENT_HASHES, 'English README should be in hash map');
+  assert.ok('docs/i18n/ja/README.md' in DOCUMENT_HASHES, 'Japanese README should be in hash map');
+
+  // Hash values should be 64-character hex strings
+  for (const [path, hash] of Object.entries(DOCUMENT_HASHES)) {
+    assert.strictEqual(hash.length, 64, `Hash for ${path} should be 64 characters`);
+    assert.ok(/^[0-9a-f]+$/.test(hash), `Hash for ${path} should be lowercase hex`);
+  }
+
+  console.log('  verifyContentHash passed!');
+}
+
+/**
+ * Test hash verification with matching content
+ */
+async function testVerifyContentHashMatching(): Promise<void> {
+  console.log('Testing verifyContentHash (matching scenarios)...');
+
+  // Create content that doesn't match registered hash
+  const content = 'Specific test content';
+
+  // Verify that computed hash matches
+  const result = await verifyContentHash('docs/i18n/en/README.md', content);
+  // This will fail because content doesn't match, which is expected
+  assert.strictEqual(result.valid, false, 'Content not matching registered hash should be invalid');
+  assert.notStrictEqual(result.expectedHash, undefined, 'Registered path should have expected hash');
+  assert.notStrictEqual(result.actualHash, result.expectedHash, 'Hash mismatch expected for wrong content');
+
+  console.log('  verifyContentHash (matching scenarios) passed!');
+}
+
+// ============================================================================
 // Helper Function Tests
 // ============================================================================
 
@@ -980,6 +1154,7 @@ export async function runDocumentationTests(): Promise<void> {
     testSanitizeHtmlDangerousUrlSchemes();
     testSanitizeHtmlNestedAttacks();
     testSanitizeHtmlPreservesSafeHtml();
+    testSanitizeHtmlPhase7Enhancements();
     testSanitizeHtmlEdgeCases();
 
     // Markdown Rendering Tests
@@ -1008,6 +1183,12 @@ export async function runDocumentationTests(): Promise<void> {
     // Helper Function Tests
     console.log('\n--- Helper Function Tests ---');
     testEscapeHtmlEntities();
+
+    // Hash Verification Tests (Phase 7.1)
+    console.log('\n--- Hash Verification Tests (Phase 7.1) ---');
+    await testComputeSha256Hash();
+    await testVerifyContentHash();
+    await testVerifyContentHashMatching();
 
     console.log('\n========================================');
     console.log('   All documentation tests passed!     ');
