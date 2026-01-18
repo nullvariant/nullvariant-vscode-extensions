@@ -32,6 +32,7 @@
   "config.logging.filePath": "Chemin du fichier journal (ex: ~/.git-id-switcher/security.log)",
   "config.logging.maxFileSize": "Taille maximale du fichier avant rotation (octets, défaut: 10MB)",
   "config.logging.maxFiles": "Nombre maximum de fichiers rotatifs à conserver (défaut: 5)",
+  "config.logging.redactAllSensitive": "Lorsqu'activé, toutes les valeurs sont masquées dans les journaux (confidentialité maximale)",
   "config.commandTimeouts": "Valeurs de délai d'expiration personnalisées pour les commandes (en millisecondes)",
   "config.commandTimeouts.markdown": "Remplacer les délais d'expiration par défaut des commandes. Exemple :\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValeurs par défaut : git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, autres=30000ms"
 }

@@ -32,6 +32,7 @@
   "config.logging.filePath": "Caminho do arquivo de log (ex: ~/.git-id-switcher/security.log)",
   "config.logging.maxFileSize": "Tamanho máximo do arquivo antes da rotação (bytes, padrão: 10MB)",
   "config.logging.maxFiles": "Número máximo de arquivos rotacionados a manter (padrão: 5)",
+  "config.logging.redactAllSensitive": "Quando habilitado, todos os valores são mascarados nos logs (privacidade máxima)",
   "config.commandTimeouts": "Valores de timeout personalizados para comandos (em milissegundos)",
   "config.commandTimeouts.markdown": "Substituir os timeouts padrão de comandos. Exemplo:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValores padrão: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, outros=30000ms"
 }

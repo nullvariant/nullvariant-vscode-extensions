@@ -32,6 +32,7 @@
   "config.logging.filePath": "Път до лог файла (напр: ~/.git-id-switcher/security.log)",
   "config.logging.maxFileSize": "Максимален размер на файла преди ротация (байтове, по подразбиране: 10MB)",
   "config.logging.maxFiles": "Максимален брой ротирани файлове (по подразбиране: 5)",
+  "config.logging.redactAllSensitive": "Когато е активирано, всички стойности се маскират в логовете (максимална поверителност)",
   "config.commandTimeouts": "Персонализирани стойности за изчакване на команди (в милисекунди)",
   "config.commandTimeouts.markdown": "Заменяне на времената за изчакване по подразбиране. Пример:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nСтойности по подразбиране: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, други=30000ms"
 }

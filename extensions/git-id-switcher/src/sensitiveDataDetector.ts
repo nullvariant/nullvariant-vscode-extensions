@@ -150,6 +150,14 @@ function sanitizeObjectValue(value: object): string {
 }
 
 /**
+ * Options for sanitizeValue function
+ */
+export interface SanitizeOptions {
+  /** When true, all string values are masked (maximum privacy mode) */
+  redactAllSensitive?: boolean;
+}
+
+/**
  * Sanitize a value for safe logging
  * Removes or masks potentially sensitive information.
  *
@@ -160,14 +168,19 @@ function sanitizeObjectValue(value: object): string {
  * 4. Object/array abstraction
  *
  * @param value - The value to sanitize
+ * @param options - Sanitization options
  * @returns Sanitized value safe for logging
  */
-export function sanitizeValue(value: unknown): unknown {
+export function sanitizeValue(value: unknown, options?: SanitizeOptions): unknown {
   if (value === null || value === undefined) {
     return value;
   }
 
   if (typeof value === 'string') {
+    // Maximum privacy mode: redact all string values
+    if (options?.redactAllSensitive) {
+      return '[REDACTED:ALL_VALUES]';
+    }
     return sanitizeStringValue(value);
   }
 
@@ -187,10 +200,12 @@ export function sanitizeValue(value: unknown): unknown {
  * Sanitize all values in a details object
  *
  * @param details - The details object to sanitize
+ * @param options - Sanitization options
  * @returns Sanitized details object safe for logging
  */
 export function sanitizeDetails(
-  details: Record<string, unknown>
+  details: Record<string, unknown>,
+  options?: SanitizeOptions
 ): Record<string, unknown> {
   const sanitized: Record<string, unknown> = {};
 
@@ -199,7 +214,7 @@ export function sanitizeDetails(
     const sanitizedKey = looksLikeSensitiveData(key)
       ? '[REDACTED_KEY]'
       : key;
-    sanitized[sanitizedKey] = sanitizeValue(value);
+    sanitized[sanitizedKey] = sanitizeValue(value, options);
   }
 
   return sanitized;

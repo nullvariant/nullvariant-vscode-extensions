@@ -230,6 +230,12 @@
             "minimum": 1,
             "maximum": 20,
             "description": "%config.logging.maxFiles%"
+          },
+          "gitIdSwitcher.logging.redactAllSensitive": {
+            "order": 6,
+            "type": "boolean",
+            "default": false,
+            "description": "%config.logging.redactAllSensitive%"
           }
         }
       },

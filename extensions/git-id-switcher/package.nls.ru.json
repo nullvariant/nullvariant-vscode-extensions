@@ -32,6 +32,7 @@
   "config.logging.filePath": "Путь к файлу журнала (например: ~/.git-id-switcher/security.log)",
   "config.logging.maxFileSize": "Максимальный размер файла до ротации (байт, по умолчанию: 10МБ)",
   "config.logging.maxFiles": "Максимальное количество ротируемых файлов (по умолчанию: 5)",
+  "config.logging.redactAllSensitive": "При включении все значения маскируются в журналах (максимальная конфиденциальность)",
   "config.commandTimeouts": "Пользовательские значения тайм-аута для команд (в миллисекундах)",
   "config.commandTimeouts.markdown": "Переопределить стандартные тайм-ауты команд. Пример:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nЗначения по умолчанию: git=10000мс, ssh-add=5000мс, ssh-keygen=5000мс, другие=30000мс"
 }
