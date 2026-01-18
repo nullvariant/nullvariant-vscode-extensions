@@ -50,6 +50,7 @@ import * as os from 'node:os';
 import {
   secureExec,
   gitExec,
+  gitExecRaw,
   sshAgentExec,
   sshKeygenExec,
   TimeoutError,
@@ -1250,6 +1251,38 @@ async function testGitExecErrorLogging(): Promise<void> {
 }
 
 /**
+ * Test gitExecRaw error handling
+ *
+ * Coverage target: gitExecRaw() error path (lines 578-584)
+ * Tests that gitExecRaw properly handles errors and returns Result type.
+ */
+async function testGitExecRawErrorHandling(): Promise<void> {
+  console.log('Testing gitExecRaw error handling...');
+
+  // Test 1: Invalid git command should return failure Result
+  {
+    const result = await gitExecRaw(['--invalid-flag-xyz-123']);
+    assert.strictEqual(result.success, false, 'Invalid flag should fail');
+    if (!result.success) {
+      assert.ok(result.error instanceof Error, 'Error should be Error instance');
+      assert.strictEqual(typeof result.error.message, 'string', 'Error message should be string');
+    }
+  }
+
+  // Test 2: Success case should return raw stdout (no trimming)
+  {
+    const result = await gitExecRaw(['--version']);
+    assert.strictEqual(result.success, true, 'git --version should succeed');
+    if (result.success) {
+      assert.ok(result.stdout.startsWith('git version'), 'Should return git version');
+      // Note: gitExecRaw does NOT trim, so trailing newline should be preserved
+    }
+  }
+
+  console.log('✅ gitExecRaw error handling tests passed!');
+}
+
+/**
  * Test timeout error handling verification
  *
  * Note: The actual timeout code path (secureExec lines 484-493) is difficult
@@ -1332,6 +1365,7 @@ export async function runSecureExecTests(): Promise<void> {
     await testCommandBlockedLogsToAuditTrail();
     await testGitExecResultType();
     await testGitExecErrorLogging();
+    await testGitExecRawErrorHandling();
     await testActualTimeoutBehavior();
 
     console.log('\n✅ All secure execution tests passed!\n');
