@@ -25,6 +25,7 @@ import { runConfigSchemaTests } from './configSchema.test';
 import { runI18nTests } from './i18n.test';
 import { runWorkspaceTrustTests } from './workspaceTrust.test';
 import { runSubmoduleTests } from './submodule.test';
+import { runPathSeparatorTests } from './pathSeparator.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -94,6 +95,9 @@ async function main(): Promise<void> {
 
     // Run submodule tests (now uses vscodeLoader for lazy loading)
     await runSubmoduleTests();
+
+    // Run cross-platform path separator tests
+    await runPathSeparatorTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');

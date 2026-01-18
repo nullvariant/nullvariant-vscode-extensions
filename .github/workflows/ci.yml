@@ -12,11 +12,19 @@ permissions: {}
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
 
     steps:
+      - name: Configure Git line endings
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+
       - name: Harden Runner
         uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
         with:
@@ -61,16 +69,25 @@ jobs:
         working-directory: extensions/git-id-switcher
 
       - name: Verify VSIX created
+        shell: bash
         run: ls -la extensions/git-id-switcher/*.vsix
 
   e2e:
-    name: E2E Tests (VS Code Extension)
-    runs-on: ubuntu-latest
+    name: E2E Tests (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
     continue-on-error: true
 
     steps:
+      - name: Configure Git line endings
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+
       - name: Harden Runner
         uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
         with:
@@ -90,6 +107,12 @@ jobs:
         run: npm ci
         working-directory: extensions/git-id-switcher
 
-      - name: Run E2E tests
+      - name: Run E2E tests (Linux)
+        if: runner.os == 'Linux'
         run: xvfb-run -a npm run test:e2e
+        working-directory: extensions/git-id-switcher
+
+      - name: Run E2E tests (Windows/macOS)
+        if: runner.os != 'Linux'
+        run: npm run test:e2e
         working-directory: extensions/git-id-switcher

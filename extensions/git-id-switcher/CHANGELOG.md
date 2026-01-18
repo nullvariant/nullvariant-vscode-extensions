@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.2] - 2026-01-18
+
+### Added
+
+- **Multi-Platform CI Support**: CI now runs on Windows, macOS, and Linux
+  - Build job: 3-platform matrix strategy (ubuntu, windows, macos)
+  - E2E job: Platform-specific execution (xvfb for Linux, native for Windows/macOS)
+  - Added Git line ending configuration for Windows (`core.autocrlf false`)
+- **Cross-Platform Path Tests**: Added `pathSeparator.test.ts` with platform-aware tests
+  - Tests for `path.join`, `path.normalize`, `path.sep`
+  - Platform-dependent assertions for backslash handling
+- **Platform Badges**: Added Windows/macOS/Linux badges to all 26 language READMEs
+
 ## [0.13.1] - 2026-01-18
 
 ### Fixed

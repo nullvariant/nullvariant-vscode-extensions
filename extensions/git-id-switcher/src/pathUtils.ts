@@ -10,7 +10,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { isSecurePath, SecurePathResult } from './pathSecurity';
 import { PATH_MAX } from './constants';
-import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasPathTraversal } from './validators/common';
+import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasPathTraversal, hasInvisibleUnicode } from './validators/common';
 
 /**
  * Options for path normalization
@@ -496,21 +496,36 @@ function verifySubmoduleSymlinks(
     fs.accessSync(normalizedSubmodulePath);
 
     // SECURITY: Resolve symlinks atomically to minimize TOCTOU window
-    const symlinkResult = normalizeAndValidatePath(normalizedSubmodulePath, {
-      resolveSymlinks: true,
+    // Use validateWorkspacePath because normalizedSubmodulePath is in platform-native format
+    // (Windows: D:\..., Unix: /...). normalizeAndValidatePath rejects Windows paths by design.
+    // After validation, we use fs.realpathSync to resolve symlinks.
+    const pathValidation = validateWorkspacePath(normalizedSubmodulePath, {
       requireExists: true,
     });
 
-    if (!symlinkResult.valid) {
+    if (!pathValidation.valid || !pathValidation.normalizedPath) {
       return {
         valid: false,
         originalPath,
-        reason: `Symlink resolution failed: ${symlinkResult.reason ?? 'unknown error'}`,
+        reason: `Symlink resolution failed: ${pathValidation.reason ?? 'unknown error'}`,
         symlinksResolved: true,
       };
     }
 
-    const resolvedPath = symlinkResult.normalizedPath!;
+    // Resolve symlinks using fs.realpathSync
+    let resolvedByRealpath: string;
+    try {
+      resolvedByRealpath = fs.realpathSync(pathValidation.normalizedPath);
+    } catch {
+      return {
+        valid: false,
+        originalPath,
+        reason: 'Symlink resolution failed: realpathSync error',
+        symlinksResolved: true,
+      };
+    }
+
+    const resolvedPath = resolvedByRealpath;
 
     // SECURITY: Re-check workspace boundary after symlink resolution
     const boundaryCheck = checkWorkspaceBoundary(resolvedPath, normalizedWorkspace, originalPath);
@@ -524,6 +539,7 @@ function verifySubmoduleSymlinks(
     }
 
     // Return the symlink-resolved path for maximum security
+    // symlinksResolved: true indicates verification was performed (even if no symlinks found)
     return {
       valid: true,
       originalPath,
@@ -538,6 +554,123 @@ function verifySubmoduleSymlinks(
     }
     return null; // Path doesn't exist, caller should return normalized path
   }
+}
+
+/**
+ * Validate a workspace path (platform-native format)
+ *
+ * Unlike normalizeAndValidatePath, this function accepts Windows paths
+ * (drive letters and backslashes) because VS Code provides workspace
+ * paths in platform-native format.
+ *
+ * SECURITY: This function still checks for:
+ * - Null bytes
+ * - Control characters
+ * - Invisible Unicode characters
+ * - Path length limits
+ * - File existence (if requireExists)
+ *
+ * Note: Path traversal is checked after normalization via path.resolve(),
+ * which resolves .. and . segments.
+ *
+ * @param workspacePath - The workspace path to validate (platform-native format)
+ * @param options - Validation options
+ * @returns NormalizedPathResult with validation status
+ *
+ * @example
+ * // Unix path
+ * validateWorkspacePath('/home/user/project')
+ * // { valid: true, normalizedPath: '/home/user/project' }
+ *
+ * // Windows path
+ * validateWorkspacePath('C:\\Users\\test\\project')
+ * // { valid: true, normalizedPath: 'C:\\Users\\test\\project' }
+ */
+export function validateWorkspacePath(
+  workspacePath: string,
+  options: { requireExists?: boolean } = {}
+): NormalizedPathResult {
+  const { requireExists = false } = options;
+
+  // Step 1: Basic input validation
+  if (!workspacePath || workspacePath.length === 0) {
+    return {
+      valid: false,
+      originalPath: workspacePath,
+      reason: 'Workspace path is empty or undefined',
+    };
+  }
+
+  // Step 2: Whitespace check (potential obfuscation)
+  if (workspacePath !== workspacePath.trim()) {
+    return {
+      valid: false,
+      originalPath: workspacePath,
+      reason: 'Workspace path contains leading or trailing whitespace',
+    };
+  }
+
+  // Step 3: Null byte check (common attack vector)
+  if (hasNullByte(workspacePath)) {
+    return {
+      valid: false,
+      originalPath: workspacePath,
+      reason: 'Workspace path contains null byte',
+    };
+  }
+
+  // Step 4: Control character check
+  if (CONTROL_CHAR_REGEX_ALL.test(workspacePath)) {
+    return {
+      valid: false,
+      originalPath: workspacePath,
+      reason: 'Workspace path contains control characters',
+    };
+  }
+
+  // Step 5: Invisible Unicode check
+  if (hasInvisibleUnicode(workspacePath)) {
+    return {
+      valid: false,
+      originalPath: workspacePath,
+      reason: 'Workspace path contains invisible Unicode characters',
+    };
+  }
+
+  // Step 6: Normalize the path using platform-native path.resolve()
+  // This resolves . and .. segments and converts to absolute path
+  const normalizedPath = path.resolve(workspacePath);
+
+  // Step 7: PATH_MAX check (in bytes for Unicode safety)
+  const byteLength = Buffer.byteLength(normalizedPath, 'utf8');
+  if (byteLength > PATH_MAX) {
+    return {
+      valid: false,
+      originalPath: workspacePath,
+      reason: `Workspace path exceeds maximum length (${byteLength} > ${PATH_MAX} bytes)`,
+    };
+  }
+
+  // Step 8: Existence check (if required)
+  if (requireExists) {
+    try {
+      fs.accessSync(normalizedPath);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      return {
+        valid: false,
+        originalPath: workspacePath,
+        normalizedPath,
+        reason: `Workspace path does not exist or is not accessible: ${code}`,
+      };
+    }
+  }
+
+  return {
+    valid: true,
+    originalPath: workspacePath,
+    normalizedPath,
+  };
 }
 
 /**
@@ -562,8 +695,8 @@ export function validateSubmodulePath(
   const { verifySymlinks = true, requireExists = false } = options;
 
   // First, validate the workspace path itself
-  const workspaceResult = normalizeAndValidatePath(workspacePath, {
-    resolveSymlinks: false,
+  // Use validateWorkspacePath to accept platform-native paths (Windows drive letters, etc.)
+  const workspaceResult = validateWorkspacePath(workspacePath, {
     requireExists: true,
   });
 
