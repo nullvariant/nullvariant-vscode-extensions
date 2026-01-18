@@ -496,21 +496,39 @@ function verifySubmoduleSymlinks(
     fs.accessSync(normalizedSubmodulePath);
 
     // SECURITY: Resolve symlinks atomically to minimize TOCTOU window
-    const symlinkResult = normalizeAndValidatePath(normalizedSubmodulePath, {
-      resolveSymlinks: true,
+    // Use validateWorkspacePath because normalizedSubmodulePath is in platform-native format
+    // (Windows: D:\..., Unix: /...). normalizeAndValidatePath rejects Windows paths by design.
+    // After validation, we use fs.realpathSync to resolve symlinks.
+    const pathValidation = validateWorkspacePath(normalizedSubmodulePath, {
       requireExists: true,
     });
 
-    if (!symlinkResult.valid) {
+    if (!pathValidation.valid || !pathValidation.normalizedPath) {
       return {
         valid: false,
         originalPath,
-        reason: `Symlink resolution failed: ${symlinkResult.reason ?? 'unknown error'}`,
+        reason: `Symlink resolution failed: ${pathValidation.reason ?? 'unknown error'}`,
         symlinksResolved: true,
       };
     }
 
-    const resolvedPath = symlinkResult.normalizedPath!;
+    // Resolve symlinks using fs.realpathSync
+    let resolvedByRealpath: string;
+    try {
+      resolvedByRealpath = fs.realpathSync(pathValidation.normalizedPath);
+    } catch {
+      return {
+        valid: false,
+        originalPath,
+        reason: 'Symlink resolution failed: realpathSync error',
+        symlinksResolved: true,
+      };
+    }
+
+    const resolvedPath = resolvedByRealpath;
+    // symlinksResolved indicates that symlink verification was performed, not that symlinks were found
+    const _symlinksActuallyChanged = resolvedByRealpath !== pathValidation.normalizedPath;
+    void _symlinksActuallyChanged; // Unused, kept for potential future debugging
 
     // SECURITY: Re-check workspace boundary after symlink resolution
     const boundaryCheck = checkWorkspaceBoundary(resolvedPath, normalizedWorkspace, originalPath);
@@ -524,6 +542,7 @@ function verifySubmoduleSymlinks(
     }
 
     // Return the symlink-resolved path for maximum security
+    // symlinksResolved: true indicates verification was performed (even if no symlinks found)
     return {
       valid: true,
       originalPath,
