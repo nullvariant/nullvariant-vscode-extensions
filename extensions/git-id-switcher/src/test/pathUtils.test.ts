@@ -847,7 +847,9 @@ function testExpandTildeEdgeCases(): void {
     const result = expandTilde('~/path/~/file');
     // Only leading tilde should expand
     assert.ok(result.startsWith(os.homedir()), 'Should start with home');
-    assert.ok(result.includes('~/file'), 'Inner tilde should not expand');
+    // On Windows, path.join converts / to \, so inner tilde becomes ~\file
+    // Check for ~ followed by path.sep and file
+    assert.ok(result.includes(`~${path.sep}file`), 'Inner tilde should not expand');
   }
 
   console.log('✅ expandTilde edge cases tests passed!');
