@@ -10,7 +10,7 @@
  */
 
 import { getWorkspace } from './vscodeLoader';
-import { gitExec } from './secureExec';
+import { gitExec, gitExecRaw } from './secureExec';
 import { validateSubmodulePath, normalizeAndValidatePath } from './pathUtils';
 import { securityLogger } from './securityLogger';
 
@@ -134,7 +134,7 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
 
   const validatedWorkspacePath = workspaceValidation.normalizedPath;
 
-  const result = await gitExec(['submodule', 'status'], validatedWorkspacePath);
+  const result = await gitExecRaw(['submodule', 'status'], validatedWorkspacePath);
 
   if (!result.success) {
     // SECURITY: Log unexpected errors (except ENOENT for non-git directories)
@@ -154,7 +154,7 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
     return [];
   }
 
-  const lines = stdout.trim().split('\n');
+  const lines = stdout.split('\n');
   const submodules: Submodule[] = [];
 
   for (const line of lines) {

@@ -553,6 +553,38 @@ export async function gitExec(args: string[], cwd?: string): Promise<GitExecResu
 }
 
 /**
+ * Git command wrapper that preserves raw stdout (no trimming)
+ *
+ * Use this for commands with structured output where whitespace is significant,
+ * such as `git submodule status` where the leading character indicates status.
+ *
+ * @param args - Git command arguments (e.g., ['submodule', 'status'])
+ * @param cwd - Working directory for the command
+ * @returns GitExecResult with raw stdout (not trimmed)
+ *
+ * @example
+ * // Get submodule status (preserves leading status character)
+ * const result = await gitExecRaw(['submodule', 'status'], '/path/to/repo');
+ * if (result.success) {
+ *   // stdout: " a1b2c3d... vendor/lib (main)\n f6a1b2c... tools/cli (main)\n"
+ *   // Leading space indicates initialized submodule
+ *   const lines = result.stdout.split('\n');
+ * }
+ */
+export async function gitExecRaw(args: string[], cwd?: string): Promise<GitExecResult> {
+  try {
+    const { stdout } = await secureExec('git', args, { cwd });
+    return { success: true, stdout: stdout };
+  } catch (error) {
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    if (!(error instanceof TimeoutError)) {
+      securityLogger.logCommandError('git', args, errorObj, cwd);
+    }
+    return { success: false, error: errorObj };
+  }
+}
+
+/**
  * SSH-add command wrapper
  *
  * Executes ssh-add commands securely.
