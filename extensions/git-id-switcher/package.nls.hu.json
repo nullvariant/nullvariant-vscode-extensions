@@ -32,6 +32,7 @@
   "config.logging.filePath": "Naplófájl elérési útja (pl: ~/.git-id-switcher/security.log)",
   "config.logging.maxFileSize": "Maximális fájlméret rotáció előtt (bájt, alapértelmezett: 10MB)",
   "config.logging.maxFiles": "Megtartandó rotált fájlok száma (alapértelmezett: 5)",
+  "config.logging.redactAllSensitive": "Ha engedélyezve van, minden érték maszkolva van a naplókban (maximális adatvédelem)",
   "config.commandTimeouts": "Egyéni időtúllépési értékek parancsokhoz (milliszekundumban)",
   "config.commandTimeouts.markdown": "Alapértelmezett parancs időtúllépések felülírása. Példa:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nAlapértelmezett értékek: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, egyéb=30000ms"
 }

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.6] - 2026-01-18
+
+### Added
+
+- **Maximum Privacy Mode**: New `gitIdSwitcher.logging.redactAllSensitive` setting
+  - When enabled, all string values are masked in security logs
+  - Provides maximum privacy for users who want complete log sanitization
+  - Default: `false` (existing behavior preserved)
+  - Localized descriptions available in 17 languages
+  - Documentation updated in 26 language README variants
+
 ## [0.13.5] - 2026-01-18
 
 ### Security
@@ -1284,7 +1295,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.13.5...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.13.6...HEAD
+[0.13.6]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.13.5...git-id-switcher-v0.13.6
 [0.13.5]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.13.4...git-id-switcher-v0.13.5
 [0.13.4]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.13.3...git-id-switcher-v0.13.4
 [0.13.3]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.13.2...git-id-switcher-v0.13.3

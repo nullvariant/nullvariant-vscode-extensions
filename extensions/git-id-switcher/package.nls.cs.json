@@ -32,6 +32,7 @@
   "config.logging.filePath": "Cesta k souboru protokolu (např: ~/.git-id-switcher/security.log)",
   "config.logging.maxFileSize": "Maximální velikost souboru před rotací (bajty, výchozí: 10MB)",
   "config.logging.maxFiles": "Maximální počet rotovaných souborů (výchozí: 5)",
+  "config.logging.redactAllSensitive": "Pokud je povoleno, všechny hodnoty jsou v protokolech maskovány (maximální soukromí)",
   "config.commandTimeouts": "Vlastní hodnoty časového limitu pro příkazy (v milisekundách)",
   "config.commandTimeouts.markdown": "Přepsat výchozí časové limity příkazů. Příklad:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVýchozí hodnoty: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, ostatní=30000ms"
 }

@@ -12,7 +12,7 @@ import type { OutputChannel } from 'vscode';
 import { getVSCode } from './vscodeLoader';
 import { MAX_ID_LENGTH } from './constants';
 import { sanitizePath } from './pathSanitizer';
-import { sanitizeValue, sanitizeDetails } from './sensitiveDataDetector';
+import { sanitizeValue, sanitizeDetails, type SanitizeOptions } from './sensitiveDataDetector';
 import { expandTilde } from './pathUtils';
 import * as path from 'node:path';
 import { isSecurePath, isSecureLogPath } from './pathSecurity';
@@ -30,7 +30,7 @@ import { FileLogWriter } from './fileLogWriter';
 
 // Re-export for backwards compatibility
 export { sanitizePath } from './pathSanitizer';
-export { sanitizeValue, sanitizeDetails, looksLikeSensitiveData } from './sensitiveDataDetector';
+export { sanitizeValue, sanitizeDetails, looksLikeSensitiveData, type SanitizeOptions } from './sensitiveDataDetector';
 
 // Re-export types from configChangeDetector for backwards compatibility
 export {
@@ -90,6 +90,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
   private fileLogWriter: ILogWriter | null = null;
   private minLogLevel: LogLevel = LogLevel.INFO;
   private globalStorageUri: string | null = null;
+  private sanitizeOptions: SanitizeOptions = {};
 
   /**
    * Initialize with extension context for secure file logging
@@ -120,6 +121,10 @@ class SecurityLoggerImpl implements ISecurityLogger {
     if (!vscode) return;
 
     const config = vscode.workspace.getConfiguration('gitIdSwitcher.logging');
+
+    // Get redactAllSensitive setting for maximum privacy mode
+    const redactAllSensitive = config.get<boolean>('redactAllSensitive', false);
+    this.sanitizeOptions = { redactAllSensitive };
 
     // SECURITY: Ignore workspace setting for filePath
     // Always use globalStorageUri to prevent arbitrary file write attacks
@@ -179,7 +184,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
   }
 
   private log(event: Omit<SecurityEvent, 'timestamp'>): void {
-    const sanitizedDetails = sanitizeDetails(event.details);
+    const sanitizedDetails = sanitizeDetails(event.details, this.sanitizeOptions);
     const timestamp = new Date().toISOString();
     const fullEvent: SecurityEvent = {
       ...event,

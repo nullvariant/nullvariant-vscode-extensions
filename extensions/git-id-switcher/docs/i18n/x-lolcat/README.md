@@ -347,6 +347,7 @@ NOTE: TEH LAST IDENTITY (`grumpy-cat`) HAZ NO SSH. U CAN USE DIS 4 SWITCHIN JUSS
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | MAX LOG FILE SIEZ B4 ROTASHUN (BYTEZ, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles` | `5` | NUMBR OF LOG FILEZ 2 KEEP (1-20) |
 | `gitIdSwitcher.logging.level` | `"INFO"` | LOGGIN LEVL (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | WEN ENABLD, ALL VALUEZ R MASKD IN LOGZ (MAXIMUMZ PRIVACYZ MODE) |
 | `gitIdSwitcher.commandTimeouts` | `{}` | EXTERNL COMMAND TIEMOUTZ (MS, 1S-5MIN) |
 
 ---

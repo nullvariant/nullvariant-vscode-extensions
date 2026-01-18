@@ -61,6 +61,8 @@ export interface FileLogConfig {
   filePath: string;
   maxFileSizeBytes: number;
   maxFiles: number;
+  /** When true, all string values are masked in logs (maximum privacy mode) */
+  redactAllSensitive?: boolean;
 }
 
 /**

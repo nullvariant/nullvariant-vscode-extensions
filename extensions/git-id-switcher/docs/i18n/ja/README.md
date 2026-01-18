@@ -322,6 +322,7 @@ Host bitbucket.org
 | `gitIdSwitcher.logging.filePath` | `""` | ログファイルのパス（例：`~/.git-id-switcher/security.log`）。空文字列の場合はデフォルトパスを使用 |
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | ローテーション前の最大ファイルサイズ（バイト単位、1MB-100MB） |
 | `gitIdSwitcher.logging.maxFiles` | `5` | 保持するローテーションファイルの最大数（1-20） |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | 有効にすると、ログ内の全ての値をマスクします（最大プライバシーモード） |
 | `gitIdSwitcher.logging.level` | `"INFO"` | ログの詳細度（`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`）。選択したレベル以上を記録 |
 | `gitIdSwitcher.commandTimeouts` | `{}` | コマンドごとのカスタムタイムアウト値（ミリ秒単位、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
 

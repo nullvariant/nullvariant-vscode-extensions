@@ -32,6 +32,7 @@
   "config.logging.filePath": "日志文件路径（例：~/.git-id-switcher/security.log）",
   "config.logging.maxFileSize": "轮换前的最大文件大小（字节，默认：10MB）",
   "config.logging.maxFiles": "保留的轮换文件最大数量（默认：5）",
+  "config.logging.redactAllSensitive": "启用后，日志中的所有值都将被遮蔽（最大隐私模式）",
   "config.commandTimeouts": "命令的自定义超时值（毫秒）",
   "config.commandTimeouts.markdown": "覆盖默认命令超时。示例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n默认值：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、其他=30000ms"
 }

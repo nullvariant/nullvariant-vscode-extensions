@@ -32,6 +32,7 @@
   "config.logging.filePath": "Günlük dosyası yolu (örn: ~/.git-id-switcher/security.log)",
   "config.logging.maxFileSize": "Rotasyondan önce maksimum dosya boyutu (bayt, varsayılan: 10MB)",
   "config.logging.maxFiles": "Saklanacak maksimum rotasyonlu dosya sayısı (varsayılan: 5)",
+  "config.logging.redactAllSensitive": "Etkinleştirildiğinde, günlüklerdeki tüm değerler maskelenir (maksimum gizlilik)",
   "config.commandTimeouts": "Komutlar için özel zaman aşımı değerleri (milisaniye)",
   "config.commandTimeouts.markdown": "Varsayılan komut zaman aşımlarını geçersiz kıl. Örnek:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVarsayılan değerler: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, diğerleri=30000ms"
 }

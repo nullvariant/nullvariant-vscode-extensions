@@ -323,6 +323,7 @@ Host bitbucket.org
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Макс. размер файла до ротации (байты, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles` | `5` | Макс. количество файлов журнала в ротации (1-20) |
 | `gitIdSwitcher.logging.level` | `"INFO"` | Уровень логирования: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Записывает выбранный уровень и выше |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Когда включено, все значения маскируются в журналах (максимальная конфиденциальность) |
 | `gitIdSwitcher.commandTimeouts` | `{}` | Пользовательский таймаут для команд (мс, 1сек-5мин). Напр.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### О настройке `includeIconInGitConfig`

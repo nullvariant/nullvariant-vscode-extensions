@@ -323,6 +323,7 @@ Host bitbucket.org
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | 로테이션 전 최대 파일 크기 (바이트, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles` | `5` | 보관할 로테이션 로그 파일 최대 수 (1-20) |
 | `gitIdSwitcher.logging.level` | `"INFO"` | 로그 수준: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. 선택한 수준 이상 기록 |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | 활성화하면 로그의 모든 값이 마스킹됩니다 (최대 개인정보 보호 모드) |
 | `gitIdSwitcher.commandTimeouts` | `{}` | 명령별 사용자 정의 타임아웃 (밀리초, 1초-5분). 예: `{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig`에 대하여

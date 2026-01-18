@@ -32,6 +32,7 @@
   "config.logging.filePath": "Ścieżka do pliku dziennika (np: ~/.git-id-switcher/security.log)",
   "config.logging.maxFileSize": "Maksymalny rozmiar pliku przed rotacją (bajty, domyślnie: 10MB)",
   "config.logging.maxFiles": "Maksymalna liczba rotowanych plików (domyślnie: 5)",
+  "config.logging.redactAllSensitive": "Po włączeniu wszystkie wartości są maskowane w dziennikach (maksymalna prywatność)",
   "config.commandTimeouts": "Niestandardowe wartości limitu czasu dla poleceń (w milisekundach)",
   "config.commandTimeouts.markdown": "Zastąp domyślne limity czasu poleceń. Przykład:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nWartości domyślne: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, inne=30000ms"
 }

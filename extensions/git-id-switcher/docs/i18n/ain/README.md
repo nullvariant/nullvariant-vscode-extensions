@@ -343,6 +343,7 @@ Host bitbucket.org
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | ローテーション前 最大ファイルサイズ（バイト、1MB-100MB） |
 | `gitIdSwitcher.logging.maxFiles` | `5` | 保持 ローテーションファイル 最大数（1-20） |
 | `gitIdSwitcher.logging.level` | `"INFO"` | ログレベル：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。選択レベル以上 記録 |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | ウコイタㇰ、タント ウン コラムパコロ マスク（最大プライバシー） |
 | `gitIdSwitcher.commandTimeouts` | `{}` | コマンド タイムアウト（ミリ秒、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig` オロワ
