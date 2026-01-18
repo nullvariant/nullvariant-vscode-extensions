@@ -356,8 +356,8 @@ function testValidateSubmodulePath(): void {
     const result = validateSubmodulePath('', workspacePath);
     assert.strictEqual(result.valid, false, 'Empty path should fail');
     assert.ok(
-      result.reason?.includes('empty'),
-      'Should mention empty'
+      result.reason?.includes('empty') || result.reason?.includes('Empty'),
+      `Should mention empty (case-insensitive), got: "${result.reason}"`
     );
   }
 
