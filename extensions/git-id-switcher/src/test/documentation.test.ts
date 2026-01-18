@@ -2,47 +2,45 @@
  * Documentation Module Unit Tests
  *
  * Tests for documentation.ts internal functions.
- * PRD-00039-004 Step 3: documentation.ts Unit Tests
- *
- * ## Security Tests (sanitizeHtml) - 6 test functions:
- * 1. testSanitizeHtmlScriptTagRemoval - Script tag removal (various formats, case variations)
- * 2. testSanitizeHtmlEventHandlerRemoval - Event handler attributes (onclick, onerror, onload, etc.)
- * 3. testSanitizeHtmlDangerousUrlSchemes - Dangerous URL schemes (javascript:, data:, vbscript:)
- * 4. testSanitizeHtmlNestedAttacks - Nested attack pattern detection
- * 5. testSanitizeHtmlPreservesSafeHtml - Safe HTML preservation
- * 6. testSanitizeHtmlEdgeCases - Edge cases (empty strings, special characters)
  *
  * ## Markdown Rendering Tests (renderMarkdown) - 8 test functions:
- * 7. testRenderMarkdownHeadings - Heading conversion (h1-h6)
- * 8. testRenderMarkdownCodeBlocks - Code block and inline code rendering
- * 9. testRenderMarkdownTables - Table conversion
- * 10. testRenderMarkdownLinksAndImages - Link and image conversion
- * 11. testRenderMarkdownHrAndBlockquote - Horizontal rules and blockquotes
- * 12. testRenderMarkdownBoldItalic - Bold and italic text
- * 13. testRenderMarkdownLists - List rendering (ordered and unordered)
- * 14. testRenderMarkdownEdgeCases - Edge cases (empty, whitespace, Unicode)
+ * 1. testRenderMarkdownHeadings - Heading conversion (h1-h6)
+ * 2. testRenderMarkdownCodeBlocks - Code block and inline code rendering
+ * 3. testRenderMarkdownTables - Table conversion
+ * 4. testRenderMarkdownLinksAndImages - Link and image conversion
+ * 5. testRenderMarkdownHrAndBlockquote - Horizontal rules and blockquotes
+ * 6. testRenderMarkdownBoldItalic - Bold and italic text
+ * 7. testRenderMarkdownLists - List rendering (ordered and unordered)
+ * 8. testRenderMarkdownEdgeCases - Edge cases (empty, whitespace, Unicode)
  *
  * ## Locale Detection Tests - 3 test functions:
- * 15. testLocaleMapping - LOCALE_MAP constant verification
- * 16. testGetDocumentLocaleFromString - Locale detection with mapping, fallback, unknown
- * 17. testSupportedLocales - SUPPORTED_LOCALES constant verification
+ * 9. testLocaleMapping - LOCALE_MAP constant verification
+ * 10. testGetDocumentLocaleFromString - Locale detection with mapping, fallback, unknown
+ * 11. testSupportedLocales - SUPPORTED_LOCALES constant verification
  *
  * ## URL/Path Tests - 3 test functions:
- * 18. testClassifyUrl - URL classification (anchor, internal, external links)
- * 19. testResolveRelativePath - Path resolution and navigation
- * 20. testGetDocumentDisplayName - Filename extraction from path
+ * 12. testClassifyUrl - URL classification (anchor, internal, external links)
+ * 13. testResolveRelativePath - Path resolution and navigation
+ * 14. testGetDocumentDisplayName - Filename extraction from path
  *
  * ## Helper Function Tests - 1 test function:
- * 21. testEscapeHtmlEntities - HTML entity escaping
+ * 15. testEscapeHtmlEntities - HTML entity escaping
  *
- * Total: 21 test functions (PRD requirement: 15+)
- * Coverage: sanitizeHtml, renderMarkdown, getDocumentLocaleFromString, classifyUrl,
- *           resolveRelativePath, getDocumentDisplayName, escapeHtmlEntities
+ * ## Hash Verification Tests - 5 test functions:
+ * 16. testDocumentHashes - DOCUMENT_HASHES constant verification
+ * 17. testComputeSha256Hash - SHA-256 hash computation
+ * 18. testVerifyContentHash - Content hash verification
+ * 19. testLogHashFailure - Hash failure logging
+ * 20. testIsContentSizeValid - Content size validation
+ *
+ * Total: 20 test functions
+ * Coverage: renderMarkdown, getDocumentLocaleFromString, classifyUrl,
+ *           resolveRelativePath, getDocumentDisplayName, escapeHtmlEntities,
+ *           computeSha256Hash, verifyContentHash, logHashFailure, isContentSizeValid
  */
 
 import * as assert from 'node:assert';
 import {
-  sanitizeHtml,
   escapeHtmlEntities,
   renderMarkdown,
   resolveRelativePath,
@@ -57,342 +55,6 @@ import {
   logHashFailure,
   isContentSizeValid,
 } from '../documentation.internal';
-
-// ============================================================================
-// Security Tests: sanitizeHtml()
-// ============================================================================
-
-/**
- * Test script tag removal - basic cases
- */
-function testSanitizeHtmlScriptTagRemoval(): void {
-  console.log('Testing sanitizeHtml (script tag removal)...');
-
-  // Basic script tag
-  assert.strictEqual(
-    sanitizeHtml('<script>alert("xss")</script>'),
-    '',
-    'Basic script tag should be removed'
-  );
-
-  // Script tag with attributes
-  assert.strictEqual(
-    sanitizeHtml('<script type="text/javascript">malicious()</script>'),
-    '',
-    'Script tag with attributes should be removed'
-  );
-
-  // Script tag with newlines
-  assert.strictEqual(
-    sanitizeHtml('<script>\nalert("xss")\n</script>'),
-    '',
-    'Script tag with newlines should be removed'
-  );
-
-  // Multiple script tags
-  assert.strictEqual(
-    sanitizeHtml('<p>Hello</p><script>bad()</script><p>World</p><script>evil()</script>'),
-    '<p>Hello</p><p>World</p>',
-    'Multiple script tags should be removed'
-  );
-
-  // Script tag case variations
-  assert.strictEqual(
-    sanitizeHtml('<SCRIPT>alert("xss")</SCRIPT>'),
-    '',
-    'Uppercase script tag should be removed'
-  );
-  assert.strictEqual(
-    sanitizeHtml('<ScRiPt>alert("xss")</ScRiPt>'),
-    '',
-    'Mixed case script tag should be removed'
-  );
-
-  console.log('  sanitizeHtml (script tag removal) passed!');
-}
-
-/**
- * Test event handler attribute removal
- */
-function testSanitizeHtmlEventHandlerRemoval(): void {
-  console.log('Testing sanitizeHtml (event handler removal)...');
-
-  // onclick attribute
-  assert.strictEqual(
-    sanitizeHtml('<a href="#" onclick="alert(1)">Link</a>'),
-    '<a href="#">Link</a>',
-    'onclick attribute should be removed'
-  );
-
-  // onerror attribute
-  assert.strictEqual(
-    sanitizeHtml('<img src="x" onerror="alert(1)">'),
-    '<img src="x">',
-    'onerror attribute should be removed'
-  );
-
-  // onload attribute
-  assert.strictEqual(
-    sanitizeHtml('<body onload="init()">'),
-    '<body>',
-    'onload attribute should be removed'
-  );
-
-  // onmouseover attribute
-  assert.strictEqual(
-    sanitizeHtml('<div onmouseover="highlight()">Text</div>'),
-    '<div>Text</div>',
-    'onmouseover attribute should be removed'
-  );
-
-  // onfocus attribute
-  assert.strictEqual(
-    sanitizeHtml('<input onfocus="steal()">'),
-    '<input>',
-    'onfocus attribute should be removed'
-  );
-
-  // Multiple event handlers
-  assert.strictEqual(
-    sanitizeHtml('<div onclick="a()" onmouseover="b()">Text</div>'),
-    '<div>Text</div>',
-    'Multiple event handlers should be removed'
-  );
-
-  // Event handler with single quotes
-  assert.strictEqual(
-    sanitizeHtml("<a onclick='alert(1)'>Link</a>"),
-    '<a>Link</a>',
-    'Event handler with single quotes should be removed'
-  );
-
-  console.log('  sanitizeHtml (event handler removal) passed!');
-}
-
-/**
- * Test dangerous URL scheme neutralization
- */
-function testSanitizeHtmlDangerousUrlSchemes(): void {
-  console.log('Testing sanitizeHtml (dangerous URL schemes)...');
-
-  // javascript: scheme in href
-  assert.strictEqual(
-    sanitizeHtml('<a href="javascript:alert(1)">Click</a>'),
-    '<a href="#">Click</a>',
-    'javascript: scheme should be neutralized'
-  );
-
-  // data: scheme in src
-  assert.strictEqual(
-    sanitizeHtml('<img src="data:text/html,<script>alert(1)</script>">'),
-    '<img src="#">',
-    'data: scheme should be neutralized'
-  );
-
-  // vbscript: scheme
-  assert.strictEqual(
-    sanitizeHtml('<a href="vbscript:msgbox(1)">Click</a>'),
-    '<a href="#">Click</a>',
-    'vbscript: scheme should be neutralized'
-  );
-
-  // Whitespace before scheme
-  assert.strictEqual(
-    sanitizeHtml('<a href="  javascript:alert(1)">Click</a>'),
-    '<a href="#">Click</a>',
-    'Whitespace before dangerous scheme should be handled'
-  );
-
-  // Case variations
-  assert.strictEqual(
-    sanitizeHtml('<a href="JAVASCRIPT:alert(1)">Click</a>'),
-    '<a href="#">Click</a>',
-    'Uppercase javascript: should be neutralized'
-  );
-  assert.strictEqual(
-    sanitizeHtml('<a href="JavaScript:alert(1)">Click</a>'),
-    '<a href="#">Click</a>',
-    'Mixed case JavaScript: should be neutralized'
-  );
-
-  console.log('  sanitizeHtml (dangerous URL schemes) passed!');
-}
-
-/**
- * Test nested/complex attack patterns
- */
-function testSanitizeHtmlNestedAttacks(): void {
-  console.log('Testing sanitizeHtml (nested attacks)...');
-
-  // Simple event handler with encoded content (without escaped quotes)
-  assert.strictEqual(
-    sanitizeHtml('<img src="x" onerror="eval(atob(data))">'),
-    '<img src="x">',
-    'Event handler with function call should be removed'
-  );
-
-  // Multiple dangerous patterns
-  assert.strictEqual(
-    sanitizeHtml('<a href="javascript:void(0)" onclick="evil()">Click</a>'),
-    '<a href="#">Click</a>',
-    'Multiple dangerous patterns should all be removed'
-  );
-
-  // Nested tags with script
-  const nestedInput = '<div><span onclick="a()"><script>b()</script></span></div>';
-  const nestedResult = sanitizeHtml(nestedInput);
-  assert.ok(
-    !nestedResult.includes('onclick') && !nestedResult.includes('<script>'),
-    'Nested dangerous patterns should all be removed'
-  );
-
-  // SVG with event handler
-  assert.strictEqual(
-    sanitizeHtml('<svg onload="alert(1)"><circle r="10"/></svg>'),
-    '<svg><circle r="10"/></svg>',
-    'SVG event handlers should be removed'
-  );
-
-  // Event handler with complex but no escaped quotes
-  assert.strictEqual(
-    sanitizeHtml('<div onmouseover="doSomething(this, 123)">Text</div>'),
-    '<div>Text</div>',
-    'Event handler with parameters should be removed'
-  );
-
-  console.log('  sanitizeHtml (nested attacks) passed!');
-}
-
-/**
- * Test that safe HTML is preserved
- */
-function testSanitizeHtmlPreservesSafeHtml(): void {
-  console.log('Testing sanitizeHtml (preserves safe HTML)...');
-
-  // Normal paragraph
-  assert.strictEqual(
-    sanitizeHtml('<p>Hello World</p>'),
-    '<p>Hello World</p>',
-    'Normal paragraph should be preserved'
-  );
-
-  // Safe links
-  assert.strictEqual(
-    sanitizeHtml('<a href="https://example.com">Link</a>'),
-    '<a href="https://example.com">Link</a>',
-    'Safe https link should be preserved'
-  );
-
-  // Images with safe src
-  assert.strictEqual(
-    sanitizeHtml('<img src="https://example.com/img.png" alt="Image">'),
-    '<img src="https://example.com/img.png" alt="Image">',
-    'Safe image should be preserved'
-  );
-
-  // Tables
-  const tableHtml = '<table><tr><th>Header</th></tr><tr><td>Data</td></tr></table>';
-  assert.strictEqual(
-    sanitizeHtml(tableHtml),
-    tableHtml,
-    'Tables should be preserved'
-  );
-
-  // Code blocks
-  assert.strictEqual(
-    sanitizeHtml('<pre><code>const x = 1;</code></pre>'),
-    '<pre><code>const x = 1;</code></pre>',
-    'Code blocks should be preserved'
-  );
-
-  console.log('  sanitizeHtml (preserves safe HTML) passed!');
-}
-
-/**
- * Test edge cases for sanitizeHtml
- */
-function testSanitizeHtmlEdgeCases(): void {
-  console.log('Testing sanitizeHtml (edge cases)...');
-
-  // Empty string
-  assert.strictEqual(
-    sanitizeHtml(''),
-    '',
-    'Empty string should return empty string'
-  );
-
-  // Whitespace only
-  assert.strictEqual(
-    sanitizeHtml('   '),
-    '   ',
-    'Whitespace only should be preserved'
-  );
-
-  // No HTML at all
-  assert.strictEqual(
-    sanitizeHtml('Just plain text'),
-    'Just plain text',
-    'Plain text should be unchanged'
-  );
-
-  // Self-closing tags (safe)
-  assert.strictEqual(
-    sanitizeHtml('<br><hr><img src="test.png">'),
-    '<br><hr><img src="test.png">',
-    'Safe self-closing tags should be preserved'
-  );
-
-  // Deeply nested safe HTML
-  const deepNested = '<div><p><span><strong>Bold</strong></span></p></div>';
-  assert.strictEqual(
-    sanitizeHtml(deepNested),
-    deepNested,
-    'Deeply nested safe HTML should be preserved'
-  );
-
-  // CodeQL-flagged edge cases: whitespace variations in script tags
-  assert.strictEqual(
-    sanitizeHtml('<script>alert(1)</script >'),
-    '',
-    'Script tag with whitespace before closing > should be removed'
-  );
-  assert.strictEqual(
-    sanitizeHtml('<script>alert(1)</ script>'),
-    '',
-    'Script tag with space after </ should be removed'
-  );
-  assert.strictEqual(
-    sanitizeHtml('<script>alert(1)</script\n>'),
-    '',
-    'Script tag with newline before closing > should be removed'
-  );
-  assert.strictEqual(
-    sanitizeHtml('<script>alert(1)</script\t>'),
-    '',
-    'Script tag with tab before closing > should be removed'
-  );
-
-  // Orphan script tags (malformed HTML)
-  assert.strictEqual(
-    sanitizeHtml('<script>unclosed'),
-    'unclosed',
-    'Orphan opening script tag should be removed'
-  );
-  assert.strictEqual(
-    sanitizeHtml('text</script>more text'),
-    'textmore text',
-    'Orphan closing script tag should be removed'
-  );
-
-  // Recursive event handler attempts
-  assert.strictEqual(
-    sanitizeHtml('<div onclick="x" onclick="y">text</div>'),
-    '<div>text</div>',
-    'Multiple onclick attributes should all be removed'
-  );
-
-  console.log('  sanitizeHtml (edge cases) passed!');
-}
 
 // ============================================================================
 // Markdown Rendering Tests: renderMarkdown()
@@ -456,7 +118,7 @@ function testRenderMarkdownCodeBlocks(): void {
     'Code content should be preserved'
   );
 
-  // Code block escapes HTML (use non-script tags since sanitizeHtml runs first)
+  // Code block escapes HTML entities
   const escapeResult = renderMarkdown('```\n<div class="test">content</div>\n```');
   assert.ok(
     escapeResult.includes('&lt;div') && escapeResult.includes('&gt;'),
@@ -1197,17 +859,8 @@ export async function runDocumentationTests(): Promise<void> {
   console.log('========================================\n');
 
   try {
-    // Security Tests (Priority: Critical)
-    console.log('--- Security Tests ---');
-    testSanitizeHtmlScriptTagRemoval();
-    testSanitizeHtmlEventHandlerRemoval();
-    testSanitizeHtmlDangerousUrlSchemes();
-    testSanitizeHtmlNestedAttacks();
-    testSanitizeHtmlPreservesSafeHtml();
-    testSanitizeHtmlEdgeCases();
-
     // Markdown Rendering Tests
-    console.log('\n--- Markdown Rendering Tests ---');
+    console.log('--- Markdown Rendering Tests ---');
     testRenderMarkdownHeadings();
     testRenderMarkdownCodeBlocks();
     testRenderMarkdownTables();

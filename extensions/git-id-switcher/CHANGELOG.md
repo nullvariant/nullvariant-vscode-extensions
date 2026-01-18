@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Remove HTML Sanitization**: Removed `sanitizeHtml()` function from documentation rendering
+  - CDN content is now trusted based on CSP + SHA-256 hash verification
+  - Simplifies codebase while maintaining security through existing defense layers
+  - Resolves CodeQL "Incomplete multi-character sanitization" warnings
+
 ## [0.13.4] - 2026-01-18
 
 ### Security
