@@ -160,10 +160,10 @@ export function sanitizeHtml(html: string): string {
     result = result.replace(/<\/\s*script\s*>/gi, '');
 
     // Remove event handler attributes (onclick, onerror, onload, etc.)
-    // Use atomic patterns without consecutive \s* to avoid ReDoS
-    result = result.replace(/ on\w+="[^"]*"/gi, '');
-    result = result.replace(/ on\w+='[^']*'/gi, '');
-    result = result.replace(/ on\w+=[^\s>"']+/gi, '');
+    // Use [ \t]+ for whitespace (space/tab) - safe because followed by literal 'on'
+    result = result.replace(/[ \t]+on\w+="[^"]*"/gi, '');
+    result = result.replace(/[ \t]+on\w+='[^']*'/gi, '');
+    result = result.replace(/[ \t]+on\w+=[^\s>"']+/gi, '');
 
   } while (result !== previous);
 
