@@ -160,8 +160,9 @@ export function sanitizeHtml(html: string): string {
     result = result.replace(/<\/\s*script\s*>/gi, '');
 
     // Remove event handler attributes (onclick, onerror, onload, etc.)
-    // Match: onclick="..." or onclick='...' or onclick=value
-    result = result.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+    // Use separate patterns for " and ' to avoid ReDoS via backtracking
+    result = result.replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '');
+    result = result.replace(/\s+on\w+\s*=\s*'[^']*'/gi, '');
     result = result.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
 
   } while (result !== previous);
