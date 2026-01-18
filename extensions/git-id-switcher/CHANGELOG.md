@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.3] - 2026-01-18
+
+### Changed
+
+- **Platform Badge Redesign**: Unified three separate platform badges into a single badge
+  - Replaced individual Windows/macOS/Linux badges with unified `[🖥️ | Win | Mac | Linux]` badge
+  - Microsoft removed all Windows icons from Simple Icons due to trademark requirements
+  - Uses custom desktop monitor SVG icon with gray/blue two-tone design
+  - Applied to all 28 README files (monorepo root, extension root, 26 i18n variants)
+
 ## [0.13.2] - 2026-01-18
 
 ### Added
