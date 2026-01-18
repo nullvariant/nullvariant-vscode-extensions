@@ -167,17 +167,23 @@ export function sanitizeHtml(html: string): string {
   } while (result !== previous);
 
   // Sanitize href and src attributes for dangerous schemes (quoted)
-  result = result.replace(/(href|src)\s*=\s*["']\s*(javascript:|data:|vbscript:)[^"']*["']/gi, '$1="#"');
+  // Use separate patterns for " and ' to avoid ReDoS via backtracking
+  result = result.replace(/(href|src)\s*=\s*"\s*(javascript:|data:|vbscript:)[^"]*"/gi, '$1="#"');
+  result = result.replace(/(href|src)\s*=\s*'\s*(javascript:|data:|vbscript:)[^']*'/gi, '$1="#"');
 
   // Remove unquoted href/src attributes (bypass prevention for href=javascript:alert(1))
   result = result.replace(/(href|src)\s*=\s*(?!["'])[^\s>]*/gi, '$1="#"');
 
   // Remove srcset attributes completely (image source injection prevention)
-  result = result.replace(/\s+srcset\s*=\s*["'][^"']*["']/gi, '');
+  // Use separate patterns for " and ' to avoid ReDoS via backtracking
+  result = result.replace(/\s+srcset\s*=\s*"[^"]*"/gi, '');
+  result = result.replace(/\s+srcset\s*=\s*'[^']*'/gi, '');
   result = result.replace(/\s+srcset\s*=\s*[^\s>]*/gi, '');
 
   // Remove data-* attributes (custom data attribute injection prevention)
-  result = result.replace(/\s+data-[a-z0-9-]+\s*=\s*["'][^"']*["']/gi, '');
+  // Use separate patterns for " and ' to avoid ReDoS via backtracking
+  result = result.replace(/\s+data-[a-z0-9-]+\s*=\s*"[^"]*"/gi, '');
+  result = result.replace(/\s+data-[a-z0-9-]+\s*=\s*'[^']*'/gi, '');
   result = result.replace(/\s+data-[a-z0-9-]+\s*=\s*[^\s>]*/gi, '');
 
   return result;
