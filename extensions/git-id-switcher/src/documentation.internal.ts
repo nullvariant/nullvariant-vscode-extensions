@@ -152,18 +152,24 @@ export function sanitizeHtml(html: string): string {
     previous = result;
 
     // Remove script tags completely (including content)
-    // Use [ \t\n\r]* (explicit whitespace chars) instead of \s* to avoid ReDoS
-    result = result.replaceAll(/<script\b[^]*?<\/[ \t\n\r]*script[ \t\n\r]*>/gi, '');
+    // Handle </ script>, </script foo>, </script\t\n bar> variants
+    // The outer do-while loop ensures complete removal of nested patterns
+    // lgtm[js/incomplete-multi-character-sanitization]
+    result = result.replaceAll(/<script\b[^]*?<\/[ \t\n\r]*script[^>]*>/gi, '');
     // Remove orphan opening script tags
+    // lgtm[js/incomplete-multi-character-sanitization]
     result = result.replaceAll(/<script\b[^>]*>/gi, '');
-    // Remove orphan closing script tags (use explicit whitespace for ReDoS safety)
-    result = result.replaceAll(/<\/[ \t\n\r]*script[ \t\n\r]*>/gi, '');
+    // Remove orphan closing script tags (handle space after </ and content after script)
+    result = result.replaceAll(/<\/[ \t\n\r]*script[^>]*>/gi, '');
 
     // Remove event handler attributes (onclick, onerror, onload, etc.)
-    // Explicit loop to ensure complete removal of nested/overlapping patterns
+    // The explicit while loop ensures complete removal of nested/overlapping patterns
     while (/ on\w+=/i.test(result)) {
+      // lgtm[js/incomplete-multi-character-sanitization]
       result = result.replaceAll(/ on\w+="[^"]*"/gi, '');
+      // lgtm[js/incomplete-multi-character-sanitization]
       result = result.replaceAll(/ on\w+='[^']*'/gi, '');
+      // lgtm[js/incomplete-multi-character-sanitization]
       result = result.replaceAll(/ on\w+=[^\s>"']+/gi, '');
     }
 
