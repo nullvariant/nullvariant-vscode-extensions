@@ -778,7 +778,11 @@ async function testListSubmodulesWithSubmodule(): Promise<void> {
     assert.strictEqual(sub.path, 'vendor/child', 'Submodule path should be vendor/child');
     assert.strictEqual(sub.initialized, true, 'Submodule should be initialized');
     assert.ok(sub.commitHash.match(/^[a-f0-9]{40}$/), 'Commit hash should be 40 hex chars');
-    assert.ok(sub.absolutePath.endsWith('vendor/child'), 'Absolute path should end with vendor/child');
+    // Use path.sep for cross-platform compatibility (Windows uses \, Unix uses /)
+    assert.ok(
+      sub.absolutePath.endsWith(`vendor${path.sep}child`),
+      'Absolute path should end with vendor/child'
+    );
 
     console.log('✅ listSubmodules with real submodule tests passed!');
   } finally {
