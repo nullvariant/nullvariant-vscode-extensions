@@ -146,7 +146,8 @@ function testNormalizeAndValidatePath(): void {
     );
   }
 
-  {
+  // Unix absolute path test - skipped on Windows (Windows converts /path to D:\path)
+  if (process.platform !== 'win32') {
     const result = normalizeAndValidatePath('/home/user/.ssh/id_rsa');
     assert.strictEqual(result.valid, true, 'Absolute path should pass');
     assert.strictEqual(
@@ -154,6 +155,8 @@ function testNormalizeAndValidatePath(): void {
       '/home/user/.ssh/id_rsa',
       'Should normalize absolute path'
     );
+  } else {
+    console.log('  Skipped Unix absolute path test on Windows');
   }
 
   console.log('✅ normalizeAndValidatePath basic tests passed!');
