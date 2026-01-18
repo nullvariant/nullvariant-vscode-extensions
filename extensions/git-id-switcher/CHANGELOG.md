@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-01-18
+
+### Fixed
+
+- **Submodule Detection Bug**: Fixed `listSubmodules()` failing to detect the first submodule
+  - Root cause: `gitExec()` applied `stdout.trim()` which removed the leading status character
+  - Added `gitExecRaw()` function that preserves raw stdout without trimming
+  - `git submodule status` output format requires leading character (` `, `-`, `+`) for status
+
+### Added
+
+- **Comprehensive Submodule Tests**: Added tests for submodule detection scenarios
+  - Single submodule detection test
+  - Multiple submodules detection test (3 submodules)
+  - Nested submodules recursive test (3-level hierarchy)
+  - `gitExecRaw()` error handling test
+
+### Changed
+
+- **Improved Test Coverage**: `submodule.ts` coverage increased from 79.78% to 93.53%
+
 ## [0.13.0] - 2026-01-17
 
 ### Security
