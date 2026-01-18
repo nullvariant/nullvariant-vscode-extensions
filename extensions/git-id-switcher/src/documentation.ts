@@ -411,6 +411,36 @@ function isTestEnvironment(): boolean {
 }
 
 /**
+ * Log hash verification failure details
+ */
+function logHashFailure(path: string, hashResult: { expectedHash: string | undefined; actualHash: string }): void {
+  if (hashResult.expectedHash === undefined) {
+    console.warn(`[Git ID Switcher] Unknown document path: ${path}`);
+  } else {
+    console.error(`[Git ID Switcher] Hash mismatch for ${path}`);
+    console.error(`[Git ID Switcher] Expected: ${hashResult.expectedHash}`);
+    console.error(`[Git ID Switcher] Actual: ${hashResult.actualHash}`);
+  }
+}
+
+/**
+ * Validate content size (DoS prevention)
+ * @returns true if content size is within limits
+ */
+function isContentSizeValid(response: Response, content?: string): boolean {
+  const contentLength = response.headers.get('content-length');
+  if (contentLength && Number.parseInt(contentLength, 10) > MAX_CONTENT_SIZE) {
+    console.warn('[Git ID Switcher] Documentation too large, rejecting');
+    return false;
+  }
+  if (content && content.length > MAX_CONTENT_SIZE) {
+    console.warn('[Git ID Switcher] Documentation content too large, rejecting');
+    return false;
+  }
+  return true;
+}
+
+/**
  * Fetch a document by path from R2
  *
  * @param path - Document path relative to extension root (e.g., 'README.md', 'docs/i18n/ja/README.md')
@@ -422,55 +452,36 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
 
   try {
     const url = `${ASSET_BASE_URL}/${path}`;
-
-    // Add header for CI/test environment access (for analytics filtering)
-    const headers: Record<string, string> = {};
-    if (isTestEnvironment()) {
-      headers['X-Test-Environment'] = 'true';
-    }
-
+    const headers: Record<string, string> = isTestEnvironment() ? { 'X-Test-Environment': 'true' } : {};
     const response = await fetch(url, { signal: controller.signal, headers });
-
     clearTimeout(timeoutId);
 
-    if (response.ok) {
-      // DoS prevention: Check Content-Length header before reading body
-      const contentLength = response.headers.get('content-length');
-      if (contentLength && Number.parseInt(contentLength, 10) > MAX_CONTENT_SIZE) {
-        console.warn('[Git ID Switcher] Documentation too large, rejecting');
+    if (!response.ok) {
+      return null;
+    }
+
+    // DoS prevention: Check Content-Length header before reading body
+    if (!isContentSizeValid(response)) {
+      return null;
+    }
+
+    const content = await response.text();
+
+    // Double-check actual content size (header may be missing or wrong)
+    if (!isContentSizeValid(response, content)) {
+      return null;
+    }
+
+    // Hash verification (skip in test environment for development flexibility)
+    if (!isTestEnvironment()) {
+      const hashResult = await verifyContentHash(path, content);
+      if (!hashResult.valid) {
+        logHashFailure(path, hashResult);
         return null;
-      }
-
-      const content = await response.text();
-
-      // Double-check actual content size (header may be missing or wrong)
-      if (content.length > MAX_CONTENT_SIZE) {
-        console.warn('[Git ID Switcher] Documentation content too large, rejecting');
-        return null;
-      }
-
-      // Hash verification (skip in test environment for development flexibility)
-      if (!isTestEnvironment()) {
-        const hashResult = await verifyContentHash(path, content);
-        if (!hashResult.valid) {
-          // Hash mismatch or unknown path - reject for security
-          if (hashResult.expectedHash === undefined) {
-            console.warn(`[Git ID Switcher] Unknown document path: ${path}`);
-          } else {
-            console.error(`[Git ID Switcher] Hash mismatch for ${path}`);
-            console.error(`[Git ID Switcher] Expected: ${hashResult.expectedHash}`);
-            console.error(`[Git ID Switcher] Actual: ${hashResult.actualHash}`);
-          }
-          return null;
-        }
-      }
-
-      if (content.trim().length > 0) {
-        return content;
       }
     }
 
-    return null;
+    return content.trim().length > 0 ? content : null;
   } catch {
     clearTimeout(timeoutId);
     return null;

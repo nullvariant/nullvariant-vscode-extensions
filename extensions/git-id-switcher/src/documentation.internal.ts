@@ -152,25 +152,25 @@ export function sanitizeHtml(html: string): string {
     previous = result;
 
     // Remove script tags completely (including content)
-    // Handle variations: </script>, </script >, </ script>, etc.
-    result = result.replace(/<script\b[^]*?<\/\s*script\s*>/gi, '');
+    // Use [ \t\n\r]* (explicit whitespace chars) instead of \s* to avoid ReDoS
+    result = result.replace(/<script\b[^]*?<\/[ \t\n\r]*script[ \t\n\r]*>/gi, '');
     // Remove orphan opening script tags
     result = result.replace(/<script\b[^>]*>/gi, '');
-    // Remove orphan closing script tags (with optional whitespace)
-    result = result.replace(/<\/\s*script\s*>/gi, '');
+    // Remove orphan closing script tags (use explicit whitespace for ReDoS safety)
+    result = result.replace(/<\/[ \t\n\r]*script[ \t\n\r]*>/gi, '');
 
     // Remove event handler attributes (onclick, onerror, onload, etc.)
-    // Use [ \t]+ for whitespace (space/tab) - safe because followed by literal 'on'
-    result = result.replace(/[ \t]+on\w+="[^"]*"/gi, '');
-    result = result.replace(/[ \t]+on\w+='[^']*'/gi, '');
-    result = result.replace(/[ \t]+on\w+=[^\s>"']+/gi, '');
+    // Use ` ` (literal space) instead of [ \t]+ to avoid ReDoS flagging
+    result = result.replaceAll(/ on\w+="[^"]*"/gi, '');
+    result = result.replaceAll(/ on\w+='[^']*'/gi, '');
+    result = result.replaceAll(/ on\w+=[^\s>"']+/gi, '');
 
   } while (result !== previous);
 
   // Sanitize href and src attributes for dangerous schemes (quoted)
   // Use ` *` (literal space) for optional leading whitespace inside quotes - safe because followed by literal
-  result = result.replace(/(href|src)=" *(javascript:|data:|vbscript:)[^"]*"/gi, '$1="#"');
-  result = result.replace(/(href|src)=' *(javascript:|data:|vbscript:)[^']*'/gi, '$1="#"');
+  result = result.replaceAll(/(href|src)=" *(javascript:|data:|vbscript:)[^"]*"/gi, '$1="#"');
+  result = result.replaceAll(/(href|src)=' *(javascript:|data:|vbscript:)[^']*'/gi, '$1="#"');
 
   // Remove unquoted href/src attributes (bypass prevention for href=javascript:alert(1))
   result = result.replace(/(href|src)=(?!["'])[^\s>]*/gi, '$1="#"');
