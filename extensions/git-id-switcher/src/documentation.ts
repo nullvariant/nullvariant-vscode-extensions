@@ -411,6 +411,36 @@ function isTestEnvironment(): boolean {
 }
 
 /**
+ * Log hash verification failure with appropriate message
+ */
+function logHashFailure(path: string, hashResult: { expectedHash: string | undefined; actualHash: string }): void {
+  if (hashResult.expectedHash === undefined) {
+    console.warn(`[Git ID Switcher] Unknown document path rejected: ${path}`);
+  } else {
+    console.warn(
+      `[Git ID Switcher] Hash mismatch for ${path}: ` +
+      `expected ${hashResult.expectedHash}, got ${hashResult.actualHash}`
+    );
+  }
+}
+
+/**
+ * Validate content size against limits
+ * @returns true if content size is valid, false if too large
+ */
+function isContentSizeValid(contentLength: string | null, actualLength: number): boolean {
+  if (contentLength && Number.parseInt(contentLength, 10) > MAX_CONTENT_SIZE) {
+    console.warn('[Git ID Switcher] Documentation too large, rejecting');
+    return false;
+  }
+  if (actualLength > MAX_CONTENT_SIZE) {
+    console.warn('[Git ID Switcher] Documentation content too large, rejecting');
+    return false;
+  }
+  return true;
+}
+
+/**
  * Fetch a document by path from R2
  *
  * @param path - Document path relative to extension root (e.g., 'README.md', 'docs/i18n/ja/README.md')
@@ -430,45 +460,31 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
     }
 
     const response = await fetch(url, { signal: controller.signal, headers });
-
     clearTimeout(timeoutId);
 
-    if (response.ok) {
-      // DoS prevention: Check Content-Length header before reading body
-      const contentLength = response.headers.get('content-length');
-      if (contentLength && Number.parseInt(contentLength, 10) > MAX_CONTENT_SIZE) {
-        console.warn('[Git ID Switcher] Documentation too large, rejecting');
-        return null;
-      }
-
-      const content = await response.text();
-
-      // Double-check actual content size (header may be missing or wrong)
-      if (content.length > MAX_CONTENT_SIZE) {
-        console.warn('[Git ID Switcher] Documentation content too large, rejecting');
-        return null;
-      }
-
-      if (content.trim().length > 0) {
-        // Verify content hash for integrity (allowlist approach)
-        const hashResult = await verifyContentHash(path, content);
-        if (!hashResult.valid) {
-          if (hashResult.expectedHash === undefined) {
-            console.warn(`[Git ID Switcher] Unknown document path rejected: ${path}`);
-          } else {
-            console.warn(
-              `[Git ID Switcher] Hash mismatch for ${path}: ` +
-              `expected ${hashResult.expectedHash}, got ${hashResult.actualHash}`
-            );
-          }
-          return null;
-        }
-
-        return content;
-      }
+    if (!response.ok) {
+      return null;
     }
 
-    return null;
+    const contentLength = response.headers.get('content-length');
+    const content = await response.text();
+
+    if (!isContentSizeValid(contentLength, content.length)) {
+      return null;
+    }
+
+    if (content.trim().length === 0) {
+      return null;
+    }
+
+    // Verify content hash for integrity (allowlist approach)
+    const hashResult = await verifyContentHash(path, content);
+    if (!hashResult.valid) {
+      logHashFailure(path, hashResult);
+      return null;
+    }
+
+    return content;
   } catch {
     clearTimeout(timeoutId);
     return null;
