@@ -526,9 +526,6 @@ function verifySubmoduleSymlinks(
     }
 
     const resolvedPath = resolvedByRealpath;
-    // symlinksResolved indicates that symlink verification was performed, not that symlinks were found
-    const _symlinksActuallyChanged = resolvedByRealpath !== pathValidation.normalizedPath;
-    void _symlinksActuallyChanged; // Unused, kept for potential future debugging
 
     // SECURITY: Re-check workspace boundary after symlink resolution
     const boundaryCheck = checkWorkspaceBoundary(resolvedPath, normalizedWorkspace, originalPath);
