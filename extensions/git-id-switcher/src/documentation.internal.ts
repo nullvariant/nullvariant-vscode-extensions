@@ -153,23 +153,14 @@ export function sanitizeHtml(html: string): string {
 
     // Remove script tags completely (including content)
     // Handle </ script>, </script foo>, </script\t\n bar> variants
-    // The outer do-while loop ensures complete removal of nested patterns
-    // lgtm[js/incomplete-multi-character-sanitization]
     result = result.replaceAll(/<script\b[^]*?<\/[ \t\n\r]*script[^>]*>/gi, '');
-    // Remove orphan opening script tags
-    // lgtm[js/incomplete-multi-character-sanitization]
     result = result.replaceAll(/<script\b[^>]*>/gi, '');
-    // Remove orphan closing script tags (handle space after </ and content after script)
     result = result.replaceAll(/<\/[ \t\n\r]*script[^>]*>/gi, '');
 
     // Remove event handler attributes (onclick, onerror, onload, etc.)
-    // The explicit while loop ensures complete removal of nested/overlapping patterns
     while (/ on\w+=/i.test(result)) {
-      // lgtm[js/incomplete-multi-character-sanitization]
       result = result.replaceAll(/ on\w+="[^"]*"/gi, '');
-      // lgtm[js/incomplete-multi-character-sanitization]
       result = result.replaceAll(/ on\w+='[^']*'/gi, '');
-      // lgtm[js/incomplete-multi-character-sanitization]
       result = result.replaceAll(/ on\w+=[^\s>"']+/gi, '');
     }
 
