@@ -160,32 +160,32 @@ export function sanitizeHtml(html: string): string {
     result = result.replace(/<\/\s*script\s*>/gi, '');
 
     // Remove event handler attributes (onclick, onerror, onload, etc.)
-    // Use separate patterns for " and ' to avoid ReDoS via backtracking
-    result = result.replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '');
-    result = result.replace(/\s+on\w+\s*=\s*'[^']*'/gi, '');
-    result = result.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
+    // Use atomic patterns without consecutive \s* to avoid ReDoS
+    result = result.replace(/ on\w+="[^"]*"/gi, '');
+    result = result.replace(/ on\w+='[^']*'/gi, '');
+    result = result.replace(/ on\w+=[^\s>"']+/gi, '');
 
   } while (result !== previous);
 
   // Sanitize href and src attributes for dangerous schemes (quoted)
-  // Use separate patterns for " and ' to avoid ReDoS via backtracking
-  result = result.replace(/(href|src)\s*=\s*"\s*(javascript:|data:|vbscript:)[^"]*"/gi, '$1="#"');
-  result = result.replace(/(href|src)\s*=\s*'\s*(javascript:|data:|vbscript:)[^']*'/gi, '$1="#"');
+  // Use ` *` (literal space) for optional leading whitespace inside quotes - safe because followed by literal
+  result = result.replace(/(href|src)=" *(javascript:|data:|vbscript:)[^"]*"/gi, '$1="#"');
+  result = result.replace(/(href|src)=' *(javascript:|data:|vbscript:)[^']*'/gi, '$1="#"');
 
   // Remove unquoted href/src attributes (bypass prevention for href=javascript:alert(1))
-  result = result.replace(/(href|src)\s*=\s*(?!["'])[^\s>]*/gi, '$1="#"');
+  result = result.replace(/(href|src)=(?!["'])[^\s>]*/gi, '$1="#"');
 
   // Remove srcset attributes completely (image source injection prevention)
-  // Use separate patterns for " and ' to avoid ReDoS via backtracking
-  result = result.replace(/\s+srcset\s*=\s*"[^"]*"/gi, '');
-  result = result.replace(/\s+srcset\s*=\s*'[^']*'/gi, '');
-  result = result.replace(/\s+srcset\s*=\s*[^\s>]*/gi, '');
+  // Use atomic patterns without consecutive \s* to avoid ReDoS
+  result = result.replace(/ srcset="[^"]*"/gi, '');
+  result = result.replace(/ srcset='[^']*'/gi, '');
+  result = result.replace(/ srcset=[^\s>"']+/gi, '');
 
   // Remove data-* attributes (custom data attribute injection prevention)
-  // Use separate patterns for " and ' to avoid ReDoS via backtracking
-  result = result.replace(/\s+data-[a-z0-9-]+\s*=\s*"[^"]*"/gi, '');
-  result = result.replace(/\s+data-[a-z0-9-]+\s*=\s*'[^']*'/gi, '');
-  result = result.replace(/\s+data-[a-z0-9-]+\s*=\s*[^\s>]*/gi, '');
+  // Use atomic patterns without consecutive \s* to avoid ReDoS
+  result = result.replace(/ data-[a-z0-9-]+="[^"]*"/gi, '');
+  result = result.replace(/ data-[a-z0-9-]+='[^']*'/gi, '');
+  result = result.replace(/ data-[a-z0-9-]+=[^\s>"']+/gi, '');
 
   return result;
 }
