@@ -34,7 +34,7 @@ This repository contains VS Code extensions with the following security measures
 ### Git ID Switcher
 
 - **Content Security Policy (CSP)**: Webview content is restricted to prevent XSS attacks
-- **HTML Sanitization**: All external content (markdown from R2) is sanitized using `sanitize-html` before rendering
+- **Content Integrity**: CDN content is verified using SHA-256 hash allowlist before rendering
 - **No eval()**: Script execution is disabled in webviews (`enableScripts: false` where possible)
 - **Minimal Permissions**: Only requests necessary VS Code API permissions
 - **Command Injection Prevention**: Git commands use `execFile` with explicit argument arrays, never string interpolation

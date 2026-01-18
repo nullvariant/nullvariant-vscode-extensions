@@ -169,51 +169,6 @@ export function isContentSizeValid(
 }
 
 /**
- * Sanitize HTML to remove dangerous elements while preserving safe HTML
- *
- * SECURITY: CSP with nonce restricts script execution to our inline script only.
- * We still remove dangerous patterns as defense-in-depth.
- *
- * Removes:
- * - <script> tags (completely, including malformed variants)
- * - Event handler attributes (onclick, onerror, etc.)
- * - Dangerous URL schemes (javascript:, data:, vbscript:)
- *
- * Uses loop-based sanitization to handle nested/recursive attack patterns.
- *
- * @param html - Raw HTML/Markdown that may contain dangerous elements
- * @returns Sanitized HTML
- */
-export function sanitizeHtml(html: string): string {
-  let result = html;
-  let previous: string;
-
-  // Loop until no more changes (handles nested/recursive patterns)
-  do {
-    previous = result;
-
-    // Remove script tags completely (including content)
-    // Handle variations: </script>, </script >, </ script>, etc.
-    result = result.replace(/<script\b[^]*?<\/\s*script\s*>/gi, '');
-    // Remove orphan opening script tags
-    result = result.replace(/<script\b[^>]*>/gi, '');
-    // Remove orphan closing script tags (with optional whitespace)
-    result = result.replace(/<\/\s*script\s*>/gi, '');
-
-    // Remove event handler attributes (onclick, onerror, onload, etc.)
-    // Match: onclick="..." or onclick='...' or onclick=value
-    result = result.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
-    result = result.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
-
-  } while (result !== previous);
-
-  // Sanitize href and src attributes for dangerous schemes
-  result = result.replace(/(href|src)\s*=\s*["']\s*(javascript:|data:|vbscript:)[^"']*["']/gi, '$1="#"');
-
-  return result;
-}
-
-/**
  * Escape HTML entities for text content (used only for code blocks)
  *
  * @param text - Raw text
@@ -333,8 +288,8 @@ export function getDocumentDisplayName(path: string): string {
  * @returns Safe HTML string
  */
 export function renderMarkdown(raw: string): string {
-  // Step 1: Sanitize dangerous HTML elements
-  let html = sanitizeHtml(raw);
+  // Content is trusted (self-managed CDN with hash verification)
+  let html = raw;
 
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
   // Use %% delimiters to avoid confusion with HTML tags
