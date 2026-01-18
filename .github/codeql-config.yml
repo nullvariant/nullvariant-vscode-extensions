@@ -12,3 +12,11 @@ paths-ignore:
 queries:
   - uses: security-extended
   - uses: security-and-quality
+
+# Exclude false positive: loop-based sanitization in sanitizeHtml()
+# See SECURITY NOTE comment in the file for detailed explanation
+query-filters:
+  - exclude:
+      id: js/incomplete-multi-character-sanitization
+      paths:
+        - extensions/git-id-switcher/src/documentation.internal.ts

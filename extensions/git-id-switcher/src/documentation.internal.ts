@@ -143,6 +143,23 @@ export async function verifyContentHash(path: string, content: string): Promise<
  * @param html - Raw HTML/Markdown that may contain dangerous elements
  * @returns Sanitized HTML
  */
+/**
+ * SECURITY NOTE - CodeQL False Positive Exclusion
+ *
+ * CodeQL flags "incomplete multi-character sanitization" (js/incomplete-multi-character-sanitization)
+ * for the regex patterns below. This is a FALSE POSITIVE because:
+ *
+ * 1. The outer do-while loop repeats until `result === previous` (no changes)
+ * 2. The inner while loop for event handlers repeats until no matches remain
+ * 3. This ensures nested attack patterns like `<<script>script>` are fully removed
+ *
+ * Example: Input "<<script>script>alert(1)</script>" is processed as:
+ *   Pass 1: "<script>alert(1)</script>" (outer <script> removed)
+ *   Pass 2: "" (remaining <script> removed)
+ *
+ * Excluded in .github/codeql-config.yml for this file only.
+ * DO NOT add new sanitization code without loop-based protection.
+ */
 export function sanitizeHtml(html: string): string {
   let result = html;
   let previous: string;
