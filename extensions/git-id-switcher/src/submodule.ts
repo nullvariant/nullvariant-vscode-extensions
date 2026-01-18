@@ -11,7 +11,7 @@
 
 import { getWorkspace } from './vscodeLoader';
 import { gitExec, gitExecRaw } from './secureExec';
-import { validateSubmodulePath, normalizeAndValidatePath } from './pathUtils';
+import { validateSubmodulePath, validateWorkspacePath } from './pathUtils';
 import { securityLogger } from './securityLogger';
 
 /**
@@ -118,8 +118,9 @@ function parseSubmoduleEntry(
  */
 export async function listSubmodules(workspacePath: string): Promise<Submodule[]> {
   // SECURITY: Validate workspace path before use
-  const workspaceValidation = normalizeAndValidatePath(workspacePath, {
-    resolveSymlinks: false,
+  // Use validateWorkspacePath instead of normalizeAndValidatePath because
+  // VS Code provides workspace paths in platform-native format (Windows: C:\...)
+  const workspaceValidation = validateWorkspacePath(workspacePath, {
     requireExists: true,
   });
 
