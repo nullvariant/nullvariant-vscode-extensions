@@ -342,7 +342,8 @@ function testContainsSymlinks(): void {
 function testValidateSubmodulePath(): void {
   console.log('Testing validateSubmodulePath...');
 
-  const workspacePath = process.cwd();
+  // Normalize workspace path to forward slashes for cross-platform compatibility
+  const workspacePath = process.cwd().replace(/\\/g, '/');
 
   // Test valid relative submodule path
   {
@@ -645,7 +646,8 @@ function testSshKeyPathLocations(): void {
 function testValidateSubmodulePathSymlinkOptions(): void {
   console.log('Testing validateSubmodulePath symlink options...');
 
-  const workspacePath = process.cwd();
+  // Normalize workspace path to forward slashes for cross-platform compatibility
+  const workspacePath = process.cwd().replace(/\\/g, '/');
 
   // Test with verifySymlinks: false
   {
@@ -695,7 +697,8 @@ function testValidateSubmodulePathSymlinkOptions(): void {
 function testValidateSubmodulePathExistingDir(): void {
   console.log('Testing validateSubmodulePath with existing directory...');
 
-  const workspacePath = process.cwd();
+  // Normalize workspace path to forward slashes for cross-platform compatibility
+  const workspacePath = process.cwd().replace(/\\/g, '/');
 
   // Test with actually existing directory to cover verifySubmoduleSymlinks path
   // The 'src' directory should exist in the extension
@@ -736,7 +739,8 @@ function testValidateSubmodulePathExistingDir(): void {
 function testWorkspaceBoundaryChecks(): void {
   console.log('Testing workspace boundary checks...');
 
-  const workspacePath = process.cwd();
+  // Normalize workspace path to forward slashes for cross-platform compatibility
+  const workspacePath = process.cwd().replace(/\\/g, '/');
 
   // Test path that looks safe but escapes after normalization
   {
