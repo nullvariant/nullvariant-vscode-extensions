@@ -22,6 +22,21 @@ import {
 import { isCommandAllowed } from '../commandAllowlist';
 
 /**
+ * Normalize path to use forward slashes (cross-platform compatibility).
+ *
+ * isSecureLogPath requires forward slashes for security validation because:
+ * - Backslash is rejected as a potential path traversal attack on Unix
+ * - Windows Node.js path.join() uses backslash by default
+ * - Forward slash works on all platforms
+ *
+ * @param p - The path to normalize
+ * @returns The path with all backslashes replaced by forward slashes
+ */
+function toForwardSlashes(p: string): string {
+  return p.replace(/\\/g, '/');
+}
+
+/**
  * Test path traversal attack prevention
  */
 function testPathTraversalAttacks(): void {
@@ -658,15 +673,18 @@ function testSecureLogPathOutsideAllowed(): void {
     ];
 
     for (const filePath of outsidePaths) {
-      const result = isSecureLogPath(filePath, tempDir);
+      // Normalize paths to forward slashes for cross-platform compatibility
+      const normalizedPath = toForwardSlashes(filePath);
+      const normalizedBaseDir = toForwardSlashes(tempDir);
+      const result = isSecureLogPath(normalizedPath, normalizedBaseDir);
       assert.strictEqual(
         result.valid,
         false,
-        `Path outside allowed directory should be rejected: "${filePath}"`
+        `Path outside allowed directory should be rejected: "${normalizedPath}"`
       );
       assert.ok(
         result.reason?.includes('not under allowed directory'),
-        `Should mention path is not under allowed directory for: "${filePath}", got: "${result.reason}"`
+        `Should mention path is not under allowed directory for: "${normalizedPath}", got: "${result.reason}"`
       );
     }
 
@@ -696,15 +714,18 @@ function testSecureLogPathUnderAllowed(): void {
     ];
 
     for (const filePath of validPaths) {
-      const result = isSecureLogPath(filePath, tempDir);
+      // Normalize paths to forward slashes for cross-platform compatibility
+      const normalizedPath = toForwardSlashes(filePath);
+      const normalizedBaseDir = toForwardSlashes(tempDir);
+      const result = isSecureLogPath(normalizedPath, normalizedBaseDir);
       assert.strictEqual(
         result.valid,
         true,
-        `Path under allowed directory should be allowed: "${filePath}"`
+        `Path under allowed directory should be allowed: "${normalizedPath}"`
       );
       assert.ok(
         result.resolvedPath,
-        `Should return resolved path for: "${filePath}"`
+        `Should return resolved path for: "${normalizedPath}"`
       );
     }
   } finally {
@@ -739,7 +760,10 @@ function testSecureLogPathRejectsSymlinks(): void {
 
     // Test: symlink in path should be rejected
     const symlinkPath = path.join(symlinkDir, 'malicious.log');
-    const result = isSecureLogPath(symlinkPath, tempDir);
+    // Normalize paths to forward slashes for cross-platform compatibility
+    const normalizedPath = toForwardSlashes(symlinkPath);
+    const normalizedBaseDir = toForwardSlashes(tempDir);
+    const result = isSecureLogPath(normalizedPath, normalizedBaseDir);
 
     assert.strictEqual(
       result.valid,
@@ -827,7 +851,8 @@ function testSecureLogPathInvalidBaseDir(): void {
 
   // Use realpath to resolve any system symlinks
   const baseTempDir = fs.realpathSync(os.tmpdir());
-  const testFilePath = path.join(baseTempDir, 'test-file.log');
+  // Normalize path to forward slashes for cross-platform compatibility
+  const testFilePath = toForwardSlashes(path.join(baseTempDir, 'test-file.log'));
 
   // Invalid base directory (path traversal)
   {
