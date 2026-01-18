@@ -322,6 +322,7 @@ Poznámka: Poslední identita (`freelance`) nemá SSH — pouze přepíná Git k
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max. velikost souboru před rotací (bajty, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles` | `5` | Max. počet rotovaných log souborů (1-20) |
 | `gitIdSwitcher.logging.level` | `"INFO"` | Úroveň logování: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Zaznamenává vybranou úroveň a vyšší |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Pokud je povoleno, všechny hodnoty jsou v protokolech maskovány (maximální soukromí) |
 | `gitIdSwitcher.commandTimeouts` | `{}` | Vlastní timeout pro příkaz (ms, 1sek-5min). Např.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### O nastavení `includeIconInGitConfig`

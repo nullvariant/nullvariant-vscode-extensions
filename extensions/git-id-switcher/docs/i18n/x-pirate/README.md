@@ -336,6 +336,7 @@ Note: The last identity (`navy-spy`) has no SSH. Ye can use this fer switchin' j
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max log file size before rotation (bytes, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles` | `5` | Number of log files to keep (1-20) |
 | `gitIdSwitcher.logging.level` | `"INFO"` | Loggin' level (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | When enabled, all values be masked in logs (maximum privacy mode, arr!) |
 | `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms, 1s-5min) |
 
 ---

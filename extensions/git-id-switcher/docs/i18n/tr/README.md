@@ -323,6 +323,7 @@ Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını deği
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Döndürmeden önce maks. dosya boyutu (bayt, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles` | `5` | Döndürülen günlük dosyası maks. sayısı (1-20) |
 | `gitIdSwitcher.logging.level` | `"INFO"` | Günlük düzeyi: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Seçilen düzey ve üstünü kaydeder |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Etkinleştirildiğinde, günlüklerdeki tüm değerler maskelenir (maksimum gizlilik) |
 | `gitIdSwitcher.commandTimeouts` | `{}` | Komut başına özel zaman aşımı (ms, 1sn-5dk). Örn.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig` Hakkında

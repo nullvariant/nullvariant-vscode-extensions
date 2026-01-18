@@ -340,6 +340,7 @@ Note: The final identity (`romeo`) hath no SSH. Thou canst use this for switchin
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max log file size ere rotation (bytes, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles` | `5` | Number of log files to preserve (1-20) |
 | `gitIdSwitcher.logging.level` | `"INFO"` | Logging level (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | When 'tis enabled, all values are masked in the logs (maximum privacy mode) |
 | `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms, 1s-5min) |
 
 ---

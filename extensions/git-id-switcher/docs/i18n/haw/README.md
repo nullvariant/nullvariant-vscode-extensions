@@ -343,6 +343,7 @@ Palapala: ʻAʻohe SSH i ka ID hope (`kūʻokoʻa`)—hoʻololi wale i ka Git co
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Nui loa o ka faila log ma mua o ka rotation (bytes, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles`    | `5`        | Helu o nā faila log e mālama (1-20)            |
 | `gitIdSwitcher.logging.level`       | `"INFO"`   | Pae logging (DEBUG/INFO/WARN/ERROR/SECURITY)   |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Ke hoʻā ʻia, e uhi ʻia nā waiwai a pau ma nā moʻolelo (pale pilikino nui loa) |
 | `gitIdSwitcher.commandTimeouts`     | `{}`       | Manawa palena no nā kauoha waho (ms, 1s-5min)  |
 
 #### E Pili ana i `includeIconInGitConfig`

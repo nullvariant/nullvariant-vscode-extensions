@@ -325,6 +325,7 @@ sona: pini ID (`jan-musi`) li jo ala e SSH—Git config taso li ante. GitLab acc
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | file log suli (bytes, 1MB-100MB)               |
 | `gitIdSwitcher.logging.maxFiles`    | `5`        | file log nanpa (1-20)                          |
 | `gitIdSwitcher.logging.level`       | `"INFO"`   | logging suli (DEBUG/INFO/WARN/ERROR/SECURITY)  |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | ni li lon la, ale li len lon lipu (tenpo pona suli) |
 | `gitIdSwitcher.commandTimeouts`     | `{}`       | ilo weka tenpo (ms, 1s-5min)                   |
 
 #### sona `includeIconInGitConfig`

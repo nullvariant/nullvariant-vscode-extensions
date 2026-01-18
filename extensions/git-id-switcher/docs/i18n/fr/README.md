@@ -323,6 +323,7 @@ Note : La dernière identité (`freelance`) n'a pas de SSH — elle ne change qu
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Taille max du fichier avant rotation (octets, 1Mo-100Mo) |
 | `gitIdSwitcher.logging.maxFiles` | `5` | Nombre max de fichiers journaux en rotation (1-20) |
 | `gitIdSwitcher.logging.level` | `"INFO"` | Niveau de log : `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Enregistre le niveau sélectionné et supérieur |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Lorsqu'activé, toutes les valeurs sont masquées dans les journaux (confidentialité maximale) |
 | `gitIdSwitcher.commandTimeouts` | `{}` | Timeout personnalisé par commande (ms, 1sec-5min). Ex : `{"git": 15000, "ssh-add": 10000}` |
 
 #### À propos de `includeIconInGitConfig`

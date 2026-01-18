@@ -323,6 +323,7 @@ Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-k
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max. fájlméret forgatás előtt (bájt, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles` | `5` | Forgatott naplófájlok max. száma (1-20) |
 | `gitIdSwitcher.logging.level` | `"INFO"` | Naplózási szint: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. A kiválasztott szint és felette rögzít |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Ha engedélyezve van, minden érték maszkolva van a naplókban (maximális adatvédelem) |
 | `gitIdSwitcher.commandTimeouts` | `{}` | Egyedi időtúllépés parancsonként (ms, 1mp-5perc). Pl.: `{"git": 15000, "ssh-add": 10000}` |
 
 #### Az `includeIconInGitConfig` beállításról

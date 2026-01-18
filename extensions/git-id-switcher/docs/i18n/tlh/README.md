@@ -325,6 +325,7 @@ Note: Last ID (`spy`) no SSH—Git config only change. Same GitLab account diffe
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Log file max size before rotation (bytes, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles`    | `5`        | Log files keep count (1-20)                    |
 | `gitIdSwitcher.logging.level`       | `"INFO"`   | Logging level (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | qaSchugh, Hoch De' Sotlh (patlh'a' pegh) |
 | `gitIdSwitcher.commandTimeouts`     | `{}`       | External commands timeout (ms, 1s-5min)        |
 
 #### `includeIconInGitConfig` About

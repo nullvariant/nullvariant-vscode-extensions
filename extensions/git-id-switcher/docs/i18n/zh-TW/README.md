@@ -323,6 +323,7 @@ Host bitbucket.org
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | 輪換前的最大檔案大小（位元組，1MB-100MB） |
 | `gitIdSwitcher.logging.maxFiles` | `5` | 保留的輪換日誌檔案最大數量（1-20） |
 | `gitIdSwitcher.logging.level` | `"INFO"` | 日誌等級：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。記錄選定等級及以上 |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | 啟用時，日誌中的所有值都會被遮罩（最大隱私模式） |
 | `gitIdSwitcher.commandTimeouts` | `{}` | 每個指令的自訂逾時值（毫秒，1秒-5分鐘）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### 關於 `includeIconInGitConfig`

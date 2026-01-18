@@ -326,6 +326,7 @@ Noto: La lasta identeco (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-ag
 | `gitIdSwitcher.logging.maxFileSize` | `10485760` | Maks. dosiera grandeco antaŭ rotacio (bajtoj, 1MB-100MB) |
 | `gitIdSwitcher.logging.maxFiles`    | `5`        | Nombro de protokol-dosieroj por konservi (1-20) |
 | `gitIdSwitcher.logging.level`       | `"INFO"`   | Protokolado-nivelo (DEBUG/INFO/WARN/ERROR/SECURITY) |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Kiam ebligita, ĉiuj valoroj estas maskitaj en protokoloj (maksimuma privateco) |
 | `gitIdSwitcher.commandTimeouts`     | `{}`       | Tempolimo por eksteraj komandoj (ms, 1s-5min)  |
 
 #### Pri `includeIconInGitConfig`
