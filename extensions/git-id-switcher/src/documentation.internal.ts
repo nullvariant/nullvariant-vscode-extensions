@@ -160,10 +160,12 @@ export function sanitizeHtml(html: string): string {
     result = result.replace(/<\/[ \t\n\r]*script[ \t\n\r]*>/gi, '');
 
     // Remove event handler attributes (onclick, onerror, onload, etc.)
-    // Use ` ` (literal space) instead of [ \t]+ to avoid ReDoS flagging
-    result = result.replaceAll(/ on\w+="[^"]*"/gi, '');
-    result = result.replaceAll(/ on\w+='[^']*'/gi, '');
-    result = result.replaceAll(/ on\w+=[^\s>"']+/gi, '');
+    // Explicit loop to ensure complete removal of nested/overlapping patterns
+    while (/ on\w+=/i.test(result)) {
+      result = result.replace(/ on\w+="[^"]*"/gi, '');
+      result = result.replace(/ on\w+='[^']*'/gi, '');
+      result = result.replace(/ on\w+=[^\s>"']+/gi, '');
+    }
 
   } while (result !== previous);
 
