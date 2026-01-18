@@ -41,6 +41,7 @@ import {
   looksLikeSensitiveData,
   sanitizeValue,
   sanitizeDetails,
+  type SanitizeOptions,
 } from '../sensitiveDataDetector';
 import {
   MAX_PATTERN_CHECK_LENGTH,
@@ -1391,6 +1392,154 @@ function testUndefinedProperties(): void {
 }
 
 /**
+ * Test redactAllSensitive option (maximum privacy mode)
+ */
+function testRedactAllSensitiveOption(): void {
+  console.log('Testing redactAllSensitive option...');
+
+  const redactAllOptions: SanitizeOptions = { redactAllSensitive: true };
+  const normalOptions: SanitizeOptions = { redactAllSensitive: false };
+
+  // sanitizeValue with redactAllSensitive: true - all strings should be redacted
+  {
+    assert.strictEqual(
+      sanitizeValue('hello', redactAllOptions),
+      '[REDACTED:ALL_VALUES]',
+      'Normal string should be redacted when redactAllSensitive is true'
+    );
+    assert.strictEqual(
+      sanitizeValue('test@example.com', redactAllOptions),
+      '[REDACTED:ALL_VALUES]',
+      'Email-like string should be redacted'
+    );
+    assert.strictEqual(
+      sanitizeValue('', redactAllOptions),
+      '[REDACTED:ALL_VALUES]',
+      'Empty string should also be redacted when redactAllSensitive is true'
+    );
+    assert.strictEqual(
+      sanitizeValue('password123', redactAllOptions),
+      '[REDACTED:ALL_VALUES]',
+      'Sensitive string should be redacted as ALL_VALUES, not SENSITIVE_VALUE'
+    );
+  }
+
+  // sanitizeValue with redactAllSensitive: false - normal behavior
+  {
+    assert.strictEqual(
+      sanitizeValue('hello', normalOptions),
+      'hello',
+      'Normal string should pass through when redactAllSensitive is false'
+    );
+    assert.strictEqual(
+      sanitizeValue('password123', normalOptions),
+      '[REDACTED:SENSITIVE_VALUE]',
+      'Sensitive string should be redacted as SENSITIVE_VALUE when redactAllSensitive is false'
+    );
+  }
+
+  // sanitizeValue with empty options {} - normal behavior
+  {
+    assert.strictEqual(
+      sanitizeValue('hello', {}),
+      'hello',
+      'Normal string should pass through with empty options'
+    );
+  }
+
+  // sanitizeValue without options (undefined) - normal behavior (backward compatibility)
+  {
+    assert.strictEqual(
+      sanitizeValue('hello'),
+      'hello',
+      'Normal string should pass through without options (backward compatibility)'
+    );
+  }
+
+  // Non-string values should not be affected by redactAllSensitive
+  {
+    assert.strictEqual(
+      sanitizeValue(42, redactAllOptions),
+      42,
+      'Number should pass through even with redactAllSensitive'
+    );
+    assert.strictEqual(
+      sanitizeValue(true, redactAllOptions),
+      true,
+      'Boolean should pass through even with redactAllSensitive'
+    );
+    assert.strictEqual(
+      sanitizeValue(null, redactAllOptions),
+      null,
+      'null should pass through even with redactAllSensitive'
+    );
+    assert.strictEqual(
+      sanitizeValue(undefined, redactAllOptions),
+      undefined,
+      'undefined should pass through even with redactAllSensitive'
+    );
+    assert.strictEqual(
+      sanitizeValue([1, 2, 3], redactAllOptions),
+      '[Array(3)]',
+      'Array should be abstracted even with redactAllSensitive'
+    );
+  }
+
+  // sanitizeDetails with redactAllSensitive: true
+  {
+    const details = { name: 'test', count: 5, email: 'user@example.com' };
+    const result = sanitizeDetails(details, redactAllOptions);
+    assert.strictEqual(
+      result.name,
+      '[REDACTED:ALL_VALUES]',
+      'String value in details should be redacted'
+    );
+    assert.strictEqual(
+      result.count,
+      5,
+      'Number value in details should pass through'
+    );
+    assert.strictEqual(
+      result.email,
+      '[REDACTED:ALL_VALUES]',
+      'Email value in details should be redacted'
+    );
+  }
+
+  // sanitizeDetails with redactAllSensitive: false - normal behavior
+  {
+    const details = { name: 'test', password: 'secret123' };
+    const result = sanitizeDetails(details, normalOptions);
+    assert.strictEqual(
+      result.name,
+      'test',
+      'Safe string should pass through'
+    );
+    assert.ok(
+      '[REDACTED_KEY]' in result,
+      'Sensitive key should be redacted'
+    );
+  }
+
+  // sanitizeDetails with sensitive key and redactAllSensitive: true
+  {
+    const details = { api_key: 'my-api-key-value' };
+    const result = sanitizeDetails(details, redactAllOptions);
+    assert.ok(
+      '[REDACTED_KEY]' in result,
+      'Sensitive key should still be redacted'
+    );
+    assert.strictEqual(
+      result['[REDACTED_KEY]'],
+      '[REDACTED:ALL_VALUES]',
+      'Value should be redacted as ALL_VALUES'
+    );
+  }
+
+  console.log('✅ redactAllSensitive option passed!');
+}
+
+/**
  * Run all tests
  */
 export async function runSensitiveDataDetectorTests(): Promise<void> {
@@ -1419,6 +1568,7 @@ export async function runSensitiveDataDetectorTests(): Promise<void> {
     testNestedObjectBehavior();
     testKeywordVariations();
     testUndefinedProperties();
+    testRedactAllSensitiveOption();
 
     console.log('\n✅ All sensitive data detector tests passed!\n');
   } catch (error) {
