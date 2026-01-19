@@ -1,0 +1,10 @@
+{
+  "include": ["out/**/*.js"],
+  "exclude": [
+    "out/test/**",
+    "scripts/**",
+    "node_modules/**"
+  ],
+  "reporter": ["lcov", "text"],
+  "all": false
+}

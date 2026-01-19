@@ -8,10 +8,8 @@ on:
       - 'README.md'                               # Monorepo root
       - 'CONTRIBUTING.md'                         # Monorepo root
       - 'LICENSE'                                 # Monorepo root
-      - 'extensions/git-id-switcher/README.md'    # Extension root (English)
-      - 'extensions/git-id-switcher/LICENSE'      # Extension root
-      - 'extensions/git-id-switcher/CHANGELOG.md' # Extension root
-      - 'extensions/git-id-switcher/docs/**'      # All language READMEs + docs
+      - 'extensions/git-id-switcher/**/*.md'      # All .md files (auto-detected)
+      - 'extensions/git-id-switcher/LICENSE'      # Extension LICENSE
   workflow_dispatch:  # Manual trigger
 
 permissions: {}
@@ -20,7 +18,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write  # Required for hash update commits
     # Prevent forks from deploying (no Cloudflare secrets)
     if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
 
@@ -37,6 +35,26 @@ jobs:
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '20'
+
+      - name: Install dependencies for hash script
+        working-directory: extensions/git-id-switcher
+        run: npm ci
+
+      - name: Update document hashes
+        working-directory: extensions/git-id-switcher
+        run: node scripts/update-doc-hashes.mjs
+
+      - name: Commit hash updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add extensions/git-id-switcher/src/documentation.internal.ts
+          if git diff --staged --quiet; then
+            echo "No hash changes"
+          else
+            git commit -m "chore: auto-update document hashes"
+            git push
+          fi
 
       - name: Deploy documentation to R2
         run: |
@@ -70,16 +88,23 @@ jobs:
               --remote
           fi
 
-          # === Extension root files ===
-          echo "=== Deploying extension root files ==="
+          # === Extension files (all .md + LICENSE) ===
+          echo "=== Deploying all extension .md files ==="
 
-          # English README (extension root)
-          echo "Deploying extension README.md (English)..."
-          npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/README.md" \
-            --file "${EXT_PATH}/README.md" \
-            --content-type "text/markdown; charset=utf-8" \
-            --remote
+          # Deploy all .md files in extension directory (recursive)
+          find "${EXT_PATH}" -name "*.md" -type f \
+            ! -path "${EXT_PATH}/node_modules/*" \
+            ! -path "${EXT_PATH}/out/*" \
+            ! -path "${EXT_PATH}/.vscode-test/*" | while read -r doc_file; do
+            relative_path="${doc_file#${EXT_PATH}/}"
+            echo "Deploying ${relative_path}..."
+            npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/${relative_path}" \
+              --file "$doc_file" \
+              --content-type "text/markdown; charset=utf-8" \
+              --remote
+          done
 
+          # Deploy extension LICENSE
           if [ -f "${EXT_PATH}/LICENSE" ]; then
             echo "Deploying extension LICENSE..."
             npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/LICENSE" \
@@ -87,41 +112,6 @@ jobs:
               --content-type "text/plain; charset=utf-8" \
               --remote
           fi
-
-          if [ -f "${EXT_PATH}/CHANGELOG.md" ]; then
-            echo "Deploying extension CHANGELOG.md..."
-            npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/CHANGELOG.md" \
-              --file "${EXT_PATH}/CHANGELOG.md" \
-              --content-type "text/markdown; charset=utf-8" \
-              --remote
-          fi
-
-          # === Extension docs files ===
-          echo "=== Deploying extension docs files ==="
-
-          # Deploy all .md files in docs/ (CONTRIBUTING.md, LANGUAGES.md, etc.)
-          for doc_file in ${EXT_PATH}/docs/*.md; do
-            if [ -f "$doc_file" ]; then
-              filename=$(basename "$doc_file")
-              echo "Deploying docs/${filename}..."
-              npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/docs/${filename}" \
-                --file "$doc_file" \
-                --content-type "text/markdown; charset=utf-8" \
-                --remote
-            fi
-          done
-
-          # === Language-specific READMEs ===
-          echo "=== Deploying language-specific READMEs ==="
-
-          for lang_dir in ${EXT_PATH}/docs/i18n/*/; do
-            lang=$(basename "$lang_dir")
-            echo "Deploying ${lang}/README.md..."
-            npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/docs/i18n/${lang}/README.md" \
-              --file "${lang_dir}README.md" \
-              --content-type "text/markdown; charset=utf-8" \
-              --remote
-          done
 
           echo "=== Documentation deployed successfully! ==="
         env:
