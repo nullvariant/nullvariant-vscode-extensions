@@ -46,7 +46,7 @@ export function getVSCode(): typeof vscodeTypes | undefined {
   loadAttempted = true;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     cachedVSCode = require('vscode') as typeof vscodeTypes;
     return cachedVSCode;
   } catch {
