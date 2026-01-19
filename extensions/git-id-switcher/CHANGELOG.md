@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.8] - 2026-01-19
+
+### Changed
+
+- **Hash Verification Workflow**: Redesigned for branch protection compliance
+  - Added `hash-check.yml` workflow for pre-merge hash validation on PRs
+  - Simplified `deploy-docs.yml` to CDN-only deployment (removed auto-commit)
+  - Hash keys now align with CDN paths for consistency
+  - Added monorepo root file support (README.md, CONTRIBUTING.md, LICENSE)
+  - Total files tracked: 38 (32 extension + 6 monorepo root)
+
+### Fixed
+
+- **Hash Key Format**: Fixed hash verification failing due to key format mismatch
+  - Added `getHashKey()` function for consistent hash key generation
+  - Updated `verifyContentHash()` to support both extension and monorepo root files
+
 ## [0.13.7] - 2026-01-19
 
 ### Fixed

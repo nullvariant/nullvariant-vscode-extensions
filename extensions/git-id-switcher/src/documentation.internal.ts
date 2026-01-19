@@ -22,38 +22,44 @@
  * Unknown paths or hash mismatches result in content rejection.
  */
 export const DOCUMENT_HASHES: Record<string, string> = {
-  'CHANGELOG.md': '78e4e11ddb119429206b113a054f81cf0f5edeb845271d98cd36612f79451a04',
+  'AGENTS.md': '54f16b767e57686b3eb46a2b4aa02b378554cc492c32c49ed96588f6d184b6b8',
+  'CODE_OF_CONDUCT.md': 'a5eb286c902437bbe0f6d409894f20e51c172fa869fe2f151bfa388f9d911b54',
+  'CONTRIBUTING.md': '4150f8810aec7b2e8eff9f3c69ee1bae1374843f50a812efa6778cba27a833cd',
+  'extensions/git-id-switcher/CHANGELOG.md': '362892cb773b4d8d341a1ef24b459f6aedf3a2ab0705afa5956ada5c7079c212',
+  'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
+  'extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md': 'f9718b61ac161cb466dbc76845688e7acacf4e5fdc4b8b9553269dba4a094f6b',
+  'extensions/git-id-switcher/docs/i18n/ain/README.md': 'ba7a08107fd1a71c579679b7303c313a3744907d7b793ff6a11ff98599af7826',
+  'extensions/git-id-switcher/docs/i18n/bg/README.md': '6eb310b085666b16a06160bd7b4391a470b73ea702f9380c17d1d1f10f8e7812',
+  'extensions/git-id-switcher/docs/i18n/cs/README.md': 'd7fe98902892ce4b7dadaf0b0cbd2be94147905200f5914f7d1e8df56b437bc3',
+  'extensions/git-id-switcher/docs/i18n/de/README.md': '07bf600d636f9489dc579f6728ebb7371ff1081102a42765b94c6910c973b33b',
+  'extensions/git-id-switcher/docs/i18n/en/README.md': 'eb7e767441b4a2704e1105a12807a15ccb8b3ed57632eeb98213a021b5d4d32e',
+  'extensions/git-id-switcher/docs/i18n/eo/README.md': 'ee99d1035be717f6eb289754076368b44d8ec7c6d5d6efedf148f3a71a86cad2',
+  'extensions/git-id-switcher/docs/i18n/es/README.md': 'cef654ec88adff470598ae6a143faf309ec7861cebfcf43f58cf94d946b1b4da',
+  'extensions/git-id-switcher/docs/i18n/fr/README.md': 'd24b192e8d96dc652f18ed1862fde447485d3fb16736b8404bb62e204d31ca30',
+  'extensions/git-id-switcher/docs/i18n/haw/README.md': '6c4291f85de187a4a6ff35a32722914eb9380264cb6ad37ccc75109a733fd77c',
+  'extensions/git-id-switcher/docs/i18n/hu/README.md': '29e03d403fcf77a563eea5e98ae0bb7ac4801b025508c593cb6fc43379070420',
+  'extensions/git-id-switcher/docs/i18n/it/README.md': '93330932fba5e44560dcb1e469fd8f0475fd61bc5b8680e51127bd1ce4d2ac65',
+  'extensions/git-id-switcher/docs/i18n/ja/README.md': 'e785777a2388997aac8b1edeacf9da445f25d17c2479618291244cfb43441d36',
+  'extensions/git-id-switcher/docs/i18n/ko/README.md': 'a78848120cd4b50d03180bcc9f36e6bd60d90e9f9759e7785c6f746f33b366ec',
+  'extensions/git-id-switcher/docs/i18n/pl/README.md': '94e13bbb67eb1aa1d67f85bbb5b8c299bdd0b40c0f6b155dfb6055198eb1b0ee',
+  'extensions/git-id-switcher/docs/i18n/pt-BR/README.md': '5666a9b2052e3d3d0be6b936cf6cc0e41711f1033d27f162659f0e8236b0ccee',
+  'extensions/git-id-switcher/docs/i18n/ru/README.md': '2ce8ca860101a3d77f199c3eeedaa01e4e0d56fba5cba1bac7c09df7eef09239',
+  'extensions/git-id-switcher/docs/i18n/ryu/README.md': 'f031a4460f2aadde49cb0074578093d1af184e8338d19e04c42d4db1d67c3fc7',
+  'extensions/git-id-switcher/docs/i18n/tlh/README.md': '0e55c3ce0639033637e51bfcfe071d133c2438f651d33e15f07248c0609ca637',
+  'extensions/git-id-switcher/docs/i18n/tok/README.md': '24453c932a6e63436f17d483e6d0bcd1b46778becfc2894c408c0d0a42c020ab',
+  'extensions/git-id-switcher/docs/i18n/tr/README.md': 'de910b3cfbe1a095b629087ab206a58280818c02c0a154d943f7df7145c06d21',
+  'extensions/git-id-switcher/docs/i18n/uk/README.md': '014c26380fca854f726c2db3e3cf87938018843054b0c89ff21798bce99d3fe0',
+  'extensions/git-id-switcher/docs/i18n/x-lolcat/README.md': '0be2d595beea3382db6bb05523bdb444881c79814ee27f29432cb24a6bc981e9',
+  'extensions/git-id-switcher/docs/i18n/x-pirate/README.md': '230d24bacd12a55f971e818d8a6258e27bff4b7c83e4983c4734ff12a01bc056',
+  'extensions/git-id-switcher/docs/i18n/x-shakespeare/README.md': '7e84c5d4659a8283c7d9965cf62da5868cc95824ec69f7ec5fff6ce57c752e5d',
+  'extensions/git-id-switcher/docs/i18n/zh-CN/README.md': '012beb73a93373a1ae4a9653ceae8bdb67c84d090f41b11068a4c6beacc3aefe',
+  'extensions/git-id-switcher/docs/i18n/zh-TW/README.md': '1d01027b23b49aebfabb6f2e3c145db45375c2b2afba6162d5cac755d0fec37f',
+  'extensions/git-id-switcher/docs/LANGUAGES.md': 'da50222843094479fd826837038dd62d619ecbc87d67f0b2c299973587abe8e9',
+  'extensions/git-id-switcher/LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
+  'extensions/git-id-switcher/README.md': '92b067fe1655a74d16f8b95645a6a3b9681917bd909a981071318e51294a246d',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
-  'README.md': '92b067fe1655a74d16f8b95645a6a3b9681917bd909a981071318e51294a246d',
-  'docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
-  'docs/DESIGN_PHILOSOPHY.md': 'f9718b61ac161cb466dbc76845688e7acacf4e5fdc4b8b9553269dba4a094f6b',
-  'docs/LANGUAGES.md': 'da50222843094479fd826837038dd62d619ecbc87d67f0b2c299973587abe8e9',
-  'docs/i18n/ain/README.md': 'ba7a08107fd1a71c579679b7303c313a3744907d7b793ff6a11ff98599af7826',
-  'docs/i18n/bg/README.md': '6eb310b085666b16a06160bd7b4391a470b73ea702f9380c17d1d1f10f8e7812',
-  'docs/i18n/cs/README.md': 'd7fe98902892ce4b7dadaf0b0cbd2be94147905200f5914f7d1e8df56b437bc3',
-  'docs/i18n/de/README.md': '07bf600d636f9489dc579f6728ebb7371ff1081102a42765b94c6910c973b33b',
-  'docs/i18n/en/README.md': 'eb7e767441b4a2704e1105a12807a15ccb8b3ed57632eeb98213a021b5d4d32e',
-  'docs/i18n/eo/README.md': 'ee99d1035be717f6eb289754076368b44d8ec7c6d5d6efedf148f3a71a86cad2',
-  'docs/i18n/es/README.md': 'cef654ec88adff470598ae6a143faf309ec7861cebfcf43f58cf94d946b1b4da',
-  'docs/i18n/fr/README.md': 'd24b192e8d96dc652f18ed1862fde447485d3fb16736b8404bb62e204d31ca30',
-  'docs/i18n/haw/README.md': '6c4291f85de187a4a6ff35a32722914eb9380264cb6ad37ccc75109a733fd77c',
-  'docs/i18n/hu/README.md': '29e03d403fcf77a563eea5e98ae0bb7ac4801b025508c593cb6fc43379070420',
-  'docs/i18n/it/README.md': '93330932fba5e44560dcb1e469fd8f0475fd61bc5b8680e51127bd1ce4d2ac65',
-  'docs/i18n/ja/README.md': 'e785777a2388997aac8b1edeacf9da445f25d17c2479618291244cfb43441d36',
-  'docs/i18n/ko/README.md': 'a78848120cd4b50d03180bcc9f36e6bd60d90e9f9759e7785c6f746f33b366ec',
-  'docs/i18n/pl/README.md': '94e13bbb67eb1aa1d67f85bbb5b8c299bdd0b40c0f6b155dfb6055198eb1b0ee',
-  'docs/i18n/pt-BR/README.md': '5666a9b2052e3d3d0be6b936cf6cc0e41711f1033d27f162659f0e8236b0ccee',
-  'docs/i18n/ru/README.md': '2ce8ca860101a3d77f199c3eeedaa01e4e0d56fba5cba1bac7c09df7eef09239',
-  'docs/i18n/ryu/README.md': 'f031a4460f2aadde49cb0074578093d1af184e8338d19e04c42d4db1d67c3fc7',
-  'docs/i18n/tlh/README.md': '0e55c3ce0639033637e51bfcfe071d133c2438f651d33e15f07248c0609ca637',
-  'docs/i18n/tok/README.md': '24453c932a6e63436f17d483e6d0bcd1b46778becfc2894c408c0d0a42c020ab',
-  'docs/i18n/tr/README.md': 'de910b3cfbe1a095b629087ab206a58280818c02c0a154d943f7df7145c06d21',
-  'docs/i18n/uk/README.md': '014c26380fca854f726c2db3e3cf87938018843054b0c89ff21798bce99d3fe0',
-  'docs/i18n/x-lolcat/README.md': '0be2d595beea3382db6bb05523bdb444881c79814ee27f29432cb24a6bc981e9',
-  'docs/i18n/x-pirate/README.md': '230d24bacd12a55f971e818d8a6258e27bff4b7c83e4983c4734ff12a01bc056',
-  'docs/i18n/x-shakespeare/README.md': '7e84c5d4659a8283c7d9965cf62da5868cc95824ec69f7ec5fff6ce57c752e5d',
-  'docs/i18n/zh-CN/README.md': '012beb73a93373a1ae4a9653ceae8bdb67c84d090f41b11068a4c6beacc3aefe',
-  'docs/i18n/zh-TW/README.md': '1d01027b23b49aebfabb6f2e3c145db45375c2b2afba6162d5cac755d0fec37f',
+  'README.md': '65c7c62bae6132227288b5a230c21b9be5591f5e55da9143f0f7405e9e6bb190',
+  'SECURITY.md': '72dbadafd9a5caaa4e16f6b1f19a5255f7f84310432bf3c8207c163f5f8088da',
 };
 
 /** Supported locales for documentation */
@@ -91,6 +97,29 @@ export async function computeSha256Hash(content: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** Extension CDN path prefix for hash key construction */
+const EXTENSION_CDN_PREFIX = 'extensions/git-id-switcher';
+
+/**
+ * Convert a document path to its hash key
+ *
+ * Hash keys follow CDN path structure:
+ * - Extension files: extensions/git-id-switcher/{path}
+ * - Monorepo root files: {filename} (no prefix)
+ *
+ * @param path - Document path (e.g., 'docs/i18n/ja/README.md')
+ * @param isMonorepoRoot - Whether this is a monorepo root file
+ * @returns Hash key for DOCUMENT_HASHES lookup
+ */
+export function getHashKey(path: string, isMonorepoRoot: boolean = false): string {
+  if (isMonorepoRoot) {
+    // Monorepo root files use filename only
+    return path;
+  }
+  // Extension files use CDN path prefix
+  return `${EXTENSION_CDN_PREFIX}/${path}`;
+}
+
 /**
  * Verify content hash against expected value
  *
@@ -99,23 +128,30 @@ export async function computeSha256Hash(content: string): Promise<string> {
  *
  * @param path - Document path relative to extension root
  * @param content - Document content to verify
+ * @param isMonorepoRoot - Whether this is a monorepo root file
  * @returns Object with verification result and computed hash (for debugging)
  */
-export async function verifyContentHash(path: string, content: string): Promise<{
+export async function verifyContentHash(
+  path: string,
+  content: string,
+  isMonorepoRoot: boolean = false
+): Promise<{
   valid: boolean;
   expectedHash: string | undefined;
   actualHash: string;
+  hashKey: string;
 }> {
-  const expectedHash = DOCUMENT_HASHES[path];
+  const hashKey = getHashKey(path, isMonorepoRoot);
+  const expectedHash = DOCUMENT_HASHES[hashKey];
   const actualHash = await computeSha256Hash(content);
 
   if (!expectedHash) {
     // Unknown path - reject (allowlist approach)
-    return { valid: false, expectedHash: undefined, actualHash };
+    return { valid: false, expectedHash: undefined, actualHash, hashKey };
   }
 
   const valid = actualHash === expectedHash;
-  return { valid, expectedHash, actualHash };
+  return { valid, expectedHash, actualHash, hashKey };
 }
 
 /**
@@ -126,13 +162,13 @@ export async function verifyContentHash(path: string, content: string): Promise<
  */
 export function logHashFailure(
   path: string,
-  hashResult: { expectedHash: string | undefined; actualHash: string }
+  hashResult: { expectedHash: string | undefined; actualHash: string; hashKey: string }
 ): void {
   if (hashResult.expectedHash === undefined) {
-    console.warn(`[Git ID Switcher] Unknown document path rejected: ${path}`);
+    console.warn(`[Git ID Switcher] Unknown document path rejected: ${path} (hash key: ${hashResult.hashKey})`);
   } else {
     console.warn(
-      `[Git ID Switcher] Hash mismatch for ${path}: ` +
+      `[Git ID Switcher] Hash mismatch for ${path} (hash key: ${hashResult.hashKey}): ` +
         `expected ${hashResult.expectedHash}, got ${hashResult.actualHash}`
     );
   }
