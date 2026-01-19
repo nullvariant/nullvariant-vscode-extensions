@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.7] - 2026-01-19
+
+### Fixed
+
+- **Documentation Hash Mismatch**: Fixed Webview documentation display failing due to outdated hashes
+  - Regenerated SHA-256 hashes for all 32 documentation files
+  - Added automatic hash update script (`scripts/update-doc-hashes.mjs`) for CI/CD
+  - Deploy workflow now auto-updates hashes before CDN deployment
+
 ## [0.13.6] - 2026-01-18
 
 ### Added
