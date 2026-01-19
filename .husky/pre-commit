@@ -11,3 +11,20 @@ if git diff --cached --name-only | grep -Fxq "extensions/git-id-switcher/docs/i1
   )
   echo "✅ README.md regenerated and staged"
 fi
+
+# Auto-regenerate DOCUMENT_HASHES when documentation files change
+# Pattern matches: extension .md files, extension LICENSE, monorepo root .md files, monorepo root LICENSE
+if git diff --cached --name-only | grep -qE '^(extensions/git-id-switcher/.*\.md|extensions/git-id-switcher/LICENSE|[^/]+\.md|LICENSE)$'; then
+  echo "🔒 Regenerating DOCUMENT_HASHES..."
+  (
+    cd extensions/git-id-switcher || exit 1
+    node scripts/update-doc-hashes.mjs || exit 1
+    git add src/documentation.internal.ts
+  )
+  # Subshell failure should abort commit
+  if [ $? -ne 0 ]; then
+    echo "❌ Failed to regenerate DOCUMENT_HASHES"
+    exit 1
+  fi
+  echo "✅ DOCUMENT_HASHES regenerated and staged"
+fi
