@@ -1,0 +1,70 @@
+name: Hash Check
+
+on:
+  pull_request:
+    paths:
+      # Monorepo root documentation (all .md files + LICENSE)
+      - '*.md'
+      - 'LICENSE'
+      # Extension documentation (add new extensions here)
+      - 'extensions/git-id-switcher/**/*.md'
+      - 'extensions/git-id-switcher/LICENSE'
+      - 'extensions/git-id-switcher/src/documentation.internal.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  check-hashes:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false  # Check all extensions even if one fails
+      matrix:
+        # Monorepo support: add new extensions here
+        extension:
+          - { dir: "git-id-switcher", name: "Git ID Switcher" }
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: extensions/${{ matrix.extension.dir }}
+        run: npm ci
+
+      - name: Check hash consistency
+        working-directory: extensions/${{ matrix.extension.dir }}
+        run: |
+          echo "Checking ${{ matrix.extension.name }} document hashes..."
+
+          # Generate expected hashes (includes monorepo root files)
+          node scripts/update-doc-hashes.mjs
+
+          # Check if there are uncommitted changes
+          if git diff --quiet src/documentation.internal.ts; then
+            echo "DOCUMENT_HASHES is up to date"
+          else
+            echo ""
+            echo "DOCUMENT_HASHES is out of sync!"
+            echo ""
+            echo "This can happen when:"
+            echo "  - A .md file was added, modified, or deleted in the extension"
+            echo "  - A .md file at monorepo root was added, modified, or deleted"
+            echo ""
+            echo "Run the following command locally and commit the changes:"
+            echo "  cd extensions/${{ matrix.extension.dir }} && node scripts/update-doc-hashes.mjs"
+            echo ""
+            echo "Diff:"
+            git diff src/documentation.internal.ts
+            exit 1
+          fi

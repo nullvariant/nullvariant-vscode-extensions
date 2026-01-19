@@ -54,6 +54,7 @@ import {
   verifyContentHash,
   logHashFailure,
   isContentSizeValid,
+  getHashKey,
 } from '../documentation.internal';
 
 // ============================================================================
@@ -643,6 +644,10 @@ function testEscapeHtmlEntities(): void {
 
 /**
  * Test DOCUMENT_HASHES constant
+ *
+ * Hash keys follow CDN path structure:
+ * - Extension files: extensions/git-id-switcher/{path}
+ * - Monorepo root files: {filename} (no prefix)
  */
 function testDocumentHashes(): void {
   console.log('Testing DOCUMENT_HASHES...');
@@ -650,7 +655,7 @@ function testDocumentHashes(): void {
   // Should have entries
   const hashCount = Object.keys(DOCUMENT_HASHES).length;
   assert.ok(hashCount > 0, 'DOCUMENT_HASHES should have entries');
-  assert.strictEqual(hashCount, 32, 'DOCUMENT_HASHES should have 32 entries');
+  // Note: Exact count may vary as documentation is updated
 
   // All hashes should be 64-character hex strings (SHA-256)
   for (const [path, hash] of Object.entries(DOCUMENT_HASHES)) {
@@ -658,12 +663,29 @@ function testDocumentHashes(): void {
     assert.ok(/^[0-9a-f]+$/.test(hash), `Hash for ${path} should be lowercase hex`);
   }
 
-  // Should include key documents
-  assert.ok('README.md' in DOCUMENT_HASHES, 'Should include README.md');
-  assert.ok('CHANGELOG.md' in DOCUMENT_HASHES, 'Should include CHANGELOG.md');
-  assert.ok('LICENSE' in DOCUMENT_HASHES, 'Should include LICENSE');
-  assert.ok('docs/i18n/en/README.md' in DOCUMENT_HASHES, 'Should include English README');
-  assert.ok('docs/i18n/ja/README.md' in DOCUMENT_HASHES, 'Should include Japanese README');
+  // Should include key extension documents (CDN path format)
+  const EXT_PREFIX = 'extensions/git-id-switcher';
+  assert.ok(`${EXT_PREFIX}/README.md` in DOCUMENT_HASHES, 'Should include extension README.md');
+  assert.ok(`${EXT_PREFIX}/CHANGELOG.md` in DOCUMENT_HASHES, 'Should include extension CHANGELOG.md');
+  assert.ok(`${EXT_PREFIX}/LICENSE` in DOCUMENT_HASHES, 'Should include extension LICENSE');
+  assert.ok(`${EXT_PREFIX}/docs/i18n/en/README.md` in DOCUMENT_HASHES, 'Should include English README');
+  assert.ok(`${EXT_PREFIX}/docs/i18n/ja/README.md` in DOCUMENT_HASHES, 'Should include Japanese README');
+
+  // Should include monorepo root documents (filename only)
+  assert.ok('README.md' in DOCUMENT_HASHES, 'Should include monorepo README.md');
+  assert.ok('LICENSE' in DOCUMENT_HASHES, 'Should include monorepo LICENSE');
+
+  // Test getHashKey utility
+  assert.strictEqual(
+    getHashKey('docs/i18n/ja/README.md', false),
+    `${EXT_PREFIX}/docs/i18n/ja/README.md`,
+    'getHashKey should prefix extension files'
+  );
+  assert.strictEqual(
+    getHashKey('README.md', true),
+    'README.md',
+    'getHashKey should not prefix monorepo root files'
+  );
 
   console.log('  DOCUMENT_HASHES passed!');
 }
@@ -713,21 +735,30 @@ async function testComputeSha256Hash(): Promise<void> {
 
 /**
  * Test verifyContentHash function
+ *
+ * verifyContentHash converts path to hash key internally using getHashKey:
+ * - Extension files: extensions/git-id-switcher/{path}
+ * - Monorepo root files: {filename} (when isMonorepoRoot=true)
  */
 async function testVerifyContentHash(): Promise<void> {
   console.log('Testing verifyContentHash...');
+
+  const EXT_PREFIX = 'extensions/git-id-switcher';
 
   // Unknown path should return invalid with undefined expectedHash
   const unknownResult = await verifyContentHash('unknown/path.md', 'any content');
   assert.strictEqual(unknownResult.valid, false, 'Unknown path should be invalid');
   assert.strictEqual(unknownResult.expectedHash, undefined, 'Unknown path should have undefined expectedHash');
   assert.strictEqual(unknownResult.actualHash.length, 64, 'Should still compute actual hash');
+  assert.strictEqual(unknownResult.hashKey, `${EXT_PREFIX}/unknown/path.md`, 'Hash key should be computed');
 
   // Known path with wrong content should return invalid with hash mismatch
+  // Note: path 'README.md' (extension file) maps to key 'extensions/git-id-switcher/README.md'
   const mismatchResult = await verifyContentHash('README.md', 'wrong content');
   assert.strictEqual(mismatchResult.valid, false, 'Wrong content should be invalid');
   assert.ok(mismatchResult.expectedHash !== undefined, 'Known path should have expectedHash');
   assert.notStrictEqual(mismatchResult.expectedHash, mismatchResult.actualHash, 'Hashes should not match');
+  assert.strictEqual(mismatchResult.hashKey, `${EXT_PREFIX}/README.md`, 'Hash key should include prefix');
 
   // Valid case: create content that matches hash for a test path
   // Use computeSha256Hash to get the actual hash for test content
@@ -737,19 +768,30 @@ async function testVerifyContentHash(): Promise<void> {
   // Create a temporary test by checking the logic flow
   // Since we can't modify DOCUMENT_HASHES, test with a real path
   // by verifying the structure of a valid response
-  const readmeHash = DOCUMENT_HASHES['README.md'];
-  assert.ok(readmeHash !== undefined, 'README.md should have a hash');
-  assert.strictEqual(readmeHash.length, 64, 'Hash should be 64 characters');
+  // Note: Hash key format is 'extensions/git-id-switcher/README.md'
+  const extReadmeHashKey = `${EXT_PREFIX}/README.md`;
+  const extReadmeHash = DOCUMENT_HASHES[extReadmeHashKey];
+  assert.ok(extReadmeHash !== undefined, 'Extension README.md should have a hash');
+  assert.strictEqual(extReadmeHash.length, 64, 'Hash should be 64 characters');
 
   // Test that actualHash is computed correctly
   const verifyResult = await verifyContentHash('README.md', testContent);
   assert.strictEqual(verifyResult.actualHash, testHash, 'Actual hash should match computed hash');
-  assert.strictEqual(verifyResult.expectedHash, readmeHash, 'Expected hash should be from DOCUMENT_HASHES');
+  assert.strictEqual(verifyResult.expectedHash, extReadmeHash, 'Expected hash should be from DOCUMENT_HASHES');
+  assert.strictEqual(verifyResult.hashKey, extReadmeHashKey, 'Hash key should be returned');
 
   // Result structure validation
   assert.ok('valid' in unknownResult, 'Result should have valid property');
   assert.ok('expectedHash' in unknownResult, 'Result should have expectedHash property');
   assert.ok('actualHash' in unknownResult, 'Result should have actualHash property');
+  assert.ok('hashKey' in unknownResult, 'Result should have hashKey property');
+
+  // Test monorepo root file (isMonorepoRoot = true)
+  const monorepoReadmeHash = DOCUMENT_HASHES['README.md'];
+  assert.ok(monorepoReadmeHash !== undefined, 'Monorepo README.md should have a hash');
+  const monorepoResult = await verifyContentHash('README.md', testContent, true);
+  assert.strictEqual(monorepoResult.hashKey, 'README.md', 'Monorepo root should use filename as key');
+  assert.strictEqual(monorepoResult.expectedHash, monorepoReadmeHash, 'Should use monorepo hash');
 
   // Edge case: empty content
   const emptyContentResult = await verifyContentHash('README.md', '');
@@ -774,12 +816,14 @@ function testLogHashFailure(): void {
   logHashFailure('unknown/path.md', {
     expectedHash: undefined,
     actualHash: 'abc123',
+    hashKey: 'extensions/git-id-switcher/unknown/path.md',
   });
 
   // Test with defined expectedHash (hash mismatch)
   logHashFailure('README.md', {
     expectedHash: 'expected123',
     actualHash: 'actual456',
+    hashKey: 'extensions/git-id-switcher/README.md',
   });
 
   // Function should complete without errors
