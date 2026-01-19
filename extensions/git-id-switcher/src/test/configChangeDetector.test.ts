@@ -98,7 +98,6 @@ function createTestSnapshot(overrides: Partial<ConfigSnapshot> = {}): ConfigSnap
  * coupling to implementation details.
  */
 function setDetectorSnapshot(detector: ConfigChangeDetector, snapshot: ConfigSnapshot): void {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (detector as any).snapshot = snapshot;
 }
 
