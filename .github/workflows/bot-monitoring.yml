@@ -40,7 +40,7 @@ jobs:
 
       - name: Check bot activity
         id: check
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             const EXPECTED_BOTS = [
@@ -358,7 +358,7 @@ jobs:
             return silentBots;
 
       - name: Write job summary
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           REPORT_JSON: ${{ steps.check.outputs.report }}
         with:
