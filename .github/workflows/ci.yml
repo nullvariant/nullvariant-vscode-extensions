@@ -47,7 +47,6 @@ jobs:
       - name: Lint
         run: npm run lint
         working-directory: extensions/git-id-switcher
-        continue-on-error: true
 
       - name: Compile
         run: npm run compile
@@ -81,7 +80,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
-    continue-on-error: true
 
     steps:
       - name: Configure Git line endings
