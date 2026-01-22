@@ -271,7 +271,7 @@
     "test:coverage": "npm run compile && npx c8 --reporter=lcov --reporter=text node out/test/runTests.js",
     "test:fuzz": "npm run compile && node -e \"require('./out/test/validation.fuzz.test').runFuzzingTests()\"",
     "test:e2e": "npm run compile && vscode-test",
-    "package": "vsce package",
+    "package": "vsce package --no-dependencies",
     "publish": "echo '❌ Do not use vsce publish directly. Push a tag instead: git tag git-id-switcher-vX.X.X && git push --tags' && exit 1",
     "generate:readme": "node scripts/generate-root-readme.js"
   },
