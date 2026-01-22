@@ -39,7 +39,7 @@
 
 While many Git identity switchers sail the seven seas, **Git ID Switcher** solves the treacherous problems that others ignore:
 
-1. **Submodules Be a Nightmare**: Workin' with repositories that have submodules usually requires settin' `git config user.name` manually fer *each* submodule. This extension handles it elegantly by recursively applyin' yer identity to all active submodules in yer fleet.
+1. **Submodules Be a Nightmare**: Workin' with repositories that have submodules usually requires settin' `git config user.name` manually fer _each_ submodule. This extension handles it elegantly by recursively applyin' yer identity to all active submodules in yer fleet.
 2. **SSH & GPG Handlin'**: It don't just change yer name; it swaps yer SSH keys in the agent and configures GPG signin' so ye never commit with the wrong signature, lest ye walk the plank!
 
 ## Features, Ye Scurvy Dog!
@@ -297,47 +297,48 @@ Note: The last identity (`navy-spy`) has no SSH. Ye can use this fer switchin' j
 
 ## Identity Properties
 
-| Property | Required | Description |
-|----------|----------|-------------|
-| `id` | ✅ | Unique identifier fer this identity |
-| `name` | ✅ | Git `user.name` (shows in commits) |
-| `email` | ✅ | Git `user.email` |
-| `icon` | ❌ | Single emoji fer status bar. EMOJI ONLY, no text! |
-| `description` | ❌ | Description (shows in dropdown) |
-| `sshKeyPath` | ❌ | Path to SSH private key |
-| `sshHost` | ❌ | SSH host alias (`Host` in ~/.ssh/config) |
-| `gpgKeyId` | ❌ | GPG key ID fer commit signin' |
-| `service` | ❌ | Git service: `github`, `gitlab`, `bitbucket`, `other` |
+| Property      | Required | Description                                           |
+| ------------- | -------- | ----------------------------------------------------- |
+| `id`          | ✅       | Unique identifier fer this identity                   |
+| `name`        | ✅       | Git `user.name` (shows in commits)                    |
+| `email`       | ✅       | Git `user.email`                                      |
+| `icon`        | ❌       | Single emoji fer status bar. EMOJI ONLY, no text!     |
+| `description` | ❌       | Description (shows in dropdown)                       |
+| `sshKeyPath`  | ❌       | Path to SSH private key                               |
+| `sshHost`     | ❌       | SSH host alias (`Host` in ~/.ssh/config)              |
+| `gpgKeyId`    | ❌       | GPG key ID fer commit signin'                         |
+| `service`     | ❌       | Git service: `github`, `gitlab`, `bitbucket`, `other` |
 
 ---
 
 ## Commands
 
-| Command                         | What It Does                        |
-| ------------------------------- | ----------------------------------- |
-| `Git ID: Select Identity`       | Open the identity picker, ye scurvy dog |
-| `Git ID: Show Current Identity` | Show current identity info          |
+| Command                                  | What It Does                            |
+| ---------------------------------------- | --------------------------------------- |
+| `Git ID Switcher: Select Identity`       | Open the identity picker, ye scurvy dog |
+| `Git ID Switcher: Show Current Identity` | Show current identity info              |
+| `Git ID Switcher: Show Documentation`    | Display the ship's scrolls              |
 
 ---
 
 ## Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `gitIdSwitcher.identities` | `[]` | List of identities in yer crew |
-| `gitIdSwitcher.defaultIdentity` | `""` | Default identity ID |
-| `gitIdSwitcher.autoSwitchSshKey` | `true` | Automatically switch SSH keys |
-| `gitIdSwitcher.showNotifications` | `true` | Show notification when switchin' identities |
-| `gitIdSwitcher.applyToSubmodules` | `true` | Apply identity to submodules |
-| `gitIdSwitcher.submoduleDepth` | `1` | Max depth fer nested submodules (1-5) |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | Include emoji in Git config (see below) |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | Enable loggin' to file fer audit |
-| `gitIdSwitcher.logging.filePath` | `""` | Custom log file path |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max log file size before rotation (bytes, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles` | `5` | Number of log files to keep (1-20) |
-| `gitIdSwitcher.logging.level` | `"INFO"` | Loggin' level (DEBUG/INFO/WARN/ERROR/SECURITY) |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | When enabled, all values be masked in logs (maximum privacy mode, arr!) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms, 1s-5min) |
+| Setting                                    | Default    | Description                                                             |
+| ------------------------------------------ | ---------- | ----------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | `[]`       | List of identities in yer crew                                          |
+| `gitIdSwitcher.defaultIdentity`            | `""`       | Default identity ID                                                     |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Automatically switch SSH keys                                           |
+| `gitIdSwitcher.showNotifications`          | `true`     | Show notification when switchin' identities                             |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Apply identity to submodules                                            |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | Max depth fer nested submodules (1-5)                                   |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Include emoji in Git config (see below)                                 |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Enable loggin' to file fer audit                                        |
+| `gitIdSwitcher.logging.filePath`           | `""`       | Custom log file path                                                    |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Max log file size before rotation (bytes, 1MB-100MB)                    |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | Number of log files to keep (1-20)                                      |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | Loggin' level (DEBUG/INFO/WARN/ERROR/SECURITY)                          |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | When enabled, all values be masked in logs (maximum privacy mode, arr!) |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | External command timeouts (ms, 1s-5min)                                 |
 
 ---
 
@@ -352,10 +353,10 @@ Note: The last identity (`navy-spy`) has no SSH. Ye can use this fer switchin' j
 
 This setting controls whether emoji be added to Git `user.name`.
 
-| Setting | Behavior |
-|---------|----------|
+| Setting           | Behavior                                                          |
+| ----------------- | ----------------------------------------------------------------- |
 | `false` (default) | Git config: `user.name = Captain Blackbeard` (no emoji in config) |
-| `true` | Git config: `user.name = 🏴‍☠️ Captain Blackbeard` (emoji in config) |
+| `true`            | Git config: `user.name = 🏴‍☠️ Captain Blackbeard` (emoji in config) |
 
 > **Note**: Emoji always shows in status bar regardless of this setting! This only affects Git config, matey.
 
@@ -415,8 +416,8 @@ If ye see this error, check yer settings:
   "gitIdSwitcher.identities": [
     {
       "id": "captain",
-      "name": "Captain Blackbeard",  // ← This be required!
-      "email": "blackbeard@personal.example.com"  // ← This too!
+      "name": "Captain Blackbeard", // ← This be required!
+      "email": "blackbeard@personal.example.com" // ← This too!
     }
   ]
 }

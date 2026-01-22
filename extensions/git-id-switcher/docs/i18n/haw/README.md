@@ -55,7 +55,7 @@
 
 ʻOiai he nui nā mea hoʻololi ID Git, hoʻoponopono ʻo **Git ID Switcher** i nā pilikia paʻakikī:
 
-1. **Pilikia Submodule**: I ka hana ʻana me nā repository me nā submodule, pono e hoʻonohonoho lima i ka `git config user.name` no *kēlā me kēia* submodule. Hoʻoponopono kēia extension i kēia pilikia ma ka hoʻopili ʻana i ka ID i nā submodule āpau.
+1. **Pilikia Submodule**: I ka hana ʻana me nā repository me nā submodule, pono e hoʻonohonoho lima i ka `git config user.name` no _kēlā me kēia_ submodule. Hoʻoponopono kēia extension i kēia pilikia ma ka hoʻopili ʻana i ka ID i nā submodule āpau.
 2. **SSH & GPG**: ʻAʻole wale e hoʻololi i ka inoa; e hoʻololi i nā kī SSH ma ka agent a hoʻonohonoho i ke kākau inoa GPG.
 
 ## Nā Hiʻohiʻona (Features)
@@ -310,17 +310,17 @@ Palapala: ʻAʻohe SSH i ka ID hope (`kūʻokoʻa`)—hoʻololi wale i ka Git co
 
 ### Nā Waiwai ID (Identity Properties)
 
-| Waiwai        | Pono  | Wehewehe                                                   |
-| ------------- | ----- | ---------------------------------------------------------- |
-| `id`          | ✅    | Hōʻailona kūʻokoʻa (laʻa: `"work"`, `"personal"`)          |
-| `name`        | ✅    | Git user.name — hōʻike ʻia ma nā commit                    |
-| `email`       | ✅    | Git user.email — hōʻike ʻia ma nā commit                   |
-| `icon`        |       | Emoji hōʻike ma ka pahu status (laʻa: `"🏠"`). Hoʻokahi emoji wale nō |
-| `service`     |       | Inoa lawelawe (laʻa: `"GitHub"`, `"GitLab"`). No ka UI     |
-| `description` |       | Wehewehe pōkole no ke koho a me ke tooltip                 |
-| `sshKeyPath`  |       | Ala i ke kī SSH pilikino (laʻa: `"~/.ssh/id_ed25519_work"`) |
-| `sshHost`     |       | Inoa hoʻololi host SSH config (laʻa: `"github-work"`)      |
-| `gpgKeyId`    |       | GPG key ID no ke kākau inoa commit                         |
+| Waiwai        | Pono | Wehewehe                                                              |
+| ------------- | ---- | --------------------------------------------------------------------- |
+| `id`          | ✅   | Hōʻailona kūʻokoʻa (laʻa: `"work"`, `"personal"`)                     |
+| `name`        | ✅   | Git user.name — hōʻike ʻia ma nā commit                               |
+| `email`       | ✅   | Git user.email — hōʻike ʻia ma nā commit                              |
+| `icon`        |      | Emoji hōʻike ma ka pahu status (laʻa: `"🏠"`). Hoʻokahi emoji wale nō |
+| `service`     |      | Inoa lawelawe (laʻa: `"GitHub"`, `"GitLab"`). No ka UI                |
+| `description` |      | Wehewehe pōkole no ke koho a me ke tooltip                            |
+| `sshKeyPath`  |      | Ala i ke kī SSH pilikino (laʻa: `"~/.ssh/id_ed25519_work"`)           |
+| `sshHost`     |      | Inoa hoʻololi host SSH config (laʻa: `"github-work"`)                 |
+| `gpgKeyId`    |      | GPG key ID no ke kākau inoa commit                                    |
 
 #### Nā Palena Hōʻike (Display Limitations)
 
@@ -329,38 +329,38 @@ Palapala: ʻAʻohe SSH i ka ID hope (`kūʻokoʻa`)—hoʻololi wale i ka Git co
 
 ### Nā Hoʻonohonoho Nui (General Settings)
 
-| Hoʻonohonoho                        | Paʻamau    | Wehewehe                                       |
-| ----------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`          | Nānā laʻa. | Papa inoa o nā hoʻonohonoho ID                 |
-| `gitIdSwitcher.defaultIdentity`     | Nānā laʻa. | ID paʻamau                                     |
-| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | Hoʻololi ʻia ke kī SSH                         |
-| `gitIdSwitcher.showNotifications`   | `true`     | Hōʻike i ka hoʻolaha i ka hoʻololi ʻana        |
-| `gitIdSwitcher.applyToSubmodules`   | `true`     | Hoʻopili i ka ID i nā Git submodule            |
-| `gitIdSwitcher.submoduleDepth`      | `1`        | Hohonu nui loa no nā submodule nested (1-5)    |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | Kākau i ka emoji icon i ka Git config `user.name` |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | Hoʻohana i ka logging i faila no ka audit      |
-| `gitIdSwitcher.logging.filePath`    | `""`       | Ala faila log pilikino                         |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Nui loa o ka faila log ma mua o ka rotation (bytes, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles`    | `5`        | Helu o nā faila log e mālama (1-20)            |
-| `gitIdSwitcher.logging.level`       | `"INFO"`   | Pae logging (DEBUG/INFO/WARN/ERROR/SECURITY)   |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Ke hoʻā ʻia, e uhi ʻia nā waiwai a pau ma nā moʻolelo (pale pilikino nui loa) |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | Manawa palena no nā kauoha waho (ms, 1s-5min)  |
+| Hoʻonohonoho                               | Paʻamau    | Wehewehe                                                                      |
+| ------------------------------------------ | ---------- | ----------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Nānā laʻa. | Papa inoa o nā hoʻonohonoho ID                                                |
+| `gitIdSwitcher.defaultIdentity`            | Nānā laʻa. | ID paʻamau                                                                    |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Hoʻololi ʻia ke kī SSH                                                        |
+| `gitIdSwitcher.showNotifications`          | `true`     | Hōʻike i ka hoʻolaha i ka hoʻololi ʻana                                       |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Hoʻopili i ka ID i nā Git submodule                                           |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | Hohonu nui loa no nā submodule nested (1-5)                                   |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Kākau i ka emoji icon i ka Git config `user.name`                             |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Hoʻohana i ka logging i faila no ka audit                                     |
+| `gitIdSwitcher.logging.filePath`           | `""`       | Ala faila log pilikino                                                        |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Nui loa o ka faila log ma mua o ka rotation (bytes, 1MB-100MB)                |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | Helu o nā faila log e mālama (1-20)                                           |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | Pae logging (DEBUG/INFO/WARN/ERROR/SECURITY)                                  |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Ke hoʻā ʻia, e uhi ʻia nā waiwai a pau ma nā moʻolelo (pale pilikino nui loa) |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | Manawa palena no nā kauoha waho (ms, 1s-5min)                                 |
 
 #### E Pili ana i `includeIconInGitConfig`
 
 Hoʻomalu i ka hana i ka wā e hoʻonohonoho ʻia ka `icon`:
 
-| Waiwai | Hana |
-|--------|------|
+| Waiwai            | Hana                                                                                      |
+| ----------------- | ----------------------------------------------------------------------------------------- |
 | `false` (paʻamau) | Hōʻike ʻia ka `icon` ma ka UI editor wale nō. Kākau ʻia ka `name` wale nō i ka Git config |
-| `true` | Kākau ʻia ka `icon + name` i ka Git config. Noho ka emoji ma ka moʻolelo commit |
+| `true`            | Kākau ʻia ka `icon + name` i ka Git config. Noho ka emoji ma ka moʻolelo commit           |
 
 Laʻana: `icon: "👤"`, `name: "Keola Mahina"`
 
-| includeIconInGitConfig | Git config `user.name` | Kākau inoa commit |
-|------------------------|------------------------|-------------------|
-| `false` | `Keola Mahina` | `Keola Mahina <leka>` |
-| `true` | `👤 Keola Mahina` | `👤 Keola Mahina <leka>` |
+| includeIconInGitConfig | Git config `user.name` | Kākau inoa commit        |
+| ---------------------- | ---------------------- | ------------------------ |
+| `false`                | `Keola Mahina`         | `Keola Mahina <leka>`    |
+| `true`                 | `👤 Keola Mahina`      | `👤 Keola Mahina <leka>` |
 
 ### Palapala: Hoʻonohonoho Kumu (ʻAʻohe SSH)
 
@@ -551,10 +551,11 @@ Inā mālama ʻoe i nā hoʻonohonoho hakahaka ma mua, ua sync ʻia lākou i ka 
 
 ## Nā Kauoha (Commands)
 
-| Kauoha                          | Wehewehe                       |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | E wehe i ka mea koho ID        |
-| `Git ID: Show Current Identity` | E hōʻike i ka ID o kēia manawa |
+| Kauoha                                   | Wehewehe                       |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | E wehe i ka mea koho ID        |
+| `Git ID Switcher: Show Current Identity` | E hōʻike i ka ID o kēia manawa |
+| `Git ID Switcher: Show Documentation`    | E hōʻike i nā palapala         |
 
 ---
 

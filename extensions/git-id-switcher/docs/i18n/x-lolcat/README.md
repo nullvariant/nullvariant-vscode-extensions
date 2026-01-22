@@ -39,7 +39,7 @@
 
 WILE MANY GIT IDENTITY SWITCHERZ EXIST, **GIT ID SWITCHER** SOLVEZ TEH HARD PROBLEMZ:
 
-1. **SUBMODULEZ NITEMARE**: WERKIN WIF REPOSITORIEZ DAT HAZ SUBMODULEZ USUALLY REQUIREZ SETTIN `git config user.name` MANUALLY 4 *EACH* SUBMODULE. DIS EXTENSHUN HANDLEZ IT BY RECURSIVELY APPLYIN UR IDENTITY 2 ALL ACTIVE SUBMODULEZ. SO SMRT!
+1. **SUBMODULEZ NITEMARE**: WERKIN WIF REPOSITORIEZ DAT HAZ SUBMODULEZ USUALLY REQUIREZ SETTIN `git config user.name` MANUALLY 4 _EACH_ SUBMODULE. DIS EXTENSHUN HANDLEZ IT BY RECURSIVELY APPLYIN UR IDENTITY 2 ALL ACTIVE SUBMODULEZ. SO SMRT!
 2. **SSH & GPG HANDLIN**: IT DONT JUS CHANGE UR NAEM; IT SWAPZ UR SSH KEYZ IN TEH AGENT AN CONFIGUREZ GPG SININ SO U NEVR COMMIT WIF TEH RONG SIGNATUR. NO MOAR FAILZ!
 
 ## FEATUREZ 😺
@@ -297,58 +297,59 @@ NOTE: TEH LAST IDENTITY (`grumpy-cat`) HAZ NO SSH. U CAN USE DIS 4 SWITCHIN JUSS
 
 ## FAMOUS CAT MEMEZ EXPLANED 📚
 
-| CAT | MEME ORIGIN | Y FAMOUS |
-|-----|-------------|----------|
-| 😼 Ceiling Cat | 2006 image macro | "Ceiling Cat iz watchin u" - teh original all-seeing cat |
-| 🎹 Keyboard Cat | 1984 video, viral 2007 | Played ppl off wen dey fail |
-| 😾 Grumpy Cat | Tardar Sauce, 2012 | "I had fun once. It was awful." RIP 2019 |
-| 🌈 Nyan Cat | 2011 YouTube video | Pop-Tart cat flyin thru space wif rainbowz |
+| CAT             | MEME ORIGIN            | Y FAMOUS                                                 |
+| --------------- | ---------------------- | -------------------------------------------------------- |
+| 😼 Ceiling Cat  | 2006 image macro       | "Ceiling Cat iz watchin u" - teh original all-seeing cat |
+| 🎹 Keyboard Cat | 1984 video, viral 2007 | Played ppl off wen dey fail                              |
+| 😾 Grumpy Cat   | Tardar Sauce, 2012     | "I had fun once. It was awful." RIP 2019                 |
+| 🌈 Nyan Cat     | 2011 YouTube video     | Pop-Tart cat flyin thru space wif rainbowz               |
 
 ---
 
 ## IDENTITY PROPERTIEZ
 
-| PROPRTY | REQIRED | DESCRIPSHUN |
-|---------|---------|-------------|
-| `id` | ✅ | UNIQ IDENTIFYR 4 DIS IDENTITY |
-| `name` | ✅ | GIT `user.name` (SHOWZ IN COMMITS) |
-| `email` | ✅ | GIT `user.email` |
-| `icon` | ❌ | SINGUL EMOJI 4 STATUS BAR. EMOJI ONLY! NO TEXTIE! |
-| `description` | ❌ | DESCRIPSHUN (SHOWZ IN DROPDOWN) |
-| `sshKeyPath` | ❌ | PATH 2 SSH PRIVAT KEY |
-| `sshHost` | ❌ | SSH HOST ALIAS (`Host` IN ~/.ssh/config) |
-| `gpgKeyId` | ❌ | GPG KEY ID 4 COMMIT SININ |
-| `service` | ❌ | GIT SERVIS: `github`, `gitlab`, `bitbucket`, `other` |
+| PROPRTY       | REQIRED | DESCRIPSHUN                                          |
+| ------------- | ------- | ---------------------------------------------------- |
+| `id`          | ✅      | UNIQ IDENTIFYR 4 DIS IDENTITY                        |
+| `name`        | ✅      | GIT `user.name` (SHOWZ IN COMMITS)                   |
+| `email`       | ✅      | GIT `user.email`                                     |
+| `icon`        | ❌      | SINGUL EMOJI 4 STATUS BAR. EMOJI ONLY! NO TEXTIE!    |
+| `description` | ❌      | DESCRIPSHUN (SHOWZ IN DROPDOWN)                      |
+| `sshKeyPath`  | ❌      | PATH 2 SSH PRIVAT KEY                                |
+| `sshHost`     | ❌      | SSH HOST ALIAS (`Host` IN ~/.ssh/config)             |
+| `gpgKeyId`    | ❌      | GPG KEY ID 4 COMMIT SININ                            |
+| `service`     | ❌      | GIT SERVIS: `github`, `gitlab`, `bitbucket`, `other` |
 
 ---
 
 ## COMMANDZ
 
-| COMMAND                         | WAT IT DOEZ                    |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | OPEN TEH IDENTITY PIKR         |
-| `Git ID: Show Current Identity` | SHOW CURRENT IDENTITY INFO     |
+| COMMAND                                  | WAT IT DOEZ                |
+| ---------------------------------------- | -------------------------- |
+| `Git ID Switcher: Select Identity`       | OPEN TEH IDENTITY PIKR     |
+| `Git ID Switcher: Show Current Identity` | SHOW CURRENT IDENTITY INFO |
+| `Git ID Switcher: Show Documentation`    | SHOW TEH DOCUMENTZ         |
 
 ---
 
 ## SETTINGZ
 
-| SETTIN | DEFALT | DESCRIPSHUN |
-|--------|--------|-------------|
-| `gitIdSwitcher.identities` | `[]` | LIST OF IDENTITIEZ |
-| `gitIdSwitcher.defaultIdentity` | `""` | DEFALT IDENTITY ID |
-| `gitIdSwitcher.autoSwitchSshKey` | `true` | AUTOMAGICALLY SWITCH SSH KEYZ |
-| `gitIdSwitcher.showNotifications` | `true` | SHOW NOTIFICASHUN WEN SWITCHIN |
-| `gitIdSwitcher.applyToSubmodules` | `true` | APPLY IDENTITY 2 SUBMODULEZ |
-| `gitIdSwitcher.submoduleDepth` | `1` | MAX DEPTH 4 NESTED SUBMODULEZ (1-5) |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | INCLUD EMOJI IN GIT CONFIG (C BELOW) |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | ENABL FILE LOGGIN 4 AUDITIN |
-| `gitIdSwitcher.logging.filePath` | `""` | CUSTOM LOG FILE PATH |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | MAX LOG FILE SIEZ B4 ROTASHUN (BYTEZ, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles` | `5` | NUMBR OF LOG FILEZ 2 KEEP (1-20) |
-| `gitIdSwitcher.logging.level` | `"INFO"` | LOGGIN LEVL (DEBUG/INFO/WARN/ERROR/SECURITY) |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | WEN ENABLD, ALL VALUEZ R MASKD IN LOGZ (MAXIMUMZ PRIVACYZ MODE) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | EXTERNL COMMAND TIEMOUTZ (MS, 1S-5MIN) |
+| SETTIN                                     | DEFALT     | DESCRIPSHUN                                                     |
+| ------------------------------------------ | ---------- | --------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | `[]`       | LIST OF IDENTITIEZ                                              |
+| `gitIdSwitcher.defaultIdentity`            | `""`       | DEFALT IDENTITY ID                                              |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | AUTOMAGICALLY SWITCH SSH KEYZ                                   |
+| `gitIdSwitcher.showNotifications`          | `true`     | SHOW NOTIFICASHUN WEN SWITCHIN                                  |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | APPLY IDENTITY 2 SUBMODULEZ                                     |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | MAX DEPTH 4 NESTED SUBMODULEZ (1-5)                             |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | INCLUD EMOJI IN GIT CONFIG (C BELOW)                            |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | ENABL FILE LOGGIN 4 AUDITIN                                     |
+| `gitIdSwitcher.logging.filePath`           | `""`       | CUSTOM LOG FILE PATH                                            |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | MAX LOG FILE SIEZ B4 ROTASHUN (BYTEZ, 1MB-100MB)                |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | NUMBR OF LOG FILEZ 2 KEEP (1-20)                                |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | LOGGIN LEVL (DEBUG/INFO/WARN/ERROR/SECURITY)                    |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | WEN ENABLD, ALL VALUEZ R MASKD IN LOGZ (MAXIMUMZ PRIVACYZ MODE) |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | EXTERNL COMMAND TIEMOUTZ (MS, 1S-5MIN)                          |
 
 ---
 
@@ -363,10 +364,10 @@ NOTE: TEH LAST IDENTITY (`grumpy-cat`) HAZ NO SSH. U CAN USE DIS 4 SWITCHIN JUSS
 
 DIS SETTIN CONTROLZ IF EMOJI IZ ADED 2 GIT `user.name`.
 
-| SETTIN | BEHAVYR |
-|--------|---------|
+| SETTIN           | BEHAVYR                                                    |
+| ---------------- | ---------------------------------------------------------- |
 | `false` (DEFALT) | GIT CONFIG: `user.name = Ceiling Cat` (NO EMOJI IN CONFIG) |
-| `true` | GIT CONFIG: `user.name = 😼 Ceiling Cat` (EMOJI IN CONFIG) |
+| `true`           | GIT CONFIG: `user.name = 😼 Ceiling Cat` (EMOJI IN CONFIG) |
 
 > **NOTE**: EMOJI ALWAYZ SHOWZ IN STATUS BAR REGARDLES OF DIS SETTIN! DIS ONLY AFFEKTS GIT CONFIG.
 
@@ -426,8 +427,8 @@ IF U C DIS ERUR, CHEEK UR SETTINGZ:
   "gitIdSwitcher.identities": [
     {
       "id": "ceiling-cat",
-      "name": "Ceiling Cat",  // ← DIS IZ REQIRED!
-      "email": "ceiling@cat.example.com"  // ← DIS 2!
+      "name": "Ceiling Cat", // ← DIS IZ REQIRED!
+      "email": "ceiling@cat.example.com" // ← DIS 2!
     }
   ]
 }

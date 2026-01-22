@@ -1,8 +1,8 @@
 {
   "extension.displayName": "Git ID Switcher",
   "extension.description": "여러 Git ID(프로필)를 원클릭으로 전환. SSH 키와 GPG 서명이 연동되며 서브모듈에도 일괄 적용.",
-  "command.selectIdentity": "Git ID: ID 선택",
-  "command.showCurrentIdentity": "Git ID: 현재 ID 표시",
+  "command.selectIdentity": "ID 선택",
+  "command.showCurrentIdentity": "현재 ID 표시",
   "command.showDocumentation": "문서 표시",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: ID 관리",

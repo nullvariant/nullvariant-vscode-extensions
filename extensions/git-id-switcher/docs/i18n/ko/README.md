@@ -35,7 +35,7 @@
 
 많은 Git ID 전환 도구가 있지만, **Git ID Switcher**는 다른 도구들이 종종 무시하는 복잡한 문제를 해결합니다:
 
-1. **서브모듈의 악몽**: 서브모듈이 있는 저장소(예: Hugo 테마, vendor 라이브러리)에서 작업할 때, 일반적으로 *각* 서브모듈마다 `git config user.name`을 수동으로 설정해야 합니다. 이 확장 프로그램은 모든 활성 서브모듈에 재귀적으로 ID를 적용하여 이 문제를 우아하게 해결합니다.
+1. **서브모듈의 악몽**: 서브모듈이 있는 저장소(예: Hugo 테마, vendor 라이브러리)에서 작업할 때, 일반적으로 _각_ 서브모듈마다 `git config user.name`을 수동으로 설정해야 합니다. 이 확장 프로그램은 모든 활성 서브모듈에 재귀적으로 ID를 적용하여 이 문제를 우아하게 해결합니다.
 2. **SSH 및 GPG 처리**: 단순히 이름을 변경하는 것이 아닙니다. ssh-agent에서 SSH 키를 교체하고 GPG 서명을 설정하여 잘못된 서명으로 커밋하는 일이 없도록 합니다.
 
 ## 기능
@@ -290,17 +290,17 @@ Host bitbucket.org
 
 ### ID 속성
 
-| 속성          | 필수 | 설명                                                   |
-| ------------- | ---- | ------------------------------------------------------ |
-| `id`          | ✅   | 고유 식별자 (예: `"work"`, `"personal"`)               |
-| `name`        | ✅   | Git user.name - 커밋에 표시됨                          |
-| `email`       | ✅   | Git user.email - 커밋에 표시됨                         |
+| 속성          | 필수 | 설명                                                           |
+| ------------- | ---- | -------------------------------------------------------------- |
+| `id`          | ✅   | 고유 식별자 (예: `"work"`, `"personal"`)                       |
+| `name`        | ✅   | Git user.name - 커밋에 표시됨                                  |
+| `email`       | ✅   | Git user.email - 커밋에 표시됨                                 |
 | `icon`        |      | 상태 표시줄에 표시되는 이모지 (예: `"💼"`). 단일 이모지만 허용 |
-| `service`     |      | 서비스 이름 (예: `"GitHub"`, `"GitLab"`). UI 표시에 사용 |
-| `description` |      | 선택기와 툴팁에 표시되는 짧은 설명                     |
-| `sshKeyPath`  |      | SSH 개인 키 경로 (예: `"~/.ssh/id_ed25519_work"`)      |
-| `sshHost`     |      | SSH 설정 호스트 별칭 (예: `"github-work"`)             |
-| `gpgKeyId`    |      | 커밋 서명용 GPG 키 ID                                  |
+| `service`     |      | 서비스 이름 (예: `"GitHub"`, `"GitLab"`). UI 표시에 사용       |
+| `description` |      | 선택기와 툴팁에 표시되는 짧은 설명                             |
+| `sshKeyPath`  |      | SSH 개인 키 경로 (예: `"~/.ssh/id_ed25519_work"`)              |
+| `sshHost`     |      | SSH 설정 호스트 별칭 (예: `"github-work"`)                     |
+| `gpgKeyId`    |      | 커밋 서명용 GPG 키 ID                                          |
 
 #### 표시 제한
 
@@ -309,38 +309,38 @@ Host bitbucket.org
 
 ### 전역 설정
 
-| 설정                                   | 기본값     | 설명                                           |
-| -------------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`             | 예시 참조  | ID 설정 목록                                   |
-| `gitIdSwitcher.defaultIdentity`        | 예시 참조  | 기본으로 사용할 ID                             |
-| `gitIdSwitcher.autoSwitchSshKey`       | `true`     | ID 전환 시 SSH 키 자동 전환                    |
-| `gitIdSwitcher.showNotifications`      | `true`     | ID 전환 시 알림 표시                           |
-| `gitIdSwitcher.applyToSubmodules`      | `true`     | Git 서브모듈에 ID 전파                         |
-| `gitIdSwitcher.submoduleDepth`         | `1`        | 중첩된 서브모듈 설정의 최대 깊이 (1-5)         |
-| `gitIdSwitcher.includeIconInGitConfig` | `false`    | Git config `user.name`에 아이콘 이모지 포함    |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | 감사 로그 활성화 (ID 전환, SSH 작업 등 기록) |
-| `gitIdSwitcher.logging.filePath` | `""` | 로그 파일 경로 (예: `~/.git-id-switcher/security.log`). 비어 있으면 기본 위치 사용 |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | 로테이션 전 최대 파일 크기 (바이트, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles` | `5` | 보관할 로테이션 로그 파일 최대 수 (1-20) |
-| `gitIdSwitcher.logging.level` | `"INFO"` | 로그 수준: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. 선택한 수준 이상 기록 |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | 활성화하면 로그의 모든 값이 마스킹됩니다 (최대 개인정보 보호 모드) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | 명령별 사용자 정의 타임아웃 (밀리초, 1초-5분). 예: `{"git": 15000, "ssh-add": 10000}` |
+| 설정                                       | 기본값     | 설명                                                                                  |
+| ------------------------------------------ | ---------- | ------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | 예시 참조  | ID 설정 목록                                                                          |
+| `gitIdSwitcher.defaultIdentity`            | 예시 참조  | 기본으로 사용할 ID                                                                    |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | ID 전환 시 SSH 키 자동 전환                                                           |
+| `gitIdSwitcher.showNotifications`          | `true`     | ID 전환 시 알림 표시                                                                  |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Git 서브모듈에 ID 전파                                                                |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | 중첩된 서브모듈 설정의 최대 깊이 (1-5)                                                |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Git config `user.name`에 아이콘 이모지 포함                                           |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | 감사 로그 활성화 (ID 전환, SSH 작업 등 기록)                                          |
+| `gitIdSwitcher.logging.filePath`           | `""`       | 로그 파일 경로 (예: `~/.git-id-switcher/security.log`). 비어 있으면 기본 위치 사용    |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | 로테이션 전 최대 파일 크기 (바이트, 1MB-100MB)                                        |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | 보관할 로테이션 로그 파일 최대 수 (1-20)                                              |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | 로그 수준: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. 선택한 수준 이상 기록            |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | 활성화하면 로그의 모든 값이 마스킹됩니다 (최대 개인정보 보호 모드)                    |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | 명령별 사용자 정의 타임아웃 (밀리초, 1초-5분). 예: `{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig`에 대하여
 
 `icon` 필드 설정 시 동작을 제어합니다:
 
-| 값 | 동작 |
-|----|------|
-| `false` (기본값) | `icon`은 에디터 UI에만 표시. Git config에는 `name`만 기록 |
-| `true` | Git config에 `icon + name` 기록. 커밋 기록에 이모지가 표시됨 |
+| 값               | 동작                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| `false` (기본값) | `icon`은 에디터 UI에만 표시. Git config에는 `name`만 기록    |
+| `true`           | Git config에 `icon + name` 기록. 커밋 기록에 이모지가 표시됨 |
 
 예시: `icon: "👤"`, `name: "김민"`의 경우
 
-| includeIconInGitConfig | Git config `user.name` | 커밋 서명 |
-|------------------------|------------------------|-----------|
-| `false` | `김민` | `김민 <email>` |
-| `true` | `👤 김민` | `👤 김민 <email>` |
+| includeIconInGitConfig | Git config `user.name` | 커밋 서명         |
+| ---------------------- | ---------------------- | ----------------- |
+| `false`                | `김민`                 | `김민 <email>`    |
+| `true`                 | `👤 김민`              | `👤 김민 <email>` |
 
 ### 참고: 기본 설정 (SSH 없음)
 
@@ -531,10 +531,11 @@ VS Code 등의 에디터는 설정 스키마를 메모리에 캐시하며, "창 
 
 ## 명령어
 
-| 명령어                          | 설명                 |
-| ------------------------------- | -------------------- |
-| `Git ID: Select Identity`       | ID 선택기 열기       |
-| `Git ID: Show Current Identity` | 현재 ID 정보 표시    |
+| 명령어                                   | 설명              |
+| ---------------------------------------- | ----------------- |
+| `Git ID Switcher: Select Identity`       | ID 선택기 열기    |
+| `Git ID Switcher: Show Current Identity` | 현재 ID 정보 표시 |
+| `Git ID Switcher: Show Documentation`    | 문서 표시         |
 
 ---
 

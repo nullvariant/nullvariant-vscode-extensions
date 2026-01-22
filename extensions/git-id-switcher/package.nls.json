@@ -1,8 +1,8 @@
 {
   "extension.displayName": "Git ID Switcher",
   "extension.description": "Switch between multiple Git profiles with one click. SSH keys and GPG signing sync automatically, and changes apply to submodules.",
-  "command.selectIdentity": "Git ID: Select Identity",
-  "command.showCurrentIdentity": "Git ID: Show Current Identity",
+  "command.selectIdentity": "Select Identity",
+  "command.showCurrentIdentity": "Show Current Identity",
   "command.showDocumentation": "Show Documentation",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Identity",

@@ -1,8 +1,8 @@
 {
   "extension.displayName": "Git ID Switcher",
   "extension.description": "Váltás Git identitások (profilok) között egy kattintással. SSH kulcsok és GPG aláírás összekapcsolva, almodulokra alkalmazható.",
-  "command.selectIdentity": "Git ID: Identitás kiválasztása",
-  "command.showCurrentIdentity": "Git ID: Jelenlegi identitás megjelenítése",
+  "command.selectIdentity": "Identitás kiválasztása",
+  "command.showCurrentIdentity": "Jelenlegi identitás megjelenítése",
   "command.showDocumentation": "Dokumentáció megjelenítése",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Azonosító",

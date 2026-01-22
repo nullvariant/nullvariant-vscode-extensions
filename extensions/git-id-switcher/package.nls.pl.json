@@ -1,8 +1,8 @@
 {
   "extension.displayName": "Git ID Switcher",
   "extension.description": "Przełączanie między tożsamościami Git (profilami) jednym kliknięciem. Klucze SSH i podpisywanie GPG powiązane, stosowane do podmodułów.",
-  "command.selectIdentity": "Git ID: Wybierz tożsamość",
-  "command.showCurrentIdentity": "Git ID: Pokaż bieżącą tożsamość",
+  "command.selectIdentity": "Wybierz tożsamość",
+  "command.showCurrentIdentity": "Pokaż bieżącą tożsamość",
   "command.showDocumentation": "Pokaż dokumentację",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Tożsamość",

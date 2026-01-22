@@ -312,17 +312,17 @@ Host bitbucket.org
 
 ### IDプロパティ
 
-| プロパティ    | 必須  | 説明                                                       |
-| ------------- | ----- | ---------------------------------------------------------- |
-| `id`          | ✅    | ユニーク識別子（例：`"work"`, `"personal"`）               |
-| `name`        | ✅    | Git user.name — コミットんかい表示さーるん                 |
-| `email`       | ✅    | Git user.email — コミットんかい表示さーるん                |
-| `icon`        |       | ステータスバーんかい表示すーる絵文字（例：`"🏠"`）。単一絵文字のみ |
-| `service`     |       | サービス名（例：`"GitHub"`, `"GitLab"`）。UI用             |
-| `description` |       | ピッカーとぅツールチップんかい表示すーる短い説明           |
-| `sshKeyPath`  |       | SSH秘密鍵ぬパス（例：`"~/.ssh/id_ed25519_work"`）          |
-| `sshHost`     |       | SSH configホストエイリアス（例：`"github-work"`）          |
-| `gpgKeyId`    |       | コミット署名用GPG鍵ID                                    |
+| プロパティ    | 必須 | 説明                                                               |
+| ------------- | ---- | ------------------------------------------------------------------ |
+| `id`          | ✅   | ユニーク識別子（例：`"work"`, `"personal"`）                       |
+| `name`        | ✅   | Git user.name — コミットんかい表示さーるん                         |
+| `email`       | ✅   | Git user.email — コミットんかい表示さーるん                        |
+| `icon`        |      | ステータスバーんかい表示すーる絵文字（例：`"🏠"`）。単一絵文字のみ |
+| `service`     |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI用                     |
+| `description` |      | ピッカーとぅツールチップんかい表示すーる短い説明                   |
+| `sshKeyPath`  |      | SSH秘密鍵ぬパス（例：`"~/.ssh/id_ed25519_work"`）                  |
+| `sshHost`     |      | SSH configホストエイリアス（例：`"github-work"`）                  |
+| `gpgKeyId`    |      | コミット署名用GPG鍵ID                                              |
 
 #### 表示制限
 
@@ -331,38 +331,38 @@ Host bitbucket.org
 
 ### 全般設定
 
-| 設定                                | デフォルト | 説明                                           |
-| ----------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`          | 例ば見ーん | ID設定ぬリスト                                 |
-| `gitIdSwitcher.defaultIdentity`     | 例ば見ーん | デフォルトID                                   |
-| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | SSH鍵自動切り替え                            |
-| `gitIdSwitcher.showNotifications`   | `true`     | 切り替え時通知表示                             |
-| `gitIdSwitcher.applyToSubmodules`   | `true`     | Gitサブモジュールんかいも適用                  |
-| `gitIdSwitcher.submoduleDepth`      | `1`        | ネストしたサブモジュールぬ最大深度（1-5）      |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | 絵文字アイコンばGit config `user.name`んかい書くん |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | 監査ログファイル出力有効化                     |
-| `gitIdSwitcher.logging.filePath`    | `""`       | カスタムログファイルパス                       |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | ローテーション前ぬ最大ファイルサイズ（バイト、1MB-100MB） |
-| `gitIdSwitcher.logging.maxFiles`    | `5`        | 保持すーるログファイル数（1-20）               |
-| `gitIdSwitcher.logging.level`       | `"INFO"`   | ログレベル（DEBUG/INFO/WARN/ERROR/SECURITY）   |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | 有効にすると、ログぬ全部ぬ値むマスクさりーる（最大プライバシーモード） |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | 外部コマンドぬタイムアウト（ms、1秒-5分）      |
+| 設定                                       | デフォルト | 説明                                                                   |
+| ------------------------------------------ | ---------- | ---------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | 例ば見ーん | ID設定ぬリスト                                                         |
+| `gitIdSwitcher.defaultIdentity`            | 例ば見ーん | デフォルトID                                                           |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | SSH鍵自動切り替え                                                      |
+| `gitIdSwitcher.showNotifications`          | `true`     | 切り替え時通知表示                                                     |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Gitサブモジュールんかいも適用                                          |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | ネストしたサブモジュールぬ最大深度（1-5）                              |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | 絵文字アイコンばGit config `user.name`んかい書くん                     |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | 監査ログファイル出力有効化                                             |
+| `gitIdSwitcher.logging.filePath`           | `""`       | カスタムログファイルパス                                               |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | ローテーション前ぬ最大ファイルサイズ（バイト、1MB-100MB）              |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | 保持すーるログファイル数（1-20）                                       |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | ログレベル（DEBUG/INFO/WARN/ERROR/SECURITY）                           |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | 有効にすると、ログぬ全部ぬ値むマスクさりーる（最大プライバシーモード） |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | 外部コマンドぬタイムアウト（ms、1秒-5分）                              |
 
 #### `includeIconInGitConfig`について
 
 `icon`フィールド設定した時ぬ動作制御さびーん:
 
-| 値 | 動作 |
-|--------|------|
-| `false`（デフォルト） | `icon`やエディタUIだけんかい表示。Git configんかいや`name`だけ書かーるん |
-| `true` | Git configんかい`icon + name`書かーるん。絵文字がコミット履歴んかい残いん |
+| 値                    | 動作                                                                      |
+| --------------------- | ------------------------------------------------------------------------- |
+| `false`（デフォルト） | `icon`やエディタUIだけんかい表示。Git configんかいや`name`だけ書かーるん  |
+| `true`                | Git configんかい`icon + name`書かーるん。絵文字がコミット履歴んかい残いん |
 
 例: `icon: "👤"`, `name: "比嘉太郎"`
 
-| includeIconInGitConfig | Git config `user.name` | コミット署名 |
-|------------------------|------------------------|--------------|
-| `false` | `比嘉太郎` | `比嘉太郎 <email>` |
-| `true` | `👤 比嘉太郎` | `👤 比嘉太郎 <email>` |
+| includeIconInGitConfig | Git config `user.name` | コミット署名          |
+| ---------------------- | ---------------------- | --------------------- |
+| `false`                | `比嘉太郎`             | `比嘉太郎 <email>`    |
+| `true`                 | `👤 比嘉太郎`          | `👤 比嘉太郎 <email>` |
 
 ### メモ: 基本設定（SSH無し）
 
@@ -553,10 +553,11 @@ VS Codeんかいぬエディタや設定スキーマばメモリんかいキャ�
 
 ## コマンド
 
-| コマンド                        | 説明                           |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | IDピッカー開ちゅん             |
-| `Git ID: Show Current Identity` | 今ぬID情報表示                 |
+| コマンド                                 | 説明               |
+| ---------------------------------------- | ------------------ |
+| `Git ID Switcher: Select Identity`       | IDピッカー開ちゅん |
+| `Git ID Switcher: Show Current Identity` | 今ぬID情報表示     |
+| `Git ID Switcher: Show Documentation`    | ドキュメント表示   |
 
 ---
 

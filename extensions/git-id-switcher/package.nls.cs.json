@@ -1,8 +1,8 @@
 {
   "extension.displayName": "Git ID Switcher",
   "extension.description": "Přepínání mezi Git identitami (profily) jedním kliknutím. SSH klíče a GPG podepisování propojené, aplikovatelné na submoduly.",
-  "command.selectIdentity": "Git ID: Vybrat identitu",
-  "command.showCurrentIdentity": "Git ID: Zobrazit aktuální identitu",
+  "command.selectIdentity": "Vybrat identitu",
+  "command.showCurrentIdentity": "Zobrazit aktuální identitu",
   "command.showDocumentation": "Zobrazit dokumentaci",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Identita",
