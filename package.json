@@ -9,7 +9,7 @@
     "extensions/*"
   ],
   "scripts": {
-    "prepare": "husky",
+    "prepare": "husky || true",
     "lint:all": "npm run lint --workspaces --if-present",
     "test:all": "npm run test --workspaces --if-present",
     "compile:all": "npm run compile --workspaces --if-present",
