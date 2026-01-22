@@ -265,7 +265,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src",
+    "lint": "eslint src --cache",
     "test": "npm run compile && node out/test/runTests.js",
     "test:all": "npm run compile && node out/test/runTests.js",
     "test:unit": "npm run compile && node out/test/runUnitTests.js",

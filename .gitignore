@@ -17,6 +17,9 @@ coverage/
 # TypeScript cache
 *.tsbuildinfo
 
+# ESLint cache
+.eslintcache
+
 # OS files
 .DS_Store
 
