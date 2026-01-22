@@ -551,10 +551,11 @@ Inā mālama ʻoe i nā hoʻonohonoho hakahaka ma mua, ua sync ʻia lākou i ka 
 
 ## Nā Kauoha (Commands)
 
-| Kauoha                          | Wehewehe                       |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | E wehe i ka mea koho ID        |
-| `Git ID: Show Current Identity` | E hōʻike i ka ID o kēia manawa |
+| Kauoha                                   | Wehewehe                       |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | E wehe i ka mea koho ID        |
+| `Git ID Switcher: Show Current Identity` | E hōʻike i ka ID o kēia manawa |
+| `Git ID Switcher: Show Documentation`    | E hōʻike i nā palapala         |
 
 ---
 

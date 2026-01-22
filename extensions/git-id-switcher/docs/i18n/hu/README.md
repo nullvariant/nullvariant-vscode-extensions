@@ -531,10 +531,11 @@ Ha korábban üres beállításokat mentett, azok szinkronizálódtak a felhőbe
 
 ## Parancsok
 
-| Parancs                         | Leírás                            |
-| ------------------------------- | --------------------------------- |
-| `Git ID: Select Identity`       | Azonosító választó megnyitása     |
-| `Git ID: Show Current Identity` | Aktuális azonosító info megjelenítése |
+| Parancs                                  | Leírás                                |
+| ---------------------------------------- | ------------------------------------- |
+| `Git ID Switcher: Select Identity`       | Azonosító választó megnyitása         |
+| `Git ID Switcher: Show Current Identity` | Aktuális azonosító info megjelenítése |
+| `Git ID Switcher: Show Documentation`    | Dokumentáció megjelenítése            |
 
 ---
 

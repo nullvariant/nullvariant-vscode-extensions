@@ -545,10 +545,11 @@ Past empty settings save, cloud sync, new install default values override.
 
 ## Commands (ra')
 
-| Command                         | Description              |
-| ------------------------------- | ------------------------ |
-| `Git ID: Select Identity`       | ID picker open           |
-| `Git ID: Show Current Identity` | DaH ID show              |
+| Command                                  | Description              |
+| ---------------------------------------- | ------------------------ |
+| `Git ID Switcher: Select Identity`       | ID picker open           |
+| `Git ID Switcher: Show Current Identity` | DaH ID show              |
+| `Git ID Switcher: Show Documentation`    | ghItlh tu'               |
 
 ---
 

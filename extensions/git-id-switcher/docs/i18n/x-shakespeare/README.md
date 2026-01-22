@@ -317,10 +317,11 @@ Note: The final identity (`romeo`) hath no SSH. Thou canst use this for switchin
 
 ## Commands
 
-| Command                         | Description                           |
-| ------------------------------- | ------------------------------------- |
-| `Git ID: Select Identity`       | Open the identity picker              |
-| `Git ID: Show Current Identity` | Reveal thy current identity           |
+| Command                                  | Description                           |
+| ---------------------------------------- | ------------------------------------- |
+| `Git ID Switcher: Select Identity`       | Open the identity picker              |
+| `Git ID Switcher: Show Current Identity` | Reveal thy current identity           |
+| `Git ID Switcher: Show Documentation`    | Reveal the chronicles                 |
 
 ---
 

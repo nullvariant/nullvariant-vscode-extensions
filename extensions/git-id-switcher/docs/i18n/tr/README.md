@@ -531,10 +531,11 @@ Geçmişte boş ayarlar kaydettiyseniz, bu ayarlar buluta senkronize edilmiş ve
 
 ## Komutlar
 
-| Komut                           | Açıklama                        |
-| ------------------------------- | ------------------------------- |
-| `Git ID: Select Identity`       | Kimlik seçiciyi aç              |
-| `Git ID: Show Current Identity` | Mevcut kimlik bilgisini göster  |
+| Komut                                    | Açıklama                        |
+| ---------------------------------------- | ------------------------------- |
+| `Git ID Switcher: Select Identity`       | Kimlik seçiciyi aç              |
+| `Git ID Switcher: Show Current Identity` | Mevcut kimlik bilgisini göster  |
+| `Git ID Switcher: Show Documentation`    | Belgeleri göster                |
 
 ---
 

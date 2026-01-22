@@ -1,8 +1,8 @@
 {
   "extension.displayName": "Git ID Switcher",
   "extension.description": "Cambie entre identidades Git (perfiles) con un clic. Claves SSH y firma GPG vinculadas, aplicable a submódulos.",
-  "command.selectIdentity": "Git ID: Seleccionar identidad",
-  "command.showCurrentIdentity": "Git ID: Mostrar identidad actual",
+  "command.selectIdentity": "Seleccionar identidad",
+  "command.showCurrentIdentity": "Mostrar identidad actual",
   "command.showDocumentation": "Mostrar documentación",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Identidad",

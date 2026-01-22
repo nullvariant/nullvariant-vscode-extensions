@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.13.8",
+  "version": "0.14.0",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -52,11 +52,13 @@
     "commands": [
       {
         "command": "git-id-switcher.selectIdentity",
-        "title": "%command.selectIdentity%"
+        "title": "%command.selectIdentity%",
+        "category": "Git ID Switcher"
       },
       {
         "command": "git-id-switcher.showCurrentIdentity",
-        "title": "%command.showCurrentIdentity%"
+        "title": "%command.showCurrentIdentity%",
+        "category": "Git ID Switcher"
       },
       {
         "command": "git-id-switcher.showDocumentation",

@@ -549,10 +549,11 @@ tenpo pini la, settings ala li lon la, cloud sync li ante e open ijo.
 
 ## ilo (Commands)
 
-| ilo                             | sona                     |
-| ------------------------------- | ------------------------ |
-| `Git ID: Select Identity`       | o kama jo e nimi         |
-| `Git ID: Show Current Identity` | o lukin e nimi sina      |
+| ilo                                      | sona                     |
+| ---------------------------------------- | ------------------------ |
+| `Git ID Switcher: Select Identity`       | o kama jo e nimi         |
+| `Git ID Switcher: Show Current Identity` | o lukin e nimi sina      |
+| `Git ID Switcher: Show Documentation`    | o lukin e lipu sona      |
 
 ---
 

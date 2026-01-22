@@ -531,10 +531,11 @@ Wenn Sie zuvor leere Einstellungen gespeichert haben, wurden sie möglicherweise
 
 ## Befehle
 
-| Befehl                          | Beschreibung                |
-| ------------------------------- | --------------------------- |
-| `Git ID: Select Identity`       | Identitätsauswahl öffnen    |
-| `Git ID: Show Current Identity` | Aktuelle Identität anzeigen |
+| Befehl                                   | Beschreibung                |
+| ---------------------------------------- | --------------------------- |
+| `Git ID Switcher: Select Identity`       | Identitätsauswahl öffnen    |
+| `Git ID Switcher: Show Current Identity` | Aktuelle Identität anzeigen |
+| `Git ID Switcher: Show Documentation`    | Dokumentation anzeigen      |
 
 ---
 

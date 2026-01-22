@@ -533,10 +533,11 @@ Jeśli wcześniej zapisałeś puste ustawienia, mogły zostać zsynchronizowane 
 
 ## Polecenia
 
-| Polecenie                       | Opis                              |
-| ------------------------------- | --------------------------------- |
-| `Git ID: Select Identity`       | Otwórz selektor tożsamości        |
-| `Git ID: Show Current Identity` | Pokaż informacje o bieżącej tożsamości |
+| Polecenie                                | Opis                                   |
+| ---------------------------------------- | -------------------------------------- |
+| `Git ID Switcher: Select Identity`       | Otwórz selektor tożsamości             |
+| `Git ID Switcher: Show Current Identity` | Pokaż informacje o bieżącej tożsamości |
+| `Git ID Switcher: Show Documentation`    | Pokaż dokumentację                     |
 
 ---
 

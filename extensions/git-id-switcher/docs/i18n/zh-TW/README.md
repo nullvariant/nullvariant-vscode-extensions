@@ -531,10 +531,11 @@ VS Code 等編輯器會將設定架構快取在記憶體中，「重新載入視
 
 ## 命令
 
-| 命令                            | 描述                 |
-| ------------------------------- | -------------------- |
-| `Git ID: Select Identity`       | 開啟身份選擇器       |
-| `Git ID: Show Current Identity` | 顯示目前身份資訊     |
+| 命令                                     | 描述                 |
+| ---------------------------------------- | -------------------- |
+| `Git ID Switcher: Select Identity`       | 開啟身份選擇器       |
+| `Git ID Switcher: Show Current Identity` | 顯示目前身份資訊     |
+| `Git ID Switcher: Show Documentation`    | 顯示文件             |
 
 ---
 

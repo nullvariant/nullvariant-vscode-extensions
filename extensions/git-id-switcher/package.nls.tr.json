@@ -1,8 +1,8 @@
 {
   "extension.displayName": "Git ID Switcher",
   "extension.description": "Git kimlikleri (profiller) arasında tek tıkla geçiş yapın. SSH anahtarları ve GPG imzalama bağlı, alt modüllere uygulanabilir.",
-  "command.selectIdentity": "Git ID: Kimlik Seç",
-  "command.showCurrentIdentity": "Git ID: Mevcut Kimliği Göster",
+  "command.selectIdentity": "Kimlik Seç",
+  "command.showCurrentIdentity": "Mevcut Kimliği Göster",
   "command.showDocumentation": "Belgeleri Göster",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Kimlik",

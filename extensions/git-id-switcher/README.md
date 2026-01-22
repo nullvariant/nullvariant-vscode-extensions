@@ -583,10 +583,11 @@ If you previously saved empty settings, they may have synced to the cloud and ar
 
 ## Commands
 
-| Command                         | Description                   |
-| ------------------------------- | ----------------------------- |
-| `Git ID: Select Identity`       | Open the identity picker      |
-| `Git ID: Show Current Identity` | Display current identity info |
+| Command                                  | Description                   |
+| ---------------------------------------- | ----------------------------- |
+| `Git ID Switcher: Select Identity`       | Open the identity picker      |
+| `Git ID Switcher: Show Current Identity` | Display current identity info |
+| `Git ID Switcher: Show Documentation`    | Show documentation            |
 
 ---
 

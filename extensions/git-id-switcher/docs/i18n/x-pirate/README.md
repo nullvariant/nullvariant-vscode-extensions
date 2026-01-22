@@ -313,10 +313,11 @@ Note: The last identity (`navy-spy`) has no SSH. Ye can use this fer switchin' j
 
 ## Commands
 
-| Command                         | What It Does                        |
-| ------------------------------- | ----------------------------------- |
-| `Git ID: Select Identity`       | Open the identity picker, ye scurvy dog |
-| `Git ID: Show Current Identity` | Show current identity info          |
+| Command                                  | What It Does                        |
+| ---------------------------------------- | ----------------------------------- |
+| `Git ID Switcher: Select Identity`       | Open the identity picker, ye scurvy dog |
+| `Git ID Switcher: Show Current Identity` | Show current identity info          |
+| `Git ID Switcher: Show Documentation`    | Display the ship's scrolls          |
 
 ---
 

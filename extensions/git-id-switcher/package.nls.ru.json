@@ -1,8 +1,8 @@
 {
   "extension.displayName": "Git ID Switcher",
   "extension.description": "Переключение между идентификаторами Git (профилями) одним кликом. SSH-ключи и GPG-подпись связаны, применимо к подмодулям.",
-  "command.selectIdentity": "Git ID: Выбрать идентификатор",
-  "command.showCurrentIdentity": "Git ID: Показать текущий идентификатор",
+  "command.selectIdentity": "Выбрать идентификатор",
+  "command.showCurrentIdentity": "Показать текущий идентификатор",
   "command.showDocumentation": "Показать документацию",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Идентификация",

@@ -551,10 +551,11 @@ VS Code 設定スキーマ メモリ キャッシュ、"Reload Window" ウン re
 
 ## コマンド
 
-| コマンド                        | ウコイタㇰ                     |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | ID ピッカー                    |
-| `Git ID: Show Current Identity` | エネアン ID エヌカㇻ           |
+| コマンド                                 | ウコイタㇰ                     |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | ID ピッカー                    |
+| `Git ID Switcher: Show Current Identity` | エネアン ID エヌカㇻ           |
+| `Git ID Switcher: Show Documentation`    | ドキュメント エヌカㇻ          |
 
 ---
 

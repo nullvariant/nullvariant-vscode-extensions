@@ -553,10 +553,11 @@ VS Codeんかいぬエディタや設定スキーマばメモリんかいキャ�
 
 ## コマンド
 
-| コマンド                        | 説明                           |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | IDピッカー開ちゅん             |
-| `Git ID: Show Current Identity` | 今ぬID情報表示                 |
+| コマンド                                 | 説明                           |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | IDピッカー開ちゅん             |
+| `Git ID Switcher: Show Current Identity` | 今ぬID情報表示                 |
+| `Git ID Switcher: Show Documentation`    | ドキュメント表示               |
 
 ---
 

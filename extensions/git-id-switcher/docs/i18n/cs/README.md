@@ -530,10 +530,11 @@ Pokud jste dříve uložili prázdná nastavení, mohla být synchronizována do
 
 ## Příkazy
 
-| Příkaz                          | Popis                            |
-| ------------------------------- | -------------------------------- |
-| `Git ID: Select Identity`       | Otevřít výběr identity           |
-| `Git ID: Show Current Identity` | Zobrazit info o aktuální identitě |
+| Příkaz                                   | Popis                             |
+| ---------------------------------------- | --------------------------------- |
+| `Git ID Switcher: Select Identity`       | Otevřít výběr identity            |
+| `Git ID Switcher: Show Current Identity` | Zobrazit info o aktuální identitě |
+| `Git ID Switcher: Show Documentation`    | Zobrazit dokumentaci              |
 
 ---
 

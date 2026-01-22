@@ -579,10 +579,11 @@ VS Codeなどのエディタは設定スキーマをメモリにキャッシュ�
 
 ## コマンド
 
-| コマンド                        | 説明                           |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | プロフィールピッカーを開く     |
-| `Git ID: Show Current Identity` | 現在のプロフィール情報を表示   |
+| コマンド                                 | 説明                           |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | プロフィールピッカーを開く     |
+| `Git ID Switcher: Show Current Identity` | 現在のプロフィール情報を表示   |
+| `Git ID Switcher: Show Documentation`    | ドキュメントを表示             |
 
 ---
 

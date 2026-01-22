@@ -531,10 +531,11 @@ VS Code 등의 에디터는 설정 스키마를 메모리에 캐시하며, "창 
 
 ## 명령어
 
-| 명령어                          | 설명                 |
-| ------------------------------- | -------------------- |
-| `Git ID: Select Identity`       | ID 선택기 열기       |
-| `Git ID: Show Current Identity` | 현재 ID 정보 표시    |
+| 명령어                                   | 설명                 |
+| ---------------------------------------- | -------------------- |
+| `Git ID Switcher: Select Identity`       | ID 선택기 열기       |
+| `Git ID Switcher: Show Current Identity` | 현재 ID 정보 표시    |
+| `Git ID Switcher: Show Documentation`    | 문서 표시            |
 
 ---
 

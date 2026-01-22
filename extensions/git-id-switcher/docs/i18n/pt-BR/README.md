@@ -531,10 +531,11 @@ Se você salvou anteriormente configurações vazias, elas podem ter sido sincro
 
 ## Comandos
 
-| Comando                         | Descrição                      |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | Abrir o seletor de identidade  |
-| `Git ID: Show Current Identity` | Mostrar informações da identidade atual |
+| Comando                                  | Descrição                               |
+| ---------------------------------------- | --------------------------------------- |
+| `Git ID Switcher: Select Identity`       | Abrir o seletor de identidade           |
+| `Git ID Switcher: Show Current Identity` | Mostrar informações da identidade atual |
+| `Git ID Switcher: Show Documentation`    | Mostrar documentação                    |
 
 ---
 

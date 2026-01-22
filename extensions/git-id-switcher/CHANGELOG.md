@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-01-22
+
+### Changed
+
+- **Command Palette Display Names**: Unified command category prefix for consistency
+  - Changed from `Git ID:` to `Git ID Switcher:` for all commands
+  - `Git ID: Select Identity` → `Git ID Switcher: Select Identity`
+  - `Git ID: Show Current Identity` → `Git ID Switcher: Show Current Identity`
+  - Prevents potential conflicts with other Git ID extensions in the ecosystem
+
+### Added
+
+- **Documentation Command in README**: Added `Git ID Switcher: Show Documentation` to command lists
+  - Updated all 26 language README variants with the previously missing command
+  - Each language includes appropriately translated descriptions
+
+### ⚠️ Breaking Change
+
+- **Command Search**: Users who search for commands using `Git ID:` prefix will need to update their search to `Git ID Switcher:`
+- **Keyboard Shortcuts**: Not affected (command IDs remain unchanged)
+- **Settings**: Not affected (configuration keys remain unchanged)
+
 ## [0.13.8] - 2026-01-19
 
 ### Changed

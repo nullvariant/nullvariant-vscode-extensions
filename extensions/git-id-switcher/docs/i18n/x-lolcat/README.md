@@ -324,10 +324,11 @@ NOTE: TEH LAST IDENTITY (`grumpy-cat`) HAZ NO SSH. U CAN USE DIS 4 SWITCHIN JUSS
 
 ## COMMANDZ
 
-| COMMAND                         | WAT IT DOEZ                    |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | OPEN TEH IDENTITY PIKR         |
-| `Git ID: Show Current Identity` | SHOW CURRENT IDENTITY INFO     |
+| COMMAND                                  | WAT IT DOEZ                    |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | OPEN TEH IDENTITY PIKR         |
+| `Git ID Switcher: Show Current Identity` | SHOW CURRENT IDENTITY INFO     |
+| `Git ID Switcher: Show Documentation`    | SHOW TEH DOCUMENTZ             |
 
 ---
 

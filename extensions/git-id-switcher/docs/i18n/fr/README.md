@@ -531,10 +531,11 @@ Si vous avez précédemment sauvegardé des paramètres vides, ils peuvent avoir
 
 ## Commandes
 
-| Commande                        | Description                    |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | Ouvrir le sélecteur d'identité |
-| `Git ID: Show Current Identity` | Afficher l'identité actuelle   |
+| Commande                                 | Description                    |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | Ouvrir le sélecteur d'identité |
+| `Git ID Switcher: Show Current Identity` | Afficher l'identité actuelle   |
+| `Git ID Switcher: Show Documentation`    | Afficher la documentation      |
 
 ---
 

@@ -1,8 +1,8 @@
 {
   "extension.displayName": "Git ID Switcher",
   "extension.description": "一键切换多个 Git 身份（配置文件）。SSH 密钥和 GPG 签名联动，支持子模块批量应用。",
-  "command.selectIdentity": "Git ID: 选择身份",
-  "command.showCurrentIdentity": "Git ID: 显示当前身份",
+  "command.selectIdentity": "选择身份",
+  "command.showCurrentIdentity": "显示当前身份",
   "command.showDocumentation": "显示文档",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: 身份管理",

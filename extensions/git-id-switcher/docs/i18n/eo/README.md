@@ -551,10 +551,11 @@ Se vi antaŭe konservis malplenajn agordojn, ili estis sinkronigitaj al la nubo 
 
 ## Komandoj
 
-| Komando                         | Priskribo                      |
-| ------------------------------- | ------------------------------ |
-| `Git ID: Select Identity`       | Malfermu la identeco-elektilon |
-| `Git ID: Show Current Identity` | Montru nunan identeco-informon |
+| Komando                                  | Priskribo                      |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | Malfermu la identeco-elektilon |
+| `Git ID Switcher: Show Current Identity` | Montru nunan identeco-informon |
+| `Git ID Switcher: Show Documentation`    | Montri dokumentaron            |
 
 ---
 
