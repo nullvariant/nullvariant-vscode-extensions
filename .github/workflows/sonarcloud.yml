@@ -16,6 +16,8 @@ jobs:
   sonarcloud:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
+    # Skip Dependabot PRs as they don't have access to SONAR_TOKEN secret
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Harden Runner
