@@ -41,7 +41,7 @@
 
 Git ID switchers law' tu'lu', 'ach **Git ID Switcher** qay' potlh solve:
 
-1. **Submodules qay'**: Submodules repository work, `git config user.name` *Hoch* submodule manually set need. extension Hoch active submodules ID recursively apply.
+1. **Submodules qay'**: Submodules repository work, `git config user.name` _Hoch_ submodule manually set need. extension Hoch active submodules ID recursively apply.
 2. **SSH & GPG**: pong neH choH. ssh-agent SSH keys swap, GPG signing configure. wrong signature commit never!
 
 ## Features (ngoQ)
@@ -311,38 +311,38 @@ Note: Last ID (`spy`) no SSH—Git config only change. Same GitLab account diffe
 
 ### General Settings
 
-| Setting                             | Default    | Description                                    |
-| ----------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`          | See example| Identity configurations list                   |
-| `gitIdSwitcher.defaultIdentity`     | See example| Default identity ID                            |
-| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | SSH key automatic switch                       |
-| `gitIdSwitcher.showNotifications`   | `true`     | Switch notification show                       |
-| `gitIdSwitcher.applyToSubmodules`   | `true`     | Git submodules ID apply                        |
-| `gitIdSwitcher.submoduleDepth`      | `1`        | Nested submodules max depth (1-5)              |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | Emoji icon Git config `user.name` write        |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | File logging enable (audit)                    |
-| `gitIdSwitcher.logging.filePath`    | `""`       | Custom log file path                           |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Log file max size before rotation (bytes, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles`    | `5`        | Log files keep count (1-20)                    |
-| `gitIdSwitcher.logging.level`       | `"INFO"`   | Logging level (DEBUG/INFO/WARN/ERROR/SECURITY) |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | qaSchugh, Hoch De' Sotlh (patlh'a' pegh) |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | External commands timeout (ms, 1s-5min)        |
+| Setting                                    | Default     | Description                                          |
+| ------------------------------------------ | ----------- | ---------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | See example | Identity configurations list                         |
+| `gitIdSwitcher.defaultIdentity`            | See example | Default identity ID                                  |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | SSH key automatic switch                             |
+| `gitIdSwitcher.showNotifications`          | `true`      | Switch notification show                             |
+| `gitIdSwitcher.applyToSubmodules`          | `true`      | Git submodules ID apply                              |
+| `gitIdSwitcher.submoduleDepth`             | `1`         | Nested submodules max depth (1-5)                    |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Emoji icon Git config `user.name` write              |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`     | File logging enable (audit)                          |
+| `gitIdSwitcher.logging.filePath`           | `""`        | Custom log file path                                 |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Log file max size before rotation (bytes, 1MB-100MB) |
+| `gitIdSwitcher.logging.maxFiles`           | `5`         | Log files keep count (1-20)                          |
+| `gitIdSwitcher.logging.level`              | `"INFO"`    | Logging level (DEBUG/INFO/WARN/ERROR/SECURITY)       |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | qaSchugh, Hoch De' Sotlh (patlh'a' pegh)             |
+| `gitIdSwitcher.commandTimeouts`            | `{}`        | External commands timeout (ms, 1s-5min)              |
 
 #### `includeIconInGitConfig` About
 
 `icon` field set behavior control:
 
-| Value | Behavior |
-|-------|----------|
-| `false` (default) | `icon` editor UI only show. `name` only Git config write |
-| `true` | `icon + name` Git config write. Emoji commit history remain |
+| Value             | Behavior                                                    |
+| ----------------- | ----------------------------------------------------------- |
+| `false` (default) | `icon` editor UI only show. `name` only Git config write    |
+| `true`            | `icon + name` Git config write. Emoji commit history remain |
 
 Example: `icon: "👤"`, `name: "Worf, Son of Mogh"`
 
-| includeIconInGitConfig | Git config `user.name` | Commit signature |
-|------------------------|------------------------|------------------|
-| `false` | `Worf, Son of Mogh` | `Worf, Son of Mogh <email>` |
-| `true` | `👤 Worf, Son of Mogh` | `👤 Worf, Son of Mogh <email>` |
+| includeIconInGitConfig | Git config `user.name` | Commit signature               |
+| ---------------------- | ---------------------- | ------------------------------ |
+| `false`                | `Worf, Son of Mogh`    | `Worf, Son of Mogh <email>`    |
+| `true`                 | `👤 Worf, Son of Mogh` | `👤 Worf, Son of Mogh <email>` |
 
 ### Note: Basic Setup (No SSH)
 
@@ -533,23 +533,23 @@ Past empty settings save, cloud sync, new install default values override.
 
 ## tlhIngan Hol Quick Reference
 
-| tlhIngan | English | Usage |
-|----------|---------|-------|
-| Qapla' | Success! | Greeting/farewell |
-| batlh | Honor | With honor |
+| tlhIngan              | English                    | Usage                         |
+| --------------------- | -------------------------- | ----------------------------- |
+| Qapla'                | Success!                   | Greeting/farewell             |
+| batlh                 | Honor                      | With honor                    |
 | Heghlu'meH QaQ jajvam | Today is a good day to die | Before battle (or deployment) |
-| nuqneH | What do you want? | Hello |
-| HIja' / ghobe' | Yes / No | Responses |
+| nuqneH                | What do you want?          | Hello                         |
+| HIja' / ghobe'        | Yes / No                   | Responses                     |
 
 ---
 
 ## Commands (ra')
 
-| Command                                  | Description              |
-| ---------------------------------------- | ------------------------ |
-| `Git ID Switcher: Select Identity`       | ID picker open           |
-| `Git ID Switcher: Show Current Identity` | DaH ID show              |
-| `Git ID Switcher: Show Documentation`    | ghItlh tu'               |
+| Command                                  | Description    |
+| ---------------------------------------- | -------------- |
+| `Git ID Switcher: Select Identity`       | ID picker open |
+| `Git ID Switcher: Show Current Identity` | DaH ID show    |
+| `Git ID Switcher: Show Documentation`    | ghItlh tu'     |
 
 ---
 
@@ -583,4 +583,4 @@ MIT License - [LICENSE](../../../LICENSE) yIlaD.
 
 🖖 **Qapla'! batlh Daqawlu'taH!** 🖖
 
-*(Success! You will be remembered with honor!)*
+_(Success! You will be remembered with honor!)_

@@ -35,7 +35,7 @@
 
 Birçok Git kimlik değiştirici olmasına rağmen, **Git ID Switcher** diğerlerinin genellikle görmezden geldiği karmaşık sorunları çözer:
 
-1. **Alt Modül Kabusu**: Alt modülleri olan depolarla (Hugo temaları, vendor kütüphaneleri vb.) çalışırken, genellikle *her* alt modül için `git config user.name`'i manuel olarak ayarlamanız gerekir. Bu eklenti, kimliğinizi tüm aktif alt modüllere özyinelemeli olarak uygulayarak bunu zarif bir şekilde çözer.
+1. **Alt Modül Kabusu**: Alt modülleri olan depolarla (Hugo temaları, vendor kütüphaneleri vb.) çalışırken, genellikle _her_ alt modül için `git config user.name`'i manuel olarak ayarlamanız gerekir. Bu eklenti, kimliğinizi tüm aktif alt modüllere özyinelemeli olarak uygulayarak bunu zarif bir şekilde çözer.
 2. **SSH ve GPG İşleme**: Sadece adınızı değiştirmez; aynı zamanda agent'taki SSH anahtarlarınızı değiştirir ve GPG imzalamayı yapılandırır, böylece asla yanlış imzayla commit yapmazsınız.
 
 ## Özellikler
@@ -290,17 +290,17 @@ Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını deği
 
 ### Kimlik Özellikleri
 
-| Özellik       | Gerekli | Açıklama                                                   |
-| ------------- | ------- | ---------------------------------------------------------- |
-| `id`          | ✅      | Benzersiz tanımlayıcı (örn: `"work"`, `"personal"`)        |
-| `name`        | ✅      | Git user.name — commitlerde gösterilir                     |
-| `email`       | ✅      | Git user.email — commitlerde gösterilir                    |
+| Özellik       | Gerekli | Açıklama                                                         |
+| ------------- | ------- | ---------------------------------------------------------------- |
+| `id`          | ✅      | Benzersiz tanımlayıcı (örn: `"work"`, `"personal"`)              |
+| `name`        | ✅      | Git user.name — commitlerde gösterilir                           |
+| `email`       | ✅      | Git user.email — commitlerde gösterilir                          |
 | `icon`        |         | Durum çubuğunda gösterilen emoji (örn: `"🏠"`). Sadece tek emoji |
-| `service`     |         | Hizmet adı (örn: `"GitHub"`, `"GitLab"`). UI için          |
-| `description` |         | Seçici ve araç ipucunda gösterilen kısa açıklama           |
-| `sshKeyPath`  |         | Özel SSH anahtarının yolu (örn: `"~/.ssh/id_ed25519_work"`) |
-| `sshHost`     |         | SSH yapılandırma host takma adı (örn: `"github-work"`)     |
-| `gpgKeyId`    |         | Commit imzalamak için GPG anahtar ID'si                    |
+| `service`     |         | Hizmet adı (örn: `"GitHub"`, `"GitLab"`). UI için                |
+| `description` |         | Seçici ve araç ipucunda gösterilen kısa açıklama                 |
+| `sshKeyPath`  |         | Özel SSH anahtarının yolu (örn: `"~/.ssh/id_ed25519_work"`)      |
+| `sshHost`     |         | SSH yapılandırma host takma adı (örn: `"github-work"`)           |
+| `gpgKeyId`    |         | Commit imzalamak için GPG anahtar ID'si                          |
 
 #### Görüntüleme Sınırlamaları
 
@@ -309,38 +309,38 @@ Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını deği
 
 ### Genel Ayarlar
 
-| Ayar                              | Varsayılan | Açıklama                                       |
-| --------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`        | Örneğe bak | Kimlik yapılandırmaları listesi                |
-| `gitIdSwitcher.defaultIdentity`   | Örneğe bak | Varsayılan kimlik ID'si                        |
-| `gitIdSwitcher.autoSwitchSshKey`  | `true`     | SSH anahtarını otomatik değiştir               |
-| `gitIdSwitcher.showNotifications` | `true`     | Değiştirirken bildirim göster                  |
-| `gitIdSwitcher.applyToSubmodules` | `true`     | Kimliği Git alt modüllerine uygula             |
-| `gitIdSwitcher.submoduleDepth`    | `1`        | İç içe alt modüller için maks. derinlik (1-5)  |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | Emoji ikonunu Git config `user.name`'e yaz     |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | Denetim günlüğünü etkinleştir (kimlik değişiklikleri, SSH işlemleri, vb.) |
-| `gitIdSwitcher.logging.filePath` | `""` | Günlük dosyası yolu (örn.: `~/.git-id-switcher/security.log`). Boş = varsayılan konum |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Döndürmeden önce maks. dosya boyutu (bayt, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles` | `5` | Döndürülen günlük dosyası maks. sayısı (1-20) |
-| `gitIdSwitcher.logging.level` | `"INFO"` | Günlük düzeyi: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Seçilen düzey ve üstünü kaydeder |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Etkinleştirildiğinde, günlüklerdeki tüm değerler maskelenir (maksimum gizlilik) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | Komut başına özel zaman aşımı (ms, 1sn-5dk). Örn.: `{"git": 15000, "ssh-add": 10000}` |
+| Ayar                                       | Varsayılan | Açıklama                                                                                  |
+| ------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Örneğe bak | Kimlik yapılandırmaları listesi                                                           |
+| `gitIdSwitcher.defaultIdentity`            | Örneğe bak | Varsayılan kimlik ID'si                                                                   |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | SSH anahtarını otomatik değiştir                                                          |
+| `gitIdSwitcher.showNotifications`          | `true`     | Değiştirirken bildirim göster                                                             |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Kimliği Git alt modüllerine uygula                                                        |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | İç içe alt modüller için maks. derinlik (1-5)                                             |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Emoji ikonunu Git config `user.name`'e yaz                                                |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Denetim günlüğünü etkinleştir (kimlik değişiklikleri, SSH işlemleri, vb.)                 |
+| `gitIdSwitcher.logging.filePath`           | `""`       | Günlük dosyası yolu (örn.: `~/.git-id-switcher/security.log`). Boş = varsayılan konum     |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Döndürmeden önce maks. dosya boyutu (bayt, 1MB-100MB)                                     |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | Döndürülen günlük dosyası maks. sayısı (1-20)                                             |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | Günlük düzeyi: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Seçilen düzey ve üstünü kaydeder |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Etkinleştirildiğinde, günlüklerdeki tüm değerler maskelenir (maksimum gizlilik)           |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | Komut başına özel zaman aşımı (ms, 1sn-5dk). Örn.: `{"git": 15000, "ssh-add": 10000}`     |
 
 #### `includeIconInGitConfig` Hakkında
 
 `icon` alanı ayarlandığında davranışı kontrol eder:
 
-| Değer | Davranış |
-|-------|----------|
+| Değer                | Davranış                                                                  |
+| -------------------- | ------------------------------------------------------------------------- |
 | `false` (varsayılan) | `icon` sadece editör UI'da gösterilir. Git config'e sadece `name` yazılır |
-| `true` | Git config'e `icon + name` yazılır. Emoji commit geçmişinde kalır |
+| `true`               | Git config'e `icon + name` yazılır. Emoji commit geçmişinde kalır         |
 
 Örnek: `icon: "👤"`, `name: "Deniz Yılmaz"`
 
-| includeIconInGitConfig | Git config `user.name` | Commit imzası |
-|------------------------|------------------------|---------------|
-| `false` | `Deniz Yılmaz` | `Deniz Yılmaz <email>` |
-| `true` | `👤 Deniz Yılmaz` | `👤 Deniz Yılmaz <email>` |
+| includeIconInGitConfig | Git config `user.name` | Commit imzası             |
+| ---------------------- | ---------------------- | ------------------------- |
+| `false`                | `Deniz Yılmaz`         | `Deniz Yılmaz <email>`    |
+| `true`                 | `👤 Deniz Yılmaz`      | `👤 Deniz Yılmaz <email>` |
 
 ### Not: Temel Kurulum (SSH Olmadan)
 
@@ -531,11 +531,11 @@ Geçmişte boş ayarlar kaydettiyseniz, bu ayarlar buluta senkronize edilmiş ve
 
 ## Komutlar
 
-| Komut                                    | Açıklama                        |
-| ---------------------------------------- | ------------------------------- |
-| `Git ID Switcher: Select Identity`       | Kimlik seçiciyi aç              |
-| `Git ID Switcher: Show Current Identity` | Mevcut kimlik bilgisini göster  |
-| `Git ID Switcher: Show Documentation`    | Belgeleri göster                |
+| Komut                                    | Açıklama                       |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | Kimlik seçiciyi aç             |
+| `Git ID Switcher: Show Current Identity` | Mevcut kimlik bilgisini göster |
+| `Git ID Switcher: Show Documentation`    | Belgeleri göster               |
 
 ---
 

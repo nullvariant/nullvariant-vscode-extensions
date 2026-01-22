@@ -310,17 +310,17 @@ Host bitbucket.org
 
 ### ID プロパティ (Identity Properties)
 
-| プロパティ    | 必須  | ウコイタㇰ                                                 |
-| ------------- | ----- | ---------------------------------------------------------- |
-| `id`          | ✅    | ユニーク ID (例: `"work"`, `"personal"`)                   |
-| `name`        | ✅    | Git user.name — commit オロワ                              |
-| `email`       | ✅    | Git user.email — commit オロワ                             |
-| `icon`        |       | ステータスバー 絵文字 (例: `"🏠"`)。シネㇷ゚ 絵文字 ワノ    |
-| `service`     |       | サービス レー (例: `"GitHub"`, `"GitLab"`)。UI オロワ      |
-| `description` |       | ピッカー ウン ツールチップ オロワ                          |
-| `sshKeyPath`  |       | SSH 秘密鍵 パス (例: `"~/.ssh/id_ed25519_work"`)           |
-| `sshHost`     |       | SSH config ホスト エイリアス (例: `"github-work"`)         |
-| `gpgKeyId`    |       | GPG キー ID commit サイン                                  |
+| プロパティ    | 必須 | ウコイタㇰ                                               |
+| ------------- | ---- | -------------------------------------------------------- |
+| `id`          | ✅   | ユニーク ID (例: `"work"`, `"personal"`)                 |
+| `name`        | ✅   | Git user.name — commit オロワ                            |
+| `email`       | ✅   | Git user.email — commit オロワ                           |
+| `icon`        |      | ステータスバー 絵文字 (例: `"🏠"`)。シネㇷ゚ 絵文字 ワノ |
+| `service`     |      | サービス レー (例: `"GitHub"`, `"GitLab"`)。UI オロワ    |
+| `description` |      | ピッカー ウン ツールチップ オロワ                        |
+| `sshKeyPath`  |      | SSH 秘密鍵 パス (例: `"~/.ssh/id_ed25519_work"`)         |
+| `sshHost`     |      | SSH config ホスト エイリアス (例: `"github-work"`)       |
+| `gpgKeyId`    |      | GPG キー ID commit サイン                                |
 
 #### 表示制限 (Display Limitations)
 
@@ -329,38 +329,38 @@ Host bitbucket.org
 
 ### 設定 (General Settings)
 
-| 設定                                | デフォルト | ウコイタㇰ                                     |
-| ----------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`          | 例 エヌカㇻ | ID 設定 リスト                                 |
-| `gitIdSwitcher.defaultIdentity`     | 例 エヌカㇻ | デフォルト ID                                  |
-| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | SSH キー ウコイタㇰ                            |
-| `gitIdSwitcher.showNotifications`   | `true`     | ウコイタㇰ 通知                                |
-| `gitIdSwitcher.applyToSubmodules`   | `true`     | Git submodule ID ウコイタㇰ                    |
-| `gitIdSwitcher.submoduleDepth`      | `1`        | ネスト submodule 深さ (1-5)                    |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | 絵文字 icon Git config `user.name` オロワ      |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | 監査ログ ファイル オロワ（ID ウコイタㇰ、SSH 操作 等） |
-| `gitIdSwitcher.logging.filePath` | `""` | ログファイル パス（例：`~/.git-id-switcher/security.log`）。空 = デフォルト |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | ローテーション前 最大ファイルサイズ（バイト、1MB-100MB） |
-| `gitIdSwitcher.logging.maxFiles` | `5` | 保持 ローテーションファイル 最大数（1-20） |
-| `gitIdSwitcher.logging.level` | `"INFO"` | ログレベル：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。選択レベル以上 記録 |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | ウコイタㇰ、タント ウン コラムパコロ マスク（最大プライバシー） |
-| `gitIdSwitcher.commandTimeouts` | `{}` | コマンド タイムアウト（ミリ秒、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
+| 設定                                       | デフォルト  | ウコイタㇰ                                                                       |
+| ------------------------------------------ | ----------- | -------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | 例 エヌカㇻ | ID 設定 リスト                                                                   |
+| `gitIdSwitcher.defaultIdentity`            | 例 エヌカㇻ | デフォルト ID                                                                    |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | SSH キー ウコイタㇰ                                                              |
+| `gitIdSwitcher.showNotifications`          | `true`      | ウコイタㇰ 通知                                                                  |
+| `gitIdSwitcher.applyToSubmodules`          | `true`      | Git submodule ID ウコイタㇰ                                                      |
+| `gitIdSwitcher.submoduleDepth`             | `1`         | ネスト submodule 深さ (1-5)                                                      |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | 絵文字 icon Git config `user.name` オロワ                                        |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`     | 監査ログ ファイル オロワ（ID ウコイタㇰ、SSH 操作 等）                           |
+| `gitIdSwitcher.logging.filePath`           | `""`        | ログファイル パス（例：`~/.git-id-switcher/security.log`）。空 = デフォルト      |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | ローテーション前 最大ファイルサイズ（バイト、1MB-100MB）                         |
+| `gitIdSwitcher.logging.maxFiles`           | `5`         | 保持 ローテーションファイル 最大数（1-20）                                       |
+| `gitIdSwitcher.logging.level`              | `"INFO"`    | ログレベル：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。選択レベル以上 記録        |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | ウコイタㇰ、タント ウン コラムパコロ マスク（最大プライバシー）                  |
+| `gitIdSwitcher.commandTimeouts`            | `{}`        | コマンド タイムアウト（ミリ秒、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig` オロワ
 
 `icon` フィールド 設定 動作:
 
-| 値 | 動作 |
-|--------|------|
-| `false` (デフォルト) | `icon` エディタ UI ワノ。`name` ワノ Git config オロワ |
-| `true` | `icon + name` Git config オロワ。絵文字 commit 履歴 オロワ |
+| 値                   | 動作                                                       |
+| -------------------- | ---------------------------------------------------------- |
+| `false` (デフォルト) | `icon` エディタ UI ワノ。`name` ワノ Git config オロワ     |
+| `true`               | `icon + name` Git config オロワ。絵文字 commit 履歴 オロワ |
 
 例: `icon: "👤"`, `name: "カムイ レㇻ"`
 
-| includeIconInGitConfig | Git config `user.name` | Commit サイン |
-|------------------------|------------------------|---------------|
-| `false` | `カムイ レㇻ` | `カムイ レㇻ <email>` |
-| `true` | `👤 カムイ レㇻ` | `👤 カムイ レㇻ <email>` |
+| includeIconInGitConfig | Git config `user.name` | Commit サイン            |
+| ---------------------- | ---------------------- | ------------------------ |
+| `false`                | `カムイ レㇻ`          | `カムイ レㇻ <email>`    |
+| `true`                 | `👤 カムイ レㇻ`       | `👤 カムイ レㇻ <email>` |
 
 ### ウタㇻ: 基本設定 (SSH ソモ)
 
@@ -551,11 +551,11 @@ VS Code 設定スキーマ メモリ キャッシュ、"Reload Window" ウン re
 
 ## コマンド
 
-| コマンド                                 | ウコイタㇰ                     |
-| ---------------------------------------- | ------------------------------ |
-| `Git ID Switcher: Select Identity`       | ID ピッカー                    |
-| `Git ID Switcher: Show Current Identity` | エネアン ID エヌカㇻ           |
-| `Git ID Switcher: Show Documentation`    | ドキュメント エヌカㇻ          |
+| コマンド                                 | ウコイタㇰ            |
+| ---------------------------------------- | --------------------- |
+| `Git ID Switcher: Select Identity`       | ID ピッカー           |
+| `Git ID Switcher: Show Current Identity` | エネアン ID エヌカㇻ  |
+| `Git ID Switcher: Show Documentation`    | ドキュメント エヌカㇻ |
 
 ---
 

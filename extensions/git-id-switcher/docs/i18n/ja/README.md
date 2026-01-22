@@ -290,17 +290,17 @@ Host bitbucket.org
 
 ### プロフィールのプロパティ
 
-| プロパティ    | 必須 | 説明                                                     |
-| ------------- | ---- | -------------------------------------------------------- |
-| `id`          | ✅    | 一意の識別子（例：`"personal"`, `"work"`）                |
-| `name`        | ✅    | Git user.name - コミットに表示                           |
-| `email`       | ✅    | Git user.email - コミットに表示                          |
+| プロパティ    | 必須 | 説明                                                             |
+| ------------- | ---- | ---------------------------------------------------------------- |
+| `id`          | ✅   | 一意の識別子（例：`"personal"`, `"work"`）                       |
+| `name`        | ✅   | Git user.name - コミットに表示                                   |
+| `email`       | ✅   | Git user.email - コミットに表示                                  |
 | `icon`        |      | ステータスバーに表示される絵文字（例：`"🏠"`）。単一の絵文字のみ |
-| `service`     |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI表示に使用   |
-| `description` |      | ピッカーとツールチップに表示される短い説明               |
-| `sshKeyPath`  |      | SSHプライベートキーへのパス（例：`"~/.ssh/id_ed25519_work"`） |
-| `sshHost`     |      | SSH configのHostエイリアス（例：`"github-work"`）       |
-| `gpgKeyId`    |      | コミット署名用のGPG鍵ID                                |
+| `service`     |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI表示に使用           |
+| `description` |      | ピッカーとツールチップに表示される短い説明                       |
+| `sshKeyPath`  |      | SSHプライベートキーへのパス（例：`"~/.ssh/id_ed25519_work"`）    |
+| `sshHost`     |      | SSH configのHostエイリアス（例：`"github-work"`）                |
+| `gpgKeyId`    |      | コミット署名用のGPG鍵ID                                          |
 
 #### 表示に関する制限
 
@@ -309,38 +309,38 @@ Host bitbucket.org
 
 ### グローバル設定
 
-| 設定                              | デフォルト | 説明                                         |
-| --------------------------------- | ---------- | -------------------------------------------- |
-| `gitIdSwitcher.identities`        | サンプル参照 | プロフィール設定のリスト                     |
-| `gitIdSwitcher.defaultIdentity`   | サンプル参照 | 使用するデフォルトプロフィールのID           |
-| `gitIdSwitcher.autoSwitchSshKey`  | `true`     | プロフィール変更時にSSH鍵を自動切り替え     |
-| `gitIdSwitcher.showNotifications` | `true`     | プロフィール切り替え時に通知を表示           |
-| `gitIdSwitcher.applyToSubmodules` | `true`     | Gitサブモジュールにプロフィールを伝播        |
-| `gitIdSwitcher.submoduleDepth`    | `1`        | ネストされたサブモジュール設定の最大深度（1-5） |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | アイコン絵文字をGit configの`user.name`に含めるか |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | 監査ログをファイルに保存する（ID切り替え、SSH鍵操作などを記録） |
-| `gitIdSwitcher.logging.filePath` | `""` | ログファイルのパス（例：`~/.git-id-switcher/security.log`）。空文字列の場合はデフォルトパスを使用 |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | ローテーション前の最大ファイルサイズ（バイト単位、1MB-100MB） |
-| `gitIdSwitcher.logging.maxFiles` | `5` | 保持するローテーションファイルの最大数（1-20） |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | 有効にすると、ログ内の全ての値をマスクします（最大プライバシーモード） |
-| `gitIdSwitcher.logging.level` | `"INFO"` | ログの詳細度（`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`）。選択したレベル以上を記録 |
-| `gitIdSwitcher.commandTimeouts` | `{}` | コマンドごとのカスタムタイムアウト値（ミリ秒単位、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
+| 設定                                       | デフォルト   | 説明                                                                                                |
+| ------------------------------------------ | ------------ | --------------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | サンプル参照 | プロフィール設定のリスト                                                                            |
+| `gitIdSwitcher.defaultIdentity`            | サンプル参照 | 使用するデフォルトプロフィールのID                                                                  |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | プロフィール変更時にSSH鍵を自動切り替え                                                             |
+| `gitIdSwitcher.showNotifications`          | `true`       | プロフィール切り替え時に通知を表示                                                                  |
+| `gitIdSwitcher.applyToSubmodules`          | `true`       | Gitサブモジュールにプロフィールを伝播                                                               |
+| `gitIdSwitcher.submoduleDepth`             | `1`          | ネストされたサブモジュール設定の最大深度（1-5）                                                     |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`      | アイコン絵文字をGit configの`user.name`に含めるか                                                   |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`      | 監査ログをファイルに保存する（ID切り替え、SSH鍵操作などを記録）                                     |
+| `gitIdSwitcher.logging.filePath`           | `""`         | ログファイルのパス（例：`~/.git-id-switcher/security.log`）。空文字列の場合はデフォルトパスを使用   |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | ローテーション前の最大ファイルサイズ（バイト単位、1MB-100MB）                                       |
+| `gitIdSwitcher.logging.maxFiles`           | `5`          | 保持するローテーションファイルの最大数（1-20）                                                      |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`      | 有効にすると、ログ内の全ての値をマスクします（最大プライバシーモード）                              |
+| `gitIdSwitcher.logging.level`              | `"INFO"`     | ログの詳細度（`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`）。選択したレベル以上を記録              |
+| `gitIdSwitcher.commandTimeouts`            | `{}`         | コマンドごとのカスタムタイムアウト値（ミリ秒単位、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig` について
 
 `icon` フィールドを設定した場合の動作を制御します：
 
-| 値 | 動作 |
-|----|------|
-| `false`（デフォルト） | `icon`はエディタUIのみに表示。Git configには`name`のみ書き込み |
-| `true` | Git configに`icon + name`を書き込み。コミット履歴にも絵文字が残る |
+| 値                    | 動作                                                              |
+| --------------------- | ----------------------------------------------------------------- |
+| `false`（デフォルト） | `icon`はエディタUIのみに表示。Git configには`name`のみ書き込み    |
+| `true`                | Git configに`icon + name`を書き込み。コミット履歴にも絵文字が残る |
 
 例：`icon: "👤"`, `name: "高橋カオル"` の場合
 
-| includeIconInGitConfig | Git config `user.name` | コミット署名 |
-|------------------------|------------------------|-------------|
-| `false` | `高橋カオル` | `高橋カオル <email>` |
-| `true` | `👤 高橋カオル` | `👤 高橋カオル <email>` |
+| includeIconInGitConfig | Git config `user.name` | コミット署名            |
+| ---------------------- | ---------------------- | ----------------------- |
+| `false`                | `高橋カオル`           | `高橋カオル <email>`    |
+| `true`                 | `👤 高橋カオル`        | `👤 高橋カオル <email>` |
 
 ### 補足: 基本設定のみ（SSHなし）
 
@@ -411,11 +411,11 @@ Gitの設定には3つのレイヤーがあり、下位の設定を上位が上�
 
 Git ID Switcherは`ssh-agent`を通じてSSH鍵を管理します：
 
-| 操作     | 実行コマンド              |
-| -------- | ------------------------- |
-| 鍵を追加 | `ssh-add <keyPath>`       |
-| 鍵を削除 | `ssh-add -d <keyPath>`    |
-| 鍵の一覧 | `ssh-add -l`              |
+| 操作     | 実行コマンド           |
+| -------- | ---------------------- |
+| 鍵を追加 | `ssh-add <keyPath>`    |
+| 鍵を削除 | `ssh-add -d <keyPath>` |
+| 鍵の一覧 | `ssh-add -l`           |
 
 **重要:** この拡張機能は `~/.ssh/config` を**変更しません**。SSH configの設定は手動で行う必要があります（「クイックスタート」のステップ2を参照）。
 
@@ -423,12 +423,12 @@ Git ID Switcherは`ssh-agent`を通じてSSH鍵を管理します：
 
 すでにSSH設定がある場合、Git ID Switcherは以下のように動作します：
 
-| あなたの設定                             | Git ID Switcherの動作                                  |
-| ---------------------------------------- | ------------------------------------------------------ |
-| `~/.ssh/config` で `IdentityFile` を指定 | 両方が使用可能；`IdentitiesOnly yes` で競合を防止      |
-| 環境変数 `GIT_SSH_COMMAND` を設定        | カスタムSSHコマンドを使用；ssh-agentは引き続き動作     |
-| `git config core.sshCommand` を設定      | 上記と同様                                             |
-| direnvでSSH関連の環境変数を設定          | 共存可能；ssh-agentは独立して動作                      |
+| あなたの設定                             | Git ID Switcherの動作                              |
+| ---------------------------------------- | -------------------------------------------------- |
+| `~/.ssh/config` で `IdentityFile` を指定 | 両方が使用可能；`IdentitiesOnly yes` で競合を防止  |
+| 環境変数 `GIT_SSH_COMMAND` を設定        | カスタムSSHコマンドを使用；ssh-agentは引き続き動作 |
+| `git config core.sshCommand` を設定      | 上記と同様                                         |
+| direnvでSSH関連の環境変数を設定          | 共存可能；ssh-agentは独立して動作                  |
 
 **推奨:** SSH configでは常に `IdentitiesOnly yes` を設定してください。これにより、SSHが複数の鍵を試行することを防ぎます。
 
@@ -579,11 +579,11 @@ VS Codeなどのエディタは設定スキーマをメモリにキャッシュ�
 
 ## コマンド
 
-| コマンド                                 | 説明                           |
-| ---------------------------------------- | ------------------------------ |
-| `Git ID Switcher: Select Identity`       | プロフィールピッカーを開く     |
-| `Git ID Switcher: Show Current Identity` | 現在のプロフィール情報を表示   |
-| `Git ID Switcher: Show Documentation`    | ドキュメントを表示             |
+| コマンド                                 | 説明                         |
+| ---------------------------------------- | ---------------------------- |
+| `Git ID Switcher: Select Identity`       | プロフィールピッカーを開く   |
+| `Git ID Switcher: Show Current Identity` | 現在のプロフィール情報を表示 |
+| `Git ID Switcher: Show Documentation`    | ドキュメントを表示           |
 
 ---
 

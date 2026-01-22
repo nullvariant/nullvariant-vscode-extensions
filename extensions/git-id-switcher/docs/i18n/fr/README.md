@@ -35,7 +35,7 @@
 
 Bien qu'il existe de nombreux outils de changement d'identité Git, **Git ID Switcher** résout les problèmes complexes que les autres ignorent souvent :
 
-1. **Le cauchemar des sous-modules** : Lorsque vous travaillez avec des dépôts contenant des sous-modules (thèmes Hugo, bibliothèques vendor, etc.), vous devez généralement définir `git config user.name` manuellement pour *chaque* sous-module. Cette extension gère cela élégamment en appliquant récursivement votre identité à tous les sous-modules actifs.
+1. **Le cauchemar des sous-modules** : Lorsque vous travaillez avec des dépôts contenant des sous-modules (thèmes Hugo, bibliothèques vendor, etc.), vous devez généralement définir `git config user.name` manuellement pour _chaque_ sous-module. Cette extension gère cela élégamment en appliquant récursivement votre identité à tous les sous-modules actifs.
 2. **Gestion SSH et GPG** : Elle ne fait pas que changer votre nom ; elle échange vos clés SSH dans l'agent et configure la signature GPG pour que vous ne committiez jamais avec la mauvaise signature.
 
 ## Fonctionnalités
@@ -290,17 +290,17 @@ Note : La dernière identité (`freelance`) n'a pas de SSH — elle ne change qu
 
 ### Propriétés d'identité
 
-| Propriété     | Requis | Description                                                |
-| ------------- | ------ | ---------------------------------------------------------- |
-| `id`          | ✅     | Identifiant unique (ex: `"work"`, `"personal"`)            |
-| `name`        | ✅     | Git user.name - affiché dans les commits                   |
-| `email`       | ✅     | Git user.email - affiché dans les commits                  |
-| `icon`        |        | Emoji affiché dans la barre d'état (ex. : `"🏠"`). Un seul emoji |
+| Propriété     | Requis | Description                                                              |
+| ------------- | ------ | ------------------------------------------------------------------------ |
+| `id`          | ✅     | Identifiant unique (ex: `"work"`, `"personal"`)                          |
+| `name`        | ✅     | Git user.name - affiché dans les commits                                 |
+| `email`       | ✅     | Git user.email - affiché dans les commits                                |
+| `icon`        |        | Emoji affiché dans la barre d'état (ex. : `"🏠"`). Un seul emoji         |
 | `service`     |        | Nom du service (ex: `"GitHub"`, `"GitLab"`). Utilisé pour l'affichage UI |
-| `description` |        | Courte description affichée dans le sélecteur et l'info-bulle |
-| `sshKeyPath`  |        | Chemin vers la clé SSH privée (ex: `"~/.ssh/id_ed25519_work"`) |
-| `sshHost`     |        | Alias d'hôte SSH (ex: `"github-work"`)                     |
-| `gpgKeyId`    |        | ID de clé GPG pour la signature des commits                |
+| `description` |        | Courte description affichée dans le sélecteur et l'info-bulle            |
+| `sshKeyPath`  |        | Chemin vers la clé SSH privée (ex: `"~/.ssh/id_ed25519_work"`)           |
+| `sshHost`     |        | Alias d'hôte SSH (ex: `"github-work"`)                                   |
+| `gpgKeyId`    |        | ID de clé GPG pour la signature des commits                              |
 
 #### Limitations d'affichage
 
@@ -309,38 +309,38 @@ Note : La dernière identité (`freelance`) n'a pas de SSH — elle ne change qu
 
 ### Paramètres globaux
 
-| Paramètre                              | Par défaut   | Description                                    |
-| -------------------------------------- | ------------ | ---------------------------------------------- |
-| `gitIdSwitcher.identities`             | Voir exemple | Liste des configurations d'identités           |
-| `gitIdSwitcher.defaultIdentity`        | Voir exemple | ID de l'identité par défaut                    |
-| `gitIdSwitcher.autoSwitchSshKey`       | `true`       | Changer automatiquement la clé SSH             |
-| `gitIdSwitcher.showNotifications`      | `true`       | Afficher une notification lors du changement   |
-| `gitIdSwitcher.applyToSubmodules`      | `true`       | Propager l'identité aux sous-modules Git       |
-| `gitIdSwitcher.submoduleDepth`         | `1`          | Profondeur max pour les sous-modules imbriqués (1-5) |
-| `gitIdSwitcher.includeIconInGitConfig` | `false`      | Inclure l'emoji icône dans le Git config `user.name` |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | Activer la journalisation d'audit (changements d'identité, opérations SSH, etc.) |
-| `gitIdSwitcher.logging.filePath` | `""` | Chemin du fichier journal (ex : `~/.git-id-switcher/security.log`). Vide = emplacement par défaut |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Taille max du fichier avant rotation (octets, 1Mo-100Mo) |
-| `gitIdSwitcher.logging.maxFiles` | `5` | Nombre max de fichiers journaux en rotation (1-20) |
-| `gitIdSwitcher.logging.level` | `"INFO"` | Niveau de log : `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Enregistre le niveau sélectionné et supérieur |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Lorsqu'activé, toutes les valeurs sont masquées dans les journaux (confidentialité maximale) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | Timeout personnalisé par commande (ms, 1sec-5min). Ex : `{"git": 15000, "ssh-add": 10000}` |
+| Paramètre                                  | Par défaut   | Description                                                                                             |
+| ------------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Voir exemple | Liste des configurations d'identités                                                                    |
+| `gitIdSwitcher.defaultIdentity`            | Voir exemple | ID de l'identité par défaut                                                                             |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | Changer automatiquement la clé SSH                                                                      |
+| `gitIdSwitcher.showNotifications`          | `true`       | Afficher une notification lors du changement                                                            |
+| `gitIdSwitcher.applyToSubmodules`          | `true`       | Propager l'identité aux sous-modules Git                                                                |
+| `gitIdSwitcher.submoduleDepth`             | `1`          | Profondeur max pour les sous-modules imbriqués (1-5)                                                    |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`      | Inclure l'emoji icône dans le Git config `user.name`                                                    |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`      | Activer la journalisation d'audit (changements d'identité, opérations SSH, etc.)                        |
+| `gitIdSwitcher.logging.filePath`           | `""`         | Chemin du fichier journal (ex : `~/.git-id-switcher/security.log`). Vide = emplacement par défaut       |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | Taille max du fichier avant rotation (octets, 1Mo-100Mo)                                                |
+| `gitIdSwitcher.logging.maxFiles`           | `5`          | Nombre max de fichiers journaux en rotation (1-20)                                                      |
+| `gitIdSwitcher.logging.level`              | `"INFO"`     | Niveau de log : `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Enregistre le niveau sélectionné et supérieur |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`      | Lorsqu'activé, toutes les valeurs sont masquées dans les journaux (confidentialité maximale)            |
+| `gitIdSwitcher.commandTimeouts`            | `{}`         | Timeout personnalisé par commande (ms, 1sec-5min). Ex : `{"git": 15000, "ssh-add": 10000}`              |
 
 #### À propos de `includeIconInGitConfig`
 
 Contrôle le comportement lorsque le champ `icon` est défini :
 
-| Valeur | Comportement |
-|--------|--------------|
+| Valeur               | Comportement                                                                                       |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
 | `false` (par défaut) | `icon` est affiché uniquement dans l'interface de l'éditeur. Seul `name` est écrit dans Git config |
-| `true` | `icon + name` est écrit dans Git config. L'emoji apparaît dans l'historique des commits |
+| `true`               | `icon + name` est écrit dans Git config. L'emoji apparaît dans l'historique des commits            |
 
 Exemple : `icon: "👤"`, `name: "Camille Dupont"`
 
-| includeIconInGitConfig | Git config `user.name` | Signature de commit |
-|------------------------|------------------------|---------------------|
-| `false` | `Camille Dupont` | `Camille Dupont <email>` |
-| `true` | `👤 Camille Dupont` | `👤 Camille Dupont <email>` |
+| includeIconInGitConfig | Git config `user.name` | Signature de commit         |
+| ---------------------- | ---------------------- | --------------------------- |
+| `false`                | `Camille Dupont`       | `Camille Dupont <email>`    |
+| `true`                 | `👤 Camille Dupont`    | `👤 Camille Dupont <email>` |
 
 ### Note : Configuration basique (sans SSH)
 

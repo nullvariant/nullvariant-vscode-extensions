@@ -35,7 +35,7 @@
 
 I když existuje mnoho nástrojů pro přepínání Git identity, **Git ID Switcher** řeší složité problémy, které jiné často ignorují:
 
-1. **Noční můra submodulů**: Při práci s repozitáři obsahujícími submoduly (Hugo témata, vendor knihovny atd.) je obvykle nutné ručně nastavit `git config user.name` pro *každý* submodul. Toto rozšíření to elegantně řeší rekurzivní aplikací vaší identity na všechny aktivní submoduly.
+1. **Noční můra submodulů**: Při práci s repozitáři obsahujícími submoduly (Hugo témata, vendor knihovny atd.) je obvykle nutné ručně nastavit `git config user.name` pro _každý_ submodul. Toto rozšíření to elegantně řeší rekurzivní aplikací vaší identity na všechny aktivní submoduly.
 2. **Zpracování SSH a GPG**: Nemění jen vaše jméno; také vyměňuje SSH klíče v agentovi a konfiguruje GPG podepisování, takže nikdy neuděláte commit s nesprávným podpisem.
 
 ## Funkce
@@ -289,17 +289,17 @@ Poznámka: Poslední identita (`freelance`) nemá SSH — pouze přepíná Git k
 
 ### Vlastnosti identity
 
-| Vlastnost     | Povinná | Popis                                                      |
-| ------------- | ------- | ---------------------------------------------------------- |
-| `id`          | ✅      | Jedinečný identifikátor (např.: `"work"`, `"personal"`)    |
-| `name`        | ✅      | Git user.name — zobrazeno v commitech                      |
-| `email`       | ✅      | Git user.email — zobrazeno v commitech                     |
-| `icon`        |         | Emoji ve stavovém řádku (např.: `"🏠"`). Pouze jedno emoji |
+| Vlastnost     | Povinná | Popis                                                                       |
+| ------------- | ------- | --------------------------------------------------------------------------- |
+| `id`          | ✅      | Jedinečný identifikátor (např.: `"work"`, `"personal"`)                     |
+| `name`        | ✅      | Git user.name — zobrazeno v commitech                                       |
+| `email`       | ✅      | Git user.email — zobrazeno v commitech                                      |
+| `icon`        |         | Emoji ve stavovém řádku (např.: `"🏠"`). Pouze jedno emoji                  |
 | `service`     |         | Název služby (např.: `"GitHub"`, `"GitLab"`). Používá se pro zobrazení v UI |
-| `description` |         | Krátký popis ve výběru a nápovědě                          |
-| `sshKeyPath`  |         | Cesta k soukromému SSH klíči (např.: `"~/.ssh/id_ed25519_work"`) |
-| `sshHost`     |         | SSH config host alias (např.: `"github-work"`)             |
-| `gpgKeyId`    |         | ID GPG klíče pro podepisování commitů                      |
+| `description` |         | Krátký popis ve výběru a nápovědě                                           |
+| `sshKeyPath`  |         | Cesta k soukromému SSH klíči (např.: `"~/.ssh/id_ed25519_work"`)            |
+| `sshHost`     |         | SSH config host alias (např.: `"github-work"`)                              |
+| `gpgKeyId`    |         | ID GPG klíče pro podepisování commitů                                       |
 
 #### Omezení zobrazení
 
@@ -308,38 +308,38 @@ Poznámka: Poslední identita (`freelance`) nemá SSH — pouze přepíná Git k
 
 ### Globální nastavení
 
-| Nastavení                              | Výchozí     | Popis                                          |
-| -------------------------------------- | ----------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`             | Viz příklad | Seznam konfigurací identit                     |
-| `gitIdSwitcher.defaultIdentity`        | Viz příklad | ID výchozí identity                            |
-| `gitIdSwitcher.autoSwitchSshKey`       | `true`      | Automaticky přepínat SSH klíč                  |
-| `gitIdSwitcher.showNotifications`      | `true`      | Zobrazit oznámení při přepnutí                 |
-| `gitIdSwitcher.applyToSubmodules`      | `true`      | Aplikovat identitu na Git submoduly            |
-| `gitIdSwitcher.submoduleDepth`         | `1`         | Max. hloubka pro vnořené submoduly (1-5)       |
-| `gitIdSwitcher.includeIconInGitConfig` | `false`     | Zahrnout emoji ikonu do Git config `user.name` |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | Zapnout auditní logování (změny identity, operace SSH, atd.) |
-| `gitIdSwitcher.logging.filePath` | `""` | Cesta k souboru logu (např.: `~/.git-id-switcher/security.log`). Prázdné = výchozí umístění |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max. velikost souboru před rotací (bajty, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles` | `5` | Max. počet rotovaných log souborů (1-20) |
-| `gitIdSwitcher.logging.level` | `"INFO"` | Úroveň logování: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Zaznamenává vybranou úroveň a vyšší |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Pokud je povoleno, všechny hodnoty jsou v protokolech maskovány (maximální soukromí) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | Vlastní timeout pro příkaz (ms, 1sek-5min). Např.: `{"git": 15000, "ssh-add": 10000}` |
+| Nastavení                                  | Výchozí     | Popis                                                                                          |
+| ------------------------------------------ | ----------- | ---------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Viz příklad | Seznam konfigurací identit                                                                     |
+| `gitIdSwitcher.defaultIdentity`            | Viz příklad | ID výchozí identity                                                                            |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | Automaticky přepínat SSH klíč                                                                  |
+| `gitIdSwitcher.showNotifications`          | `true`      | Zobrazit oznámení při přepnutí                                                                 |
+| `gitIdSwitcher.applyToSubmodules`          | `true`      | Aplikovat identitu na Git submoduly                                                            |
+| `gitIdSwitcher.submoduleDepth`             | `1`         | Max. hloubka pro vnořené submoduly (1-5)                                                       |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Zahrnout emoji ikonu do Git config `user.name`                                                 |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`     | Zapnout auditní logování (změny identity, operace SSH, atd.)                                   |
+| `gitIdSwitcher.logging.filePath`           | `""`        | Cesta k souboru logu (např.: `~/.git-id-switcher/security.log`). Prázdné = výchozí umístění    |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Max. velikost souboru před rotací (bajty, 1MB-100MB)                                           |
+| `gitIdSwitcher.logging.maxFiles`           | `5`         | Max. počet rotovaných log souborů (1-20)                                                       |
+| `gitIdSwitcher.logging.level`              | `"INFO"`    | Úroveň logování: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Zaznamenává vybranou úroveň a vyšší |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | Pokud je povoleno, všechny hodnoty jsou v protokolech maskovány (maximální soukromí)           |
+| `gitIdSwitcher.commandTimeouts`            | `{}`        | Vlastní timeout pro příkaz (ms, 1sek-5min). Např.: `{"git": 15000, "ssh-add": 10000}`          |
 
 #### O nastavení `includeIconInGitConfig`
 
 Ovládá chování, když je nastaveno pole `icon`:
 
-| Hodnota | Chování |
-|---------|---------|
+| Hodnota           | Chování                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------- |
 | `false` (výchozí) | `icon` se zobrazuje pouze v rozhraní editoru. Do Git configu se zapisuje pouze `name` |
-| `true` | Do Git configu se zapisuje `icon + name`. Emoji se objeví v historii commitů |
+| `true`            | Do Git configu se zapisuje `icon + name`. Emoji se objeví v historii commitů          |
 
 Příklad: `icon: "👤"`, `name: "Alex Novák"`
 
-| includeIconInGitConfig | Git config `user.name` | Podpis commitu |
-|------------------------|------------------------|----------------|
-| `false` | `Alex Novák` | `Alex Novák <email>` |
-| `true` | `👤 Alex Novák` | `👤 Alex Novák <email>` |
+| includeIconInGitConfig | Git config `user.name` | Podpis commitu          |
+| ---------------------- | ---------------------- | ----------------------- |
+| `false`                | `Alex Novák`           | `Alex Novák <email>`    |
+| `true`                 | `👤 Alex Novák`        | `👤 Alex Novák <email>` |
 
 ### Poznámka: Základní nastavení (bez SSH)
 

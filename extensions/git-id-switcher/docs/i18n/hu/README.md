@@ -35,7 +35,7 @@
 
 Bár sok Git-azonosító váltó létezik, a **Git ID Switcher** olyan összetett problémákat old meg, amelyeket mások gyakran figyelmen kívül hagynak:
 
-1. **Az almodulok rémálma**: Almodulokat tartalmazó tárolókkal (Hugo témák, vendor könyvtárak stb.) dolgozva általában manuálisan kell beállítani a `git config user.name`-et *minden* almodulhoz. Ez a bővítmény elegánsan megoldja ezt az azonosító rekurzív alkalmazásával az összes aktív almodulra.
+1. **Az almodulok rémálma**: Almodulokat tartalmazó tárolókkal (Hugo témák, vendor könyvtárak stb.) dolgozva általában manuálisan kell beállítani a `git config user.name`-et _minden_ almodulhoz. Ez a bővítmény elegánsan megoldja ezt az azonosító rekurzív alkalmazásával az összes aktív almodulra.
 2. **SSH és GPG kezelés**: Nem csak a nevét változtatja meg; az SSH-kulcsokat is cseréli az agentben és konfigurálja a GPG-aláírást, így soha nem fog rossz aláírással commitolni.
 
 ## Funkciók
@@ -290,17 +290,17 @@ Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-k
 
 ### Azonosító tulajdonságai
 
-| Tulajdonság   | Kötelező | Leírás                                                     |
-| ------------- | -------- | ---------------------------------------------------------- |
-| `id`          | ✅       | Egyedi azonosító (pl.: `"work"`, `"personal"`)             |
-| `name`        | ✅       | Git user.name — commitokban jelenik meg                    |
-| `email`       | ✅       | Git user.email — commitokban jelenik meg                   |
+| Tulajdonság   | Kötelező | Leírás                                                               |
+| ------------- | -------- | -------------------------------------------------------------------- |
+| `id`          | ✅       | Egyedi azonosító (pl.: `"work"`, `"personal"`)                       |
+| `name`        | ✅       | Git user.name — commitokban jelenik meg                              |
+| `email`       | ✅       | Git user.email — commitokban jelenik meg                             |
 | `icon`        |          | Emoji az állapotsávon (pl.: `"🏠"`). Csak egyetlen emoji használható |
-| `service`     |          | Szolgáltatás neve (pl.: `"GitHub"`, `"GitLab"`). UI megjelenítéshez |
-| `description` |          | Rövid leírás a választóban és tooltipben                   |
-| `sshKeyPath`  |          | Privát SSH-kulcs elérési útja (pl.: `"~/.ssh/id_ed25519_work"`) |
-| `sshHost`     |          | SSH config host alias (pl.: `"github-work"`)               |
-| `gpgKeyId`    |          | GPG-kulcs ID commit-aláíráshoz                             |
+| `service`     |          | Szolgáltatás neve (pl.: `"GitHub"`, `"GitLab"`). UI megjelenítéshez  |
+| `description` |          | Rövid leírás a választóban és tooltipben                             |
+| `sshKeyPath`  |          | Privát SSH-kulcs elérési útja (pl.: `"~/.ssh/id_ed25519_work"`)      |
+| `sshHost`     |          | SSH config host alias (pl.: `"github-work"`)                         |
+| `gpgKeyId`    |          | GPG-kulcs ID commit-aláíráshoz                                       |
 
 #### Megjelenítési korlátozások
 
@@ -309,38 +309,38 @@ Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-k
 
 ### Globális beállítások
 
-| Beállítás                         | Alapértelmezett | Leírás                                         |
-| --------------------------------- | --------------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`        | Lásd a példát   | Azonosító konfigurációk listája                |
-| `gitIdSwitcher.defaultIdentity`   | Lásd a példát   | Alapértelmezett azonosító ID                   |
-| `gitIdSwitcher.autoSwitchSshKey`  | `true`          | SSH-kulcs automatikus váltása                  |
-| `gitIdSwitcher.showNotifications` | `true`          | Értesítés megjelenítése váltáskor              |
-| `gitIdSwitcher.applyToSubmodules` | `true`          | Azonosító alkalmazása Git-almodulokra          |
-| `gitIdSwitcher.submoduleDepth`    | `1`             | Max. mélység beágyazott almodulokhoz (1-5)     |
-| `gitIdSwitcher.includeIconInGitConfig` | `false`    | Ikon emoji beírása a Git config `user.name`-be |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | Audit naplózás engedélyezése (azonosítóváltások, SSH műveletek, stb.) |
-| `gitIdSwitcher.logging.filePath` | `""` | Naplófájl elérési útja (pl.: `~/.git-id-switcher/security.log`). Üres = alapértelmezett hely |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max. fájlméret forgatás előtt (bájt, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles` | `5` | Forgatott naplófájlok max. száma (1-20) |
-| `gitIdSwitcher.logging.level` | `"INFO"` | Naplózási szint: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. A kiválasztott szint és felette rögzít |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Ha engedélyezve van, minden érték maszkolva van a naplókban (maximális adatvédelem) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | Egyedi időtúllépés parancsonként (ms, 1mp-5perc). Pl.: `{"git": 15000, "ssh-add": 10000}` |
+| Beállítás                                  | Alapértelmezett | Leírás                                                                                            |
+| ------------------------------------------ | --------------- | ------------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Lásd a példát   | Azonosító konfigurációk listája                                                                   |
+| `gitIdSwitcher.defaultIdentity`            | Lásd a példát   | Alapértelmezett azonosító ID                                                                      |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`          | SSH-kulcs automatikus váltása                                                                     |
+| `gitIdSwitcher.showNotifications`          | `true`          | Értesítés megjelenítése váltáskor                                                                 |
+| `gitIdSwitcher.applyToSubmodules`          | `true`          | Azonosító alkalmazása Git-almodulokra                                                             |
+| `gitIdSwitcher.submoduleDepth`             | `1`             | Max. mélység beágyazott almodulokhoz (1-5)                                                        |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`         | Ikon emoji beírása a Git config `user.name`-be                                                    |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`         | Audit naplózás engedélyezése (azonosítóváltások, SSH műveletek, stb.)                             |
+| `gitIdSwitcher.logging.filePath`           | `""`            | Naplófájl elérési útja (pl.: `~/.git-id-switcher/security.log`). Üres = alapértelmezett hely      |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`      | Max. fájlméret forgatás előtt (bájt, 1MB-100MB)                                                   |
+| `gitIdSwitcher.logging.maxFiles`           | `5`             | Forgatott naplófájlok max. száma (1-20)                                                           |
+| `gitIdSwitcher.logging.level`              | `"INFO"`        | Naplózási szint: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. A kiválasztott szint és felette rögzít |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`         | Ha engedélyezve van, minden érték maszkolva van a naplókban (maximális adatvédelem)               |
+| `gitIdSwitcher.commandTimeouts`            | `{}`            | Egyedi időtúllépés parancsonként (ms, 1mp-5perc). Pl.: `{"git": 15000, "ssh-add": 10000}`         |
 
 #### Az `includeIconInGitConfig` beállításról
 
 Az `icon` mező beállítása esetén a viselkedést szabályozza:
 
-| Érték | Viselkedés |
-|-------|------------|
-| `false` (alapértelmezett) | Az `icon` csak a szerkesztő UI-ban jelenik meg. A Git configba csak a `name` kerül |
-| `true` | Az `icon + name` íródik a Git configba. Az emoji a commit-előzményekben is megjelenik |
+| Érték                     | Viselkedés                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| `false` (alapértelmezett) | Az `icon` csak a szerkesztő UI-ban jelenik meg. A Git configba csak a `name` kerül    |
+| `true`                    | Az `icon + name` íródik a Git configba. Az emoji a commit-előzményekben is megjelenik |
 
 Példa: `icon: "👤"`, `name: "Alex Kovács"` esetén
 
-| includeIconInGitConfig | Git config `user.name` | Commit-aláírás |
-|------------------------|------------------------|----------------|
-| `false` | `Alex Kovács` | `Alex Kovács <email>` |
-| `true` | `👤 Alex Kovács` | `👤 Alex Kovács <email>` |
+| includeIconInGitConfig | Git config `user.name` | Commit-aláírás           |
+| ---------------------- | ---------------------- | ------------------------ |
+| `false`                | `Alex Kovács`          | `Alex Kovács <email>`    |
+| `true`                 | `👤 Alex Kovács`       | `👤 Alex Kovács <email>` |
 
 ### Megjegyzés: Alapbeállítás (SSH nélkül)
 

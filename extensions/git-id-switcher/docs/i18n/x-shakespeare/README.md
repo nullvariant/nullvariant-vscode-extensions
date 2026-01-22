@@ -1,6 +1,6 @@
 # Git ID Switcher 🎭
 
-> *"To switch, or not to switch—that is the question."*
+> _"To switch, or not to switch—that is the question."_
 > — A Developer, pondering their Git identity
 
 ---
@@ -40,7 +40,7 @@
 
 Whilst many Git identity switchers doth exist upon this mortal coil, **Git ID Switcher** solveth the vexing problems that others do ignore:
 
-1. **The Submodule's Lament**: When working with repositories containing submodules, one must oft set `git config user.name` by hand for *each* submodule—a most tedious affair! This extension handleth it with grace, recursively applying thine identity unto all active submodules.
+1. **The Submodule's Lament**: When working with repositories containing submodules, one must oft set `git config user.name` by hand for _each_ submodule—a most tedious affair! This extension handleth it with grace, recursively applying thine identity unto all active submodules.
 2. **SSH & GPG Handling**: It doth not merely change thy name; it swappeth thy SSH keys in the agent and configureth GPG signing, that thou might never commit with the wrong signature!
 
 ## Features Most Noble
@@ -56,8 +56,8 @@ Whilst many Git identity switchers doth exist upon this mortal coil, **Git ID Sw
 
 ## 🌏 A Soliloquy on Multilingual Support
 
-> *"What's in a language? That which we call a tongue*
-> *By any other name would speak as sweet."*
+> _"What's in a language? That which we call a tongue_
+> _By any other name would speak as sweet."_
 >
 > **I do value the existence of minorities.**
 > I wish not to discard them merely because they be few in number.
@@ -301,48 +301,48 @@ Note: The final identity (`romeo`) hath no SSH. Thou canst use this for switchin
 
 ## Identity Properties
 
-| Property | Required | Description |
-|----------|----------|-------------|
-| `id` | ✅ | A unique identifier for this identity |
-| `name` | ✅ | Git `user.name` (appeareth in commits) |
-| `email` | ✅ | Git `user.email` |
-| `icon` | ❌ | A single emoji for the status bar. EMOJI ONLY, no text! |
-| `description` | ❌ | Description (showeth in dropdown) |
-| `sshKeyPath` | ❌ | Path to SSH private key |
-| `sshHost` | ❌ | SSH host alias (`Host` in ~/.ssh/config) |
-| `gpgKeyId` | ❌ | GPG key ID for commit signing |
-| `service` | ❌ | Git service: `github`, `gitlab`, `bitbucket`, `other` |
+| Property      | Required | Description                                             |
+| ------------- | -------- | ------------------------------------------------------- |
+| `id`          | ✅       | A unique identifier for this identity                   |
+| `name`        | ✅       | Git `user.name` (appeareth in commits)                  |
+| `email`       | ✅       | Git `user.email`                                        |
+| `icon`        | ❌       | A single emoji for the status bar. EMOJI ONLY, no text! |
+| `description` | ❌       | Description (showeth in dropdown)                       |
+| `sshKeyPath`  | ❌       | Path to SSH private key                                 |
+| `sshHost`     | ❌       | SSH host alias (`Host` in ~/.ssh/config)                |
+| `gpgKeyId`    | ❌       | GPG key ID for commit signing                           |
+| `service`     | ❌       | Git service: `github`, `gitlab`, `bitbucket`, `other`   |
 
 ---
 
 ## Commands
 
-| Command                                  | Description                           |
-| ---------------------------------------- | ------------------------------------- |
-| `Git ID Switcher: Select Identity`       | Open the identity picker              |
-| `Git ID Switcher: Show Current Identity` | Reveal thy current identity           |
-| `Git ID Switcher: Show Documentation`    | Reveal the chronicles                 |
+| Command                                  | Description                 |
+| ---------------------------------------- | --------------------------- |
+| `Git ID Switcher: Select Identity`       | Open the identity picker    |
+| `Git ID Switcher: Show Current Identity` | Reveal thy current identity |
+| `Git ID Switcher: Show Documentation`    | Reveal the chronicles       |
 
 ---
 
 ## Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `gitIdSwitcher.identities` | `[]` | The list of identities in thy troupe |
-| `gitIdSwitcher.defaultIdentity` | `""` | Default identity ID |
-| `gitIdSwitcher.autoSwitchSshKey` | `true` | Automatically switch SSH keys |
-| `gitIdSwitcher.showNotifications` | `true` | Display notification upon identity change |
-| `gitIdSwitcher.applyToSubmodules` | `true` | Apply identity unto submodules |
-| `gitIdSwitcher.submoduleDepth` | `1` | Maximum depth for nested submodules (1-5) |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | Include emoji in Git config (see below) |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | Enable logging unto file for audit |
-| `gitIdSwitcher.logging.filePath` | `""` | Custom log file path |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Max log file size ere rotation (bytes, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles` | `5` | Number of log files to preserve (1-20) |
-| `gitIdSwitcher.logging.level` | `"INFO"` | Logging level (DEBUG/INFO/WARN/ERROR/SECURITY) |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | When 'tis enabled, all values are masked in the logs (maximum privacy mode) |
-| `gitIdSwitcher.commandTimeouts` | `{}` | External command timeouts (ms, 1s-5min) |
+| Setting                                    | Default    | Description                                                                 |
+| ------------------------------------------ | ---------- | --------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | `[]`       | The list of identities in thy troupe                                        |
+| `gitIdSwitcher.defaultIdentity`            | `""`       | Default identity ID                                                         |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Automatically switch SSH keys                                               |
+| `gitIdSwitcher.showNotifications`          | `true`     | Display notification upon identity change                                   |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Apply identity unto submodules                                              |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | Maximum depth for nested submodules (1-5)                                   |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Include emoji in Git config (see below)                                     |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Enable logging unto file for audit                                          |
+| `gitIdSwitcher.logging.filePath`           | `""`       | Custom log file path                                                        |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Max log file size ere rotation (bytes, 1MB-100MB)                           |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | Number of log files to preserve (1-20)                                      |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | Logging level (DEBUG/INFO/WARN/ERROR/SECURITY)                              |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | When 'tis enabled, all values are masked in the logs (maximum privacy mode) |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | External command timeouts (ms, 1s-5min)                                     |
 
 ---
 
@@ -357,10 +357,10 @@ Note: The final identity (`romeo`) hath no SSH. Thou canst use this for switchin
 
 This setting doth control whether emoji be added to Git `user.name`.
 
-| Setting | Behavior |
-|---------|----------|
+| Setting           | Behavior                                                                 |
+| ----------------- | ------------------------------------------------------------------------ |
 | `false` (default) | Git config: `user.name = Hamlet, Prince of Denmark` (no emoji in config) |
-| `true` | Git config: `user.name = 💀 Hamlet, Prince of Denmark` (emoji in config) |
+| `true`            | Git config: `user.name = 💀 Hamlet, Prince of Denmark` (emoji in config) |
 
 > **Note**: The emoji doth always appear in the status bar regardless of this setting! This affecteth only the Git config.
 
@@ -420,8 +420,8 @@ If thou dost encounter this error, examine thy settings:
   "gitIdSwitcher.identities": [
     {
       "id": "hamlet",
-      "name": "Hamlet, Prince of Denmark",  // ← This is required!
-      "email": "hamlet@elsinore.example.com"  // ← This also!
+      "name": "Hamlet, Prince of Denmark", // ← This is required!
+      "email": "hamlet@elsinore.example.com" // ← This also!
     }
   ]
 }
@@ -479,4 +479,4 @@ Crafted by [Null;Variant](https://github.com/nullvariant)
 
 ---
 
-🎭 *"All the world's a stage, and all the devs merely players."* 🎭
+🎭 _"All the world's a stage, and all the devs merely players."_ 🎭

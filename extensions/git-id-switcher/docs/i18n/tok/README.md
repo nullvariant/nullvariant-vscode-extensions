@@ -292,17 +292,17 @@ sona: pini ID (`jan-musi`) li jo ala e SSH—Git config taso li ante. GitLab acc
 
 ### nimi ijo (Identity Properties)
 
-| ijo           | wile | sona                                                       |
-| ------------- | ---- | ---------------------------------------------------------- |
-| `id`          | ✅   | nimi ante (example: `"jan-pona"`, `"jan-lawa"`)            |
-| `name`        | ✅   | Git user.name — commit li jo e ni                          |
-| `email`       | ✅   | Git user.email — commit li jo e ni                         |
-| `icon`        |      | sitelen lon status bar (example: `"😊"`). sitelen wan taso |
-| `service`     |      | nimi ilo (example: `"GitHub"`, `"GitLab"`). tawa UI        |
-| `description` |      | sona lili tawa picker en tooltip                           |
+| ijo           | wile | sona                                                         |
+| ------------- | ---- | ------------------------------------------------------------ |
+| `id`          | ✅   | nimi ante (example: `"jan-pona"`, `"jan-lawa"`)              |
+| `name`        | ✅   | Git user.name — commit li jo e ni                            |
+| `email`       | ✅   | Git user.email — commit li jo e ni                           |
+| `icon`        |      | sitelen lon status bar (example: `"😊"`). sitelen wan taso   |
+| `service`     |      | nimi ilo (example: `"GitHub"`, `"GitLab"`). tawa UI          |
+| `description` |      | sona lili tawa picker en tooltip                             |
 | `sshKeyPath`  |      | nasin tawa SSH key len (example: `"~/.ssh/id_ed25519_lawa"`) |
-| `sshHost`     |      | SSH config host nimi (example: `"github-lawa"`)            |
-| `gpgKeyId`    |      | GPG key ID tawa commit sitelen                             |
+| `sshHost`     |      | SSH config host nimi (example: `"github-lawa"`)              |
+| `gpgKeyId`    |      | GPG key ID tawa commit sitelen                               |
 
 #### lukin poka (Display Limitations)
 
@@ -311,38 +311,38 @@ sona: pini ID (`jan-musi`) li jo ala e SSH—Git config taso li ante. GitLab acc
 
 ### settings ale (General Settings)
 
-| settings                            | open       | sona                                           |
-| ----------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`          | lukin e ni | nimi ale                                       |
-| `gitIdSwitcher.defaultIdentity`     | lukin e ni | nimi open                                      |
-| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | SSH key li ante                                |
-| `gitIdSwitcher.showNotifications`   | `true`     | toki li kama                                   |
-| `gitIdSwitcher.applyToSubmodules`   | `true`     | submodule li kama jo e nimi                    |
-| `gitIdSwitcher.submoduleDepth`      | `1`        | submodule suli (1-5)                           |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | sitelen li tawa Git config `user.name`         |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | file logging li open (tawa lukin)              |
-| `gitIdSwitcher.logging.filePath`    | `""`       | nasin file log                                 |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | file log suli (bytes, 1MB-100MB)               |
-| `gitIdSwitcher.logging.maxFiles`    | `5`        | file log nanpa (1-20)                          |
-| `gitIdSwitcher.logging.level`       | `"INFO"`   | logging suli (DEBUG/INFO/WARN/ERROR/SECURITY)  |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | ni li lon la, ale li len lon lipu (tenpo pona suli) |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | ilo weka tenpo (ms, 1s-5min)                   |
+| settings                                   | open       | sona                                                |
+| ------------------------------------------ | ---------- | --------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | lukin e ni | nimi ale                                            |
+| `gitIdSwitcher.defaultIdentity`            | lukin e ni | nimi open                                           |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | SSH key li ante                                     |
+| `gitIdSwitcher.showNotifications`          | `true`     | toki li kama                                        |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | submodule li kama jo e nimi                         |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | submodule suli (1-5)                                |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | sitelen li tawa Git config `user.name`              |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | file logging li open (tawa lukin)                   |
+| `gitIdSwitcher.logging.filePath`           | `""`       | nasin file log                                      |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | file log suli (bytes, 1MB-100MB)                    |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | file log nanpa (1-20)                               |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | logging suli (DEBUG/INFO/WARN/ERROR/SECURITY)       |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | ni li lon la, ale li len lon lipu (tenpo pona suli) |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | ilo weka tenpo (ms, 1s-5min)                        |
 
 #### sona `includeIconInGitConfig`
 
 `icon` li lon la, pali ni:
 
-| ijo | pali |
-|-----|------|
-| `false` (open) | `icon` li lon UI taso. `name` taso li tawa Git config |
-| `true` | `icon + name` li tawa Git config. sitelen li lon commit |
+| ijo            | pali                                                    |
+| -------------- | ------------------------------------------------------- |
+| `false` (open) | `icon` li lon UI taso. `name` taso li tawa Git config   |
+| `true`         | `icon + name` li tawa Git config. sitelen li lon commit |
 
 example: `icon: "👤"`, `name: "jan pona"`
 
-| includeIconInGitConfig | Git config `user.name` | commit sitelen |
-|------------------------|------------------------|----------------|
-| `false` | `jan pona` | `jan pona <email>` |
-| `true` | `👤 jan pona` | `👤 jan pona <email>` |
+| includeIconInGitConfig | Git config `user.name` | commit sitelen        |
+| ---------------------- | ---------------------- | --------------------- |
+| `false`                | `jan pona`             | `jan pona <email>`    |
+| `true`                 | `👤 jan pona`          | `👤 jan pona <email>` |
 
 ### sona: nasin lili (SSH ala)
 
@@ -533,27 +533,27 @@ tenpo pini la, settings ala li lon la, cloud sync li ante e open ijo.
 
 ## nimi toki pona (Vocabulary)
 
-| toki pona | English | Meaning |
-|-----------|---------|---------|
-| jan | person | person, human |
-| pona | good | good, simple, positive |
-| lawa | head, leader | to lead, control |
-| sona | knowledge | to know, knowledge |
-| musi | fun | fun, play, art |
-| pali | work | to do, make, work |
-| ilo | tool | tool, machine |
-| ante | different | to change, different |
-| nimi | name, word | name, word |
+| toki pona | English      | Meaning                |
+| --------- | ------------ | ---------------------- |
+| jan       | person       | person, human          |
+| pona      | good         | good, simple, positive |
+| lawa      | head, leader | to lead, control       |
+| sona      | knowledge    | to know, knowledge     |
+| musi      | fun          | fun, play, art         |
+| pali      | work         | to do, make, work      |
+| ilo       | tool         | tool, machine          |
+| ante      | different    | to change, different   |
+| nimi      | name, word   | name, word             |
 
 ---
 
 ## ilo (Commands)
 
-| ilo                                      | sona                     |
-| ---------------------------------------- | ------------------------ |
-| `Git ID Switcher: Select Identity`       | o kama jo e nimi         |
-| `Git ID Switcher: Show Current Identity` | o lukin e nimi sina      |
-| `Git ID Switcher: Show Documentation`    | o lukin e lipu sona      |
+| ilo                                      | sona                |
+| ---------------------------------------- | ------------------- |
+| `Git ID Switcher: Select Identity`       | o kama jo e nimi    |
+| `Git ID Switcher: Show Current Identity` | o lukin e nimi sina |
+| `Git ID Switcher: Show Documentation`    | o lukin e lipu sona |
 
 ---
 
@@ -587,4 +587,4 @@ MIT License - o lukin e [LICENSE](../../../LICENSE).
 
 ✨ **pona tawa sina!** ✨
 
-*(Good to you! / Take care!)*
+_(Good to you! / Take care!)_

@@ -290,17 +290,17 @@ Host bitbucket.org
 
 ### 身份属性
 
-| 属性          | 必需 | 描述                                                   |
-| ------------- | ---- | ------------------------------------------------------ |
-| `id`          | ✅   | 唯一标识符（如 `"work"`, `"personal"`）                |
-| `name`        | ✅   | Git user.name - 显示在提交中                           |
-| `email`       | ✅   | Git user.email - 显示在提交中                          |
-| `icon`        |      | 状态栏显示的表情符号（如 `"💼"`）。仅限单个表情符号    |
-| `service`     |      | 服务名称（如 `"GitHub"`, `"GitLab"`）。用于 UI 显示    |
-| `description` |      | 在选择器和工具提示中显示的简短描述                     |
-| `sshKeyPath`  |      | SSH 私钥路径（如 `"~/.ssh/id_ed25519_work"`）          |
-| `sshHost`     |      | SSH 配置主机别名（如 `"github-work"`）                 |
-| `gpgKeyId`    |      | 用于提交签名的 GPG 密钥 ID                             |
+| 属性          | 必需 | 描述                                                |
+| ------------- | ---- | --------------------------------------------------- |
+| `id`          | ✅   | 唯一标识符（如 `"work"`, `"personal"`）             |
+| `name`        | ✅   | Git user.name - 显示在提交中                        |
+| `email`       | ✅   | Git user.email - 显示在提交中                       |
+| `icon`        |      | 状态栏显示的表情符号（如 `"💼"`）。仅限单个表情符号 |
+| `service`     |      | 服务名称（如 `"GitHub"`, `"GitLab"`）。用于 UI 显示 |
+| `description` |      | 在选择器和工具提示中显示的简短描述                  |
+| `sshKeyPath`  |      | SSH 私钥路径（如 `"~/.ssh/id_ed25519_work"`）       |
+| `sshHost`     |      | SSH 配置主机别名（如 `"github-work"`）              |
+| `gpgKeyId`    |      | 用于提交签名的 GPG 密钥 ID                          |
 
 #### 显示限制
 
@@ -309,38 +309,38 @@ Host bitbucket.org
 
 ### 全局设置
 
-| 设置                                   | 默认值     | 描述                                           |
-| -------------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`             | 见示例     | 身份配置列表                                   |
-| `gitIdSwitcher.defaultIdentity`        | 见示例     | 默认使用的身份 ID                              |
-| `gitIdSwitcher.autoSwitchSshKey`       | `true`     | 切换身份时自动切换 SSH 密钥                    |
-| `gitIdSwitcher.showNotifications`      | `true`     | 切换身份时显示通知                             |
-| `gitIdSwitcher.applyToSubmodules`      | `true`     | 将身份传播到 Git 子模块                        |
-| `gitIdSwitcher.submoduleDepth`         | `1`        | 嵌套子模块配置的最大深度（1-5）                |
-| `gitIdSwitcher.includeIconInGitConfig` | `false`    | 在 Git config `user.name` 中包含图标表情符号  |
-| `gitIdSwitcher.logging.fileEnabled` | `false` | 启用审计日志（身份切换、SSH 操作等记录） |
-| `gitIdSwitcher.logging.filePath` | `""` | 日志文件路径（如：`~/.git-id-switcher/security.log`）。为空则使用默认位置 |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | 轮换前的最大文件大小（字节，1MB-100MB） |
-| `gitIdSwitcher.logging.maxFiles` | `5` | 保留的轮换日志文件最大数量（1-20） |
-| `gitIdSwitcher.logging.level` | `"INFO"` | 日志级别：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。记录选定级别及以上 |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | 启用时，日志中的所有值都会被掩码（最大隐私模式） |
-| `gitIdSwitcher.commandTimeouts` | `{}` | 每个命令的自定义超时值（毫秒，1秒-5分钟）。例：`{"git": 15000, "ssh-add": 10000}` |
+| 设置                                       | 默认值     | 描述                                                                              |
+| ------------------------------------------ | ---------- | --------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | 见示例     | 身份配置列表                                                                      |
+| `gitIdSwitcher.defaultIdentity`            | 见示例     | 默认使用的身份 ID                                                                 |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | 切换身份时自动切换 SSH 密钥                                                       |
+| `gitIdSwitcher.showNotifications`          | `true`     | 切换身份时显示通知                                                                |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | 将身份传播到 Git 子模块                                                           |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | 嵌套子模块配置的最大深度（1-5）                                                   |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | 在 Git config `user.name` 中包含图标表情符号                                      |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | 启用审计日志（身份切换、SSH 操作等记录）                                          |
+| `gitIdSwitcher.logging.filePath`           | `""`       | 日志文件路径（如：`~/.git-id-switcher/security.log`）。为空则使用默认位置         |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | 轮换前的最大文件大小（字节，1MB-100MB）                                           |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | 保留的轮换日志文件最大数量（1-20）                                                |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | 日志级别：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。记录选定级别及以上            |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | 启用时，日志中的所有值都会被掩码（最大隐私模式）                                  |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | 每个命令的自定义超时值（毫秒，1秒-5分钟）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### 关于 `includeIconInGitConfig`
 
 控制设置 `icon` 字段时的行为：
 
-| 值 | 行为 |
-|----|------|
-| `false`（默认） | `icon` 仅显示在编辑器 UI 中。Git config 只写入 `name` |
-| `true` | Git config 写入 `icon + name`。表情符号会出现在提交历史中 |
+| 值              | 行为                                                      |
+| --------------- | --------------------------------------------------------- |
+| `false`（默认） | `icon` 仅显示在编辑器 UI 中。Git config 只写入 `name`     |
+| `true`          | Git config 写入 `icon + name`。表情符号会出现在提交历史中 |
 
 示例：`icon: "👤"`, `name: "张伟"` 的情况
 
-| includeIconInGitConfig | Git config `user.name` | 提交签名 |
-|------------------------|------------------------|----------|
-| `false` | `张伟` | `张伟 <email>` |
-| `true` | `👤 张伟` | `👤 张伟 <email>` |
+| includeIconInGitConfig | Git config `user.name` | 提交签名          |
+| ---------------------- | ---------------------- | ----------------- |
+| `false`                | `张伟`                 | `张伟 <email>`    |
+| `true`                 | `👤 张伟`              | `👤 张伟 <email>` |
 
 ### 注意: 基本设置（无 SSH）
 
@@ -531,11 +531,11 @@ VS Code 等编辑器会将设置架构缓存在内存中，"重新加载窗口"�
 
 ## 命令
 
-| 命令                                     | 描述                 |
-| ---------------------------------------- | -------------------- |
-| `Git ID Switcher: Select Identity`       | 打开身份选择器       |
-| `Git ID Switcher: Show Current Identity` | 显示当前身份信息     |
-| `Git ID Switcher: Show Documentation`    | 显示文档             |
+| 命令                                     | 描述             |
+| ---------------------------------------- | ---------------- |
+| `Git ID Switcher: Select Identity`       | 打开身份选择器   |
+| `Git ID Switcher: Show Current Identity` | 显示当前身份信息 |
+| `Git ID Switcher: Show Documentation`    | 显示文档         |
 
 ---
 

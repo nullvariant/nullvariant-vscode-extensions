@@ -40,7 +40,7 @@
 
 Kvankam multaj Git-identeco-ŝanĝiloj ekzistas, **Git ID Switcher** solvas la kompleksajn problemojn kiujn aliaj ignoras:
 
-1. **Submodula Koŝmaro**: Laborante kun deponejoj havantaj submodulojn, oni kutime devas mane agordi `git config user.name` por *ĉiu* submodulo. Ĉi tiu etendo traktas ĝin elegante, rekursie aplikante vian identecon al ĉiuj aktivaj submoduloj.
+1. **Submodula Koŝmaro**: Laborante kun deponejoj havantaj submodulojn, oni kutime devas mane agordi `git config user.name` por _ĉiu_ submodulo. Ĉi tiu etendo traktas ĝin elegante, rekursie aplikante vian identecon al ĉiuj aktivaj submoduloj.
 2. **SSH & GPG Traktado**: Ĝi ne nur ŝanĝas vian nomon; ĝi interŝanĝas viajn SSH-ŝlosilojn en la agento kaj agordas GPG-subskribon, por ke vi neniam faru commit kun malĝusta subskribo.
 
 ## Funkcioj
@@ -293,17 +293,17 @@ Noto: La lasta identeco (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-ag
 
 ### Identeco-Propraĵoj
 
-| Propraĵo      | Deviga | Priskribo                                                  |
-| ------------- | ------ | ---------------------------------------------------------- |
-| `id`          | ✅     | Unika identigilo (ekz: `"laboro"`, `"persona"`)            |
-| `name`        | ✅     | Git user.name — montrita en commit-oj                      |
-| `email`       | ✅     | Git user.email — montrita en commit-oj                     |
-| `icon`        |        | Emoji montrita en statusbreto (ekz: `"🏠"`). Nur unu emoji |
-| `service`     |        | Serva nomo (ekz: `"GitHub"`, `"GitLab"`). Por UI           |
-| `description` |        | Mallonga priskribo por elektilo kaj konsileto              |
+| Propraĵo      | Deviga | Priskribo                                                       |
+| ------------- | ------ | --------------------------------------------------------------- |
+| `id`          | ✅     | Unika identigilo (ekz: `"laboro"`, `"persona"`)                 |
+| `name`        | ✅     | Git user.name — montrita en commit-oj                           |
+| `email`       | ✅     | Git user.email — montrita en commit-oj                          |
+| `icon`        |        | Emoji montrita en statusbreto (ekz: `"🏠"`). Nur unu emoji      |
+| `service`     |        | Serva nomo (ekz: `"GitHub"`, `"GitLab"`). Por UI                |
+| `description` |        | Mallonga priskribo por elektilo kaj konsileto                   |
 | `sshKeyPath`  |        | Vojo al privata SSH-ŝlosilo (ekz: `"~/.ssh/id_ed25519_laboro"`) |
-| `sshHost`     |        | SSH-agordo gastiga kaŝnomo (ekz: `"github-laboro"`)        |
-| `gpgKeyId`    |        | GPG-ŝlosila ID por commit-subskribo                        |
+| `sshHost`     |        | SSH-agordo gastiga kaŝnomo (ekz: `"github-laboro"`)             |
+| `gpgKeyId`    |        | GPG-ŝlosila ID por commit-subskribo                             |
 
 #### Montraj Limigoj
 
@@ -312,38 +312,38 @@ Noto: La lasta identeco (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-ag
 
 ### Ĝeneralaj Agordoj
 
-| Agordo                              | Defaŭlto   | Priskribo                                      |
-| ----------------------------------- | ---------- | ---------------------------------------------- |
-| `gitIdSwitcher.identities`          | Vidu ekz.  | Listo de identeco-agordoj                      |
-| `gitIdSwitcher.defaultIdentity`     | Vidu ekz.  | Defaŭlta identeco ID                           |
-| `gitIdSwitcher.autoSwitchSshKey`    | `true`     | Aŭtomate ŝanĝu SSH-ŝlosilon                    |
-| `gitIdSwitcher.showNotifications`   | `true`     | Montru sciigon kiam ŝanĝante                   |
-| `gitIdSwitcher.applyToSubmodules`   | `true`     | Apliku identecon al Git-submoduloj             |
-| `gitIdSwitcher.submoduleDepth`      | `1`        | Maks. profundeco por nestitaj submoduloj (1-5) |
-| `gitIdSwitcher.includeIconInGitConfig` | `false` | Skribu emoji-ikonon al Git-agordo `user.name`  |
-| `gitIdSwitcher.logging.fileEnabled` | `false`    | Ebligi protokoladon al dosiero por revizio     |
-| `gitIdSwitcher.logging.filePath`    | `""`       | Persona protokol-dosiera vojo                  |
-| `gitIdSwitcher.logging.maxFileSize` | `10485760` | Maks. dosiera grandeco antaŭ rotacio (bajtoj, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles`    | `5`        | Nombro de protokol-dosieroj por konservi (1-20) |
-| `gitIdSwitcher.logging.level`       | `"INFO"`   | Protokolado-nivelo (DEBUG/INFO/WARN/ERROR/SECURITY) |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false` | Kiam ebligita, ĉiuj valoroj estas maskitaj en protokoloj (maksimuma privateco) |
-| `gitIdSwitcher.commandTimeouts`     | `{}`       | Tempolimo por eksteraj komandoj (ms, 1s-5min)  |
+| Agordo                                     | Defaŭlto   | Priskribo                                                                      |
+| ------------------------------------------ | ---------- | ------------------------------------------------------------------------------ |
+| `gitIdSwitcher.identities`                 | Vidu ekz.  | Listo de identeco-agordoj                                                      |
+| `gitIdSwitcher.defaultIdentity`            | Vidu ekz.  | Defaŭlta identeco ID                                                           |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Aŭtomate ŝanĝu SSH-ŝlosilon                                                    |
+| `gitIdSwitcher.showNotifications`          | `true`     | Montru sciigon kiam ŝanĝante                                                   |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Apliku identecon al Git-submoduloj                                             |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | Maks. profundeco por nestitaj submoduloj (1-5)                                 |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Skribu emoji-ikonon al Git-agordo `user.name`                                  |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Ebligi protokoladon al dosiero por revizio                                     |
+| `gitIdSwitcher.logging.filePath`           | `""`       | Persona protokol-dosiera vojo                                                  |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Maks. dosiera grandeco antaŭ rotacio (bajtoj, 1MB-100MB)                       |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | Nombro de protokol-dosieroj por konservi (1-20)                                |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | Protokolado-nivelo (DEBUG/INFO/WARN/ERROR/SECURITY)                            |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Kiam ebligita, ĉiuj valoroj estas maskitaj en protokoloj (maksimuma privateco) |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | Tempolimo por eksteraj komandoj (ms, 1s-5min)                                  |
 
 #### Pri `includeIconInGitConfig`
 
 Kontrolas konduton kiam `icon`-kampo estas agordita:
 
-| Valoro | Konduto |
-|--------|---------|
+| Valoro             | Konduto                                                                       |
+| ------------------ | ----------------------------------------------------------------------------- |
 | `false` (defaŭlto) | `icon` montriĝas nur en redaktilo-UI. Nur `name` estas skribita al Git-agordo |
-| `true` | `icon + name` estas skribita al Git-agordo. Emoji restas en commit-historio |
+| `true`             | `icon + name` estas skribita al Git-agordo. Emoji restas en commit-historio   |
 
 Ekzemplo: `icon: "👤"`, `name: "Ludoviko Zamenhof"`
 
-| includeIconInGitConfig | Git-agordo `user.name` | Commit-subskribo |
-|------------------------|------------------------|------------------|
-| `false` | `Ludoviko Zamenhof` | `Ludoviko Zamenhof <retpoŝto>` |
-| `true` | `👤 Ludoviko Zamenhof` | `👤 Ludoviko Zamenhof <retpoŝto>` |
+| includeIconInGitConfig | Git-agordo `user.name` | Commit-subskribo                  |
+| ---------------------- | ---------------------- | --------------------------------- |
+| `false`                | `Ludoviko Zamenhof`    | `Ludoviko Zamenhof <retpoŝto>`    |
+| `true`                 | `👤 Ludoviko Zamenhof` | `👤 Ludoviko Zamenhof <retpoŝto>` |
 
 ### Noto: Baza Agordo (Sen SSH)
 
@@ -534,12 +534,12 @@ Se vi antaŭe konservis malplenajn agordojn, ili estis sinkronigitaj al la nubo 
 
 ## Pri Esperanto 📚
 
-| Esperanto | English | Priskribo |
-|-----------|---------|-----------|
-| Saluton! | Hello! | Ĝenerala saluto |
-| Dankon! | Thank you! | Esprimi dankon |
-| Bonvolu | Please | Ĝentile peti |
-| Ĝis revido | Goodbye | Ĝis ni renkontiĝos denove |
+| Esperanto  | English    | Priskribo                 |
+| ---------- | ---------- | ------------------------- |
+| Saluton!   | Hello!     | Ĝenerala saluto           |
+| Dankon!    | Thank you! | Esprimi dankon            |
+| Bonvolu    | Please     | Ĝentile peti              |
+| Ĝis revido | Goodbye    | Ĝis ni renkontiĝos denove |
 
 ### Lerni Esperanton
 
@@ -589,4 +589,4 @@ Kreita de [Null;Variant](https://github.com/nullvariant)
 
 🌍 **La espero - La mondo apartenas al ĉiuj!** 🌍
 
-*(Hope - The world belongs to everyone!)*
+_(Hope - The world belongs to everyone!)_
