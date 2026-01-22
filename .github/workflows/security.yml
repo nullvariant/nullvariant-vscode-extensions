@@ -22,9 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: extensions/git-id-switcher
 
     steps:
       - name: Harden Runner
@@ -38,28 +35,25 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
-          cache-dependency-path: extensions/git-id-switcher/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --workspace=git-id-switcher
 
       - name: Run npm audit
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=moderate --workspace=git-id-switcher
         continue-on-error: true
 
       - name: Run npm audit (production only)
-        run: npm audit --omit=dev --audit-level=high
+        run: npm audit --omit=dev --audit-level=high --workspace=git-id-switcher
 
   lint-security:
     name: Security Linting
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: extensions/git-id-switcher
 
     steps:
       - name: Harden Runner
@@ -73,17 +67,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
-          cache-dependency-path: extensions/git-id-switcher/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --workspace=git-id-switcher
 
       - name: Run ESLint
-        run: npm run lint
+        run: npm run lint --workspace=git-id-switcher
 
       - name: Check for dangerous patterns
+        working-directory: extensions/git-id-switcher
         run: |
           echo "Checking for dangerous exec() usage..."
           if grep -rn "exec(" src/ --include="*.ts" | grep -v "execFile" | grep -v "secureExec" | grep -v ".test.ts"; then
@@ -104,9 +99,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: extensions/git-id-switcher
 
     steps:
       - name: Harden Runner
@@ -120,18 +112,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
-          cache-dependency-path: extensions/git-id-switcher/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --workspace=git-id-switcher
 
       - name: Compile TypeScript
-        run: npm run compile
+        run: npm run compile --workspace=git-id-switcher
 
       - name: Run security tests (includes fuzzing)
-        run: npm run test:security
+        run: npm run test:security --workspace=git-id-switcher
 
   codeql-analysis:
     name: CodeQL Analysis

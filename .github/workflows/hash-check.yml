@@ -36,11 +36,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: extensions/${{ matrix.extension.dir }}
-        run: npm ci
+        run: npm ci --workspace=${{ matrix.extension.dir }}
 
       - name: Check hash consistency
         working-directory: extensions/${{ matrix.extension.dir }}
