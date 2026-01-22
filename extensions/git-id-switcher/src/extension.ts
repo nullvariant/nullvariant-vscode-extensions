@@ -1,94 +1,63 @@
 /**
  * Git ID Switcher - VS Code Extension Entry Point
- *
- * Switch between multiple Git identities with one click.
- * Automatically configures Git author, SSH keys, and GPG signing.
- *
  * @author Null;Variant
  * @license MIT
  */
 
 import * as vscode from 'vscode';
-import {
-  Identity,
-  getIdentitiesWithValidation,
-  getIdentityById,
-  getIdentityLabel,
-  resetValidationNotificationFlag,
-} from './identity';
+import { Identity, getIdentitiesWithValidation, resetValidationNotificationFlag } from './identity';
 import { createStatusBar, IdentityStatusBar } from './statusBar';
-import {
-  setGitConfigForIdentity,
-  detectCurrentIdentity,
-  isGitRepository,
-} from './gitConfig';
-import { switchToIdentitySshKey, detectCurrentIdentityFromSsh } from './sshAgent';
-import {
-  showIdentityQuickPick,
-  showIdentitySwitchedNotification,
-  showErrorNotification,
-} from './quickPick';
 import { showDocumentation } from './documentation';
 import { securityLogger } from './securityLogger';
 import { getUserSafeMessage, isFatalError } from './errors';
-import {
-  initializeWorkspaceTrust,
-  requireWorkspaceTrust,
-} from './workspaceTrust';
+import { initializeWorkspaceTrust } from './workspaceTrust';
+import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetectedIdentity } from './services/detection';
+import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotification } from './commands/handlers';
 
 // Global state
 let statusBar: IdentityStatusBar;
 let currentIdentity: Identity | undefined;
 let initializeCancellation: vscode.CancellationTokenSource | undefined;
 
+// State accessors for dependency injection
+const getCurrentIdentity = (): Identity | undefined => currentIdentity;
+const setCurrentIdentity = (identity: Identity): void => { currentIdentity = identity; };
+
 /**
  * Extension activation
  */
-export async function activate(
-  context: vscode.ExtensionContext
-): Promise<void> {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
   console.log('[Git ID Switcher] Activating...');
 
-  // Initialize security logger with context for secure file logging
-  // SECURITY: Pass globalStorageUri to ensure log files are written
-  // only to the extension's secure storage, not arbitrary paths
+  // SECURITY: Log files written only to extension's secure storage
   securityLogger.initializeWithContext(context.globalStorageUri.fsPath);
   securityLogger.logActivation();
 
-  // Create status bar (always create for visual feedback)
   statusBar = createStatusBar();
   context.subscriptions.push(statusBar);
 
-  // Register commands (always register, but guard execution with trust check)
   const selectCommand = vscode.commands.registerCommand(
     'git-id-switcher.selectIdentity',
-    () => selectIdentityCommand(context)
+    () => selectIdentityCommand(context, statusBar, getCurrentIdentity, setCurrentIdentity)
   );
-
   const showCurrentCommand = vscode.commands.registerCommand(
     'git-id-switcher.showCurrentIdentity',
-    showCurrentIdentityCommand
+    () => showCurrentIdentityCommand(getCurrentIdentity)
   );
-
   const showDocsCommand = vscode.commands.registerCommand(
     'git-id-switcher.showDocumentation',
     () => showDocumentation(context)
   );
-
   context.subscriptions.push(selectCommand, showCurrentCommand, showDocsCommand);
 
   // SECURITY: Check workspace trust before initializing sensitive operations
-  // If workspace is not trusted, defer initialization until trust is granted
   const isTrusted = initializeWorkspaceTrust(context, async () => {
-    // This callback is called when workspace trust is granted
     await performTrustedInitialization(context);
   });
 
   if (isTrusted) {
-    // Workspace is trusted, proceed with full initialization
     await performTrustedInitialization(context);
   } else {
-    // Workspace is not trusted - show disabled state in status bar
     statusBar.setNoIdentity();
     console.log('[Git ID Switcher] Activated in restricted mode (untrusted workspace)');
     return;
@@ -98,19 +67,12 @@ export async function activate(
 }
 
 /**
- * Perform initialization that requires workspace trust
- *
- * SECURITY: This function should only be called after confirming
- * the workspace is trusted. It reads workspace configuration and
- * executes Git/SSH commands.
+ * Perform initialization that requires workspace trust.
+ * SECURITY: Only call after confirming workspace is trusted.
  */
-async function performTrustedInitialization(
-  context: vscode.ExtensionContext
-): Promise<void> {
-  // Initialize state
+async function performTrustedInitialization(context: vscode.ExtensionContext): Promise<void> {
   await initializeState(context);
 
-  // Watch for workspace changes
   context.subscriptions.push(
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
       initializeState(context).catch(error => {
@@ -125,28 +87,20 @@ async function performTrustedInitialization(
     })
   );
 
-  // Store initial configuration snapshot for change detection
   securityLogger.storeConfigSnapshot();
 
-  // Watch for configuration changes
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
       if (e.affectsConfiguration('gitIdSwitcher')) {
         try {
-          // Detect and log specific configuration changes
           const newSnapshot = securityLogger.createConfigSnapshot();
           const changes = securityLogger.detectConfigChanges(newSnapshot);
           if (changes.length > 0) {
             securityLogger.logConfigChanges(changes);
           }
-          // Update snapshot for next change detection
-          // SECURITY: Always update snapshot even if logging fails
           securityLogger.storeConfigSnapshot();
         } catch (error) {
-          // SECURITY: Log error but don't break the extension
-          // This prevents malicious configuration from causing DoS
           console.error('[Git ID Switcher] Error handling config change:', error);
-          // Still update snapshot to prevent state corruption
           try {
             securityLogger.storeConfigSnapshot();
           } catch (snapshotError) {
@@ -154,8 +108,6 @@ async function performTrustedInitialization(
           }
         }
 
-        // Reset validation notification flag to allow re-notification if errors persist
-        // This ensures users are notified again if they fix some issues but others remain
         resetValidationNotificationFlag();
         initializeState(context).catch(error => {
           const safeMessage = getUserSafeMessage(error);
@@ -175,105 +127,20 @@ async function performTrustedInitialization(
  * Extension deactivation
  */
 export function deactivate(): void {
-  // Cancel any in-progress initialization
   if (initializeCancellation) {
     initializeCancellation.cancel();
     initializeCancellation.dispose();
     initializeCancellation = undefined;
   }
-
   securityLogger.logDeactivation();
   securityLogger.dispose();
   console.log('[Git ID Switcher] Deactivated');
 }
 
 /**
- * Result type for identity detection operations
- */
-type DetectionResult = { found: true; identity: Identity } | { found: false };
-
-/**
- * Try to restore saved identity from workspace state.
- * @internal
- */
-function tryRestoreSavedIdentity(context: vscode.ExtensionContext): DetectionResult {
-  const savedIdentityId = context.workspaceState.get<string>('currentIdentityId');
-  if (!savedIdentityId) {
-    return { found: false };
-  }
-  const savedIdentity = getIdentityById(savedIdentityId);
-  if (savedIdentity) {
-    return { found: true, identity: savedIdentity };
-  }
-  return { found: false };
-}
-
-/**
- * Try to detect identity from Git config.
- * @internal
- */
-async function tryDetectFromGit(token: vscode.CancellationToken): Promise<DetectionResult | 'cancelled'> {
-  if (!await isGitRepository(token)) {
-    return { found: false };
-  }
-
-  if (token.isCancellationRequested) {
-    console.debug('[Git ID Switcher] Initialization cancelled after isGitRepository');
-    return 'cancelled';
-  }
-
-  const detectedIdentity = await detectCurrentIdentity(token);
-
-  if (token.isCancellationRequested) {
-    console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentity');
-    return 'cancelled';
-  }
-
-  if (detectedIdentity) {
-    return { found: true, identity: detectedIdentity };
-  }
-  return { found: false };
-}
-
-/**
- * Try to detect identity from SSH agent.
- * @internal
- */
-async function tryDetectFromSsh(token: vscode.CancellationToken): Promise<DetectionResult | 'cancelled'> {
-  const sshIdentity = await detectCurrentIdentityFromSsh(token);
-
-  if (token.isCancellationRequested) {
-    console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentityFromSsh');
-    return 'cancelled';
-  }
-
-  if (sshIdentity) {
-    return { found: true, identity: sshIdentity };
-  }
-  return { found: false };
-}
-
-/**
- * Apply detected identity to state and status bar.
- * @internal
- */
-async function applyDetectedIdentity(
-  identity: Identity,
-  context: vscode.ExtensionContext,
-  saveToWorkspace: boolean
-): Promise<void> {
-  currentIdentity = identity;
-  statusBar.setIdentity(identity);
-  if (saveToWorkspace) {
-    await context.workspaceState.update('currentIdentityId', identity.id);
-  }
-}
-
-/**
  * Initialize state from saved settings and current Git config
  */
 async function initializeState(context: vscode.ExtensionContext): Promise<void> {
-  // Cancel any existing initialization
   if (initializeCancellation) {
     initializeCancellation.cancel();
     initializeCancellation.dispose();
@@ -286,197 +153,56 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
   try {
     const identities = getIdentitiesWithValidation();
 
-    // No identities configured
     if (identities.length === 0) {
       statusBar.setNoIdentity();
       return;
     }
 
-    // First-run welcome notification: detect example-only state
+    // First-run welcome notification
     const hasShownWelcome = context.globalState.get<boolean>('hasShownWelcome', false);
     if (!hasShownWelcome && identities.length === 1 && identities[0].id === 'example') {
       showWelcomeNotification();
       await context.globalState.update('hasShownWelcome', true);
     }
 
-    // Try to restore saved identity
     const savedResult = tryRestoreSavedIdentity(context);
     if (savedResult.found) {
-      await applyDetectedIdentity(savedResult.identity, context, false);
+      await applyDetectedIdentity(savedResult.identity, context, false, statusBar, setCurrentIdentity);
       return;
     }
 
-    // Try to detect from Git config
     const gitResult = await tryDetectFromGit(token);
     if (gitResult === 'cancelled') return;
     if (gitResult.found) {
-      await applyDetectedIdentity(gitResult.identity, context, true);
+      await applyDetectedIdentity(gitResult.identity, context, true, statusBar, setCurrentIdentity);
       return;
     }
 
-    // Try to detect from SSH agent
     const sshResult = await tryDetectFromSsh(token);
     if (sshResult === 'cancelled') return;
     if (sshResult.found) {
-      await applyDetectedIdentity(sshResult.identity, context, true);
+      await applyDetectedIdentity(sshResult.identity, context, true, statusBar, setCurrentIdentity);
       return;
     }
 
-    // No identity detected, show selection prompt
     statusBar.setNoIdentity();
   } catch (error) {
-    // If cancelled, don't treat as error
     if (token.isCancellationRequested) {
       console.debug('[Git ID Switcher] Initialization cancelled (caught in error handler)');
       return;
     }
 
-    // SECURITY: Use getUserSafeMessage to prevent information leakage
     const safeMessage = getUserSafeMessage(error);
     console.error('[Git ID Switcher] Failed to initialize:', safeMessage);
     statusBar.setNoIdentity();
 
-    // Propagate fatal errors (security violations) - re-throw as-is to preserve category
     if (isFatalError(error)) {
       throw error;
     }
   } finally {
-    // Clean up cancellation token if this is still the current one
     if (initializeCancellation === tokenSource) {
       initializeCancellation = undefined;
     }
     tokenSource.dispose();
-  }
-}
-
-/**
- * Command: Select identity
- */
-async function selectIdentityCommand(
-  context: vscode.ExtensionContext
-): Promise<void> {
-  // SECURITY: Block command execution in untrusted workspaces
-  if (!requireWorkspaceTrust()) {
-    return;
-  }
-
-  try {
-    // Show quick pick
-    const selectedIdentity = await showIdentityQuickPick(currentIdentity);
-
-    if (!selectedIdentity) {
-      // User cancelled
-      return;
-    }
-
-    if (selectedIdentity.id === currentIdentity?.id) {
-      // Same identity selected, no change needed
-      vscode.window.showInformationMessage(
-        vscode.l10n.t('Already using {0}', getIdentityLabel(selectedIdentity))
-      );
-      return;
-    }
-
-    // Switch to selected identity
-    await switchToIdentity(selectedIdentity, context);
-  } catch (error) {
-    // SECURITY: Use getUserSafeMessage to prevent information leakage
-    const safeMessage = getUserSafeMessage(error);
-    showErrorNotification(vscode.l10n.t('Failed to select identity: {0}', safeMessage));
-    statusBar.setError(safeMessage);
-
-    // Propagate fatal errors (security violations)
-    if (isFatalError(error)) {
-      throw error;
-    }
-  }
-}
-
-/**
- * Command: Show current identity info
- */
-function showCurrentIdentityCommand(): void {
-  if (currentIdentity) {
-    vscode.window.showInformationMessage(
-      vscode.l10n.t('Current identity: {0} ({1})', getIdentityLabel(currentIdentity), currentIdentity.email)
-    );
-  } else {
-    vscode.window.showInformationMessage(
-      vscode.l10n.t('No identity selected. Click the status bar to select one.')
-    );
-  }
-}
-
-/**
- * Switch to a specific identity
- */
-async function switchToIdentity(
-  identity: Identity,
-  context: vscode.ExtensionContext
-): Promise<void> {
-  statusBar.setLoading();
-
-  const previousIdentityId = currentIdentity?.id ?? null;
-
-  try {
-    const config = vscode.workspace.getConfiguration('gitIdSwitcher');
-    const autoSwitchSshKey = config.get<boolean>('autoSwitchSshKey', true);
-
-    // Update Git config if in a repository
-    if (await isGitRepository()) {
-      await setGitConfigForIdentity(identity);
-    }
-
-    // Switch SSH key if enabled and key is configured
-    if (autoSwitchSshKey && identity.sshKeyPath) {
-      await switchToIdentitySshKey(identity);
-      securityLogger.logSshKeyLoad(identity.sshKeyPath, true);
-    }
-
-    // Update state
-    currentIdentity = identity;
-    statusBar.setIdentity(identity);
-
-    // Save to workspace state
-    await context.workspaceState.update('currentIdentityId', identity.id);
-
-    // Log identity switch
-    securityLogger.logIdentitySwitch(previousIdentityId, identity.id);
-
-    // Show notification
-    showIdentitySwitchedNotification(identity);
-
-    console.log(`[Git ID Switcher] Switched to identity: ${identity.id}`);
-  } catch (error) {
-    // SECURITY: Use getUserSafeMessage to prevent information leakage in console
-    const safeMessage = getUserSafeMessage(error);
-    console.error(`[Git ID Switcher] Failed to switch identity: ${safeMessage}`);
-
-    // Revert status bar
-    if (currentIdentity) {
-      statusBar.setIdentity(currentIdentity);
-    } else {
-      statusBar.setNoIdentity();
-    }
-
-    // Re-throw error for caller to handle (selectIdentityCommand will notify user)
-    throw error;
-  }
-}
-
-/**
- * Show welcome notification for first-time users
- */
-async function showWelcomeNotification(): Promise<void> {
-  const action = await vscode.window.showInformationMessage(
-    vscode.l10n.t('Welcome to Git ID Switcher! Configure your identities to get started.'),
-    vscode.l10n.t('Open Settings')
-  );
-
-  if (action) {
-    vscode.commands.executeCommand(
-      'workbench.action.openSettings',
-      'gitIdSwitcher.identities'
-    );
   }
 }

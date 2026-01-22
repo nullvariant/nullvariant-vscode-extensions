@@ -5,11 +5,11 @@ coverage:
   status:
     project:
       default:
-        target: auto
-        threshold: 5%
+        target: 90%
+        threshold: 0%
     patch:
       default:
-        target: auto
+        target: 90%
 
 # Fix path mapping for monorepo structure
 # With sourceMap enabled, lcov.info contains paths like "src/commandAllowlist.ts"
