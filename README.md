@@ -40,6 +40,49 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
 <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo.png" width="600" alt="Git ID Switcher Demo">
 
+## Quick Start for Developers
+
+Get started in 5 steps:
+
+```bash
+# 1. Clone
+git clone https://github.com/nullvariant/nullvariant-vscode-extensions.git
+cd nullvariant-vscode-extensions
+
+# 2. Install dependencies (from repository root)
+npm install
+
+# 3. Compile
+npm run compile:all
+
+# 4. Run tests
+npm run test:all
+
+# 5. Start watch mode for development
+npm run watch:all
+```
+
+For linting: `npm run lint:all`
+
+## Extension Initialization Flow
+
+```mermaid
+flowchart TD
+    A[Extension Activated] --> B{Workspace Trusted?}
+    B -->|No| C[Restricted Mode]
+    B -->|Yes| D[initializeState]
+    D --> E{Saved Identity?}
+    E -->|Yes| I[Apply Identity]
+    E -->|No| F{Detect from Git Config?}
+    F -->|Yes| I
+    F -->|No| G{Detect from SSH Agent?}
+    G -->|Yes| I
+    G -->|No| H[No Identity]
+    I --> J[Update Status Bar]
+    H --> J
+    J --> K[Ready]
+```
+
 ## Development
 
 ### Prerequisites

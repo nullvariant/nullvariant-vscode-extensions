@@ -5,8 +5,15 @@
   "description": "VS Code extensions monorepo",
   "author": "Null;Variant <null@nullvariant.com>",
   "license": "MIT",
+  "workspaces": [
+    "extensions/*"
+  ],
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint:all": "npm run lint --workspaces --if-present",
+    "test:all": "npm run test --workspaces --if-present",
+    "compile:all": "npm run compile --workspaces --if-present",
+    "watch:all": "npm run watch --workspaces --if-present"
   },
   "devDependencies": {
     "husky": "^9.1.7"
