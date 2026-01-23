@@ -3,408 +3,34 @@
  *
  * Provides path normalization, validation, and symlink resolution.
  * Designed to prevent path traversal and symlink-based attacks.
+ *
+ * This module re-exports functions from specialized sub-modules:
+ * - path/normalize.ts: Path normalization and tilde expansion
+ * - path/symlink.ts: Symlink resolution and detection
  */
 
-import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { isSecurePath, SecurePathResult } from './pathSecurity';
 import { PATH_MAX } from './constants';
-import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasPathTraversal, hasInvisibleUnicode } from './validators/common';
+import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasInvisibleUnicode } from './validators/common';
 
-/**
- * Options for path normalization
- */
-export interface NormalizePathOptions {
-  /**
-   * Whether to resolve symlinks using fs.realpathSync.native()
-   * Default: false (for performance, enable for strict security)
-   */
-  resolveSymlinks?: boolean;
+// Re-export from path/normalize.ts
+export {
+  NormalizePathOptions,
+  NormalizedPathResult,
+  expandTilde,
+  normalizeAndValidatePath,
+} from './path/normalize';
 
-  /**
-   * Whether to verify the path exists on filesystem
-   * Default: false
-   */
-  requireExists?: boolean;
+// Re-export from path/symlink.ts
+export {
+  SymlinkResolutionResult,
+  resolveSymlinksSecurely,
+  containsSymlinks,
+} from './path/symlink';
 
-  /**
-   * Base directory to resolve relative paths against
-   * Default: process.cwd()
-   */
-  baseDir?: string;
-}
-
-/**
- * Result of path normalization and validation
- */
-export interface NormalizedPathResult {
-  valid: boolean;
-  normalizedPath?: string;
-  originalPath: string;
-  reason?: string;
-  /**
-   * True if symlinks were resolved
-   */
-  symlinksResolved?: boolean;
-}
-
-/**
- * Expand ~ to home directory
- *
- * Only expands ~/ (current user), not ~user (other users)
- *
- * @param inputPath - Path that may start with ~
- * @returns Path with ~ expanded to home directory
- */
-export function expandTilde(inputPath: string): string {
-  if (!inputPath) {
-    return inputPath;
-  }
-
-  // Only expand ~ or ~/
-  if (inputPath === '~') {
-    return os.homedir();
-  }
-
-  if (inputPath.startsWith('~/')) {
-    return path.join(os.homedir(), inputPath.slice(2));
-  }
-
-  // Do NOT expand ~user patterns (security risk)
-  return inputPath;
-}
-
-/**
- * Validate path length against PATH_MAX.
- * @internal
- */
-function validatePathLength(
-  pathToCheck: string,
-  inputPath: string,
-  context: string
-): NormalizedPathResult | null {
-  const byteLength = Buffer.byteLength(pathToCheck, 'utf8');
-  if (byteLength > PATH_MAX) {
-    return {
-      valid: false,
-      originalPath: inputPath,
-      reason: `${context} exceeds maximum length (${byteLength} > ${PATH_MAX} bytes)`,
-    };
-  }
-  return null;
-}
-
-/**
- * Resolve symlinks securely and re-validate the result.
- * @internal
- * @returns Object with resolvedPath on success, or invalidResult if validation fails
- */
-/* c8 ignore start - Symlink resolution errors (defense-in-depth, requires complex symlink setup) */
-function resolveAndValidateSymlinks(
-  normalizedPath: string,
-  inputPath: string
-): { resolvedPath: string; invalidResult?: undefined } | { resolvedPath?: undefined; invalidResult: NormalizedPathResult } {
-  const symlinkResult = resolveSymlinksSecurely(normalizedPath);
-  if (!symlinkResult.valid) {
-    return { invalidResult: { valid: false, originalPath: inputPath, reason: symlinkResult.reason } };
-  }
-
-  const resolvedPath = symlinkResult.resolvedPath ?? normalizedPath;
-
-  // Re-validate after symlink resolution
-  const symlinkCheck = isSecurePathAfterNormalization(resolvedPath, inputPath);
-  if (!symlinkCheck.valid) {
-    return { invalidResult: { valid: false, originalPath: inputPath, reason: `Post-symlink check failed: ${symlinkCheck.reason}` } };
-  }
-
-  return { resolvedPath };
-}
-/* c8 ignore stop */
-
-/**
- * Normalize and validate a path for security
- *
- * This function performs:
- * 1. Tilde expansion (~/ to home directory)
- * 2. Path normalization (resolve ., .., //)
- * 3. Security validation (path traversal, etc.)
- * 4. Optional symlink resolution
- *
- * @param inputPath - The path to normalize and validate
- * @param options - Normalization options
- * @returns NormalizedPathResult with validation status
- *
- * @example
- * const result = normalizeAndValidatePath('~/.ssh/id_rsa');
- * if (result.valid) {
- *   console.log(result.normalizedPath); // /home/user/.ssh/id_rsa
- * }
- */
-export function normalizeAndValidatePath(
-  inputPath: string,
-  options: NormalizePathOptions = {}
-): NormalizedPathResult {
-  const { resolveSymlinks = false, requireExists = false, baseDir = process.cwd() } = options;
-
-  // Step 1: Basic input validation
-  if (!inputPath || inputPath.length === 0) {
-    return { valid: false, originalPath: inputPath, reason: 'Path is empty or undefined' };
-  }
-
-  // Step 2: Check PATH_MAX before any processing
-  const inputLengthCheck = validatePathLength(inputPath, inputPath, 'Path');
-  if (inputLengthCheck) return inputLengthCheck;
-
-  // Step 3: Pre-normalization security check on raw input
-  const preCheck = isSecurePath(inputPath);
-  if (!preCheck.valid) {
-    return { valid: false, originalPath: inputPath, reason: `Pre-normalization check failed: ${preCheck.reason}` };
-  }
-
-  // Step 4: Expand tilde and resolve to absolute path
-  const expandedPath = expandTilde(inputPath);
-  const resolvedAbsolutePath = path.isAbsolute(expandedPath)
-    ? path.resolve(expandedPath)
-    : path.resolve(baseDir, expandedPath);
-
-  // Step 5: Normalize the path (resolve ., .., //)
-  let normalizedPath = path.normalize(resolvedAbsolutePath);
-
-  // Step 5.5: Verify normalization consistency (defensive check)
-  const doubleCheckNormalized = path.normalize(path.resolve(normalizedPath));
-  /* c8 ignore start - Defense-in-depth: path.normalize is idempotent, this branch should never execute */
-  if (normalizedPath !== doubleCheckNormalized) {
-    normalizedPath = doubleCheckNormalized;
-  }
-  /* c8 ignore stop */
-
-  // Step 6: Post-normalization security check
-  const postCheck = isSecurePathAfterNormalization(normalizedPath, inputPath);
-  /* c8 ignore start - Defense-in-depth: pre-check catches most issues, this is fallback */
-  if (!postCheck.valid) {
-    return { valid: false, originalPath: inputPath, reason: `Post-normalization check failed: ${postCheck.reason}` };
-  }
-  /* c8 ignore stop */
-
-  // Step 7: Check PATH_MAX after normalization
-  const normalizedLengthCheck = validatePathLength(normalizedPath, inputPath, 'Normalized path');
-  if (normalizedLengthCheck) return normalizedLengthCheck;
-
-  // Step 8: Optionally resolve symlinks
-  let symlinksResolved = false;
-  if (resolveSymlinks) {
-    const symlinkResult = resolveAndValidateSymlinks(normalizedPath, inputPath);
-    /* c8 ignore start - Symlink resolution failure edge case */
-    if (symlinkResult.invalidResult) {
-      return symlinkResult.invalidResult;
-    }
-    if (symlinkResult.resolvedPath !== normalizedPath) {
-      normalizedPath = symlinkResult.resolvedPath;
-      symlinksResolved = true;
-    }
-    /* c8 ignore stop */
-  }
-
-  // Step 9: Optionally check file existence (TOCTOU note: acceptable for validation)
-  if (requireExists) {
-    try {
-      fs.accessSync(normalizedPath);
-    } catch (error) /* c8 ignore start */ {
-      const code = (error as NodeJS.ErrnoException).code;
-      return { valid: false, originalPath: inputPath, normalizedPath, reason: `Path does not exist or is not accessible: ${code}` };
-    } /* c8 ignore stop */
-  }
-
-  return { valid: true, originalPath: inputPath, normalizedPath, symlinksResolved };
-}
-
-/**
- * Security check specifically for normalized paths
- *
- * After path.normalize(), we need to verify:
- * 1. Path doesn't escape to unexpected locations
- * 2. No remaining traversal patterns
- */
-function isSecurePathAfterNormalization(
-  normalizedPath: string,
-  originalPath: string
-): SecurePathResult {
-  // Check for null bytes (should never appear after normalization)
-  /* c8 ignore start - Defense-in-depth: null byte should be caught before normalization */
-  if (hasNullByte(normalizedPath)) {
-    return { valid: false, reason: 'Normalized path contains null byte' };
-  }
-  /* c8 ignore stop */
-
-  // Normalized absolute paths should not contain .. or .
-  // path.normalize should have resolved these
-  /* c8 ignore start - Defense-in-depth: path.normalize handles these cases */
-  if (hasPathTraversal(normalizedPath)) {
-    return {
-      valid: false,
-      reason: 'Normalized path still contains traversal pattern (..)',
-    };
-  }
-
-  // Check for double slashes (path.normalize should fix these)
-  if (normalizedPath.includes('//')) {
-    return {
-      valid: false,
-      reason: 'Normalized path contains double slashes',
-    };
-  }
-
-  // Check that normalized path doesn't escape home directory
-  // if original was a home directory path
-  if (originalPath.startsWith('~')) {
-    const homeDir = os.homedir();
-    if (!normalizedPath.startsWith(homeDir)) {
-      return {
-        valid: false,
-        reason: 'Path escaped from home directory after normalization',
-      };
-    }
-  }
-  /* c8 ignore stop */
-
-  return { valid: true };
-}
-
-/**
- * Result of symlink resolution
- */
-interface SymlinkResolutionResult {
-  valid: boolean;
-  resolvedPath?: string;
-  reason?: string;
-}
-
-/**
- * Resolve symlinks securely with loop detection
- *
- * Uses fs.realpathSync.native() with error handling for:
- * - ELOOP: Symlink loop detected (infinite loop attack)
- * - ENOENT: File/directory doesn't exist
- * - EACCES: Permission denied
- * - ENAMETOOLONG: Path too long
- *
- * SECURITY NOTES:
- * - On Windows, fs.realpathSync.native() correctly handles:
- *   - Symbolic links (created with mklink /D or mklink)
- *   - Junctions (created with mklink /J)
- *   - Hard links (created with mklink /H)
- * - ELOOP detection prevents infinite symlink loops (e.g., /a -> /b -> /a)
- * - ENOENT returns normalized input path (not raw) for consistency
- */
-function resolveSymlinksSecurely(inputPath: string): SymlinkResolutionResult {
-  try {
-    // Use native realpath for best performance and OS symlink handling
-    const resolvedPath = fs.realpathSync.native(inputPath);
-
-    /* c8 ignore start - PATH_MAX check after symlink resolution (edge case) */
-    // Verify resolved path length
-    const resolvedByteLength = Buffer.byteLength(resolvedPath, 'utf8');
-    if (resolvedByteLength > PATH_MAX) {
-      return {
-        valid: false,
-        reason: `Resolved path exceeds maximum length (${resolvedByteLength} > ${PATH_MAX} bytes)`,
-      };
-    }
-    /* c8 ignore stop */
-
-    return {
-      valid: true,
-      resolvedPath,
-    };
-  } catch (error) /* c8 ignore start */ {
-    const nodeError = error as NodeJS.ErrnoException;
-    const code = nodeError.code;
-
-    switch (code) {
-      case 'ELOOP':
-        return {
-          valid: false,
-          reason: 'Symlink loop detected (ELOOP) - possible infinite loop attack',
-        };
-      case 'ENOENT':
-        // File doesn't exist - this might be OK depending on use case
-        // SECURITY: inputPath is already normalized by normalizeAndValidatePath()
-        // before this function is called, but we normalize again for defensive programming
-        // This ensures consistency even if the function is called directly
-        // The caller can check requireExists if they need the file to exist
-        return {
-          valid: true,
-          resolvedPath: path.normalize(inputPath), // Already normalized, but safe to normalize again (idempotent)
-        };
-      case 'EACCES':
-        return {
-          valid: false,
-          reason: 'Permission denied while resolving symlinks (EACCES)',
-        };
-      case 'ENAMETOOLONG':
-        return {
-          valid: false,
-          reason: 'Path too long while resolving symlinks (ENAMETOOLONG)',
-        };
-      case 'ENOTDIR':
-        return {
-          valid: false,
-          reason: 'A component of the path is not a directory (ENOTDIR)',
-        };
-      default:
-        return {
-          valid: false,
-          reason: `Error resolving symlinks: ${code || nodeError.message}`,
-        };
-    }
-  } /* c8 ignore stop */
-}
-
-/**
- * Check if a path contains symlinks
- *
- * Useful for detecting potential symlink attacks without resolving them
- *
- * SECURITY: ELOOP errors are treated as symlinks detected (potential attack)
- */
-export function containsSymlinks(inputPath: string): boolean {
-  try {
-    const realPath = fs.realpathSync.native(inputPath);
-    const normalPath = path.normalize(inputPath);
-    return realPath !== normalPath;
-  } catch (error) /* c8 ignore start */ {
-    const nodeError = error as NodeJS.ErrnoException;
-    const code = nodeError.code;
-
-    // ELOOP indicates a symlink loop - treat as symlink detected (security concern)
-    if (code === 'ELOOP') {
-      return true;
-    }
-
-    // ENOENT means file doesn't exist - can't determine if symlink, return false
-    // Other errors (EACCES, etc.) - assume no symlinks for now
-    // The error will be caught later during actual path resolution if needed
-    return false;
-  } /* c8 ignore stop */
-}
-
-/**
- * Validate an SSH key path specifically
- *
- * Performs path validation with symlink resolution enabled.
- * SSH keys can be stored in any location (not restricted to ~/.ssh or /etc/ssh).
- */
-export function validateSshKeyPath(
-  keyPath: string,
-  options: NormalizePathOptions = {}
-): NormalizedPathResult {
-  // Validate path with symlink resolution enabled for SSH keys
-  return normalizeAndValidatePath(keyPath, {
-    ...options,
-    resolveSymlinks: true, // Always resolve symlinks for SSH keys
-  });
-}
+// Import for internal use
+import { normalizeAndValidatePath, NormalizedPathResult } from './path/normalize';
 
 /**
  * Options for submodule path validation
@@ -421,6 +47,23 @@ export interface ValidateSubmodulePathOptions {
    * Default: false (submodule might not be initialized yet)
    */
   requireExists?: boolean;
+}
+
+/**
+ * Validate an SSH key path specifically
+ *
+ * Performs path validation with symlink resolution enabled.
+ * SSH keys can be stored in any location (not restricted to ~/.ssh or /etc/ssh).
+ */
+export function validateSshKeyPath(
+  keyPath: string,
+  options: { resolveSymlinks?: boolean; requireExists?: boolean; baseDir?: string } = {}
+): NormalizedPathResult {
+  // Validate path with symlink resolution enabled for SSH keys
+  return normalizeAndValidatePath(keyPath, {
+    ...options,
+    resolveSymlinks: true, // Always resolve symlinks for SSH keys
+  });
 }
 
 /**
