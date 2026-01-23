@@ -7,18 +7,58 @@
  * Separated from commandAllowlist for Single Responsibility Principle.
  * Refactored using pipeline pattern for KISS compliance (Issue-00041).
  *
+ * This module re-exports validators from specialized sub-modules:
+ * - path/security/unicode.ts: Unicode attack detection
+ * - path/security/traversal.ts: Path traversal detection
+ *
  * @see https://owasp.org/www-project-application-security-verification-standard/
  */
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { PATH_MAX } from './constants';
+import { hasNullByte } from './validators/common';
+
+// Re-export from path/security/unicode.ts
+export {
+  ValidationState,
+  Validator,
+  createControlCharValidator,
+  createInvisibleUnicodeValidator,
+  validateNoControlChars,
+  validateNoInvisibleUnicode,
+  normalizeUnicode,
+  validateNoControlCharsAfterNormalization,
+  validateNoInvisibleUnicodeAfterNormalization,
+} from './path/security/unicode';
+
+// Re-export from path/security/traversal.ts
+export {
+  validateNoTraversal,
+  validateNoDoubleSlash,
+  validateNoBackslash,
+  validateNoTrailingDot,
+  validateNoTrailingDotSlash,
+} from './path/security/traversal';
+
+// Import for internal use
 import {
-  CONTROL_CHAR_REGEX_STRICT,
-  hasInvisibleUnicode,
-  hasPathTraversalStrict,
-  hasNullByte,
-} from './validators/common';
+  ValidationState,
+  Validator,
+  validateNoControlChars,
+  validateNoInvisibleUnicode,
+  normalizeUnicode,
+  validateNoControlCharsAfterNormalization,
+  validateNoInvisibleUnicodeAfterNormalization,
+} from './path/security/unicode';
+
+import {
+  validateNoTraversal,
+  validateNoDoubleSlash,
+  validateNoBackslash,
+  validateNoTrailingDot,
+  validateNoTrailingDotSlash,
+} from './path/security/traversal';
 
 /**
  * Result of secure path validation
@@ -27,44 +67,6 @@ export interface SecurePathResult {
   valid: boolean;
   reason?: string;
 }
-
-/**
- * Internal state for validation pipeline
- */
-interface ValidationState {
-  valid: boolean;
-  path: string;
-  reason?: string;
-}
-
-/**
- * Validator function type for pipeline pattern
- */
-type Validator = (state: ValidationState) => ValidationState;
-
-// ============================================================================
-// Validator Factories (DRY pattern)
-// ============================================================================
-
-/**
- * Creates a validator for control characters with custom error message suffix
- */
-const createControlCharValidator = (suffix: string = ''): Validator => (state) => {
-  if (CONTROL_CHAR_REGEX_STRICT.test(state.path)) {
-    return { ...state, valid: false, reason: `Path contains control characters${suffix}` };
-  }
-  return state;
-};
-
-/**
- * Creates a validator for invisible Unicode with custom error message suffix
- */
-const createInvisibleUnicodeValidator = (suffix: string = ''): Validator => (state) => {
-  if (hasInvisibleUnicode(state.path)) {
-    return { ...state, valid: false, reason: `Path contains invisible Unicode characters${suffix}` };
-  }
-  return state;
-};
 
 // ============================================================================
 // Individual Validators (Single Responsibility)
@@ -100,33 +102,6 @@ const validateNoNullBytes: Validator = (state) => {
   return state;
 };
 
-/** Validates no control characters (pre-normalization) */
-const validateNoControlChars = createControlCharValidator();
-
-/** Validates no invisible Unicode characters (pre-normalization) */
-const validateNoInvisibleUnicode = createInvisibleUnicodeValidator();
-
-/**
- * Normalizes Unicode to NFC for consistent comparison
- */
-const normalizeUnicode: Validator = (state) => ({
-  ...state,
-  path: state.path.normalize('NFC'),
-});
-
-/**
- * Re-validates control characters after normalization.
- * NFC normalization can theoretically affect character composition,
- * so we re-check as a security precaution.
- */
-const validateNoControlCharsAfterNormalization = createControlCharValidator(' (after normalization)');
-
-/**
- * Re-validates invisible Unicode after normalization.
- * Security precaution for edge cases in Unicode normalization.
- */
-const validateNoInvisibleUnicodeAfterNormalization = createInvisibleUnicodeValidator(' (after normalization)');
-
 /**
  * Validates PATH_MAX length (in bytes for Unicode safety)
  */
@@ -137,41 +112,6 @@ const validatePathMaxLength: Validator = (state) => {
       ...state,
       valid: false,
       reason: `Path exceeds maximum length (${byteLength} > ${PATH_MAX} bytes)`,
-    };
-  }
-  return state;
-};
-
-/**
- * Validates no path traversal patterns (..)
- */
-const validateNoTraversal: Validator = (state) => {
-  if (hasPathTraversalStrict(state.path)) {
-    return { ...state, valid: false, reason: 'Path contains traversal pattern (..)' };
-  }
-  return state;
-};
-
-/**
- * Validates no double forward slashes (potential path confusion)
- * Note: Double backslashes (\\) are caught by validateNoBackslash
- */
-const validateNoDoubleSlash: Validator = (state) => {
-  if (/\/\//.test(state.path)) {
-    return { ...state, valid: false, reason: 'Path contains double slashes' };
-  }
-  return state;
-};
-
-/**
- * Validates no backslashes (cross-platform safety)
- */
-const validateNoBackslash: Validator = (state) => {
-  if (state.path.includes('\\')) {
-    return {
-      ...state,
-      valid: false,
-      reason: 'Path contains backslash (use forward slashes for cross-platform compatibility)',
     };
   }
   return state;
@@ -240,42 +180,6 @@ const validateNoWindowsDevicePath: Validator = (state) => {
       ...state,
       valid: false,
       reason: 'Windows device paths are not allowed',
-    };
-  }
-  return state;
-};
-/* c8 ignore stop */
-
-/**
- * Validates no trailing dots (cross-platform safety)
- * Note: '.' itself is valid and allowed
- */
-const validateNoTrailingDot: Validator = (state) => {
-  if (state.path !== '.' && state.path.endsWith('.')) {
-    return {
-      ...state,
-      valid: false,
-      reason: 'Path ends with dot (not allowed for cross-platform compatibility)',
-    };
-  }
-  return state;
-};
-
-/**
- * Validates no trailing /./ or /../ patterns (edge cases)
- *
- * Note: This validator is defense-in-depth code. Due to pipeline order:
- * - /. endings are caught first by validateNoTrailingDot
- * - /.. endings are caught first by validateNoTraversal
- * This code exists as a safety net if upstream validators are modified.
- */
-/* c8 ignore start - Defense-in-depth: unreachable due to prior validators */
-const validateNoTrailingDotSlash: Validator = (state) => {
-  if (state.path.endsWith('/.') || state.path.endsWith('/..')) {
-    return {
-      ...state,
-      valid: false,
-      reason: 'Path ends with /./ or /../ (not allowed)',
     };
   }
   return state;
@@ -403,9 +307,9 @@ function runValidators(state: ValidationState, validators: Validator[]): Validat
  * isSecurePath('/home/user/.ssh/id_rsa')  // { valid: true }
  * isSecurePath('../etc/passwd')           // { valid: false, reason: '...' }
  */
-export function isSecurePath(path: string): SecurePathResult {
+export function isSecurePath(inputPath: string): SecurePathResult {
   // Initialize state
-  let state: ValidationState = { valid: true, path };
+  let state: ValidationState = { valid: true, path: inputPath };
 
   // Phase 1: Pre-normalization checks
   state = runValidators(state, preNormalizationValidators);
