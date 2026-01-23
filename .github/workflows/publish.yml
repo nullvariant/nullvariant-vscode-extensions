@@ -32,11 +32,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: extensions/git-id-switcher/package-lock.json
+          cache-dependency-path: package-lock.json
 
+      # Install at root level for npm workspaces
       - name: Install dependencies
         run: npm ci
-        working-directory: extensions/git-id-switcher
 
       - name: Compile
         run: npm run compile
@@ -97,12 +97,12 @@ jobs:
 
       - name: Publish to VS Code Marketplace
         if: ${{ vars.PUBLISH_TO_MARKETPLACE == 'true' }}
-        run: npx vsce publish -p ${{ secrets.VSCE_PAT }}
+        run: npx vsce publish --packagePath git-id-switcher-${{ steps.version.outputs.version }}.vsix -p ${{ secrets.VSCE_PAT }}
         working-directory: extensions/git-id-switcher
 
       - name: Publish to Open VSX
         if: ${{ vars.PUBLISH_TO_OPENVSX == 'true' }}
-        run: npx ovsx publish -p ${{ secrets.OVSX_PAT }}
+        run: npx ovsx publish git-id-switcher-${{ steps.version.outputs.version }}.vsix -p ${{ secrets.OVSX_PAT }}
         working-directory: extensions/git-id-switcher
 
       - name: Deploy documentation to R2
