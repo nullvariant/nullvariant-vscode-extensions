@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-01-23
+
+### Security
+
+- **Dependency Vulnerability Fix**: Added npm override to force `diff@^8.0.3`
+  - Fixes GHSA-73rr-hh4g-fpgx (CVE-2026-24001): DoS vulnerability in `parsePatch` and `applyPatch` methods
+  - `mocha@11.7.5` depends on vulnerable `diff@7.0.0`
+
 ## [0.14.0] - 2026-01-22
 
 ### Changed
