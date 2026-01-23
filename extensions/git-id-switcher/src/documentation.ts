@@ -24,18 +24,17 @@ import {
   isContentSizeValid,
 } from './documentation.internal';
 
-// Import UI components (VS Code dependent, split for maintainability)
+// Import UI components for internal use
 import {
   generateNonce,
-  buildCsp,
   getDocumentHtml,
   getLoadingHtml,
   getErrorHtml,
 } from './ui/webview';
 
-// Re-export for backward compatibility
+// Re-export UI components for backward compatibility (VS Code dependent)
 export type { ErrorType } from './ui/webview';
-export { generateNonce, buildCsp, getDocumentHtml, getLoadingHtml, getErrorHtml };
+export { generateNonce, buildCsp, getDocumentHtml, getLoadingHtml, getErrorHtml } from './ui/webview';
 
 // ============================================================================
 // Constants
