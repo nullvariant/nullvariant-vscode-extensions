@@ -536,6 +536,85 @@ function testValidPaths(): void {
 }
 
 /**
+ * Test invalid prefix paths are rejected
+ * Paths must start with /, ~/, ~, or ./
+ */
+function testInvalidPrefixPaths(): void {
+  console.log('Testing invalid prefix paths are rejected...');
+
+  const invalidPrefixPaths = [
+    'foo/bar',           // Relative without ./
+    'relative/path',     // Relative without ./
+    'some/deep/path',    // Relative without ./
+    'file.txt',          // Just filename
+  ];
+
+  for (const testPath of invalidPrefixPaths) {
+    const result = isSecurePath(testPath);
+    assert.strictEqual(
+      result.valid,
+      false,
+      `Invalid prefix path should be rejected: "${testPath}"`
+    );
+    assert.ok(
+      result.reason?.includes('must start with'),
+      `Should mention valid prefixes for: "${testPath}", got: "${result.reason}"`
+    );
+  }
+
+  console.log('✅ Invalid prefix paths rejected!');
+}
+
+/**
+ * Test isSecureLogPath rejects file that is itself a symbolic link
+ */
+function testSecureLogPathRejectsFileSymlink(): void {
+  console.log('Testing isSecureLogPath rejects file symbolic link...');
+
+  // Skip on Windows - drive letter rejection prevents testing symlink rejection
+  if (process.platform === 'win32') {
+    console.log('  Skipped on Windows (drive letter rejection takes precedence)');
+    console.log('✅ File symbolic links rejected!');
+    return;
+  }
+
+  // Use realpath to resolve any system symlinks
+  const baseTempDir = fs.realpathSync(os.tmpdir());
+  const tempDir = fs.mkdtempSync(path.join(baseTempDir, 'securelogpath-filesymlink-test-'));
+
+  try {
+    const realFile = path.join(tempDir, 'real.log');
+    const symlinkFile = path.join(tempDir, 'symlink.log');
+
+    // Create real file
+    fs.writeFileSync(realFile, 'test content');
+
+    // Create a symlink pointing to the real file
+    fs.symlinkSync(realFile, symlinkFile);
+
+    // Test: file symlink should be rejected
+    const normalizedPath = toForwardSlashes(symlinkFile);
+    const normalizedBaseDir = toForwardSlashes(tempDir);
+    const result = isSecureLogPath(normalizedPath, normalizedBaseDir);
+
+    assert.strictEqual(
+      result.valid,
+      false,
+      'File that is a symbolic link should be rejected'
+    );
+    assert.ok(
+      result.reason?.includes('symbolic link'),
+      `Should mention symbolic link, got: "${result.reason}"`
+    );
+  } finally {
+    // Cleanup temp directory
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+
+  console.log('✅ File symbolic links rejected!');
+}
+
+/**
  * Test isPathArgument function
  */
 function testIsPathArgument(): void {
@@ -951,6 +1030,7 @@ export async function runPathSecurityTests(): Promise<void> {
     testWindowsDriveLetterOnly();
     testAbsolutePathWithRelativeTraversal();
     testValidPaths();
+    testInvalidPrefixPaths();
     testIsPathArgument();
     testIsPathArgumentEdgeCases();
     testCommandAllowedIntegration();
@@ -959,6 +1039,7 @@ export async function runPathSecurityTests(): Promise<void> {
     testSecureLogPathOutsideAllowed();
     testSecureLogPathUnderAllowed();
     testSecureLogPathRejectsSymlinks();
+    testSecureLogPathRejectsFileSymlink();
     testSecureLogPathRejectsTraversal();
     testSecureLogPathBasicValidation();
     testSecureLogPathInvalidBaseDir();

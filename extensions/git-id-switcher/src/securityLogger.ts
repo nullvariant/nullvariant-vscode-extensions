@@ -101,10 +101,12 @@ class SecurityLoggerImpl implements ISecurityLogger {
    *
    * @param globalStoragePath - The path from context.globalStorageUri.fsPath
    */
+  /* c8 ignore start - VS Code extension context only (not available in unit tests) */
   initializeWithContext(globalStoragePath: string): void {
     this.globalStorageUri = globalStoragePath;
     this.initialize();
   }
+  /* c8 ignore stop */
 
   initialize(): void {
     if (!this.outputChannel) {
@@ -130,6 +132,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
     // Always use globalStorageUri to prevent arbitrary file write attacks
     // via malicious .vscode/settings.json
     let secureFilePath = '';
+    /* c8 ignore start - globalStorageUri is only set via initializeWithContext (VS Code extension context) */
     if (this.globalStorageUri) {
       // Use fixed path under globalStorageUri
       // IMPORTANT: Use path.join for cross-platform compatibility (Windows uses \)
@@ -142,7 +145,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
         return;
       }
       secureFilePath = pathResult.resolvedPath || secureFilePath;
-    } else {
+    } /* c8 ignore stop */ else /* c8 ignore start */ {
       // Fallback: use workspace setting but validate strictly
       const rawFilePath = config.get<string>('filePath', DEFAULT_FILE_LOG_CONFIG.filePath);
       const expandedPath = rawFilePath ? expandTilde(rawFilePath) : '';
@@ -155,7 +158,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
         }
         secureFilePath = expandedPath;
       }
-    }
+    } /* c8 ignore stop */
 
     const fileConfig: FileLogConfig = {
       enabled: config.get<boolean>('fileEnabled', DEFAULT_FILE_LOG_CONFIG.enabled),
@@ -239,9 +242,9 @@ class SecurityLoggerImpl implements ISecurityLogger {
       message = jsonStr.length > MAX_MESSAGE_SIZE
         ? `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: ${jsonStr.slice(0, MAX_MESSAGE_SIZE)}...[truncated]`
         : `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: ${jsonStr}`;
-    } catch (error) {
+    } catch (error) /* c8 ignore start */ {
       message = `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: [Failed to serialize: ${String(error)}]`;
-    }
+    } /* c8 ignore stop */
 
     if (this.outputChannel) {
       this.outputChannel.appendLine(message);
@@ -425,13 +428,14 @@ class SecurityLoggerImpl implements ISecurityLogger {
   private getExtensionVersion(): string {
     try {
       const vscode = getVSCode();
+      /* c8 ignore next */
       if (!vscode) return 'unknown';
       const ext = vscode.extensions.getExtension('nullvariant.git-id-switcher');
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       return (ext?.packageJSON?.version as string) || 'unknown';
-    } catch {
+    } catch /* c8 ignore start */ {
       return 'unknown';
-    }
+    } /* c8 ignore stop */
   }
 }
 
