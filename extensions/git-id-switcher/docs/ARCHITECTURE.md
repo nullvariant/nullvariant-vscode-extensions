@@ -36,12 +36,12 @@
 
 ### Should I Change This Code?
 
-| If you see... | Then... |
-| ------------- | ------- |
-| `/* c8 ignore */` comment | Don't try to add tests for it |
-| `// defense-in-depth` comment | Don't remove "redundant" checks |
-| `// SECURITY:` comment | Read carefully before modifying |
-| Silent `catch` block in SSH code | It's intentional, leave it |
+| If you see...                      | Then...                           |
+| ---------------------------------- | --------------------------------- |
+| `/* c8 ignore */` comment          | Don't try to add tests for it     |
+| `// defense-in-depth` comment      | Don't remove "redundant" checks   |
+| `// SECURITY:` comment             | Read carefully before modifying   |
+| Silent `catch` block in SSH code   | It's intentional, leave it        |
 | Multiple validators for same thing | Defense-in-depth, keep all layers |
 
 ### Key File Sizes (Expected to Be Large)
@@ -54,11 +54,11 @@
 
 ## Document Map
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| DESIGN_PHILOSOPHY.md | Why we build this way | Anyone curious |
-| **ARCHITECTURE.md** | How the code is structured | Developers |
-| CONTRIBUTING.md | What to do when contributing | Contributors |
+| Document             | Purpose                      | Audience       |
+| -------------------- | ---------------------------- | -------------- |
+| DESIGN_PHILOSOPHY.md | Why we build this way        | Anyone curious |
+| **ARCHITECTURE.md**  | How the code is structured   | Developers     |
+| CONTRIBUTING.md      | What to do when contributing | Contributors   |
 
 ---
 
@@ -72,13 +72,14 @@ The same check may appear at multiple layers. This is by design.
 
 #### Null Byte Validation
 
-| Layer | File | Purpose |
-|-------|------|---------|
-| 1. Common | `validators/common.ts` | `hasNullByte()` utility |
-| 2. Path Security | `pathSecurity.ts` | `validateNoNullBytes()` in pipeline |
-| 3. Path Normalization | `path/normalize.ts` | Defense-in-depth before normalization |
+| Layer                 | File                   | Purpose                               |
+| --------------------- | ---------------------- | ------------------------------------- |
+| 1. Common             | `validators/common.ts` | `hasNullByte()` utility               |
+| 2. Path Security      | `pathSecurity.ts`      | `validateNoNullBytes()` in pipeline   |
+| 3. Path Normalization | `path/normalize.ts`    | Defense-in-depth before normalization |
 
 **Why multiple layers?**
+
 - Layer 1 provides reusable detection
 - Layer 2 catches user input errors early in path validation pipeline
 - Layer 3 is defense-in-depth (should never trigger if layer 2 works)
@@ -89,9 +90,9 @@ The same check may appear at multiple layers. This is by design.
 
 Two validation phases exist in the path validation pipeline:
 
-| Phase | Validators | Purpose |
-|-------|------------|---------|
-| Pre-normalization | `validateNoControlChars`, `validateNoInvisibleUnicode` | Catch attacks before normalization |
+| Phase              | Validators                                                                                 | Purpose                                                |
+| ------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| Pre-normalization  | `validateNoControlChars`, `validateNoInvisibleUnicode`                                     | Catch attacks before normalization                     |
 | Post-normalization | `validateNoControlCharsAfterNormalization`, `validateNoInvisibleUnicodeAfterNormalization` | Catch edge cases where normalization introduces issues |
 
 **Do not remove post-normalization validators.** Unicode NFC normalization can theoretically introduce new characters.
@@ -99,18 +100,20 @@ Two validation phases exist in the path validation pipeline:
 #### PATH_MAX Validation
 
 Checked at multiple points because:
+
 1. Path expansion (`~` → `/home/username`) changes length
 2. Path concatenation may exceed limits
 3. Different operations have different length tolerances
 
 ### Identity Duplicate Detection (2 Layers)
 
-| Layer | Location | Trigger |
-|-------|----------|---------|
-| 1. Schema | `configSchema.ts:361-377` | Configuration validation |
-| 2. Runtime | `identity.ts:126-138` | Before adding to valid identities |
+| Layer      | Location                  | Trigger                           |
+| ---------- | ------------------------- | --------------------------------- |
+| 1. Schema  | `configSchema.ts:361-377` | Configuration validation          |
+| 2. Runtime | `identity.ts:126-138`     | Before adding to valid identities |
 
 Layer 2 has explicit comment:
+
 ```typescript
 // Check for duplicate IDs (defense-in-depth: schema validation also checks this)
 ```
@@ -138,6 +141,7 @@ try {
 ```
 
 **This is correct.** SSH key removal is best-effort cleanup. The key may:
+
 - Already be unloaded
 - Have never been loaded
 - Belong to a different agent
@@ -150,22 +154,22 @@ Surfacing these errors would confuse users with irrelevant messages.
 
 ### Coverage Exclusion Markers
 
-| Marker | Meaning |
-|--------|---------|
-| `/* c8 ignore start - Defense-in-depth */` | Intentionally unreachable in normal operation |
-| `/* c8 ignore start - VS Code API */` | Cannot be unit tested without VS Code |
-| `/* c8 ignore start - Error path */` | Defensive error handling |
-| `/* c8 ignore start - Platform-specific */` | Platform-specific branches |
+| Marker                                      | Meaning                                       |
+| ------------------------------------------- | --------------------------------------------- |
+| `/* c8 ignore start - Defense-in-depth */`  | Intentionally unreachable in normal operation |
+| `/* c8 ignore start - VS Code API */`       | Cannot be unit tested without VS Code         |
+| `/* c8 ignore start - Error path */`        | Defensive error handling                      |
+| `/* c8 ignore start - Platform-specific */` | Platform-specific branches                    |
 
 **159 coverage exclusion markers** exist across the codebase. When you see these markers: The code is intentionally excluded from coverage requirements. Don't remove them or try to add tests that exercise them.
 
 ### Comment Patterns
 
-| Pattern | Example Files | Purpose |
-|---------|---------------|---------|
-| `// SECURITY:` | `sshAgent.ts`, `secureExec.ts` | Security-critical code explanation |
-| `// Note: Defense-in-depth.` | `pathSecurity.ts` | Explains why seemingly unreachable code exists |
-| `@see https://owasp.org/...` | Multiple | Links to security references |
+| Pattern                      | Example Files                  | Purpose                                        |
+| ---------------------------- | ------------------------------ | ---------------------------------------------- |
+| `// SECURITY:`               | `sshAgent.ts`, `secureExec.ts` | Security-critical code explanation             |
+| `// Note: Defense-in-depth.` | `pathSecurity.ts`              | Explains why seemingly unreachable code exists |
+| `@see https://owasp.org/...` | Multiple                       | Links to security references                   |
 
 **Do not strip comments** for "cleaner code."
 
@@ -175,32 +179,33 @@ Surfacing these errors would confuse users with irrelevant messages.
 
 ### Security Layer (`src/`)
 
-| File | Lines | Single Responsibility |
-|------|-------|----------------------|
-| `pathSecurity.ts` | ~591 | Path validation pipeline (19 validators) |
-| `secureExec.ts` | ~657 | Safe command execution with timeout |
-| `securityLogger.ts` | - | Structured security event logging |
-| `commandAllowlist.ts` | - | Allowed commands for secureExec |
-| `binaryResolver.ts` | - | Absolute binary path resolution |
+| File                  | Lines | Single Responsibility                    |
+| --------------------- | ----- | ---------------------------------------- |
+| `pathSecurity.ts`     | ~591  | Path validation pipeline (19 validators) |
+| `secureExec.ts`       | ~657  | Safe command execution with timeout      |
+| `securityLogger.ts`   | -     | Structured security event logging        |
+| `commandAllowlist.ts` | -     | Allowed commands for secureExec          |
+| `binaryResolver.ts`   | -     | Absolute binary path resolution          |
 
 ### Path Security Sub-modules (`src/path/security/`)
 
-| File | Responsibility |
-|------|----------------|
-| `unicode.ts` | Invisible Unicode and control character detection |
-| `traversal.ts` | Path traversal attack detection |
+| File           | Responsibility                                    |
+| -------------- | ------------------------------------------------- |
+| `unicode.ts`   | Invisible Unicode and control character detection |
+| `traversal.ts` | Path traversal attack detection                   |
 
 **pathSecurity.ts** orchestrates 19 individual validators:
 
-| Category | Count | Examples |
-|----------|-------|----------|
-| Basic checks | 4 | Empty, whitespace, null bytes, length |
-| Prefix validation | 2 | Tilde pattern, allowed prefixes |
-| Windows-specific | 4 | Drive letters, UNC paths, device paths, reserved names |
-| Unicode attacks | 4 | Control chars, invisible Unicode (pre/post normalization) |
-| Traversal attacks | 5 | `..`, `//`, `\`, trailing dot, trailing `/.` |
+| Category          | Count | Examples                                                  |
+| ----------------- | ----- | --------------------------------------------------------- |
+| Basic checks      | 4     | Empty, whitespace, null bytes, length                     |
+| Prefix validation | 2     | Tilde pattern, allowed prefixes                           |
+| Windows-specific  | 4     | Drive letters, UNC paths, device paths, reserved names    |
+| Unicode attacks   | 4     | Control chars, invisible Unicode (pre/post normalization) |
+| Traversal attacks | 5     | `..`, `//`, `\`, trailing dot, trailing `/.`              |
 
 **Do not consolidate** into a single monolithic validator. Separation enables:
+
 - Independent testing per validator
 - Audit trail showing exactly which check failed
 - Adding/removing checks doesn't affect others
@@ -209,15 +214,16 @@ Surfacing these errors would confuse users with irrelevant messages.
 
 5 separate validation functions exist:
 
-| Function | Purpose |
-|----------|---------|
-| `validateKeyPath()` | Path format and security validation |
-| `validateKeyFileType()` | Must be regular file (not directory/symlink/device) |
-| `validateKeyFileSize()` | 10 bytes min, 1MB max (DoS protection) |
-| `validateKeyFilePermissions()` | Unix only - no group/others access |
-| `validateKeyFileForSshAdd()` | Orchestrates all validations + format check |
+| Function                       | Purpose                                             |
+| ------------------------------ | --------------------------------------------------- |
+| `validateKeyPath()`            | Path format and security validation                 |
+| `validateKeyFileType()`        | Must be regular file (not directory/symlink/device) |
+| `validateKeyFileSize()`        | 10 bytes min, 1MB max (DoS protection)              |
+| `validateKeyFilePermissions()` | Unix only - no group/others access                  |
+| `validateKeyFileForSshAdd()`   | Orchestrates all validations + format check         |
 
 **Do not merge** these functions. Separation enables:
+
 - Granular error messages
 - Independent testing
 - Clear failure attribution
@@ -229,12 +235,13 @@ Surfacing these errors would confuse users with irrelevant messages.
 ### "Excessive" Type Checking
 
 ```typescript
-if (typeof value !== 'string') {
-  throw new Error('Expected string');
+if (typeof value !== "string") {
+  throw new Error("Expected string");
 }
 ```
 
 These checks may seem unnecessary when TypeScript guarantees types. They exist because:
+
 1. Data crosses trust boundaries (user config, external APIs)
 2. Runtime behavior may differ from compile-time types
 3. Defense against `any` type pollution
@@ -242,6 +249,7 @@ These checks may seem unnecessary when TypeScript guarantees types. They exist b
 ### "Redundant" Logging
 
 Security events are logged at multiple points:
+
 - Entry to security-sensitive functions
 - Before external command execution
 - After validation failures
@@ -254,11 +262,12 @@ Some values are hardcoded despite being potential user preferences:
 
 ```typescript
 // constants.ts
-export const MAX_IDENTITIES = 1000;  // Hardcoded limit
-export const PATH_MAX = 4096;         // POSIX limit
+export const MAX_IDENTITIES = 1000; // Hardcoded limit
+export const PATH_MAX = 4096; // POSIX limit
 ```
 
 These are **security limits**, not user preferences. Making them configurable would allow:
+
 - DoS via excessive identities
 - Resource exhaustion attacks
 - Buffer overflow attempts
@@ -274,6 +283,7 @@ const validateNoUNCPath: Validator = (state) => { ... }
 ```
 
 These exist because:
+
 1. Pipeline order might change in the future
 2. Direct calls to individual validators bypass the pipeline
 3. Security code should be paranoid
@@ -284,11 +294,11 @@ These exist because:
 
 ### What We Test
 
-| Category | Coverage Target | Notes |
-|----------|-----------------|-------|
-| Security validators | 100% | Non-negotiable |
-| Business logic | 90%+ | Core functionality |
-| UI rendering | Best-effort | VS Code API limitations |
+| Category            | Coverage Target | Notes                   |
+| ------------------- | --------------- | ----------------------- |
+| Security validators | 100%            | Non-negotiable          |
+| Business logic      | 90%+            | Core functionality      |
+| UI rendering        | Best-effort     | VS Code API limitations |
 
 ### What We Don't Test (And Why)
 
@@ -300,6 +310,7 @@ These exist because:
 ### Known Gaps
 
 `sshAgent.ts` (620 lines) has limited test coverage due to:
+
 - External dependency (ssh-agent process)
 - Platform-specific behavior (macOS Keychain integration)
 - Transient state management
@@ -320,21 +331,21 @@ This is a known gap, not an oversight.
 
 These are legitimate improvement opportunities:
 
-| Area | Issue | Safe to Change |
-|------|-------|----------------|
-| `SSH_HOST_REGEX` | Duplicated in `validation.ts` and `configSchema.ts` | Yes - extract to shared constant |
-| Error message formatting | Inconsistent patterns | Yes - standardize format |
-| Path utility functions | Some duplication exists | Yes - extract to `pathUtils.ts` |
+| Area                     | Issue                                               | Safe to Change                   |
+| ------------------------ | --------------------------------------------------- | -------------------------------- |
+| `SSH_HOST_REGEX`         | Duplicated in `validation.ts` and `configSchema.ts` | Yes - extract to shared constant |
+| Error message formatting | Inconsistent patterns                               | Yes - standardize format         |
+| Path utility functions   | Some duplication exists                             | Yes - extract to `pathUtils.ts`  |
 
 ### Do Not Touch
 
-| Pattern | Reason |
-|---------|--------|
-| Multi-layer null byte checks | Defense-in-depth |
+| Pattern                           | Reason                      |
+| --------------------------------- | --------------------------- |
+| Multi-layer null byte checks      | Defense-in-depth            |
 | Pre/post normalization validators | Different security contexts |
-| 2-layer duplicate detection | Trust boundary protection |
-| Silent catches in sshAgent | Best-effort cleanup |
-| Hardcoded security limits | DoS protection |
+| 2-layer duplicate detection       | Trust boundary protection   |
+| Silent catches in sshAgent        | Best-effort cleanup         |
+| Hardcoded security limits         | DoS protection              |
 
 ---
 
@@ -343,6 +354,7 @@ These are legitimate improvement opportunities:
 ### Why No Dependency Injection Framework?
 
 The codebase uses manual dependency injection (constructor parameters) rather than a DI framework because:
+
 1. VS Code extensions have size constraints
 2. Framework overhead exceeds benefit for this scale
 3. Explicit wiring is more debuggable
@@ -350,6 +362,7 @@ The codebase uses manual dependency injection (constructor parameters) rather th
 ### Why Synchronous Path Validation?
 
 Path validation in `pathSecurity.ts` is synchronous despite Node.js favoring async:
+
 1. Validation is CPU-bound, not I/O-bound
 2. Synchronous code is easier to reason about for security
 3. Async validation introduces timing windows
@@ -359,6 +372,7 @@ Note: `isSecureLogPath()` is async because it performs file system operations (s
 ### Why Not Use `eval()` or Dynamic Code?
 
 The codebase explicitly avoids:
+
 - `eval()`
 - `new Function()`
 - Dynamic `require()`
@@ -368,6 +382,7 @@ This is defense against code injection, even at the cost of flexibility.
 ### Why `execFile()` Instead of `exec()`?
 
 All command execution goes through `secureExec.ts` which uses `execFile()`:
+
 - `exec()` passes commands through a shell, enabling injection
 - `execFile()` executes binaries directly with argument arrays
 - Combined with `commandAllowlist.ts` for defense-in-depth
@@ -378,26 +393,26 @@ All command execution goes through `secureExec.ts` which uses `execFile()`:
 
 All security limits are centralized in `constants.ts`:
 
-| Constant | Value | Purpose |
-| -------- | ----- | ------- |
-| `PATH_MAX` | 4096 | POSIX path length limit |
-| `MAX_IDENTITIES` | 1000 | Maximum identities (DoS protection) |
-| `MAX_PATTERN_CHECK_LENGTH` | 1000 | Pattern matching limit |
-| `MAX_LOG_STRING_LENGTH` | 50 | Log truncation limit |
-| `MIN_SECRET_LENGTH` | 32 | Secret detection minimum |
-| `MAX_SECRET_LENGTH` | 256 | Secret detection maximum |
-| `MAX_ID_LENGTH` | 64 | Identity ID maximum length |
+| Constant                   | Value | Purpose                             |
+| -------------------------- | ----- | ----------------------------------- |
+| `PATH_MAX`                 | 4096  | POSIX path length limit             |
+| `MAX_IDENTITIES`           | 1000  | Maximum identities (DoS protection) |
+| `MAX_PATTERN_CHECK_LENGTH` | 1000  | Pattern matching limit              |
+| `MAX_LOG_STRING_LENGTH`    | 50    | Log truncation limit                |
+| `MIN_SECRET_LENGTH`        | 32    | Secret detection minimum            |
+| `MAX_SECRET_LENGTH`        | 256   | Secret detection maximum            |
+| `MAX_ID_LENGTH`            | 64    | Identity ID maximum length          |
 
 Additional constants in `secureExec.ts`:
 
-| Constant | Value | Purpose |
-| -------- | ----- | ------- |
-| `COMMAND_TIMEOUTS.git` | 10000ms | Git command timeout |
-| `COMMAND_TIMEOUTS['ssh-add']` | 5000ms | SSH key operations timeout |
-| `COMMAND_TIMEOUTS['ssh-keygen']` | 5000ms | Key fingerprint timeout |
-| `DEFAULT_TIMEOUT` | 30000ms | Fallback timeout |
-| `TIMEOUT_LIMITS.MIN` | 1000ms | Minimum allowed timeout |
-| `TIMEOUT_LIMITS.MAX` | 300000ms | Maximum allowed timeout (5 min) |
+| Constant                         | Value    | Purpose                         |
+| -------------------------------- | -------- | ------------------------------- |
+| `COMMAND_TIMEOUTS.git`           | 10000ms  | Git command timeout             |
+| `COMMAND_TIMEOUTS['ssh-add']`    | 5000ms   | SSH key operations timeout      |
+| `COMMAND_TIMEOUTS['ssh-keygen']` | 5000ms   | Key fingerprint timeout         |
+| `DEFAULT_TIMEOUT`                | 30000ms  | Fallback timeout                |
+| `TIMEOUT_LIMITS.MIN`             | 1000ms   | Minimum allowed timeout         |
+| `TIMEOUT_LIMITS.MAX`             | 300000ms | Maximum allowed timeout (5 min) |
 
 ---
 
@@ -447,13 +462,14 @@ User Action
 
 Some files exceed typical "small file" guidelines:
 
-| File | Lines | Rationale |
-|------|-------|-----------|
-| `secureExec.ts` | ~657 | Single responsibility with extensive timeout handling |
-| `sshAgent.ts` | ~620 | Complex external process interaction + validation |
-| `pathSecurity.ts` | ~591 | 19 validators with documentation |
+| File              | Lines | Rationale                                             |
+| ----------------- | ----- | ----------------------------------------------------- |
+| `secureExec.ts`   | ~657  | Single responsibility with extensive timeout handling |
+| `sshAgent.ts`     | ~620  | Complex external process interaction + validation     |
+| `pathSecurity.ts` | ~591  | 19 validators with documentation                      |
 
 These files are large because splitting them would:
+
 - Scatter related security logic
 - Make audit more difficult
 - Introduce unnecessary abstraction layers
@@ -522,6 +538,7 @@ src/
 ## Questions?
 
 If you're unsure whether something is intentional:
+
 1. Check this document
 2. Look for code comments
 3. Open an issue to discuss before changing
