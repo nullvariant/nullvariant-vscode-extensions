@@ -35,11 +35,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: extensions/git-id-switcher/package-lock.json
+          cache-dependency-path: package-lock.json
 
+      # Install at root level for npm workspaces
       - name: Install dependencies
         run: npm ci
-        working-directory: extensions/git-id-switcher
 
       - name: Run tests with coverage
         run: npm run test:coverage
