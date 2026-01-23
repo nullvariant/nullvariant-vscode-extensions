@@ -103,7 +103,7 @@ function validatePathLength(
 function resolveAndValidateSymlinks(
   normalizedPath: string,
   inputPath: string
-): { resolvedPath: string; invalidResult?: undefined } | { resolvedPath?: undefined; invalidResult: NormalizedPathResult } {
+): { resolvedPath: string } | { invalidResult: NormalizedPathResult } {
   const symlinkResult = resolveSymlinksSecurely(normalizedPath);
   if (!symlinkResult.valid) {
     return { invalidResult: { valid: false, originalPath: inputPath, reason: symlinkResult.reason } };
@@ -189,7 +189,7 @@ export function normalizeAndValidatePath(
   let symlinksResolved = false;
   if (resolveSymlinks) {
     const symlinkResult = resolveAndValidateSymlinks(normalizedPath, inputPath);
-    if (symlinkResult.invalidResult) {
+    if ('invalidResult' in symlinkResult) {
       return symlinkResult.invalidResult;
     }
     if (symlinkResult.resolvedPath !== normalizedPath) {
