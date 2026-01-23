@@ -7,9 +7,14 @@ coverage:
       default:
         target: 90%
         threshold: 0%
+        # Require status check to pass (not informational)
+        informational: false
     patch:
       default:
-        target: 90%
+        # New code must have 100% coverage
+        target: 100%
+        threshold: 0%
+        informational: false
 
 # Fix path mapping for monorepo structure
 # With sourceMap enabled, lcov.info contains paths like "src/commandAllowlist.ts"
