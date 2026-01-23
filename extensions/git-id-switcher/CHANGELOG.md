@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.2] - 2026-01-23
+
+### Fixed
+
+- **VSIX Packaging Fix**: Added `../**` to `.vscodeignore` to exclude parent directory files
+  - Fixes "invalid relative path" error during `vsce publish`
+  - Prevents monorepo root files (e.g., `sonar-project.properties`) from being included in VSIX
+
 ## [0.14.1] - 2026-01-23
 
 ### Security
