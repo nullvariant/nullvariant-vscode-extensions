@@ -26,6 +26,7 @@ import { runI18nTests } from './i18n.test';
 import { runWorkspaceTrustTests } from './workspaceTrust.test';
 import { runSubmoduleTests } from './submodule.test';
 import { runPathSeparatorTests } from './pathSeparator.test';
+import { runDisplayLimitsTests } from './displayLimits.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -98,6 +99,9 @@ async function main(): Promise<void> {
 
     // Run cross-platform path separator tests
     await runPathSeparatorTests();
+
+    // Run display limits tests
+    runDisplayLimitsTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');

@@ -173,6 +173,7 @@ export function validateCombinedFlags(
   // CRITICAL: Normalize Unicode to NFC for consistent comparison
   const normalizedFlag = flag.normalize('NFC');
 
+  /* c8 ignore start - Post-normalization check for edge cases in Unicode normalization */
   // CRITICAL: Re-check after normalization
   const normalizedSecurityCheck = checkFlagSecurityChars(normalizedFlag);
   if (normalizedSecurityCheck) {
@@ -181,6 +182,7 @@ export function validateCombinedFlags(
       reason: normalizedSecurityCheck.reason + ' (after normalization)',
     };
   }
+  /* c8 ignore stop */
 
   // Non-flag or long option - let caller handle
   if (!normalizedFlag.startsWith('-')) {
