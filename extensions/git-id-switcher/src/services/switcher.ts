@@ -11,11 +11,11 @@
 
 import * as vscode from 'vscode';
 import { Identity } from '../identity';
-import { setGitConfigForIdentity, isGitRepository } from '../gitConfig';
+import { setGitConfigForIdentity, isGitRepository } from '../core/gitConfig';
 import { switchToIdentitySshKey } from '../sshAgent';
 import { showIdentitySwitchedNotification } from '../quickPick';
 import { securityLogger } from '../securityLogger';
-import { getUserSafeMessage } from '../errors';
+import { getUserSafeMessage } from '../core/errors';
 import { IdentityStatusBar } from '../statusBar';
 
 /**

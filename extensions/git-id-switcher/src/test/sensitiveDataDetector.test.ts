@@ -48,7 +48,7 @@ import {
   MAX_LOG_STRING_LENGTH,
   MIN_SECRET_LENGTH,
   MAX_SECRET_LENGTH,
-} from '../constants';
+} from '../core/constants';
 
 /**
  * Test looksLikeSensitiveData keyword detection

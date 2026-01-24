@@ -39,7 +39,7 @@ import {
   BinaryResolutionError,
   __testExports,
 } from '../binaryResolver';
-import { _setMockVSCode, _resetCache } from '../vscodeLoader';
+import { _setMockVSCode, _resetCache } from '../core/vscodeLoader';
 
 const {
   ALLOWED_COMMANDS,

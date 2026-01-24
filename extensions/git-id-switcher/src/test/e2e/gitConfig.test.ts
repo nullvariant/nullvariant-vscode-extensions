@@ -413,10 +413,10 @@ describe('Git Config E2E Test Suite', function () {
 
   describe('Cancellation Handling', () => {
     // Import once for all tests in this describe block
-    let getCurrentGitConfig: typeof import('../../gitConfig.js').getCurrentGitConfig;
+    let getCurrentGitConfig: typeof import('../../core/gitConfig.js').getCurrentGitConfig;
 
     before(async () => {
-      const module = await import('../../gitConfig.js');
+      const module = await import('../../core/gitConfig.js');
       getCurrentGitConfig = module.getCurrentGitConfig;
     });
 

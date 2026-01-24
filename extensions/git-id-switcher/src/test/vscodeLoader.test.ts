@@ -12,7 +12,7 @@ import {
   getExtensions,
   _resetCache,
   _setMockVSCode,
-} from '../vscodeLoader';
+} from '../core/vscodeLoader';
 
 /**
  * Test suite for getVSCode

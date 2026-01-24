@@ -61,8 +61,8 @@ import {
   ConfigChangeDetector,
   configChangeDetector,
   ConfigSnapshot,
-} from '../configChangeDetector';
-import { _resetCache, _setMockVSCode } from '../vscodeLoader';
+} from '../core/configChangeDetector';
+import { _resetCache, _setMockVSCode } from '../core/vscodeLoader';
 
 // ============================================================================
 // Test Helpers (DRY: Centralized snapshot creation and setup)

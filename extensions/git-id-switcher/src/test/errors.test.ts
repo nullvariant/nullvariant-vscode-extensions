@@ -13,7 +13,7 @@ import {
   wrapError,
   isSecurityError,
   getUserSafeMessage,
-} from '../errors';
+} from '../core/errors';
 
 /**
  * Test SecurityError constructor

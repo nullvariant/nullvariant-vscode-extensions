@@ -10,7 +10,7 @@
  * - Stack traces are controlled to prevent file structure leakage
  */
 
-import { securityLogger, sanitizeValue } from './securityLogger';
+import { securityLogger, sanitizeValue } from '../securityLogger';
 
 /**
  * Error category for classification and handling

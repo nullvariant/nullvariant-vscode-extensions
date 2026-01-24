@@ -22,8 +22,8 @@ import {
   setIdentityForSubmodules,
   isSubmoduleSupportEnabled,
   getSubmoduleDepth,
-} from '../submodule';
-import { _resetCache, _setMockVSCode } from '../vscodeLoader';
+} from '../core/submodule';
+import { _resetCache, _setMockVSCode } from '../core/vscodeLoader';
 
 /**
  * Test submodule path validation basics
