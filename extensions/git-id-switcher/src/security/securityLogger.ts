@@ -295,7 +295,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
       details: {
         field,
         reason,
-        value: value !== undefined ? sanitizeValue(value) : undefined,
+        value: value === undefined ? undefined : sanitizeValue(value),
         valueType: typeof value,
       },
     });

@@ -43,8 +43,8 @@ const SENSITIVE_DIRS_UNIX = [
 
 const SENSITIVE_DIRS_WINDOWS = [
   // User profile sensitive locations
-  'AppData\\Roaming',
-  'AppData\\Local',
+  String.raw`AppData\Roaming`,
+  String.raw`AppData\Local`,
   // SSH (Windows)
   '.ssh',
   // Cloud credentials (same as Unix)
@@ -54,8 +54,8 @@ const SENSITIVE_DIRS_WINDOWS = [
   // Windows credential store related
   'Credentials',
   // Certificate stores
-  'Microsoft\\Crypto',
-  'Microsoft\\Protect',
+  String.raw`Microsoft\Crypto`,
+  String.raw`Microsoft\Protect`,
 ] as const;
 
 /**
@@ -208,9 +208,10 @@ function tryRedactUncPath(normalizedPath: string): string | null {
     return null;
   }
   // Redact UNC server name: //server/share -> //[REDACTED]/share
-  const uncMatch = normalizedPath.match(/^\/\/([^/]+)(\/.*)?$/);
+  const uncRegex = /^\/\/([^/]+)(\/.*)?$/;
+  const uncMatch = uncRegex.exec(normalizedPath);
   if (uncMatch) {
-    return `//[REDACTED]${uncMatch[2] || ''}`;
+    return `//[REDACTED]${uncMatch[2] ?? ''}`;
   }
   /* c8 ignore next: edge case - malformed UNC path that passes prefix but not regex */
   return null;
@@ -225,7 +226,7 @@ function replaceHomeWithTilde(normalizedPath: string, home: string): string | nu
   if (!home) {
     return null;
   }
-  const normalizedHome = home.replace(/\\/g, '/');
+  const normalizedHome = home.replaceAll('\\', '/');
   // SECURITY: Ensure we match at path component boundary
   if (normalizedPath === normalizedHome || normalizedPath.startsWith(normalizedHome + '/')) {
     return '~' + normalizedPath.slice(normalizedHome.length);
@@ -258,7 +259,7 @@ export function sanitizePath(inputPath: string): string {
   }
 
   // Normalize path separators for consistent checking
-  const normalizedPath = inputPath.replace(/\\/g, '/');
+  const normalizedPath = inputPath.replaceAll('\\', '/');
 
   // SECURITY: Handle Windows UNC paths
   const redactedUnc = tryRedactUncPath(normalizedPath);

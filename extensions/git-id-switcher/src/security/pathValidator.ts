@@ -190,7 +190,7 @@ const validateNoWindowsDevicePath: Validator = (state) => {
  * Validates no Windows reserved device names
  */
 const validateNoWindowsReservedNames: Validator = (state) => {
-  const windowsReservedNames = /^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])([./\\]|$)/i;
+  const windowsReservedNames = /^(CON|PRN|AUX|NUL|COM\d|LPT\d)([./\\]|$)/i;
   const basename = state.path.split(/[/\\]/).pop() || '';
   if (windowsReservedNames.test(basename)) {
     return {

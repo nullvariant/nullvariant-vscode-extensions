@@ -65,7 +65,7 @@ export function looksLikeSensitiveData(value: string): boolean {
       // Count unique character types (uppercase, lowercase, numbers, special)
       const hasUpper = /[A-Z]/.test(checkValue);
       const hasLower = /[a-z]/.test(checkValue);
-      const hasNumbers = /[0-9]/.test(checkValue);
+      const hasNumbers = /\d/.test(checkValue);
       const hasSpecial = /[+/=]/.test(checkValue);
       const typeCount = [hasUpper, hasLower, hasNumbers, hasSpecial].filter(Boolean).length;
 

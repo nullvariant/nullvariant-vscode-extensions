@@ -104,7 +104,7 @@ async function isValidExecutable(binaryPath: string): Promise<boolean> {
 const WHICH_PATHS: Readonly<Record<string, readonly string[]>> = {
   darwin: ['/usr/bin/which'],
   linux: ['/usr/bin/which', '/bin/which'],
-  win32: ['C:\\Windows\\System32\\where.exe'],
+  win32: [String.raw`C:\Windows\System32\where.exe`],
 } as const;
 
 /**
@@ -130,8 +130,7 @@ async function getWhichCommand(): Promise<string> {
   // This is logged for security audit
   securityLogger.logValidationFailure(
     'binary-resolution',
-    `No known absolute path for which/where on ${platform}, falling back to PATH`,
-    undefined
+    `No known absolute path for which/where on ${platform}, falling back to PATH`
   );
   return platform === 'win32' ? 'where' : 'which';
   /* c8 ignore stop */
@@ -172,8 +171,7 @@ async function resolveWithWhich(command: string): Promise<string | null> {
     if (!(await isValidExecutable(normalizedPath))) {
       securityLogger.logValidationFailure(
         'binary-resolution',
-        `Resolved path is not a valid executable: ${command}`,
-        undefined
+        `Resolved path is not a valid executable: ${command}`
       );
       return null;
     }
@@ -239,8 +237,7 @@ async function resolveCommandPath(command: AllowedCommand): Promise<string> {
       // Log warning but continue to try PATH resolution
       securityLogger.logValidationFailure(
         'binary-resolution',
-        'VS Code git.path is not a valid executable, falling back to PATH',
-        undefined
+        'VS Code git.path is not a valid executable, falling back to PATH'
       );
     }
   }
