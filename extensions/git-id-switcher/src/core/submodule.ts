@@ -114,10 +114,10 @@ function stripBranchSuffix(str: string): string {
       return str.slice(0, branchStart - 1);
     }
   }
-
-  /* c8 ignore next 2 - Defense-in-depth: malformed branch suffix edge case */
+  /* c8 ignore start - Defense-in-depth: malformed branch suffix edge case */
   return str;
 }
+/* c8 ignore stop */
 
 /**
  * Parse and validate a single submodule entry from git status output.
@@ -150,28 +150,28 @@ function parseSubmoduleEntry(
 
   // Extract status character (position 0)
   const status = line[0];
+  /* c8 ignore start - Invalid status from malformed git output */
   if (!VALID_STATUS_CHARS.has(status)) {
-    /* c8 ignore start - Invalid status from malformed git output */
     securityLogger.logValidationFailure(
       'submoduleStatus',
       'Invalid status character'
     );
     return null;
-    /* c8 ignore stop */
   }
+  /* c8 ignore stop */
   const initialized = status !== '-';
 
   // Extract commit hash (positions 1-40)
   const commitHash = line.slice(1, 41);
+  /* c8 ignore start - Invalid hash from malformed git output */
   if (!isValidCommitHash(commitHash)) {
-    /* c8 ignore start - Invalid hash from malformed git output */
     securityLogger.logValidationFailure(
       'submoduleCommitHash',
       'Invalid commit hash format'
     );
     return null;
-    /* c8 ignore stop */
   }
+  /* c8 ignore stop */
 
   // Find first whitespace after commit hash
   let pathStart = 41;
@@ -184,15 +184,15 @@ function parseSubmoduleEntry(
   const submodulePath = stripBranchSuffix(remainder);
 
   // Validate path is not empty
+  /* c8 ignore start - Empty path from malformed git output */
   if (submodulePath.length === 0) {
-    /* c8 ignore start - Empty path from malformed git output */
     securityLogger.logValidationFailure(
       'submodulePath',
       'Empty submodule path'
     );
     return null;
-    /* c8 ignore stop */
   }
+  /* c8 ignore stop */
 
   /* c8 ignore start - Defense-in-depth: git output shouldn't contain control chars */
   // Validate path has no control characters
