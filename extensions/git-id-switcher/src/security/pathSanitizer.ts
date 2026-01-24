@@ -208,8 +208,8 @@ function tryRedactUncPath(normalizedPath: string): string | null {
     return null;
   }
   // Redact UNC server name: //server/share -> //[REDACTED]/share
-  // Note: Using match() instead of RegExp.exec() to avoid CI security lint false positive
-  const uncMatch = normalizedPath.match(/^\/\/([^/]+)(\/.*)?$/);
+  const uncRegex = /^\/\/([^/]+)(\/.*)?$/;
+  const uncMatch = uncRegex.exec(normalizedPath);
   if (uncMatch) {
     return `//[REDACTED]${uncMatch[2] ?? ''}`;
   }
