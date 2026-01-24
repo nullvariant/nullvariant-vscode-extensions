@@ -33,7 +33,7 @@ export interface Submodule {
 }
 
 /**
- * Regex pattern for parsing git submodule status output.
+ * Regex patterns for parsing git submodule status output (2-stage parsing).
  *
  * Format: "<status><commit> <path> (<branch>)" or "<status><commit> <path>"
  * - status: single character (' ' = initialized, '-' = uninitialized, '+' = modified)
@@ -42,25 +42,33 @@ export interface Submodule {
  * - branch: optional branch name in parentheses
  *
  * Security considerations:
+ * - Uses 2-stage parsing to prevent ReDoS (Regular Expression Denial of Service)
+ * - Stage 1: Extract status, commit hash, and remainder (linear time)
+ * - Stage 2: Strip optional branch suffix from remainder (linear time)
  * - Commit hash is strictly 40 hex characters (SHA-1), lowercase only
- * - Path is captured conservatively (non-greedy) and validated separately
+ * - Path is validated separately for control characters
  * - Branch name is optional and not used for security-sensitive operations
- * - Path must be at least 1 character (non-empty)
- * - Branch name (if present) must not contain newlines or control characters
  */
-// Control characters are intentionally excluded for security
+// Stage 1: Match status, commit hash, and capture the rest (no backtracking)
+const SUBMODULE_PREFIX_REGEX = /^([ +-])([a-f0-9]{40})\s+(.+)$/;
+// Stage 2: Strip optional branch suffix - anchored at end (no backtracking)
 // eslint-disable-next-line no-control-regex
-const SUBMODULE_STATUS_REGEX = /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^\x00-\x1f\x7f)]+\))?$/;
+const SUBMODULE_BRANCH_SUFFIX_REGEX = /\s+\([^\x00-\x1f\x7f)]+\)$/;
+// Control character validation for path
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHAR_REGEX = /[\x00-\x1f\x7f]/;
 
 /**
  * Parse and validate a single submodule entry from git status output.
+ * Uses 2-stage parsing to prevent ReDoS vulnerabilities.
  * @internal
  */
 function parseSubmoduleEntry(
   line: string,
   workspacePath: string
 ): Submodule | null {
-  const match = line.match(SUBMODULE_STATUS_REGEX);
+  // Stage 1: Extract basic components
+  const match = line.match(SUBMODULE_PREFIX_REGEX);
 
   /* c8 ignore start - Non-matching lines (empty lines, malformed output) */
   if (!match) {
@@ -75,8 +83,23 @@ function parseSubmoduleEntry(
   }
   /* c8 ignore stop */
 
-  const [, status, commitHash, submodulePath] = match;
+  const [, status, commitHash, remainder] = match;
   const initialized = status !== '-';
+
+  // Stage 2: Strip optional branch suffix and extract path
+  const submodulePath = remainder.replace(SUBMODULE_BRANCH_SUFFIX_REGEX, '');
+
+  /* c8 ignore start - Defense-in-depth: git output shouldn't contain control chars */
+  // Validate path has no control characters
+  if (CONTROL_CHAR_REGEX.test(submodulePath)) {
+    securityLogger.logValidationFailure(
+      'submodulePath',
+      'Path contains control characters',
+      undefined
+    );
+    return null;
+  }
+  /* c8 ignore stop */
 
   /* c8 ignore start - Regex already ensures 40 chars, but defensive check */
   // SECURITY: Defensive check for commit hash length
