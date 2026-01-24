@@ -8,8 +8,8 @@
  * - Trailing dots
  */
 
-import { hasPathTraversalStrict } from '../../validators/common';
-import { Validator } from './unicode';
+import { hasPathTraversalStrict } from '../validators/common';
+import { Validator } from './pathUnicodeDetector';
 
 // ============================================================================
 // Traversal Validators

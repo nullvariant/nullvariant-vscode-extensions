@@ -5,7 +5,7 @@
  */
 
 import * as assert from 'node:assert';
-import { isCommandAllowed } from '../commandAllowlist';
+import { isCommandAllowed } from '../security/commandAllowlist';
 
 export async function runCommandAllowlistTests(): Promise<void> {
   console.log('Testing Command Allowlist Security...');

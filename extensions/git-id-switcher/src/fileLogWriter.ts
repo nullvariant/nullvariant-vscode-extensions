@@ -8,7 +8,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { StructuredLog, ILogWriter, FileLogConfig } from './logTypes';
-import { isSecurePath } from './pathSecurity';
+import { isSecurePath } from './security/pathValidator';
 
 /**
  * File log writer with rotation support

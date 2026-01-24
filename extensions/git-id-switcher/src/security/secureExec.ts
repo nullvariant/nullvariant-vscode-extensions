@@ -19,7 +19,7 @@ import { execFile, ExecFileException } from 'node:child_process';
 import { promisify } from 'node:util';
 import { isCommandAllowed } from './commandAllowlist';
 import { securityLogger, type ISecurityLogger } from './securityLogger';
-import { getWorkspace } from './core/vscodeLoader';
+import { getWorkspace } from '../core/vscodeLoader';
 import { getBinaryPath, BinaryResolutionError } from './binaryResolver';
 
 const execFilePromise = promisify(execFile);

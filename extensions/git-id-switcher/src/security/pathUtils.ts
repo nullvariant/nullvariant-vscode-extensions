@@ -4,33 +4,33 @@
  * Provides path normalization, validation, and symlink resolution.
  * Designed to prevent path traversal and symlink-based attacks.
  *
- * This module re-exports functions from specialized sub-modules:
- * - path/normalize.ts: Path normalization and tilde expansion
- * - path/symlink.ts: Symlink resolution and detection
+ * This module re-exports functions from specialized modules:
+ * - pathNormalizer.ts: Path normalization and tilde expansion
+ * - pathSymlinkResolver.ts: Symlink resolution and detection
  */
 
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { PATH_MAX } from './core/constants';
-import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasInvisibleUnicode } from './validators/common';
+import { PATH_MAX } from '../core/constants';
+import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasInvisibleUnicode } from '../validators/common';
 
-// Re-export from path/normalize.ts
+// Re-export from pathNormalizer.ts
 export {
   NormalizePathOptions,
   NormalizedPathResult,
   expandTilde,
   normalizeAndValidatePath,
-} from './path/normalize';
+} from './pathNormalizer';
 
-// Re-export from path/symlink.ts
+// Re-export from pathSymlinkResolver.ts
 export {
   SymlinkResolutionResult,
   resolveSymlinksSecurely,
   containsSymlinks,
-} from './path/symlink';
+} from './pathSymlinkResolver';
 
 // Import for internal use
-import { normalizeAndValidatePath, NormalizedPathResult } from './path/normalize';
+import { normalizeAndValidatePath, NormalizedPathResult } from './pathNormalizer';
 
 /**
  * Options for submodule path validation

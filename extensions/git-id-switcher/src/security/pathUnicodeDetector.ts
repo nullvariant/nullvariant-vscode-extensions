@@ -10,7 +10,7 @@
 import {
   CONTROL_CHAR_REGEX_STRICT,
   hasInvisibleUnicode,
-} from '../../validators/common';
+} from '../validators/common';
 
 /**
  * Internal state for validation pipeline

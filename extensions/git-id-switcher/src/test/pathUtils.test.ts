@@ -90,7 +90,7 @@ import {
   validateWorkspacePath,
   expandTilde,
   containsSymlinks,
-} from '../pathUtils';
+} from '../security/pathUtils';
 
 /**
  * Test tilde expansion

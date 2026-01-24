@@ -9,13 +9,13 @@
 
 // Type-only import (stripped at compile time, no runtime dependency)
 import type { OutputChannel } from 'vscode';
-import { getVSCode } from './core/vscodeLoader';
-import { MAX_ID_LENGTH } from './core/constants';
+import { getVSCode } from '../core/vscodeLoader';
+import { MAX_ID_LENGTH } from '../core/constants';
 import { sanitizePath } from './pathSanitizer';
 import { sanitizeValue, sanitizeDetails, type SanitizeOptions } from './sensitiveDataDetector';
 import { expandTilde } from './pathUtils';
 import * as path from 'node:path';
-import { isSecurePath, isSecureLogPath } from './pathSecurity';
+import { isSecurePath, isSecureLogPath } from './pathValidator';
 import {
   LogLevel,
   type StructuredLog,
@@ -25,8 +25,8 @@ import {
   severityToLogLevel,
   shouldLog,
   parseLogLevel,
-} from './logTypes';
-import { FileLogWriter } from './fileLogWriter';
+} from '../logTypes';
+import { FileLogWriter } from '../fileLogWriter';
 
 // Re-export for backwards compatibility
 export { sanitizePath } from './pathSanitizer';
@@ -38,10 +38,10 @@ export {
   type ConfigKey,
   type ConfigSnapshot,
   type ConfigChangeDetail,
-} from './core/configChangeDetector';
+} from '../core/configChangeDetector';
 
-import { configChangeDetector } from './core/configChangeDetector';
-import type { ConfigKey, ConfigSnapshot, ConfigChangeDetail } from './core/configChangeDetector';
+import { configChangeDetector } from '../core/configChangeDetector';
+import type { ConfigKey, ConfigSnapshot, ConfigChangeDetail } from '../core/configChangeDetector';
 
 /**
  * Security event types
@@ -69,7 +69,7 @@ export interface SecurityEvent {
 }
 
 // Re-export LogLevel for external use
-export { LogLevel } from './logTypes';
+export { LogLevel } from '../logTypes';
 
 /**
  * Security Logger interface for dependency injection

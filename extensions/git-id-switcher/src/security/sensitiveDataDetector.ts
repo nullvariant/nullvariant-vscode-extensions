@@ -12,7 +12,7 @@ import {
   MAX_LOG_STRING_LENGTH,
   MIN_SECRET_LENGTH,
   MAX_SECRET_LENGTH,
-} from './core/constants';
+} from '../core/constants';
 import { sanitizePath } from './pathSanitizer';
 
 /**

@@ -26,8 +26,8 @@
  */
 
 import * as assert from 'node:assert';
-import { validateCombinedFlags } from '../flagValidator';
-import { isCommandAllowed } from '../commandAllowlist';
+import { validateCombinedFlags } from '../security/flagValidator';
+import { isCommandAllowed } from '../security/commandAllowlist';
 
 /**
  * Test basic combined flag validation

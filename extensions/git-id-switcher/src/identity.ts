@@ -7,7 +7,7 @@
 
 import * as vscode from 'vscode';
 import { validateIdentitySchema } from './configSchema';
-import { securityLogger } from './securityLogger';
+import { securityLogger } from './security/securityLogger';
 import { MAX_IDENTITIES } from './core/constants';
 
 /**

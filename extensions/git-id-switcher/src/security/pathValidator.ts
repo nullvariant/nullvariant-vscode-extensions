@@ -7,19 +7,19 @@
  * Separated from commandAllowlist for Single Responsibility Principle.
  * Refactored using pipeline pattern for KISS compliance (Issue-00041).
  *
- * This module re-exports validators from specialized sub-modules:
- * - path/security/unicode.ts: Unicode attack detection
- * - path/security/traversal.ts: Path traversal detection
+ * This module re-exports validators from specialized modules:
+ * - pathUnicodeDetector.ts: Unicode attack detection
+ * - pathTraversalDetector.ts: Path traversal detection
  *
  * @see https://owasp.org/www-project-application-security-verification-standard/
  */
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { PATH_MAX } from './core/constants';
-import { hasNullByte } from './validators/common';
+import { PATH_MAX } from '../core/constants';
+import { hasNullByte } from '../validators/common';
 
-// Re-export from path/security/unicode.ts
+// Re-export from pathUnicodeDetector.ts
 export {
   ValidationState,
   Validator,
@@ -30,16 +30,16 @@ export {
   normalizeUnicode,
   validateNoControlCharsAfterNormalization,
   validateNoInvisibleUnicodeAfterNormalization,
-} from './path/security/unicode';
+} from './pathUnicodeDetector';
 
-// Re-export from path/security/traversal.ts
+// Re-export from pathTraversalDetector.ts
 export {
   validateNoTraversal,
   validateNoDoubleSlash,
   validateNoBackslash,
   validateNoTrailingDot,
   validateNoTrailingDotSlash,
-} from './path/security/traversal';
+} from './pathTraversalDetector';
 
 // Import for internal use
 import {
@@ -50,7 +50,7 @@ import {
   normalizeUnicode,
   validateNoControlCharsAfterNormalization,
   validateNoInvisibleUnicodeAfterNormalization,
-} from './path/security/unicode';
+} from './pathUnicodeDetector';
 
 import {
   validateNoTraversal,
@@ -58,7 +58,7 @@ import {
   validateNoBackslash,
   validateNoTrailingDot,
   validateNoTrailingDotSlash,
-} from './path/security/traversal';
+} from './pathTraversalDetector';
 
 /**
  * Result of secure path validation

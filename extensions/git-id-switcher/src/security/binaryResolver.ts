@@ -17,7 +17,7 @@ import { execFile } from 'node:child_process';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { promisify } from 'node:util';
-import { getWorkspace } from './core/vscodeLoader';
+import { getWorkspace } from '../core/vscodeLoader';
 import { securityLogger } from './securityLogger';
 
 const execFilePromise = promisify(execFile);
