@@ -10,9 +10,9 @@
  */
 
 import { getWorkspace } from './vscodeLoader';
-import { gitExec, gitExecRaw } from './secureExec';
-import { validateSubmodulePath, validateWorkspacePath } from './pathUtils';
-import { securityLogger } from './securityLogger';
+import { gitExec, gitExecRaw } from '../secureExec';
+import { validateSubmodulePath, validateWorkspacePath } from '../pathUtils';
+import { securityLogger } from '../securityLogger';
 
 /**
  * Maximum allowed submodule recursion depth to prevent DoS attacks.
@@ -33,50 +33,177 @@ export interface Submodule {
 }
 
 /**
- * Regex pattern for parsing git submodule status output.
+ * Valid status characters for git submodule status output.
+ * ' ' = initialized, '-' = uninitialized, '+' = modified
+ */
+const VALID_STATUS_CHARS = new Set([' ', '-', '+']);
+
+/**
+ * Valid characters for SHA-1 commit hash (lowercase hex only).
+ */
+const HEX_CHARS = new Set('0123456789abcdef');
+
+/**
+ * Check if a code point is a control character (0x00-0x1f or 0x7f).
+ */
+function isControlCodePoint(codePoint: number): boolean {
+  return codePoint <= 0x1f || codePoint === 0x7f;
+}
+
+/**
+ * Check if a string contains any control characters.
+ * Linear time O(n), no backtracking possible.
+ */
+function hasControlChars(str: string): boolean {
+  for (const char of str) {
+    const codePoint = char.codePointAt(0);
+    /* c8 ignore next 3 - Defense-in-depth: git output shouldn't contain control chars */
+    if (codePoint !== undefined && isControlCodePoint(codePoint)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Check if a string is a valid 40-character lowercase hex SHA-1 hash.
+ * Linear time O(n), no regex needed.
+ */
+function isValidCommitHash(str: string): boolean {
+  if (str.length !== 40) return false;
+  for (const char of str) {
+    if (!HEX_CHARS.has(char)) return false;
+  }
+  return true;
+}
+
+/**
+ * Strip optional branch suffix " (branch-name)" from the end of a string.
+ * Returns the path portion without the branch suffix.
+ * Linear time O(n), scans from end to find matching parentheses.
+ */
+function stripBranchSuffix(str: string): string {
+  // Must end with ')'
+  if (!str.endsWith(')')) return str;
+
+  // Find matching '(' scanning backwards
+  let parenDepth = 0;
+  let branchStart = -1;
+
+  for (let i = str.length - 1; i >= 0; i--) {
+    const char = str[i];
+    if (char === ')') {
+      parenDepth++;
+    } else if (char === '(') {
+      parenDepth--;
+      if (parenDepth === 0) {
+        branchStart = i;
+        break;
+      }
+    }
+  }
+
+  // No matching '(' found
+  if (branchStart === -1) return str;
+
+  // Check for space before '('
+  if (branchStart > 0 && str[branchStart - 1] === ' ') {
+    // Validate branch name has no control characters
+    const branchName = str.slice(branchStart + 1, -1);
+    if (!hasControlChars(branchName)) {
+      return str.slice(0, branchStart - 1);
+    }
+  }
+
+  /* c8 ignore next 2 - Defense-in-depth: malformed branch suffix edge case */
+  return str;
+}
+
+/**
+ * Parse and validate a single submodule entry from git status output.
+ * Uses pure string operations to prevent ReDoS vulnerabilities.
  *
  * Format: "<status><commit> <path> (<branch>)" or "<status><commit> <path>"
  * - status: single character (' ' = initialized, '-' = uninitialized, '+' = modified)
  * - commit: 40-character hex SHA-1 hash
- * - path: submodule path (no control characters, validated separately)
+ * - path: submodule path (no control characters)
  * - branch: optional branch name in parentheses
  *
- * Security considerations:
- * - Commit hash is strictly 40 hex characters (SHA-1), lowercase only
- * - Path is captured conservatively (non-greedy) and validated separately
- * - Branch name is optional and not used for security-sensitive operations
- * - Path must be at least 1 character (non-empty)
- * - Branch name (if present) must not contain newlines or control characters
- */
-// Control characters are intentionally excluded for security
-// eslint-disable-next-line no-control-regex
-const SUBMODULE_STATUS_REGEX = /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^\x00-\x1f\x7f)]+\))?$/;
-
-/**
- * Parse and validate a single submodule entry from git status output.
  * @internal
  */
 function parseSubmoduleEntry(
   line: string,
   workspacePath: string
 ): Submodule | null {
-  const match = line.match(SUBMODULE_STATUS_REGEX);
-
-  /* c8 ignore start - Non-matching lines (empty lines, malformed output) */
-  if (!match) {
+  // Minimum valid line: status(1) + hash(40) + space(1) + path(1) = 43 chars
+  if (line.length < 43) {
+    /* c8 ignore start - Short/empty lines from git output */
     if (line.trim()) {
       securityLogger.logValidationFailure(
         'submoduleStatusLine',
-        'Unexpected git submodule status line format',
-        undefined
+        'Line too short for valid submodule status'
       );
     }
     return null;
+    /* c8 ignore stop */
+  }
+
+  // Extract status character (position 0)
+  const status = line[0];
+  if (!VALID_STATUS_CHARS.has(status)) {
+    /* c8 ignore start - Invalid status from malformed git output */
+    securityLogger.logValidationFailure(
+      'submoduleStatus',
+      'Invalid status character'
+    );
+    return null;
+    /* c8 ignore stop */
+  }
+  const initialized = status !== '-';
+
+  // Extract commit hash (positions 1-40)
+  const commitHash = line.slice(1, 41);
+  if (!isValidCommitHash(commitHash)) {
+    /* c8 ignore start - Invalid hash from malformed git output */
+    securityLogger.logValidationFailure(
+      'submoduleCommitHash',
+      'Invalid commit hash format'
+    );
+    return null;
+    /* c8 ignore stop */
+  }
+
+  // Find first whitespace after commit hash
+  let pathStart = 41;
+  while (pathStart < line.length && (line[pathStart] === ' ' || line[pathStart] === '\t')) {
+    pathStart++;
+  }
+
+  // Extract remainder and strip branch suffix
+  const remainder = line.slice(pathStart);
+  const submodulePath = stripBranchSuffix(remainder);
+
+  // Validate path is not empty
+  if (submodulePath.length === 0) {
+    /* c8 ignore start - Empty path from malformed git output */
+    securityLogger.logValidationFailure(
+      'submodulePath',
+      'Empty submodule path'
+    );
+    return null;
+    /* c8 ignore stop */
+  }
+
+  /* c8 ignore start - Defense-in-depth: git output shouldn't contain control chars */
+  // Validate path has no control characters
+  if (hasControlChars(submodulePath)) {
+    securityLogger.logValidationFailure(
+      'submodulePath',
+      'Path contains control characters'
+    );
+    return null;
   }
   /* c8 ignore stop */
-
-  const [, status, commitHash, submodulePath] = match;
-  const initialized = status !== '-';
 
   /* c8 ignore start - Regex already ensures 40 chars, but defensive check */
   // SECURITY: Defensive check for commit hash length
@@ -135,8 +262,7 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
   if (!workspaceValidation.valid || !workspaceValidation.normalizedPath) {
     securityLogger.logValidationFailure(
       'submoduleWorkspace',
-      workspaceValidation.reason ?? 'Invalid workspace path',
-      undefined
+      workspaceValidation.reason ?? 'Invalid workspace path'
     );
     return [];
   }
@@ -152,8 +278,7 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
     if (errorCode !== 'ENOENT' && errorCode !== undefined) {
       securityLogger.logValidationFailure(
         'submoduleList',
-        `Failed to list submodules: ${errorCode}`,
-        undefined
+        `Failed to list submodules: ${errorCode}`
       );
     }
     return [];

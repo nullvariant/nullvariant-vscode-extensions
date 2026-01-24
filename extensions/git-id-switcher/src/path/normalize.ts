@@ -9,7 +9,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { isSecurePath, SecurePathResult } from '../pathSecurity';
-import { PATH_MAX } from '../constants';
+import { PATH_MAX } from '../core/constants';
 import { hasNullByte, hasPathTraversal } from '../validators/common';
 import { resolveSymlinksSecurely } from './symlink';
 

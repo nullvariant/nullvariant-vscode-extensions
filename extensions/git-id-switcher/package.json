@@ -46,7 +46,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/core/extension.js",
   "l10n": "./l10n",
   "contributes": {
     "commands": [

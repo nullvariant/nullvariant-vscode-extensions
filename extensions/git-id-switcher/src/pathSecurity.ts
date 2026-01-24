@@ -16,7 +16,7 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { PATH_MAX } from './constants';
+import { PATH_MAX } from './core/constants';
 import { hasNullByte } from './validators/common';
 
 // Re-export from path/security/unicode.ts

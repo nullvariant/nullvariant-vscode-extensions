@@ -18,7 +18,7 @@ import {
   normalizeAndValidatePath,
   validateSshKeyPath,
 } from './pathUtils';
-import { createSecurityViolationError, wrapError } from './errors';
+import { createSecurityViolationError, wrapError } from './core/errors';
 import { securityLogger } from './securityLogger';
 
 /**

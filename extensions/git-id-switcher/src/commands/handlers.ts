@@ -12,8 +12,8 @@
 import * as vscode from 'vscode';
 import { Identity, getIdentityLabel } from '../identity';
 import { showIdentityQuickPick, showErrorNotification } from '../quickPick';
-import { requireWorkspaceTrust } from '../workspaceTrust';
-import { getUserSafeMessage, isFatalError } from '../errors';
+import { requireWorkspaceTrust } from '../core/workspaceTrust';
+import { getUserSafeMessage, isFatalError } from '../core/errors';
 import { IdentityStatusBar } from '../statusBar';
 import { switchToIdentity } from '../services/switcher';
 

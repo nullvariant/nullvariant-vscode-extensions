@@ -8,7 +8,7 @@
 import * as vscode from 'vscode';
 import { validateIdentitySchema } from './configSchema';
 import { securityLogger } from './securityLogger';
-import { MAX_IDENTITIES } from './constants';
+import { MAX_IDENTITIES } from './core/constants';
 
 /**
  * Session-level flag to prevent multiple validation error notifications.

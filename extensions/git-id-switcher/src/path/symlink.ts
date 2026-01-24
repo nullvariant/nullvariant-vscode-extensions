@@ -7,7 +7,7 @@
 
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { PATH_MAX } from '../constants';
+import { PATH_MAX } from '../core/constants';
 
 /**
  * Result of symlink resolution

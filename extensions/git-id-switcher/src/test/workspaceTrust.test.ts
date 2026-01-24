@@ -19,8 +19,8 @@ import {
   initializeWorkspaceTrust,
   requireWorkspaceTrust,
   _resetForTesting,
-} from '../workspaceTrust';
-import { _setMockVSCode, _resetCache } from '../vscodeLoader';
+} from '../core/workspaceTrust';
+import { _setMockVSCode, _resetCache } from '../core/vscodeLoader';
 
 /**
  * Create a minimal mock VS Code API for testing

@@ -9,8 +9,8 @@
 
 // Type-only import (stripped at compile time, no runtime dependency)
 import type { OutputChannel } from 'vscode';
-import { getVSCode } from './vscodeLoader';
-import { MAX_ID_LENGTH } from './constants';
+import { getVSCode } from './core/vscodeLoader';
+import { MAX_ID_LENGTH } from './core/constants';
 import { sanitizePath } from './pathSanitizer';
 import { sanitizeValue, sanitizeDetails, type SanitizeOptions } from './sensitiveDataDetector';
 import { expandTilde } from './pathUtils';
@@ -38,10 +38,10 @@ export {
   type ConfigKey,
   type ConfigSnapshot,
   type ConfigChangeDetail,
-} from './configChangeDetector';
+} from './core/configChangeDetector';
 
-import { configChangeDetector } from './configChangeDetector';
-import type { ConfigKey, ConfigSnapshot, ConfigChangeDetail } from './configChangeDetector';
+import { configChangeDetector } from './core/configChangeDetector';
+import type { ConfigKey, ConfigSnapshot, ConfigChangeDetail } from './core/configChangeDetector';
 
 /**
  * Security event types

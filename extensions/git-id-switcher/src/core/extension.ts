@@ -5,14 +5,14 @@
  */
 
 import * as vscode from 'vscode';
-import { Identity, getIdentitiesWithValidation, resetValidationNotificationFlag } from './identity';
-import { createStatusBar, IdentityStatusBar } from './statusBar';
-import { showDocumentation } from './documentation';
-import { securityLogger } from './securityLogger';
+import { Identity, getIdentitiesWithValidation, resetValidationNotificationFlag } from '../identity';
+import { createStatusBar, IdentityStatusBar } from '../statusBar';
+import { showDocumentation } from '../documentation';
+import { securityLogger } from '../securityLogger';
 import { getUserSafeMessage, isFatalError } from './errors';
 import { initializeWorkspaceTrust } from './workspaceTrust';
-import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetectedIdentity } from './services/detection';
-import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotification } from './commands/handlers';
+import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetectedIdentity } from '../services/detection';
+import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotification } from '../commands/handlers';
 
 // Global state
 let statusBar: IdentityStatusBar;

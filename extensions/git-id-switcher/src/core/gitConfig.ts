@@ -14,9 +14,9 @@
 // Type-only import for TypeScript (stripped at compile time)
 import type * as vscodeTypes from 'vscode';
 import { getVSCode, getWorkspace } from './vscodeLoader';
-import { Identity, formatGitAuthor, getIdentitiesWithValidation } from './identity';
-import { gitExec, secureExec } from './secureExec';
-import { validateIdentity } from './validation';
+import { Identity, formatGitAuthor, getIdentitiesWithValidation } from '../identity';
+import { gitExec, secureExec } from '../secureExec';
+import { validateIdentity } from '../validation';
 import {
   listSubmodulesRecursive,
   setIdentityForSubmodules,

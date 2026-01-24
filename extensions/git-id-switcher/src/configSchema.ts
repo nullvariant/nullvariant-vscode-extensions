@@ -9,7 +9,7 @@
 
 import { isSingleGrapheme } from './displayLimits';
 import { isValidEmail, isValidHex } from './validators/common';
-import { PATH_MAX } from './constants';
+import { PATH_MAX } from './core/constants';
 
 /**
  * Property schema definition

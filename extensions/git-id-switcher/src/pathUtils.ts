@@ -11,7 +11,7 @@
 
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { PATH_MAX } from './constants';
+import { PATH_MAX } from './core/constants';
 import { CONTROL_CHAR_REGEX_ALL, hasNullByte, hasInvisibleUnicode } from './validators/common';
 
 // Re-export from path/normalize.ts

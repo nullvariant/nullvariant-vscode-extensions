@@ -39,7 +39,7 @@ import {
   matchesSensitivePattern,
   sanitizePath,
 } from '../pathSanitizer';
-import { PATH_MAX, MAX_PATTERN_CHECK_LENGTH } from '../constants';
+import { PATH_MAX, MAX_PATTERN_CHECK_LENGTH } from '../core/constants';
 
 /**
  * Test containsSensitiveDir with Unix paths

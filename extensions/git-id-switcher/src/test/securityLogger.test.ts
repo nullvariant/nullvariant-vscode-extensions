@@ -24,7 +24,7 @@ import {
   parseLogLevel,
   LOG_LEVEL_PRIORITY,
 } from '../logTypes';
-import { _resetCache, _setMockVSCode } from '../vscodeLoader';
+import { _resetCache, _setMockVSCode } from '../core/vscodeLoader';
 
 /**
  * Capture console.log output for testing
