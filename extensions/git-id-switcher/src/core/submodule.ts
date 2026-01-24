@@ -139,8 +139,7 @@ function parseSubmoduleEntry(
     if (line.trim()) {
       securityLogger.logValidationFailure(
         'submoduleStatusLine',
-        'Line too short for valid submodule status',
-        undefined
+        'Line too short for valid submodule status'
       );
     }
     return null;
@@ -153,8 +152,7 @@ function parseSubmoduleEntry(
     /* c8 ignore start - Invalid status from malformed git output */
     securityLogger.logValidationFailure(
       'submoduleStatus',
-      'Invalid status character',
-      undefined
+      'Invalid status character'
     );
     return null;
     /* c8 ignore stop */
@@ -167,8 +165,7 @@ function parseSubmoduleEntry(
     /* c8 ignore start - Invalid hash from malformed git output */
     securityLogger.logValidationFailure(
       'submoduleCommitHash',
-      'Invalid commit hash format',
-      undefined
+      'Invalid commit hash format'
     );
     return null;
     /* c8 ignore stop */
@@ -189,8 +186,7 @@ function parseSubmoduleEntry(
     /* c8 ignore start - Empty path from malformed git output */
     securityLogger.logValidationFailure(
       'submodulePath',
-      'Empty submodule path',
-      undefined
+      'Empty submodule path'
     );
     return null;
     /* c8 ignore stop */
@@ -201,8 +197,7 @@ function parseSubmoduleEntry(
   if (hasControlChars(submodulePath)) {
     securityLogger.logValidationFailure(
       'submodulePath',
-      'Path contains control characters',
-      undefined
+      'Path contains control characters'
     );
     return null;
   }

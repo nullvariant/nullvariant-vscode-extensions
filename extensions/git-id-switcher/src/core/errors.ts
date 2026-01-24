@@ -162,15 +162,15 @@ export class SecurityError extends Error {
       // WSL: /mnt/c/Users/username/...
       // Windows drive letters: D:\...
       return line
-        .replace(/\/Users\/[^/\s:]+/g, '~')
-        .replace(/\/home\/[^/\s:]+/g, '~')
-        .replace(/C:\\Users\\[^\\\s:]+/gi, '~')
-        .replace(/[A-Z]:\\Users\\[^\\\s:]+/gi, '~')
-        .replace(/\\\\\?\\[A-Z]:\\Users\\[^\\\s:]+/gi, '~')
-        .replace(/\\\\[^\\]+\\[^\\]+/g, '\\\\server\\share')
-        .replace(/\/mnt\/[a-z]\/Users\/[^/\s:]+/gi, '~')
-        .replace(/\/var\/folders\/[^/]+\/[^/]+/g, '/tmp')
-        .replace(/\/private\/var\/folders\/[^/]+\/[^/]+/g, '/tmp');
+        .replaceAll(/\/Users\/[^/\s:]+/g, '~')
+        .replaceAll(/\/home\/[^/\s:]+/g, '~')
+        .replaceAll(/C:\\Users\\[^\\\s:]+/gi, '~')
+        .replaceAll(/[A-Z]:\\Users\\[^\\\s:]+/gi, '~')
+        .replaceAll(/\\\\\?\\[A-Z]:\\Users\\[^\\\s:]+/gi, '~')
+        .replaceAll(/\\\\[^\\]+\\[^\\]+/g, String.raw`\\server\share`)
+        .replaceAll(/\/mnt\/[a-z]\/Users\/[^/\s:]+/gi, '~')
+        .replaceAll(/\/var\/folders\/[^/]+\/[^/]+/g, '/tmp')
+        .replaceAll(/\/private\/var\/folders\/[^/]+\/[^/]+/g, '/tmp');
     });
 
     return safeLines.join('\n');
