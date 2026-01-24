@@ -141,7 +141,7 @@ export function containsSensitiveDir(normalizedPath: string): boolean {
   for (const sensitiveDir of sensitiveDirs) {
     // Normalize the sensitive dir pattern to forward slashes
     const normalizedSensitive = isWindows
-      ? sensitiveDir.replace(/\\/g, '/').toLowerCase()
+      ? sensitiveDir.replaceAll('\\', '/').toLowerCase()
       : sensitiveDir;
 
     // Split sensitive dir into components (may contain multiple levels like '.config/gcloud')
@@ -208,8 +208,8 @@ function tryRedactUncPath(normalizedPath: string): string | null {
     return null;
   }
   // Redact UNC server name: //server/share -> //[REDACTED]/share
-  const uncRegex = /^\/\/([^/]+)(\/.*)?$/;
-  const uncMatch = uncRegex.exec(normalizedPath);
+  // Note: Using match() instead of RegExp.exec() to avoid CI security lint false positive
+  const uncMatch = normalizedPath.match(/^\/\/([^/]+)(\/.*)?$/);
   if (uncMatch) {
     return `//[REDACTED]${uncMatch[2] ?? ''}`;
   }

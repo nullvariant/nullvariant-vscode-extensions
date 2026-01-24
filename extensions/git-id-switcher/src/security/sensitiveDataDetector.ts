@@ -89,7 +89,7 @@ function looksLikePath(value: string): boolean {
     value.startsWith('/') ||
     value.startsWith('~') ||
     /^[A-Za-z]:/.test(value) ||
-    /^\\\\/.test(value)
+    value.startsWith('\\\\')
   );
 }
 
