@@ -10,9 +10,9 @@
  */
 
 import { getWorkspace } from './vscodeLoader';
-import { gitExec, gitExecRaw } from '../secureExec';
-import { validateSubmodulePath, validateWorkspacePath } from '../pathUtils';
-import { securityLogger } from '../securityLogger';
+import { gitExec, gitExecRaw } from '../security/secureExec';
+import { validateSubmodulePath, validateWorkspacePath } from '../security/pathUtils';
+import { securityLogger } from '../security/securityLogger';
 
 /**
  * Maximum allowed submodule recursion depth to prevent DoS attacks.

@@ -60,8 +60,8 @@ import {
   __testExports,
   BinaryResolutionError,
   clearPathCache,
-} from '../secureExec';
-import { __testExports as binaryResolverTestExports } from '../binaryResolver';
+} from '../security/secureExec';
+import { __testExports as binaryResolverTestExports } from '../security/binaryResolver';
 import { _setMockVSCode, _resetCache } from '../core/vscodeLoader';
 
 const { pathCache } = binaryResolverTestExports;

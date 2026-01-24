@@ -8,7 +8,7 @@ import * as vscode from 'vscode';
 import { Identity, getIdentitiesWithValidation, resetValidationNotificationFlag } from '../identity';
 import { createStatusBar, IdentityStatusBar } from '../statusBar';
 import { showDocumentation } from '../documentation';
-import { securityLogger } from '../securityLogger';
+import { securityLogger } from '../security/securityLogger';
 import { getUserSafeMessage, isFatalError } from './errors';
 import { initializeWorkspaceTrust } from './workspaceTrust';
 import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetectedIdentity } from '../services/detection';

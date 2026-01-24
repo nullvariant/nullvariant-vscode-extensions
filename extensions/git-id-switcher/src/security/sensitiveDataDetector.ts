@@ -12,7 +12,7 @@ import {
   MAX_LOG_STRING_LENGTH,
   MIN_SECRET_LENGTH,
   MAX_SECRET_LENGTH,
-} from './core/constants';
+} from '../core/constants';
 import { sanitizePath } from './pathSanitizer';
 
 /**
@@ -65,7 +65,7 @@ export function looksLikeSensitiveData(value: string): boolean {
       // Count unique character types (uppercase, lowercase, numbers, special)
       const hasUpper = /[A-Z]/.test(checkValue);
       const hasLower = /[a-z]/.test(checkValue);
-      const hasNumbers = /[0-9]/.test(checkValue);
+      const hasNumbers = /\d/.test(checkValue);
       const hasSpecial = /[+/=]/.test(checkValue);
       const typeCount = [hasUpper, hasLower, hasNumbers, hasSpecial].filter(Boolean).length;
 
@@ -89,7 +89,7 @@ function looksLikePath(value: string): boolean {
     value.startsWith('/') ||
     value.startsWith('~') ||
     /^[A-Za-z]:/.test(value) ||
-    /^\\\\/.test(value)
+    value.startsWith('\\\\')
   );
 }
 

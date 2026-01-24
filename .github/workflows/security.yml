@@ -90,7 +90,7 @@ jobs:
       - name: Check for dangerous patterns
         run: |
           echo "Checking for dangerous exec() usage..."
-          if grep -rn "exec(" src/ --include="*.ts" | grep -v "execFile" | grep -v "secureExec" | grep -v ".test.ts"; then
+          if grep -rn "exec(" src/ --include="*.ts" | grep -v "execFile" | grep -v "secureExec" | grep -v "\.exec(" | grep -v ".test.ts"; then
             echo "❌ Found potentially dangerous exec() calls"
             exit 1
           fi

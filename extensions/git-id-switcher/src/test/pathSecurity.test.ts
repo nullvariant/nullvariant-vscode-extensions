@@ -18,8 +18,8 @@ import {
   isSecurePath,
   isPathArgument,
   isSecureLogPath,
-} from '../pathSecurity';
-import { isCommandAllowed } from '../commandAllowlist';
+} from '../security/pathValidator';
+import { isCommandAllowed } from '../security/commandAllowlist';
 
 /**
  * Normalize path to use forward slashes (cross-platform compatibility).

@@ -15,7 +15,7 @@
 import type * as vscodeTypes from 'vscode';
 import { getVSCode, getWorkspace } from './vscodeLoader';
 import { Identity, formatGitAuthor, getIdentitiesWithValidation } from '../identity';
-import { gitExec, secureExec } from '../secureExec';
+import { gitExec, secureExec } from '../security/secureExec';
 import { validateIdentity } from '../validation';
 import {
   listSubmodulesRecursive,

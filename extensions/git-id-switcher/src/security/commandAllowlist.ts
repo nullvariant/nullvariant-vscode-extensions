@@ -7,11 +7,11 @@
  * @see https://owasp.org/www-project-application-security-verification-standard/
  */
 
-import { isSecurePath, isPathArgument } from './pathSecurity';
+import { isSecurePath, isPathArgument } from './pathValidator';
 import { validateCombinedFlags } from './flagValidator';
 
 // Re-export for backwards compatibility
-export { isSecurePath, isPathArgument, SecurePathResult } from './pathSecurity';
+export { isSecurePath, isPathArgument, SecurePathResult } from './pathValidator';
 export { validateCombinedFlags, CombinedFlagResult } from './flagValidator';
 
 /**

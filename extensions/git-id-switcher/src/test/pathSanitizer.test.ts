@@ -38,7 +38,7 @@ import {
   containsSensitiveDir,
   matchesSensitivePattern,
   sanitizePath,
-} from '../pathSanitizer';
+} from '../security/pathSanitizer';
 import { PATH_MAX, MAX_PATTERN_CHECK_LENGTH } from '../core/constants';
 
 /**

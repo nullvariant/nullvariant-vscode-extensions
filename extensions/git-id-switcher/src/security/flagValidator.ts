@@ -13,7 +13,7 @@ import {
   CONTROL_CHAR_REGEX_STRICT,
   hasInvisibleUnicode,
   hasNullByte,
-} from './validators/common';
+} from '../validators/common';
 
 /**
  * Security constants for flag validation

@@ -42,7 +42,7 @@ import {
   sanitizeValue,
   sanitizeDetails,
   type SanitizeOptions,
-} from '../sensitiveDataDetector';
+} from '../security/sensitiveDataDetector';
 import {
   MAX_PATTERN_CHECK_LENGTH,
   MAX_LOG_STRING_LENGTH,

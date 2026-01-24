@@ -14,7 +14,7 @@ import { Identity } from '../identity';
 import { setGitConfigForIdentity, isGitRepository } from '../core/gitConfig';
 import { switchToIdentitySshKey } from '../sshAgent';
 import { showIdentitySwitchedNotification } from '../quickPick';
-import { securityLogger } from '../securityLogger';
+import { securityLogger } from '../security/securityLogger';
 import { getUserSafeMessage } from '../core/errors';
 import { IdentityStatusBar } from '../statusBar';
 

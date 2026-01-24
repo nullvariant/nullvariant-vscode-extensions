@@ -38,7 +38,7 @@ import {
   resolveAllBinaryPaths,
   BinaryResolutionError,
   __testExports,
-} from '../binaryResolver';
+} from '../security/binaryResolver';
 import { _setMockVSCode, _resetCache } from '../core/vscodeLoader';
 
 const {

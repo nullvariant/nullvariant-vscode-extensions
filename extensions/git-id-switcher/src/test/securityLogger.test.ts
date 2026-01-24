@@ -17,7 +17,7 @@ import {
   securityLogger,
   SecurityEventType,
   LogLevel,
-} from '../securityLogger';
+} from '../security/securityLogger';
 import {
   severityToLogLevel,
   shouldLog,
