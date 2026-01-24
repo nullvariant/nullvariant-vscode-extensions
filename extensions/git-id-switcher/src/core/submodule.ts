@@ -44,11 +44,10 @@ const VALID_STATUS_CHARS = new Set([' ', '-', '+']);
 const HEX_CHARS = new Set('0123456789abcdef');
 
 /**
- * Check if a character is a control character (0x00-0x1f or 0x7f).
- * Uses charCodeAt for O(1) lookup - no regex needed.
+ * Check if a code point is a control character (0x00-0x1f or 0x7f).
  */
-function isControlChar(code: number): boolean {
-  return code <= 0x1f || code === 0x7f;
+function isControlCodePoint(codePoint: number): boolean {
+  return codePoint <= 0x1f || codePoint === 0x7f;
 }
 
 /**
@@ -56,8 +55,10 @@ function isControlChar(code: number): boolean {
  * Linear time O(n), no backtracking possible.
  */
 function hasControlChars(str: string): boolean {
-  for (let i = 0; i < str.length; i++) {
-    if (isControlChar(str.charCodeAt(i))) {
+  for (const char of str) {
+    const codePoint = char.codePointAt(0);
+    /* c8 ignore next 3 - Defense-in-depth: git output shouldn't contain control chars */
+    if (codePoint !== undefined && isControlCodePoint(codePoint)) {
       return true;
     }
   }
@@ -70,8 +71,8 @@ function hasControlChars(str: string): boolean {
  */
 function isValidCommitHash(str: string): boolean {
   if (str.length !== 40) return false;
-  for (let i = 0; i < str.length; i++) {
-    if (!HEX_CHARS.has(str[i])) return false;
+  for (const char of str) {
+    if (!HEX_CHARS.has(char)) return false;
   }
   return true;
 }
@@ -114,6 +115,7 @@ function stripBranchSuffix(str: string): string {
     }
   }
 
+  /* c8 ignore next 2 - Defense-in-depth: malformed branch suffix edge case */
   return str;
 }
 
@@ -260,8 +262,7 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
   if (!workspaceValidation.valid || !workspaceValidation.normalizedPath) {
     securityLogger.logValidationFailure(
       'submoduleWorkspace',
-      workspaceValidation.reason ?? 'Invalid workspace path',
-      undefined
+      workspaceValidation.reason ?? 'Invalid workspace path'
     );
     return [];
   }
@@ -277,8 +278,7 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
     if (errorCode !== 'ENOENT' && errorCode !== undefined) {
       securityLogger.logValidationFailure(
         'submoduleList',
-        `Failed to list submodules: ${errorCode}`,
-        undefined
+        `Failed to list submodules: ${errorCode}`
       );
     }
     return [];
