@@ -311,7 +311,7 @@ export function isValidIdentityId(value: string, maxLength: number): boolean {
  * - Ampersand: &
  * - Angle brackets: <>
  */
-export const SAFE_TEXT_PATTERN = '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$';
+export const SAFE_TEXT_PATTERN = '^[^\\u0000-\\u001f\\u007f`$(){}|&<>]+$';
 
 /**
  * Safe text regex
