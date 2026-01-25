@@ -22,7 +22,7 @@ import {
   verifyContentHash,
   logHashFailure,
   isContentSizeValid,
-} from './documentation.internal';
+} from './documentationInternal';
 
 // Import UI components for internal use
 import {
@@ -30,11 +30,11 @@ import {
   getDocumentHtml,
   getLoadingHtml,
   getErrorHtml,
-} from './ui/webview';
+} from './webview';
 
 // Re-export UI components for backward compatibility (VS Code dependent)
-export type { ErrorType } from './ui/webview';
-export { generateNonce, buildCsp, getDocumentHtml, getLoadingHtml, getErrorHtml } from './ui/webview';
+export type { ErrorType } from './webview';
+export { generateNonce, buildCsp, getDocumentHtml, getLoadingHtml, getErrorHtml } from './webview';
 
 // ============================================================================
 // Constants

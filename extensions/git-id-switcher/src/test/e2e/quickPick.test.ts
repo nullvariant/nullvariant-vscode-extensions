@@ -11,7 +11,7 @@
  * - Configuration Integration: showNotifications setting behavior (1 test)
  * - Empty State Handling: showIdentityQuickPick with no identities (2 tests)
  *
- * Test Count: 17 tests covering quickPick.ts functionality
+ * Test Count: 17 tests covering identityPicker.ts functionality
  * PRD Requirement: Minimum 6 tests ✓
  *
  * PRD Checklist Coverage:
@@ -41,7 +41,7 @@ import {
   showIdentityQuickPick,
   showIdentitySwitchedNotification,
   showErrorNotification,
-} from '../../quickPick';
+} from '../../ui/identityPicker';
 import { Identity, getIdentityLabel, getIdentityDetail } from '../../identity/identity';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';

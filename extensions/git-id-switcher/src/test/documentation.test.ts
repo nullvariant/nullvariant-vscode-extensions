@@ -1,7 +1,7 @@
 /**
  * Documentation Module Unit Tests
  *
- * Tests for documentation.ts internal functions.
+ * Tests for documentationInternal.ts functions.
  *
  * ## Markdown Rendering Tests (renderMarkdown) - 8 test functions:
  * 1. testRenderMarkdownHeadings - Heading conversion (h1-h6)
@@ -55,7 +55,7 @@ import {
   logHashFailure,
   isContentSizeValid,
   getHashKey,
-} from '../documentation.internal';
+} from '../ui/documentationInternal';
 
 // ============================================================================
 // Markdown Rendering Tests: renderMarkdown()

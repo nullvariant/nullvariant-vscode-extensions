@@ -11,7 +11,7 @@
  * - State Sequences: Realistic usage patterns (e.g., Identity → Loading → Identity)
  * - Resource Management: dispose behavior
  *
- * Test Count: 17 tests covering statusBar.ts functionality
+ * Test Count: 17 tests covering identityStatusBar.ts functionality
  * PRD Requirement: Minimum 8 tests ✓
  *
  * E2E Test Limitations:
@@ -29,7 +29,7 @@
 
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { createStatusBar, IdentityStatusBar } from '../../statusBar';
+import { createStatusBar, IdentityStatusBar } from '../../ui/identityStatusBar';
 import { Identity } from '../../identity/identity';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';

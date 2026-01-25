@@ -6,8 +6,8 @@
 
 import * as vscode from 'vscode';
 import { Identity, getIdentitiesWithValidation, resetValidationNotificationFlag } from '../identity/identity';
-import { createStatusBar, IdentityStatusBar } from '../statusBar';
-import { showDocumentation } from '../documentation';
+import { createStatusBar, IdentityStatusBar } from '../ui/identityStatusBar';
+import { showDocumentation } from '../ui/documentationPublic';
 import { securityLogger } from '../security/securityLogger';
 import { getUserSafeMessage, isFatalError } from './errors';
 import { initializeWorkspaceTrust } from './workspaceTrust';

@@ -6,7 +6,7 @@
  */
 
 import * as vscode from 'vscode';
-import { Identity, getIdentityLabel } from './identity/identity';
+import { Identity, getIdentityLabel } from '../identity/identity';
 import { truncateForStatusBar } from './displayLimits';
 
 /**
