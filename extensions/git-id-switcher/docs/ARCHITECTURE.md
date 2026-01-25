@@ -108,10 +108,10 @@ Checked at multiple points because:
 
 ### Identity Duplicate Detection (Multi-Layer)
 
-| Layer      | Location                    | Trigger                           |
-| ---------- | --------------------------- | --------------------------------- |
-| 1. Schema  | `identity/configSchema.ts`  | Configuration validation          |
-| 2. Runtime | `identity/identity.ts`      | Before adding to valid identities |
+| Layer      | Location                   | Trigger                           |
+| ---------- | -------------------------- | --------------------------------- |
+| 1. Schema  | `identity/configSchema.ts` | Configuration validation          |
+| 2. Runtime | `identity/identity.ts`     | Before adding to valid identities |
 
 Layer 2 has explicit comment:
 
@@ -406,34 +406,34 @@ Consistent naming helps developers understand function behavior at a glance. Thi
 
 ### Naming Rules
 
-| Prefix        | Returns            | Behavior                       | Example                            |
-| ------------- | ------------------ | ------------------------------ | ---------------------------------- |
-| `is*()`       | `boolean`          | Pure check, no side effects    | `isValidEmail()`                   |
-| `has*()`      | `boolean`          | Existence/presence check       | `hasNullByte()`                    |
-| `validate*()` | `ValidationResult` | Returns result object          | `validatePathSecurity()`           |
-| `*OrThrow()`  | `T` or throws      | Exception on failure           | `parseOrThrow()`                   |
-| `assert*()`   | `void` or throws   | Guard, throws on failure       | `assertWithinWorkspaceBoundary()`  |
-| `detect*()`   | `T \| null`        | Returns detected issue or null | `detectUnsafeCharsInFlag()`        |
-| `check*()`    | varies             | Queries external state         | `checkKeyLoadedInAgent()`          |
+| Prefix        | Returns            | Behavior                       | Example                           |
+| ------------- | ------------------ | ------------------------------ | --------------------------------- |
+| `is*()`       | `boolean`          | Pure check, no side effects    | `isValidEmail()`                  |
+| `has*()`      | `boolean`          | Existence/presence check       | `hasNullByte()`                   |
+| `validate*()` | `ValidationResult` | Returns result object          | `validatePathSecurity()`          |
+| `*OrThrow()`  | `T` or throws      | Exception on failure           | `parseOrThrow()`                  |
+| `assert*()`   | `void` or throws   | Guard, throws on failure       | `assertWithinWorkspaceBoundary()` |
+| `detect*()`   | `T \| null`        | Returns detected issue or null | `detectUnsafeCharsInFlag()`       |
+| `check*()`    | varies             | Queries external state         | `checkKeyLoadedInAgent()`         |
 
 ### Prohibited Patterns
 
 These patterns are **not allowed** in this codebase:
 
-| Pattern                          | Problem                            | Use Instead                     |
-| -------------------------------- | ---------------------------------- | ------------------------------- |
-| `check*()` for pure predicates   | Ambiguous - implies external state | `is*()` or `has*()`             |
-| `is*()` returning non-boolean    | Violates boolean contract          | `validate*()` or `get*()`       |
-| `validate*()` returning `void`   | No way to get error details        | `assert*()` or return result    |
-| `is*Valid*()` redundant prefix   | Redundant naming                   | `isValid*()` or `validate*()`   |
+| Pattern                        | Problem                            | Use Instead                   |
+| ------------------------------ | ---------------------------------- | ----------------------------- |
+| `check*()` for pure predicates | Ambiguous - implies external state | `is*()` or `has*()`           |
+| `is*()` returning non-boolean  | Violates boolean contract          | `validate*()` or `get*()`     |
+| `validate*()` returning `void` | No way to get error details        | `assert*()` or return result  |
+| `is*Valid*()` redundant prefix | Redundant naming                   | `isValid*()` or `validate*()` |
 
 ### Terminology
 
-| Term     | Meaning                                   | Example                    |
-| -------- | ----------------------------------------- | -------------------------- |
-| `valid`  | Format/structure is correct               | `isValidEmail()`           |
-| `secure` | Resistant to security attacks             | `validatePathSecurity()`   |
-| `safe`   | Safe for specific context (e.g., shell)   | `isShellSafePath()`        |
+| Term     | Meaning                                 | Example                  |
+| -------- | --------------------------------------- | ------------------------ |
+| `valid`  | Format/structure is correct             | `isValidEmail()`         |
+| `secure` | Resistant to security attacks           | `validatePathSecurity()` |
+| `safe`   | Safe for specific context (e.g., shell) | `isShellSafePath()`      |
 
 For detailed documentation and examples, see the module comment in `validators/common.ts`.
 
