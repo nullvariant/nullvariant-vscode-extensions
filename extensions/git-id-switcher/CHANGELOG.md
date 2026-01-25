@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.3] - 2026-01-25
+
+### Security
+
+- **ReDoS Vulnerability Fix**: Replaced regex-based email validation with split-based approach
+  - `EMAIL_REGEX` marked as deprecated (kept for backward compatibility)
+  - New `isValidEmail()` function uses string operations instead of regex
+  - Added length limit (254 chars per RFC 5321)
+  - SonarQube: typescript:S5852
+
+### Changed
+
+- **ARCHITECTURE.md Updated**: Synchronized documentation with new directory structure
+  - Updated 30+ file path references to reflect Phase 1-5 refactoring
+  - Replaced logical grouping diagram with actual directory structure
+  - Expanded security layer documentation with all 13 files
+
 ## [0.14.2] - 2026-01-23
 
 ### Fixed

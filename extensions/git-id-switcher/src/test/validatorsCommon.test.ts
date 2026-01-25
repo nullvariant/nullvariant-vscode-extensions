@@ -162,6 +162,19 @@ function testIsValidEmail(): void {
   assert.strictEqual(isValidEmail('user @example.com'), false, 'Email with space should fail');
   assert.strictEqual(isValidEmail('user<tag>@example.com'), false, 'Email with angle brackets should fail');
 
+  // Additional edge cases (ReDoS prevention)
+  assert.strictEqual(isValidEmail(''), false, 'Empty string should fail');
+  assert.strictEqual(isValidEmail('user@@example.com'), false, 'Multiple @ should fail');
+  assert.strictEqual(isValidEmail('user@example.com.'), false, 'Domain ending with dot should fail');
+  assert.strictEqual(isValidEmail('a'.repeat(255) + '@example.com'), false, 'Email exceeding 254 chars should fail');
+
+  // ReDoS resistance test - should complete quickly even with adversarial input
+  const start = Date.now();
+  const adversarialInput = 'a'.repeat(100) + '@' + 'b'.repeat(100) + '.' + 'c'.repeat(50);
+  isValidEmail(adversarialInput);
+  const elapsed = Date.now() - start;
+  assert.ok(elapsed < 100, `ReDoS test should complete in <100ms, took ${elapsed}ms`);
+
   console.log('✅ isValidEmail tests passed!');
 }
 
