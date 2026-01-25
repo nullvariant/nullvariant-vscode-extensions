@@ -46,9 +46,9 @@
 
 ### Key File Sizes (Expected to Be Large)
 
-- `secureExec.ts` ~657 lines
-- `sshAgent.ts` ~620 lines
-- `pathSecurity.ts` ~591 lines
+- `security/secureExec.ts` ~657 lines
+- `ssh/sshAgent.ts` ~620 lines
+- `security/pathValidator.ts` ~591 lines
 
 ---
 
@@ -72,11 +72,11 @@ The same check may appear at multiple layers. This is by design.
 
 #### Null Byte Validation
 
-| Layer                 | File                   | Purpose                               |
-| --------------------- | ---------------------- | ------------------------------------- |
-| 1. Common             | `validators/common.ts` | `hasNullByte()` utility               |
-| 2. Path Security      | `pathSecurity.ts`      | `validateNoNullBytes()` in pipeline   |
-| 3. Path Normalization | `path/normalize.ts`    | Defense-in-depth before normalization |
+| Layer                 | File                          | Purpose                               |
+| --------------------- | ----------------------------- | ------------------------------------- |
+| 1. Common             | `validators/common.ts`        | `hasNullByte()` utility               |
+| 2. Path Security      | `security/pathValidator.ts`   | `validateNoNullBytes()` in pipeline   |
+| 3. Path Normalization | `security/pathNormalizer.ts`  | Defense-in-depth before normalization |
 
 **Why multiple layers?**
 
@@ -107,10 +107,10 @@ Checked at multiple points because:
 
 ### Identity Duplicate Detection (2 Layers)
 
-| Layer      | Location                  | Trigger                           |
-| ---------- | ------------------------- | --------------------------------- |
-| 1. Schema  | `configSchema.ts:361-377` | Configuration validation          |
-| 2. Runtime | `identity.ts:126-138`     | Before adding to valid identities |
+| Layer      | Location                            | Trigger                           |
+| ---------- | ----------------------------------- | --------------------------------- |
+| 1. Schema  | `identity/configSchema.ts:361-377`  | Configuration validation          |
+| 2. Runtime | `identity/identity.ts:126-138`      | Before adding to valid identities |
 
 Layer 2 has explicit comment:
 
@@ -122,7 +122,7 @@ Layer 2 has explicit comment:
 
 ### Silent Error Handling in SSH Agent
 
-In `sshAgent.ts`, some errors are intentionally swallowed:
+In `ssh/sshAgent.ts`, some errors are intentionally swallowed:
 
 ```typescript
 // removeSshKey (line 243)
@@ -165,11 +165,11 @@ Surfacing these errors would confuse users with irrelevant messages.
 
 ### Comment Patterns
 
-| Pattern                      | Example Files                  | Purpose                                        |
-| ---------------------------- | ------------------------------ | ---------------------------------------------- |
-| `// SECURITY:`               | `sshAgent.ts`, `secureExec.ts` | Security-critical code explanation             |
-| `// Note: Defense-in-depth.` | `pathSecurity.ts`              | Explains why seemingly unreachable code exists |
-| `@see https://owasp.org/...` | Multiple                       | Links to security references                   |
+| Pattern                      | Example Files                               | Purpose                                        |
+| ---------------------------- | ------------------------------------------- | ---------------------------------------------- |
+| `// SECURITY:`               | `ssh/sshAgent.ts`, `security/secureExec.ts` | Security-critical code explanation             |
+| `// Note: Defense-in-depth.` | `security/pathValidator.ts`                 | Explains why seemingly unreachable code exists |
+| `@see https://owasp.org/...` | Multiple                                    | Links to security references                   |
 
 **Do not strip comments** for "cleaner code."
 
@@ -177,24 +177,25 @@ Surfacing these errors would confuse users with irrelevant messages.
 
 ## Module Responsibilities
 
-### Security Layer (`src/`)
+### Security Layer (`src/security/`)
 
-| File                  | Lines | Single Responsibility                    |
-| --------------------- | ----- | ---------------------------------------- |
-| `pathSecurity.ts`     | ~591  | Path validation pipeline (19 validators) |
-| `secureExec.ts`       | ~657  | Safe command execution with timeout      |
-| `securityLogger.ts`   | -     | Structured security event logging        |
-| `commandAllowlist.ts` | -     | Allowed commands for secureExec          |
-| `binaryResolver.ts`   | -     | Absolute binary path resolution          |
+| File                       | Lines | Single Responsibility                    |
+| -------------------------- | ----- | ---------------------------------------- |
+| `pathValidator.ts`         | ~591  | Path validation pipeline (19 validators) |
+| `secureExec.ts`            | ~657  | Safe command execution with timeout      |
+| `securityLogger.ts`        | -     | Structured security event logging        |
+| `commandAllowlist.ts`      | -     | Allowed commands for secureExec          |
+| `binaryResolver.ts`        | -     | Absolute binary path resolution          |
+| `pathNormalizer.ts`        | -     | Path normalization with security         |
+| `pathSymlinkResolver.ts`   | -     | Symlink detection (TOCTOU mitigation)    |
+| `pathUnicodeDetector.ts`   | -     | Invisible Unicode attack detection       |
+| `pathTraversalDetector.ts` | -     | Path traversal attack detection          |
+| `pathSanitizer.ts`         | -     | Path sanitization utilities              |
+| `pathUtils.ts`             | -     | SSH key path utilities                   |
+| `flagValidator.ts`         | -     | Command-line flag validation             |
+| `sensitiveDataDetector.ts` | -     | Secret detection in logs                 |
 
-### Path Security Sub-modules (`src/path/security/`)
-
-| File           | Responsibility                                    |
-| -------------- | ------------------------------------------------- |
-| `unicode.ts`   | Invisible Unicode and control character detection |
-| `traversal.ts` | Path traversal attack detection                   |
-
-**pathSecurity.ts** orchestrates 19 individual validators:
+**pathValidator.ts** orchestrates 19 individual validators:
 
 | Category          | Count | Examples                                                  |
 | ----------------- | ----- | --------------------------------------------------------- |
@@ -210,7 +211,7 @@ Surfacing these errors would confuse users with irrelevant messages.
 - Audit trail showing exactly which check failed
 - Adding/removing checks doesn't affect others
 
-### SSH Key Validation (`src/sshAgent.ts`)
+### SSH Key Validation (`src/ssh/sshAgent.ts`)
 
 5 separate validation functions exist:
 
@@ -277,7 +278,7 @@ These are **security limits**, not user preferences. Making them configurable wo
 Several validators are marked as defense-in-depth and will never execute in normal operation:
 
 ```typescript
-// pathSecurity.ts line 157
+// security/pathValidator.ts line 157
 /* c8 ignore start - Defense-in-depth: unreachable due to prior validators */
 const validateNoUNCPath: Validator = (state) => { ... }
 ```
@@ -309,7 +310,7 @@ These exist because:
 
 ### Known Gaps
 
-`sshAgent.ts` (620 lines) has limited test coverage due to:
+`ssh/sshAgent.ts` (620 lines) has limited test coverage due to:
 
 - External dependency (ssh-agent process)
 - Platform-specific behavior (macOS Keychain integration)
@@ -331,11 +332,11 @@ This is a known gap, not an oversight.
 
 These are legitimate improvement opportunities:
 
-| Area                     | Issue                                               | Safe to Change                   |
-| ------------------------ | --------------------------------------------------- | -------------------------------- |
-| `SSH_HOST_REGEX`         | Duplicated in `validation.ts` and `configSchema.ts` | Yes - extract to shared constant |
-| Error message formatting | Inconsistent patterns                               | Yes - standardize format         |
-| Path utility functions   | Some duplication exists                             | Yes - extract to `pathUtils.ts`  |
+| Area                     | Issue                                                                      | Safe to Change                           |
+| ------------------------ | -------------------------------------------------------------------------- | ---------------------------------------- |
+| `SSH_HOST_REGEX`         | Duplicated in `identity/inputValidator.ts` and `identity/configSchema.ts`  | Yes - extract to shared constant         |
+| Error message formatting | Inconsistent patterns                                                      | Yes - standardize format                 |
+| Path utility functions   | Some duplication exists                                                    | Yes - extract to `security/pathUtils.ts` |
 
 ### Do Not Touch
 
@@ -344,7 +345,7 @@ These are legitimate improvement opportunities:
 | Multi-layer null byte checks      | Defense-in-depth            |
 | Pre/post normalization validators | Different security contexts |
 | 2-layer duplicate detection       | Trust boundary protection   |
-| Silent catches in sshAgent        | Best-effort cleanup         |
+| Silent catches in ssh/sshAgent.ts | Best-effort cleanup         |
 | Hardcoded security limits         | DoS protection              |
 
 ---
@@ -361,7 +362,7 @@ The codebase uses manual dependency injection (constructor parameters) rather th
 
 ### Why Synchronous Path Validation?
 
-Path validation in `pathSecurity.ts` is synchronous despite Node.js favoring async:
+Path validation in `security/pathValidator.ts` is synchronous despite Node.js favoring async:
 
 1. Validation is CPU-bound, not I/O-bound
 2. Synchronous code is easier to reason about for security
@@ -381,17 +382,17 @@ This is defense against code injection, even at the cost of flexibility.
 
 ### Why `execFile()` Instead of `exec()`?
 
-All command execution goes through `secureExec.ts` which uses `execFile()`:
+All command execution goes through `security/secureExec.ts` which uses `execFile()`:
 
 - `exec()` passes commands through a shell, enabling injection
 - `execFile()` executes binaries directly with argument arrays
-- Combined with `commandAllowlist.ts` for defense-in-depth
+- Combined with `security/commandAllowlist.ts` for defense-in-depth
 
 ---
 
 ## Security Constants
 
-All security limits are centralized in `constants.ts`:
+All security limits are centralized in `core/constants.ts`:
 
 | Constant                   | Value | Purpose                             |
 | -------------------------- | ----- | ----------------------------------- |
@@ -403,7 +404,7 @@ All security limits are centralized in `constants.ts`:
 | `MAX_SECRET_LENGTH`        | 256   | Secret detection maximum            |
 | `MAX_ID_LENGTH`            | 64    | Identity ID maximum length          |
 
-Additional constants in `secureExec.ts`:
+Additional constants in `security/secureExec.ts`:
 
 | Constant                         | Value    | Purpose                         |
 | -------------------------------- | -------- | ------------------------------- |
@@ -418,35 +419,35 @@ Additional constants in `secureExec.ts`:
 
 ## Command Execution Flow
 
-```
+```text
 User Action
     │
     ▼
-┌─────────────────────┐
-│   handlers.ts       │  VS Code command triggered
-└─────────────────────┘
+┌───────────────────────────────┐
+│   commands/handlers.ts        │  VS Code command triggered
+└───────────────────────────────┘
     │
     ▼
-┌─────────────────────┐
-│   switcher.ts       │  Business logic
-└─────────────────────┘
+┌───────────────────────────────┐
+│   services/switcher.ts        │  Business logic
+└───────────────────────────────┘
     │
     ▼
-┌─────────────────────┐
-│   secureExec.ts     │  Command execution gateway
-│   ┌─────────────────┤
-│   │ 1. Command allowlist check
-│   │ 2. Binary path resolution (binaryResolver.ts)
+┌───────────────────────────────┐
+│   security/secureExec.ts      │  Command execution gateway
+│   ┌───────────────────────────┤
+│   │ 1. Command allowlist check (security/commandAllowlist.ts)
+│   │ 2. Binary path resolution (security/binaryResolver.ts)
 │   │ 3. Argument validation
 │   │ 4. Timeout configuration
 │   │ 5. execFile() execution
-│   └─────────────────┤
-└─────────────────────┘
+│   └───────────────────────────┤
+└───────────────────────────────┘
     │
     ▼
-┌─────────────────────┐
-│   External Binary   │  git, ssh-add, ssh-keygen
-└─────────────────────┘
+┌───────────────────────────────┐
+│   External Binary             │  git, ssh-add, ssh-keygen
+└───────────────────────────────┘
 ```
 
 **Security checkpoints:**
@@ -462,11 +463,11 @@ User Action
 
 Some files exceed typical "small file" guidelines:
 
-| File              | Lines | Rationale                                             |
-| ----------------- | ----- | ----------------------------------------------------- |
-| `secureExec.ts`   | ~657  | Single responsibility with extensive timeout handling |
-| `sshAgent.ts`     | ~620  | Complex external process interaction + validation     |
-| `pathSecurity.ts` | ~591  | 19 validators with documentation                      |
+| File                        | Lines | Rationale                                             |
+| --------------------------- | ----- | ----------------------------------------------------- |
+| `security/secureExec.ts`    | ~657  | Single responsibility with extensive timeout handling |
+| `ssh/sshAgent.ts`           | ~620  | Complex external process interaction + validation     |
+| `security/pathValidator.ts` | ~591  | 19 validators with documentation                      |
 
 These files are large because splitting them would:
 
@@ -480,57 +481,58 @@ These files are large because splitting them would:
 
 ## Directory Structure
 
-> **Note**: This is a logical grouping. Most files are in `src/` root for flat import paths.
+> **Note**: Files are organized by responsibility into dedicated directories.
 
-```
+```text
 src/
-├── Security
-│   ├── pathSecurity.ts          # Path validation orchestration (19 validators)
-│   ├── secureExec.ts            # Safe command execution with timeout
-│   ├── commandAllowlist.ts      # Allowed commands for secureExec
-│   ├── binaryResolver.ts        # Absolute binary path resolution
-│   ├── securityLogger.ts        # Structured security audit logging
-│   ├── sensitiveDataDetector.ts # Secret detection in logs
-│   ├── flagValidator.ts         # Command-line flag validation
-│   ├── pathSanitizer.ts         # Path sanitization utilities
-│   ├── path/
-│   │   ├── normalize.ts         # Path normalization with security
-│   │   ├── symlink.ts           # Symlink detection (TOCTOU mitigation)
-│   │   └── security/
-│   │       ├── unicode.ts       # Invisible Unicode attack detection
-│   │       └── traversal.ts     # Path traversal attack detection
-│   └── validators/
-│       └── common.ts            # Shared validation utilities
-├── SSH & Identity
-│   ├── sshAgent.ts              # SSH key management (add/remove/list)
-│   ├── identity.ts              # Identity loading & validation
-│   ├── configSchema.ts          # JSON schema validation
-│   ├── validation.ts            # Legacy validation utilities
-│   └── pathUtils.ts             # SSH key path utilities
-├── Services (src/services/)
-│   ├── detection.ts             # Identity auto-detection from git
-│   └── switcher.ts              # Identity switching logic
-├── Commands (src/commands/)
-│   └── handlers.ts              # VS Code command handlers
-├── UI
-│   ├── ui/webview.ts            # Webview panel integration
-│   ├── quickPick.ts             # Quick pick identity selector
-│   ├── statusBar.ts             # Status bar display
-│   ├── displayLimits.ts         # Text truncation for UI
-│   └── documentation.ts         # Documentation command handler
-├── Logging
-│   ├── fileLogWriter.ts         # File-based log writer
-│   └── logTypes.ts              # Log type definitions
-├── Core
-│   ├── extension.ts             # Extension entry point
-│   ├── gitConfig.ts             # Git config read/write
-│   ├── constants.ts             # Shared constants (security limits)
-│   ├── errors.ts                # Custom error types
-│   ├── vscodeLoader.ts          # VS Code API loader
-│   ├── workspaceTrust.ts        # Workspace trust integration
-│   ├── configChangeDetector.ts  # Config change watcher
-│   └── submodule.ts             # Git submodule support
-└── test/                        # Unit and E2E tests
+├── core/                          # Foundation (8 files)
+│   ├── extension.ts               # Extension entry point
+│   ├── constants.ts               # Shared constants (security limits)
+│   ├── errors.ts                  # Custom error types
+│   ├── gitConfig.ts               # Git config read/write
+│   ├── vscodeLoader.ts            # VS Code API loader
+│   ├── workspaceTrust.ts          # Workspace trust integration
+│   ├── configChangeDetector.ts    # Config change watcher
+│   └── submodule.ts               # Git submodule support
+├── security/                      # Security (13 files)
+│   ├── pathValidator.ts           # Path validation orchestration (19 validators)
+│   ├── pathNormalizer.ts          # Path normalization with security
+│   ├── pathSymlinkResolver.ts     # Symlink detection (TOCTOU mitigation)
+│   ├── pathTraversalDetector.ts   # Path traversal attack detection
+│   ├── pathUnicodeDetector.ts     # Invisible Unicode attack detection
+│   ├── pathSanitizer.ts           # Path sanitization utilities
+│   ├── pathUtils.ts               # SSH key path utilities
+│   ├── secureExec.ts              # Safe command execution with timeout
+│   ├── commandAllowlist.ts        # Allowed commands for secureExec
+│   ├── binaryResolver.ts          # Absolute binary path resolution
+│   ├── flagValidator.ts           # Command-line flag validation
+│   ├── securityLogger.ts          # Structured security audit logging
+│   └── sensitiveDataDetector.ts   # Secret detection in logs
+├── identity/                      # Identity management (3 files)
+│   ├── identity.ts                # Identity loading & validation
+│   ├── configSchema.ts            # JSON schema validation
+│   └── inputValidator.ts          # Identity input validation
+├── ui/                            # User interface (6 files)
+│   ├── webview.ts                 # Webview panel integration
+│   ├── identityPicker.ts          # Quick pick identity selector
+│   ├── identityStatusBar.ts       # Status bar display
+│   ├── displayLimits.ts           # Text truncation for UI
+│   ├── documentationPublic.ts     # Documentation command handler (public API)
+│   └── documentationInternal.ts   # Documentation utilities (internal)
+├── logging/                       # Logging (2 files)
+│   ├── logTypes.ts                # Log type definitions
+│   └── fileLogWriter.ts           # File-based log writer
+├── ssh/                           # SSH key management (1 file)
+│   └── sshAgent.ts                # SSH key add/remove/list
+├── services/                      # Business logic (2 files)
+│   ├── detection.ts               # Identity auto-detection from git
+│   └── switcher.ts                # Identity switching logic
+├── commands/                      # VS Code commands (1 file)
+│   └── handlers.ts                # VS Code command handlers
+├── validators/                    # Shared validation (1 file)
+│   └── common.ts                  # Shared validation utilities
+└── test/                          # Unit and E2E tests
+    └── e2e/                       # End-to-end tests
 ```
 
 ---
