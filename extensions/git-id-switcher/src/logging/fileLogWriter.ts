@@ -182,7 +182,7 @@ export class FileLogWriter implements ILogWriter {
    * Handles the actual file rotation operation.
    */
   private performRotation(): string | null {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const timestamp = new Date().toISOString().replaceAll(/[:.]/g, '-');
     const ext = path.extname(this.currentFilePath);
     const base = path.basename(this.currentFilePath, ext);
     const dir = path.dirname(this.currentFilePath);

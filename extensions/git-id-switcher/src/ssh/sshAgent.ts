@@ -177,7 +177,7 @@ export async function listSshKeys(
         type: 'unknown',
       };
     });
-  } catch (error) {
+  } catch {
     // ssh-add -l returns exit code 1 if no keys
     return [];
   }
@@ -249,7 +249,7 @@ export async function removeSshKey(keyPath: string): Promise<void> {
   try {
     // SECURITY: Using sshAgentExec with array args
     await sshAgentExec(['-d', expandedPath]);
-  } catch (error) {
+  } catch {
     // Ignore errors (key might not be loaded)
   }
 }
