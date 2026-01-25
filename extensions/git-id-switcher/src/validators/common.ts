@@ -316,8 +316,9 @@ export const SAFE_TEXT_PATTERN = '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$';
 /**
  * Safe text regex
  *
- * Note: Using regex literal to avoid SonarQube control character warnings.
- * The pattern string above is for documentation and schema validation.
+ * The pattern string above is for JSON Schema validation.
+ * This regex is for runtime validation with the same pattern.
+ * Using regex literal (consistent with CONTROL_CHAR_REGEX_ALL above).
  */
 // eslint-disable-next-line no-control-regex
 export const SAFE_TEXT_REGEX = /^[^\x00-\x1f\x7f`$(){}|&<>]+$/;
