@@ -42,7 +42,7 @@ import {
   showIdentitySwitchedNotification,
   showErrorNotification,
 } from '../../quickPick';
-import { Identity, getIdentityLabel, getIdentityDetail } from '../../identity';
+import { Identity, getIdentityLabel, getIdentityDetail } from '../../identity/identity';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';
 

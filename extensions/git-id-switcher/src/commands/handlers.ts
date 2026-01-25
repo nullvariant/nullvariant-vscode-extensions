@@ -10,7 +10,7 @@
  */
 
 import * as vscode from 'vscode';
-import { Identity, getIdentityLabel } from '../identity';
+import { Identity, getIdentityLabel } from '../identity/identity';
 import { showIdentityQuickPick, showErrorNotification } from '../quickPick';
 import { requireWorkspaceTrust } from '../core/workspaceTrust';
 import { getUserSafeMessage, isFatalError } from '../core/errors';

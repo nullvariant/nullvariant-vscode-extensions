@@ -10,7 +10,7 @@
  */
 
 import * as vscode from 'vscode';
-import { Identity } from '../identity';
+import { Identity } from '../identity/identity';
 import { setGitConfigForIdentity, isGitRepository } from '../core/gitConfig';
 import { switchToIdentitySshKey } from '../sshAgent';
 import { showIdentitySwitchedNotification } from '../quickPick';

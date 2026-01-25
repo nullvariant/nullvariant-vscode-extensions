@@ -30,7 +30,7 @@
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
 import { createStatusBar, IdentityStatusBar } from '../../statusBar';
-import { Identity } from '../../identity';
+import { Identity } from '../../identity/identity';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';
 

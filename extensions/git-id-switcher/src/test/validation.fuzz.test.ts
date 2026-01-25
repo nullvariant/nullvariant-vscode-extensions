@@ -17,8 +17,8 @@
 
 import * as assert from 'node:assert';
 import * as fc from 'fast-check';
-import { validateIdentity, validateIdentities, isPathSafe } from '../validation';
-import { Identity } from '../identity';
+import { validateIdentity, validateIdentities, isPathSafe } from '../identity/inputValidator';
+import { Identity } from '../identity/identity';
 
 /**
  * Arbitrary for generating Identity-like objects

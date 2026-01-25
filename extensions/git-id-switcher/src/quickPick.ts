@@ -10,7 +10,7 @@ import {
   getIdentitiesWithValidation,
   getIdentityLabel,
   getIdentityDetail,
-} from './identity';
+} from './identity/identity';
 
 /**
  * Quick pick item for an identity

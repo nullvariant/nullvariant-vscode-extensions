@@ -10,7 +10,7 @@
  */
 
 import * as vscode from 'vscode';
-import { Identity, getIdentityById } from '../identity';
+import { Identity, getIdentityById } from '../identity/identity';
 import { detectCurrentIdentity, isGitRepository } from '../core/gitConfig';
 import { detectCurrentIdentityFromSsh } from '../sshAgent';
 import { IdentityStatusBar } from '../statusBar';

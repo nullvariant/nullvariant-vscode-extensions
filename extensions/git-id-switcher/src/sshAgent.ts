@@ -11,9 +11,9 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { Identity, getIdentitiesWithValidation } from './identity';
+import { Identity, getIdentitiesWithValidation } from './identity/identity';
 import { sshAgentExec, sshKeygenExec } from './security/secureExec';
-import { isPathSafe } from './validation';
+import { isPathSafe } from './identity/inputValidator';
 import {
   normalizeAndValidatePath,
   validateSshKeyPath,

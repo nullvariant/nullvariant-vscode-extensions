@@ -7,9 +7,9 @@
  * @see https://json-schema.org/
  */
 
-import { isSingleGrapheme } from './displayLimits';
-import { isValidEmail, isValidHex } from './validators/common';
-import { PATH_MAX } from './core/constants';
+import { isSingleGrapheme } from '../displayLimits';
+import { isValidEmail, isValidHex } from '../validators/common';
+import { PATH_MAX } from '../core/constants';
 
 /**
  * Property schema definition
