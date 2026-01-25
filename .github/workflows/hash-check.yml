@@ -9,7 +9,7 @@ on:
       # Extension documentation (add new extensions here)
       - 'extensions/git-id-switcher/**/*.md'
       - 'extensions/git-id-switcher/LICENSE'
-      - 'extensions/git-id-switcher/src/documentation.internal.ts'
+      - 'extensions/git-id-switcher/src/ui/documentationInternal.ts'
 
 permissions:
   contents: read
@@ -51,7 +51,7 @@ jobs:
           node scripts/update-doc-hashes.mjs
 
           # Check if there are uncommitted changes
-          if git diff --quiet src/documentation.internal.ts; then
+          if git diff --quiet src/ui/documentationInternal.ts; then
             echo "DOCUMENT_HASHES is up to date"
           else
             echo ""
@@ -65,6 +65,6 @@ jobs:
             echo "  cd extensions/${{ matrix.extension.dir }} && node scripts/update-doc-hashes.mjs"
             echo ""
             echo "Diff:"
-            git diff src/documentation.internal.ts
+            git diff src/ui/documentationInternal.ts
             exit 1
           fi

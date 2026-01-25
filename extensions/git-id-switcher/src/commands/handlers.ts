@@ -11,10 +11,10 @@
 
 import * as vscode from 'vscode';
 import { Identity, getIdentityLabel } from '../identity/identity';
-import { showIdentityQuickPick, showErrorNotification } from '../quickPick';
+import { showIdentityQuickPick, showErrorNotification } from '../ui/identityPicker';
 import { requireWorkspaceTrust } from '../core/workspaceTrust';
 import { getUserSafeMessage, isFatalError } from '../core/errors';
-import { IdentityStatusBar } from '../statusBar';
+import { IdentityStatusBar } from '../ui/identityStatusBar';
 import { switchToIdentity } from '../services/switcher';
 
 /**

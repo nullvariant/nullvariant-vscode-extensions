@@ -1,7 +1,7 @@
 /**
  * Documentation Module Unit Tests
  *
- * Tests for documentation.ts internal functions.
+ * Tests for documentationInternal.ts functions.
  *
  * ## Markdown Rendering Tests (renderMarkdown) - 8 test functions:
  * 1. testRenderMarkdownHeadings - Heading conversion (h1-h6)
@@ -55,7 +55,7 @@ import {
   logHashFailure,
   isContentSizeValid,
   getHashKey,
-} from '../documentation.internal';
+} from '../ui/documentationInternal';
 
 // ============================================================================
 // Markdown Rendering Tests: renderMarkdown()
@@ -131,6 +131,28 @@ function testRenderMarkdownCodeBlocks(): void {
   assert.ok(
     doubleBacktickResult.includes('<code>'),
     'Double backtick inline code should work'
+  );
+
+  // Unclosed code block (odd number of ```) should preserve unclosed part
+  const unclosedResult = renderMarkdown('Normal text\n```javascript\nconst x = 1;\n```\nMore text\n```python\nunclosed');
+  assert.ok(
+    unclosedResult.includes('<pre><code>'),
+    'Closed code block should be rendered'
+  );
+  assert.ok(
+    unclosedResult.includes('```python'),
+    'Unclosed code block delimiter should be preserved in output'
+  );
+
+  // Code block without newline (no language identifier line)
+  const noNewlineResult = renderMarkdown('```single-line-code```');
+  assert.ok(
+    noNewlineResult.includes('<pre><code>'),
+    'Code block without newline should be rendered'
+  );
+  assert.ok(
+    noNewlineResult.includes('single-line-code'),
+    'Code content should be preserved when no newline'
   );
 
   console.log('  renderMarkdown (code blocks) passed!');

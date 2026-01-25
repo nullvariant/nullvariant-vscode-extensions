@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Update DOCUMENT_HASHES in documentation.internal.ts
+ * Update DOCUMENT_HASHES in documentationInternal.ts
  *
  * Target files:
  * - Extension: ALL .md files + LICENSE (anywhere in the extension directory)
@@ -18,7 +18,7 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile, access } from 'node:fs/promises';
 import { glob } from 'glob';
 
-const HASH_FILE = 'src/documentation.internal.ts';
+const HASH_FILE = 'src/ui/documentationInternal.ts';
 
 // Extension identifier for CDN path construction
 const EXTENSION_CDN_PREFIX = 'extensions/git-id-switcher';

@@ -13,7 +13,7 @@ import * as vscode from 'vscode';
 import { Identity, getIdentityById } from '../identity/identity';
 import { detectCurrentIdentity, isGitRepository } from '../core/gitConfig';
 import { detectCurrentIdentityFromSsh } from '../sshAgent';
-import { IdentityStatusBar } from '../statusBar';
+import { IdentityStatusBar } from '../ui/identityStatusBar';
 
 /**
  * Result type for identity detection operations

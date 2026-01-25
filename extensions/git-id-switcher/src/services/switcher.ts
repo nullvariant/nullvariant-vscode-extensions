@@ -13,10 +13,10 @@ import * as vscode from 'vscode';
 import { Identity } from '../identity/identity';
 import { setGitConfigForIdentity, isGitRepository } from '../core/gitConfig';
 import { switchToIdentitySshKey } from '../sshAgent';
-import { showIdentitySwitchedNotification } from '../quickPick';
+import { showIdentitySwitchedNotification } from '../ui/identityPicker';
 import { securityLogger } from '../security/securityLogger';
 import { getUserSafeMessage } from '../core/errors';
-import { IdentityStatusBar } from '../statusBar';
+import { IdentityStatusBar } from '../ui/identityStatusBar';
 
 /**
  * Switch to a specific identity

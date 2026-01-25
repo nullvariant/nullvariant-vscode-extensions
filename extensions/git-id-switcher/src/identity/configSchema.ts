@@ -7,7 +7,7 @@
  * @see https://json-schema.org/
  */
 
-import { isSingleGrapheme } from '../displayLimits';
+import { isSingleGrapheme } from '../ui/displayLimits';
 import { isValidEmail, isValidHex } from '../validators/common';
 import { PATH_MAX } from '../core/constants';
 

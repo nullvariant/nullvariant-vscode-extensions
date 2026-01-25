@@ -207,9 +207,9 @@ export function isContentSizeValid(
  */
 export function escapeHtmlEntities(text: string): string {
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
 }
 
 // ============================================================================
@@ -230,7 +230,7 @@ export function resolveRelativePath(basePath: string, relativePath: string): str
     : '';
 
   // Split base directory into segments
-  const baseSegments = baseDir.split('/').filter(s => s);
+  const baseSegments = baseDir.split('/').filter(Boolean);
 
   // Split relative path into segments
   const relativeSegments = relativePath.split('/');
@@ -323,33 +323,48 @@ export function renderMarkdown(raw: string): string {
   let html = raw;
 
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
-  // Use %% delimiters to avoid confusion with HTML tags
+  // Use split-based approach instead of regex to eliminate ReDoS risk
   const codeBlocks: string[] = [];
-  html = html.replace(/```([^\n\r]*)\r?\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
-    const index = codeBlocks.length;
-    codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
-    return `%%CODEBLOCK_${index}%%`;
-  });
+  const codeBlockParts = html.split('```');
+  if (codeBlockParts.length >= 3) {
+    const result: string[] = [codeBlockParts[0]];
+    for (let i = 1; i < codeBlockParts.length - 1; i += 2) {
+      // Odd indices are inside code blocks, even indices are outside
+      const codeWithLang = codeBlockParts[i];
+      const afterCode = codeBlockParts[i + 1];
+      // Remove language identifier (first line)
+      const newlineIndex = codeWithLang.search(/\r?\n/);
+      const code = newlineIndex >= 0 ? codeWithLang.slice(newlineIndex + 1) : codeWithLang;
+      const index = codeBlocks.length;
+      codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
+      result.push(`%%CODEBLOCK_${index}%%`, afterCode);
+    }
+    // Handle unclosed code block (odd number of ```)
+    if (codeBlockParts.length % 2 === 0) {
+      result.push('```' + codeBlockParts.at(-1));
+    }
+    html = result.join('');
+  }
 
   // Step 3: Extract inline code to placeholders
   // Handle double-backtick inline code first (for content containing single backticks)
   // e.g., `` ` `` renders as a backtick
   const inlineCodes: string[] = [];
-  html = html.replace(/``(.+?)``/g, (_match, code: string) => {
+  html = html.replaceAll(/``(.+?)``/g, (_match, code: string) => {
     const index = inlineCodes.length;
     inlineCodes.push(`<code>${escapeHtmlEntities(code.trim())}</code>`);
     return `%%INLINECODE_${index}%%`;
   });
 
   // Then handle single-backtick inline code
-  html = html.replace(/`([^`]+)`/g, (_match, code: string) => {
+  html = html.replaceAll(/`([^`]+)`/g, (_match, code: string) => {
     const index = inlineCodes.length;
     inlineCodes.push(`<code>${escapeHtmlEntities(code)}</code>`);
     return `%%INLINECODE_${index}%%`;
   });
 
   // Step 4: Markdown tables (BEFORE other transformations that might break pipe characters)
-  html = html.replace(
+  html = html.replaceAll(
     /^\|(.+)\|\r?\n\|[-:\s|]+\|\r?\n((?:\|.+\|\r?\n?)+)/gm,
     (_match, headerRow: string, bodyRows: string) => {
       // headerRow is content between outer pipes, split by inner pipes
@@ -359,7 +374,7 @@ export function renderMarkdown(raw: string): string {
       const bodyHtml = rows.map((row: string) => {
         // Remove leading/trailing | then split, keeping empty cells
         // Regex uses non-capturing groups for explicit precedence: (^|) OR (|$)
-        const cells = row.replace(/(?:^\|)|(?:\|$)/g, '').split('|').map((c: string) => c.trim());
+        const cells = row.replaceAll(/(?:^\|)|(?:\|$)/g, '').split('|').map((c: string) => c.trim());
         const cellsHtml = cells.map((c: string) => '<td>' + c + '</td>').join('');
         return '<tr>' + cellsHtml + '</tr>';
       }).join('');
@@ -368,60 +383,63 @@ export function renderMarkdown(raw: string): string {
   );
 
   // Step 5: Horizontal rules (--- or ***)
-  html = html.replace(/^---+\s*$/gm, '<hr>');
-  html = html.replace(/^\*\*\*+\s*$/gm, '<hr>');
+  html = html.replaceAll(/^---+\s*$/gm, '<hr>');
+  html = html.replaceAll(/^\*\*\*+\s*$/gm, '<hr>');
 
   // Step 6: Headings h1-h6 (process from most specific to least)
-  html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
-  html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
-  html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
-  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  html = html.replaceAll(/^###### (.+)$/gm, '<h6>$1</h6>');
+  html = html.replaceAll(/^##### (.+)$/gm, '<h5>$1</h5>');
+  html = html.replaceAll(/^#### (.+)$/gm, '<h4>$1</h4>');
+  html = html.replaceAll(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replaceAll(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replaceAll(/^# (.+)$/gm, '<h1>$1</h1>');
 
   // Step 7: Bold and Italic
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/(?<![*])\*([^*]+)\*(?![*])/g, '<em>$1</em>');
+  html = html.replaceAll(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replaceAll(/(?<![*])\*([^*]+)\*(?![*])/g, '<em>$1</em>');
 
   // Step 8: Images ![alt](src) - must be before links
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+  html = html.replaceAll(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
 
   // Step 9: Markdown links [text](url)
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  // ReDoS-safe: negated char class [^\]] cannot backtrack (each char is ] or not)
+  html = html.replaceAll(/\[([^\]]{1,1000})\]\(([^)]{1,2000})\)/g, '<a href="$2">$1</a>');
 
   // Step 10: Blockquotes - merge consecutive lines into single blockquote
-  html = html.replace(/(^>\s*.+$(\r?\n^>\s*.+$)*)/gm, (match) => {
-    const lines = match.split(/\r?\n/).map((line: string) => line.replace(/^>\s*/, ''));
+  // ReDoS-safe: [^\r\n]{1,1000} bounded by line length and count
+  html = html.replaceAll(/(^>\s*[^\r\n]{1,1000}$(\r?\n^>\s*[^\r\n]{1,1000}$){0,100})/gm, (match) => {
+    const lines = match.split(/\r?\n/).map((line: string) => line.replaceAll(/^>\s*/g, ''));
     return `<blockquote>${lines.join(' ')}</blockquote>`;
   });
 
   // Step 11: Ordered lists
-  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+  // ReDoS-safe: [^\r\n]{1,1000} bounded by line length
+  html = html.replaceAll(/^\d+\.\s+([^\r\n]{1,1000})$/gm, '<li>$1</li>');
 
   // Step 12: Unordered lists
-  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replaceAll(/^- (.+)$/gm, '<li>$1</li>');
 
   // Step 13: Restore inline code
-  html = html.replace(/%%INLINECODE_(\d+)%%/g, (_match, index: string) => {
+  html = html.replaceAll(/%%INLINECODE_(\d+)%%/g, (_match, index: string) => {
     return inlineCodes[Number.parseInt(index, 10)];
   });
 
   // Step 14: Restore code blocks
-  html = html.replace(/%%CODEBLOCK_(\d+)%%/g, (_match, index: string) => {
+  html = html.replaceAll(/%%CODEBLOCK_(\d+)%%/g, (_match, index: string) => {
     return codeBlocks[Number.parseInt(index, 10)];
   });
 
   // Step 15: Convert double newlines to paragraph breaks
-  html = html.replace(/\n\n+/g, '</p><p>');
+  html = html.replaceAll(/\n\n+/g, '</p><p>');
   html = `<p>${html}</p>`;
 
   // Clean up empty paragraphs and paragraphs around block elements
-  const blockElements = 'h[1-6]|pre|table|blockquote|hr|ul|ol|li|img';
-  html = html.replace(/<p>\s*<\/p>/g, '');
-  html = html.replace(new RegExp(`<p>\\s*(<(?:${blockElements})[^>]*>)`, 'g'), '$1');
-  html = html.replace(new RegExp(`(<\\/(?:${blockElements})>)\\s*<\\/p>`, 'g'), '$1');
-  html = html.replace(new RegExp(`<p>\\s*(<\\/(?:${blockElements})>)`, 'g'), '$1');
-  html = html.replace(new RegExp(`(<(?:${blockElements})[^>]*>)\\s*<\\/p>`, 'g'), '$1');
+  const blockElements = String.raw`h[1-6]|pre|table|blockquote|hr|ul|ol|li|img`;
+  html = html.replaceAll(/<p>\s*<\/p>/g, '');
+  html = html.replaceAll(new RegExp(String.raw`<p>\s*(<(?:${blockElements})[^>]*>)`, 'g'), '$1');
+  html = html.replaceAll(new RegExp(String.raw`(</(?:${blockElements})>)\s*</p>`, 'g'), '$1');
+  html = html.replaceAll(new RegExp(String.raw`<p>\s*(</(?:${blockElements})>)`, 'g'), '$1');
+  html = html.replaceAll(new RegExp(String.raw`(<(?:${blockElements})[^>]*>)\s*</p>`, 'g'), '$1');
 
   return html;
 }

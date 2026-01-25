@@ -12,7 +12,7 @@ import {
   truncateForQuickPickDetail,
   isSingleGrapheme,
   DISPLAY_LIMITS,
-} from '../displayLimits';
+} from '../ui/displayLimits';
 
 /**
  * Test suite for countGraphemes

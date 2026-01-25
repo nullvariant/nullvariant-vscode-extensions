@@ -19,7 +19,7 @@ if git diff --cached --name-only | grep -qE '^(extensions/git-id-switcher/.*\.md
   (
     cd extensions/git-id-switcher || exit 1
     node scripts/update-doc-hashes.mjs || exit 1
-    git add src/documentation.internal.ts
+    git add src/ui/documentationInternal.ts
   )
   # Subshell failure should abort commit
   if [ $? -ne 0 ]; then
