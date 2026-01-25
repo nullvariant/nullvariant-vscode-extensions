@@ -11,15 +11,15 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { Identity, getIdentitiesWithValidation } from './identity/identity';
-import { sshAgentExec, sshKeygenExec } from './security/secureExec';
-import { isPathSafe } from './identity/inputValidator';
+import { Identity, getIdentitiesWithValidation } from '../identity/identity';
+import { sshAgentExec, sshKeygenExec } from '../security/secureExec';
+import { isPathSafe } from '../identity/inputValidator';
 import {
   normalizeAndValidatePath,
   validateSshKeyPath,
-} from './security/pathUtils';
-import { createSecurityViolationError, wrapError } from './core/errors';
-import { securityLogger } from './security/securityLogger';
+} from '../security/pathUtils';
+import { createSecurityViolationError, wrapError } from '../core/errors';
+import { securityLogger } from '../security/securityLogger';
 
 /**
  * Maximum allowed SSH key file size (1MB)

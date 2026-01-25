@@ -23,7 +23,7 @@ import {
   shouldLog,
   parseLogLevel,
   LOG_LEVEL_PRIORITY,
-} from '../logTypes';
+} from '../logging/logTypes';
 import { _resetCache, _setMockVSCode } from '../core/vscodeLoader';
 
 /**

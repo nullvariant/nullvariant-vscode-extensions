@@ -12,7 +12,7 @@
 import * as vscode from 'vscode';
 import { Identity } from '../identity/identity';
 import { setGitConfigForIdentity, isGitRepository } from '../core/gitConfig';
-import { switchToIdentitySshKey } from '../sshAgent';
+import { switchToIdentitySshKey } from '../ssh/sshAgent';
 import { showIdentitySwitchedNotification } from '../ui/identityPicker';
 import { securityLogger } from '../security/securityLogger';
 import { getUserSafeMessage } from '../core/errors';
