@@ -15,7 +15,7 @@ import { sanitizePath } from './pathSanitizer';
 import { sanitizeValue, sanitizeDetails, type SanitizeOptions } from './sensitiveDataDetector';
 import { expandTilde } from './pathUtils';
 import * as path from 'node:path';
-import { isSecurePath, isSecureLogPath } from './pathValidator';
+import { validatePathSecurity, isSecureLogPath } from './pathValidator';
 import {
   LogLevel,
   type StructuredLog,
@@ -151,7 +151,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
       const expandedPath = rawFilePath ? expandTilde(rawFilePath) : '';
 
       if (expandedPath) {
-        const pathResult = isSecurePath(expandedPath);
+        const pathResult = validatePathSecurity(expandedPath);
         if (!pathResult.valid) {
           console.error(`[Git ID Switcher] Invalid log file path: ${pathResult.reason}`);
           return;

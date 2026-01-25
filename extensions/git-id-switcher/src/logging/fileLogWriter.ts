@@ -8,7 +8,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { StructuredLog, ILogWriter, FileLogConfig } from './logTypes';
-import { isSecurePath } from '../security/pathValidator';
+import { validatePathSecurity } from '../security/pathValidator';
 
 /**
  * File log writer with rotation support
@@ -48,7 +48,7 @@ export class FileLogWriter implements ILogWriter {
 
     try {
       // Validate file path for security
-      const pathResult = isSecurePath(this.config.filePath);
+      const pathResult = validatePathSecurity(this.config.filePath);
       if (!pathResult.valid) {
         console.error(`[Git ID Switcher] Invalid log file path: ${pathResult.reason}`);
         return false;
