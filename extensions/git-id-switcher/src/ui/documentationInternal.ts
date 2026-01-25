@@ -325,10 +325,8 @@ export function renderMarkdown(raw: string): string {
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
   // Use %% delimiters to avoid confusion with HTML tags
   const codeBlocks: string[] = [];
-  // Regex optimized to avoid catastrophic backtracking (ReDoS)
-  // - Language identifier: [^\n\r]* is bounded by line break
-  // - Code content: [\s\S]*? is non-greedy with explicit terminator
-  html = html.replace(/```([^\n\r]*)\r?\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
+  // ReDoS-safe: use negated lookahead to prevent backtracking
+  html = html.replace(/```([^\n\r]*)\r?\n((?:(?!```)[^])*?)```/g, (_match, _lang, code: string) => {
     const index = codeBlocks.length;
     codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
     return `%%CODEBLOCK_${index}%%`;
@@ -390,19 +388,19 @@ export function renderMarkdown(raw: string): string {
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
 
   // Step 9: Markdown links [text](url)
-  // Regex uses negated character classes to prevent backtracking
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  // ReDoS-safe: negated char class [^\]] cannot backtrack (each char is ] or not)
+  html = html.replace(/\[([^\]]{1,1000})\]\(([^)]{1,2000})\)/g, '<a href="$2">$1</a>');
 
   // Step 10: Blockquotes - merge consecutive lines into single blockquote
-  // Use [^\r\n]+ instead of .+ to prevent catastrophic backtracking
-  html = html.replace(/(^>\s*[^\r\n]+$(\r?\n^>\s*[^\r\n]+$)*)/gm, (match) => {
+  // ReDoS-safe: [^\r\n]{1,1000} bounded by line length and count
+  html = html.replace(/(^>\s*[^\r\n]{1,1000}$(\r?\n^>\s*[^\r\n]{1,1000}$){0,100})/gm, (match) => {
     const lines = match.split(/\r?\n/).map((line: string) => line.replace(/^>\s*/, ''));
     return `<blockquote>${lines.join(' ')}</blockquote>`;
   });
 
   // Step 11: Ordered lists
-  // Use [^\r\n]+ instead of .+ to prevent catastrophic backtracking
-  html = html.replace(/^\d+\.\s+([^\r\n]+)$/gm, '<li>$1</li>');
+  // ReDoS-safe: [^\r\n]{1,1000} bounded by line length
+  html = html.replace(/^\d+\.\s+([^\r\n]{1,1000})$/gm, '<li>$1</li>');
 
   // Step 12: Unordered lists
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
