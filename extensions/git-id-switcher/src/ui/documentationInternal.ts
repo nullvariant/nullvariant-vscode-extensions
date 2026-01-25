@@ -323,14 +323,29 @@ export function renderMarkdown(raw: string): string {
   let html = raw;
 
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
-  // Use %% delimiters to avoid confusion with HTML tags
+  // Use split-based approach instead of regex to eliminate ReDoS risk
   const codeBlocks: string[] = [];
-  // ReDoS-safe: use negated lookahead to prevent backtracking
-  html = html.replace(/```([^\n\r]*)\r?\n((?:(?!```)[^])*?)```/g, (_match, _lang, code: string) => {
-    const index = codeBlocks.length;
-    codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
-    return `%%CODEBLOCK_${index}%%`;
-  });
+  const codeBlockParts = html.split('```');
+  if (codeBlockParts.length >= 3) {
+    const result: string[] = [codeBlockParts[0]];
+    for (let i = 1; i < codeBlockParts.length - 1; i += 2) {
+      // Odd indices are inside code blocks, even indices are outside
+      const codeWithLang = codeBlockParts[i];
+      const afterCode = codeBlockParts[i + 1];
+      // Remove language identifier (first line)
+      const newlineIndex = codeWithLang.search(/\r?\n/);
+      const code = newlineIndex >= 0 ? codeWithLang.slice(newlineIndex + 1) : codeWithLang;
+      const index = codeBlocks.length;
+      codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
+      result.push(`%%CODEBLOCK_${index}%%`);
+      result.push(afterCode);
+    }
+    // Handle unclosed code block (odd number of ```)
+    if (codeBlockParts.length % 2 === 0) {
+      result.push('```' + codeBlockParts[codeBlockParts.length - 1]);
+    }
+    html = result.join('');
+  }
 
   // Step 3: Extract inline code to placeholders
   // Handle double-backtick inline code first (for content containing single backticks)
