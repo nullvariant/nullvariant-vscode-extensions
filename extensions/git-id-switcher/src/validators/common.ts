@@ -5,6 +5,33 @@
  * Single source of truth for security validation patterns.
  *
  * @see https://owasp.org/www-project-application-security-verification-standard/
+ *
+ * ## Function Naming Conventions
+ *
+ * This module follows strict naming conventions for validation functions:
+ *
+ * | Pattern          | Behavior                                    | Example                          |
+ * |------------------|---------------------------------------------|----------------------------------|
+ * | `is*()` / `has*()` | Returns boolean                           | `isValidEmail()`, `hasNullByte()` |
+ * | `validate*()`    | Returns result object `{valid, reason?}`    | `validatePathSecurity()`         |
+ * | `*OrThrow()`     | Throws exception on failure                 | `validateKeyPathOrThrow()`       |
+ * | `assert*()`      | Returns error result or null if valid       | `assertWithinWorkspaceBoundary()`|
+ * | `detect*()`      | Returns detected issue or null              | `detectUnsafeCharsInFlag()`      |
+ * | `check*()`       | Queries external state (side effects)       | `checkKeyLoadedInAgent()`        |
+ *
+ * ## Terminology
+ *
+ * | Term     | Meaning                                              | Example                       |
+ * |----------|------------------------------------------------------|-------------------------------|
+ * | `valid`  | Format/structure is correct                          | `isEmailFormatValid()`        |
+ * | `secure` | Resistant to security attacks                        | `validatePathSecurity()`      |
+ * | `safe`   | Safe for a specific context (e.g., shell execution)  | `isShellSafePath()`           |
+ *
+ * ## Prohibited Patterns
+ *
+ * - ❌ `check*()` for pure predicates (use `is*()` or `has*()`)
+ * - ❌ `is*Valid*()` redundant prefix (use `isValid*()` or `validate*()`)
+ * - ❌ Ambiguous names like `validateField()` (specify what's being validated)
  */
 
 /**

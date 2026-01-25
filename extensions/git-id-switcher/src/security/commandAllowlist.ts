@@ -7,11 +7,11 @@
  * @see https://owasp.org/www-project-application-security-verification-standard/
  */
 
-import { isSecurePath, isPathArgument } from './pathValidator';
+import { validatePathSecurity, isPathArgument } from './pathValidator';
 import { validateCombinedFlags } from './flagValidator';
 
 // Re-export for backwards compatibility
-export { isSecurePath, isPathArgument, SecurePathResult } from './pathValidator';
+export { validatePathSecurity, isSecurePath, isPathArgument, SecurePathResult } from './pathValidator';
 export { validateCombinedFlags, CombinedFlagResult } from './flagValidator';
 
 /**
@@ -172,10 +172,16 @@ function resolveSubcommandConfig(
 /* c8 ignore stop */
 
 /**
- * Check if arg is a value for a previous option that expects values.
+ * Check if an argument is a value for a preceding flag that expects values.
+ *
+ * @remarks
+ * **Naming convention**: Named with `is` prefix (boolean-like predicate) and
+ * explicit parameter description (`ArgumentValue`, `PrecedingFlag`) to clarify
+ * the relationship between the current argument and the previous flag.
+ *
  * @internal
  */
-function isValueForPreviousOption(
+function isArgumentValueForPrecedingFlag(
   arg: string,
   index: number,
   argsToValidate: string[],
@@ -225,7 +231,7 @@ function validateFlagArgument(
 function validatePathSafety(arg: string): AllowlistCheckResult | 'safe' {
   const looksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
   if (looksLikePathForSecurity) {
-    const pathResult = isSecurePath(arg);
+    const pathResult = validatePathSecurity(arg);
     if (!pathResult.valid) {
       return { allowed: false, reason: `Path argument rejected: ${pathResult.reason}` };
     }
@@ -269,7 +275,7 @@ function validateSingleArgument(
   const looksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
 
   // 1. Check if this is a value for a previous option
-  const valueCheck = isValueForPreviousOption(arg, index, argsToValidate, allowedOptionsWithValues);
+  const valueCheck = isArgumentValueForPrecedingFlag(arg, index, argsToValidate, allowedOptionsWithValues);
   if (valueCheck === 'is_value') {
     return 'continue';
   }

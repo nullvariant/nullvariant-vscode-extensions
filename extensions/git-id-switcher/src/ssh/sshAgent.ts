@@ -13,7 +13,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { Identity, getIdentitiesWithValidation } from '../identity/identity';
 import { sshAgentExec, sshKeygenExec } from '../security/secureExec';
-import { isPathSafe } from '../identity/inputValidator';
+import { isShellSafePath } from '../identity/inputValidator';
 import {
   normalizeAndValidatePath,
   validateSshKeyPath,
@@ -105,13 +105,17 @@ function expandPath(keyPath: string): string {
 }
 
 /**
- * Validate SSH key path for security
+ * Validate SSH key path for security, throwing on failure.
  *
- * @throws Error if path is potentially dangerous
+ * @remarks
+ * **Naming convention**: Named with `OrThrow` suffix because this function
+ * throws an exception on validation failure rather than returning a result object.
+ *
+ * @throws SecurityViolationError if path is potentially dangerous
  */
-function validateKeyPath(keyPath: string): void {
+function validateKeyPathOrThrow(keyPath: string): void {
   // Use both legacy validation and new secure validation
-  if (!isPathSafe(keyPath)) {
+  if (!isShellSafePath(keyPath)) {
     // SECURITY: Don't include the actual path in error message to prevent information leakage
     throw createSecurityViolationError(vscode.l10n.t('Invalid SSH key path'), {
       field: 'sshKeyPath',
@@ -197,12 +201,12 @@ export async function listSshKeys(
  */
 export async function addSshKey(keyPath: string): Promise<void> {
   // SECURITY: Validate path format before use
-  validateKeyPath(keyPath);
+  validateKeyPathOrThrow(keyPath);
 
   const expandedPath = expandPath(keyPath);
 
   // SECURITY: Validate file before passing to ssh-add
-  const fileValidation = await validateKeyFileForSshAdd(expandedPath);
+  const fileValidation = await validateKeyFileBeforeAddToAgent(expandedPath);
   if (!fileValidation.valid) {
     throw createSecurityViolationError(
       vscode.l10n.t('SSH key file validation failed'),
@@ -242,7 +246,7 @@ export async function addSshKey(keyPath: string): Promise<void> {
  */
 export async function removeSshKey(keyPath: string): Promise<void> {
   // SECURITY: Validate path before use
-  validateKeyPath(keyPath);
+  validateKeyPathOrThrow(keyPath);
 
   const expandedPath = expandPath(keyPath);
 
@@ -291,11 +295,16 @@ export async function switchToIdentitySshKey(identity: Identity): Promise<void> 
 }
 
 /**
- * Check if a specific key is loaded in the agent
+ * Check if a specific SSH key is currently loaded in the ssh-agent.
+ *
+ * @remarks
+ * **Naming convention**: Named with `check` prefix because this function
+ * performs an external state check (queries ssh-agent process) rather than
+ * a pure boolean predicate. The `InAgent` suffix clarifies where it's checking.
  */
-export async function isKeyLoaded(keyPath: string): Promise<boolean> {
+export async function checkKeyLoadedInAgent(keyPath: string): Promise<boolean> {
   // SECURITY: Validate path
-  validateKeyPath(keyPath);
+  validateKeyPathOrThrow(keyPath);
 
   const expandedPath = expandPath(keyPath);
   const keys = await listSshKeys();
@@ -307,6 +316,11 @@ export async function isKeyLoaded(keyPath: string): Promise<boolean> {
     return key.comment.includes(keyPathBasename);
   });
 }
+
+/**
+ * @deprecated Use `checkKeyLoadedInAgent` instead. This alias will be removed in a future version.
+ */
+export const isKeyLoaded = checkKeyLoadedInAgent;
 
 /**
  * Detect which identity's key is currently loaded
@@ -353,7 +367,7 @@ export async function detectCurrentIdentityFromSsh(
  */
 export async function getKeyFingerprint(keyPath: string): Promise<string | undefined> {
   // SECURITY: Validate path before use
-  validateKeyPath(keyPath);
+  validateKeyPathOrThrow(keyPath);
 
   const expandedPath = expandPath(keyPath);
 
@@ -391,17 +405,22 @@ export interface KeyFileValidationResult {
 }
 
 /**
- * Check if file content starts with a valid SSH private key header
+ * Validate that file content starts with a valid SSH private key header.
  *
  * Reads only the first few bytes to validate the format efficiently.
  * Supports OpenSSH, PEM (RSA/DSA/EC), PKCS#8, and PuTTY formats.
+ *
+ * @remarks
+ * **Naming convention**: Named with `validate` prefix to remove the redundant
+ * `is` + `Valid` pattern from the original name. Returns boolean for simplicity
+ * since the validation is binary (valid header or not).
  *
  * SECURITY: File handle is always closed, even on error.
  *
  * @param filePath - Path to the SSH key file
  * @returns true if the file has a valid SSH key header
  */
-async function isValidSshKeyFormat(filePath: string): Promise<boolean> {
+async function validateSshKeyFormat(filePath: string): Promise<boolean> {
   let fileHandle: Awaited<ReturnType<typeof fs.open>> | null = null;
   try {
     fileHandle = await fs.open(filePath, 'r');
@@ -557,7 +576,7 @@ function validateKeyFilePermissions(mode: number): KeyFileValidationResult | nul
 }
 
 /**
- * Validate SSH key file for ssh-add operation
+ * Validate SSH key file before adding to ssh-agent.
  *
  * Performs comprehensive security checks:
  * - File existence
@@ -566,13 +585,17 @@ function validateKeyFilePermissions(mode: number): KeyFileValidationResult | nul
  * - File permissions (Unix only: checks for insecure permissions)
  * - File format validation (must start with valid SSH key header)
  *
+ * @remarks
+ * **Naming convention**: Named with `BeforeAddToAgent` suffix to clarify
+ * the timing/context of this validation (pre-operation check before ssh-add).
+ *
  * Note: Symlinks are already resolved by expandPath/validateSshKeyPath,
  * so we use fs.stat here which follows symlinks.
  *
  * @param expandedPath - Already expanded and validated path (symlinks resolved)
  * @returns Validation result
  */
-async function validateKeyFileForSshAdd(
+async function validateKeyFileBeforeAddToAgent(
   expandedPath: string
 ): Promise<KeyFileValidationResult> {
   try {
@@ -597,7 +620,7 @@ async function validateKeyFileForSshAdd(
     if (permCheck) return permCheck;
 
     // Validate SSH key file format
-    const isValidFormat = await isValidSshKeyFormat(expandedPath);
+    const isValidFormat = await validateSshKeyFormat(expandedPath);
     if (!isValidFormat) {
       securityLogger.logValidationFailure(
         'ssh-key-file',

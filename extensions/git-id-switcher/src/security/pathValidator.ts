@@ -25,6 +25,9 @@ export {
   Validator,
   createControlCharValidator,
   createInvisibleUnicodeValidator,
+  controlCharValidator,
+  invisibleUnicodeValidator,
+  // Deprecated aliases for backwards compatibility
   validateNoControlChars,
   validateNoInvisibleUnicode,
   normalizeUnicode,
@@ -45,8 +48,8 @@ export {
 import {
   ValidationState,
   Validator,
-  validateNoControlChars,
-  validateNoInvisibleUnicode,
+  controlCharValidator,
+  invisibleUnicodeValidator,
   normalizeUnicode,
   validateNoControlCharsAfterNormalization,
   validateNoInvisibleUnicodeAfterNormalization,
@@ -203,11 +206,16 @@ const validateNoWindowsReservedNames: Validator = (state) => {
 };
 
 /**
- * Validates path starts with a recognized prefix
+ * Validates path starts with a recognized prefix (/, ~/, ~, or ./).
+ *
+ * @remarks
+ * **Naming convention**: Named with `validate` prefix because this is a validator
+ * function that returns a validation state. It does not throw exceptions.
+ *
  * Note: Traversal patterns (..) are already caught by validateNoTraversal,
  * so we don't need to re-check here.
  */
-const validatePrefix: Validator = (state) => {
+const validatePathHasAllowedPrefix: Validator = (state) => {
   const validPrefixes = [
     '/',      // Absolute Unix path
     '~/',     // Home directory
@@ -245,8 +253,8 @@ const preNormalizationValidators: Validator[] = [
   validateNotEmpty,
   validateNoWhitespace,
   validateNoNullBytes,
-  validateNoControlChars,
-  validateNoInvisibleUnicode,
+  controlCharValidator,
+  invisibleUnicodeValidator,
 ];
 
 /**
@@ -269,7 +277,7 @@ const postNormalizationValidators: Validator[] = [
   validateNoTrailingDot,
   validateNoTrailingDotSlash,
   validateNoWindowsReservedNames,
-  validatePrefix,
+  validatePathHasAllowedPrefix,
 ];
 
 /**
@@ -290,7 +298,7 @@ function runValidators(state: ValidationState, validators: Validator[]): Validat
 }
 
 /**
- * Validate a path argument for security
+ * Validate a path argument for comprehensive security.
  *
  * This function performs comprehensive security checks on file paths:
  * - Rejects path traversal patterns (.., //)
@@ -300,14 +308,24 @@ function runValidators(state: ValidationState, validators: Validator[]): Validat
  * - Enforces PATH_MAX length limit
  * - Normalizes Unicode (NFC)
  *
- * @param path - The path string to validate
- * @returns SecurePathResult indicating if path is safe
+ * @remarks
+ * **Naming convention**: Named with `validate` prefix and `Security` suffix because:
+ * - `validate*()` returns a result object with `valid` boolean and optional `reason`
+ * - `Security` indicates this checks for attack resistance, not just format validity
+ *
+ * **Terminology**:
+ * - `valid`: Format/structure is correct (e.g., `isEmailFormatValid()`)
+ * - `secure`: Resistant to security attacks (e.g., `validatePathSecurity()`)
+ * - `safe`: Safe for a specific context (e.g., `isShellSafePath()`)
+ *
+ * @param inputPath - The path string to validate
+ * @returns SecurePathResult indicating if path is secure
  *
  * @example
- * isSecurePath('/home/user/.ssh/id_rsa')  // { valid: true }
- * isSecurePath('../etc/passwd')           // { valid: false, reason: '...' }
+ * validatePathSecurity('/home/user/.ssh/id_rsa')  // { valid: true }
+ * validatePathSecurity('../etc/passwd')           // { valid: false, reason: '...' }
  */
-export function isSecurePath(inputPath: string): SecurePathResult {
+export function validatePathSecurity(inputPath: string): SecurePathResult {
   // Initialize state
   let state: ValidationState = { valid: true, path: inputPath };
 
@@ -328,6 +346,11 @@ export function isSecurePath(inputPath: string): SecurePathResult {
 
   return { valid: true };
 }
+
+/**
+ * @deprecated Use `validatePathSecurity` instead. This alias will be removed in a future version.
+ */
+export const isSecurePath = validatePathSecurity;
 
 /**
  * Check if an argument looks like a file path
@@ -385,12 +408,18 @@ export interface SecureLogPathResult {
 }
 
 /**
- * Check if a path is a symbolic link using lstat
+ * Check if a path is a symbolic link using lstat.
+ *
+ * @remarks
+ * **Naming convention**: Named with `Safe` suffix because this function
+ * returns `false` on errors (file doesn't exist) rather than throwing,
+ * making it safe to use in validation contexts where non-existent files
+ * are acceptable.
  *
  * @param filePath - The path to check
- * @returns true if the path is a symbolic link
+ * @returns true if the path is a symbolic link, false if not or on error
  */
-function isSymbolicLink(filePath: string): boolean {
+function isSymbolicLinkSafe(filePath: string): boolean {
   try {
     const stats = fs.lstatSync(filePath);
     return stats.isSymbolicLink();
@@ -467,13 +496,18 @@ function resolveRealPath(filePath: string): string | null {
 }
 
 /**
- * Check if a path is under an allowed base directory
+ * Check if a path is within an allowed base directory.
+ *
+ * @remarks
+ * **Naming convention**: Named with `is` prefix because this is a pure boolean
+ * predicate with no side effects. The explicit parameter names clarify the
+ * relationship between the two paths.
  *
  * @param resolvedPath - The resolved real path to check
  * @param allowedBaseDir - The allowed base directory
  * @returns true if the path is under the allowed base directory
  */
-function isUnderAllowedDir(resolvedPath: string, allowedBaseDir: string): boolean {
+function isPathWithinAllowedBaseDir(resolvedPath: string, allowedBaseDir: string): boolean {
   // Normalize both paths for comparison
   const normalizedPath = path.normalize(resolvedPath);
   const normalizedBase = path.normalize(allowedBaseDir);
@@ -518,7 +552,7 @@ function isUnderAllowedDir(resolvedPath: string, allowedBaseDir: string): boolea
  */
 export function isSecureLogPath(filePath: string, allowedBaseDir: string): SecureLogPathResult {
   // Step 1: Basic path validation
-  const basicResult = isSecurePath(filePath);
+  const basicResult = validatePathSecurity(filePath);
   if (!basicResult.valid) {
     return { valid: false, reason: basicResult.reason };
   }
@@ -537,7 +571,7 @@ export function isSecureLogPath(filePath: string, allowedBaseDir: string): Secur
   // Note: Defense-in-depth. hasSymbolicLinkInPath already checks each path component,
   // including the file itself, so this is a safety net.
   /* c8 ignore start - Defense-in-depth: hasSymbolicLinkInPath catches this */
-  if (isSymbolicLink(filePath)) {
+  if (isSymbolicLinkSafe(filePath)) {
     return {
       valid: false,
       reason: 'Log file path is a symbolic link',
@@ -557,7 +591,7 @@ export function isSecureLogPath(filePath: string, allowedBaseDir: string): Secur
   /* c8 ignore stop */
 
   // Step 4: Validate allowed base directory
-  const baseDirResult = isSecurePath(allowedBaseDir);
+  const baseDirResult = validatePathSecurity(allowedBaseDir);
   if (!baseDirResult.valid) {
     return {
       valid: false,
@@ -577,7 +611,7 @@ export function isSecureLogPath(filePath: string, allowedBaseDir: string): Secur
   /* c8 ignore stop */
 
   // Step 6: Check if path is under allowed directory
-  if (!isUnderAllowedDir(resolvedPath, resolvedBaseDir)) {
+  if (!isPathWithinAllowedBaseDir(resolvedPath, resolvedBaseDir)) {
     return {
       valid: false,
       reason: 'Path is not under allowed directory',

@@ -54,11 +54,33 @@ export const createInvisibleUnicodeValidator = (suffix: string = ''): Validator 
 // Pre-built Validators
 // ============================================================================
 
-/** Validates no control characters (pre-normalization) */
-export const validateNoControlChars = createControlCharValidator();
+/**
+ * Validator that rejects paths containing control characters (pre-normalization).
+ *
+ * @remarks
+ * **Naming convention**: Named as a validator object (noun) rather than a function
+ * because it's a pre-built validator instance created by a factory function.
+ */
+export const controlCharValidator = createControlCharValidator();
 
-/** Validates no invisible Unicode characters (pre-normalization) */
-export const validateNoInvisibleUnicode = createInvisibleUnicodeValidator();
+/**
+ * Validator that rejects paths containing invisible Unicode characters (pre-normalization).
+ *
+ * @remarks
+ * **Naming convention**: Named as a validator object (noun) rather than a function
+ * because it's a pre-built validator instance created by a factory function.
+ */
+export const invisibleUnicodeValidator = createInvisibleUnicodeValidator();
+
+/**
+ * @deprecated Use `controlCharValidator` instead. This alias will be removed in a future version.
+ */
+export const validateNoControlChars = controlCharValidator;
+
+/**
+ * @deprecated Use `invisibleUnicodeValidator` instead. This alias will be removed in a future version.
+ */
+export const validateNoInvisibleUnicode = invisibleUnicodeValidator;
 
 /**
  * Normalizes Unicode to NFC for consistent comparison
