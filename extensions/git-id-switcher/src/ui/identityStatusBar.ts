@@ -13,7 +13,7 @@ import { truncateForStatusBar } from './displayLimits';
  * Status bar item wrapper
  */
 export class IdentityStatusBar implements vscode.Disposable {
-  private statusBarItem: vscode.StatusBarItem;
+  private readonly statusBarItem: vscode.StatusBarItem;
   private currentIdentity: Identity | undefined;
 
   constructor() {
@@ -102,10 +102,8 @@ export class IdentityStatusBar implements vscode.Disposable {
       lines.push(`**${identity.description}**`, '');
     }
 
-    lines.push('---', '');
-
     // Identity details
-    lines.push('- ' + vscode.l10n.t('**Email:** {0}', identity.email));
+    lines.push('---', '', '- ' + vscode.l10n.t('**Email:** {0}', identity.email));
 
     if (identity.sshHost) {
       lines.push('- ' + vscode.l10n.t('**SSH Host:** {0}', identity.sshHost));
