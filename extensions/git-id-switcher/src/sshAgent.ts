@@ -451,19 +451,18 @@ function handleFileStatError(error: unknown): KeyFileValidationResult {
   const errorCode = (error as NodeJS.ErrnoException)?.code;
 
   if (errorCode === 'ENOENT') {
-    securityLogger.logValidationFailure('ssh-key-file', 'File does not exist', undefined);
+    securityLogger.logValidationFailure('ssh-key-file', 'File does not exist');
     return { valid: false, reason: 'file_not_found' };
   }
 
   if (errorCode === 'EACCES' || errorCode === 'EPERM') {
-    securityLogger.logValidationFailure('ssh-key-file', 'File access denied', undefined);
+    securityLogger.logValidationFailure('ssh-key-file', 'File access denied');
     return { valid: false, reason: 'access_denied' };
   }
 
   securityLogger.logValidationFailure(
     'ssh-key-file',
-    `File stat failed: ${errorName} (${errorCode ?? 'unknown'})`,
-    undefined
+    `File stat failed: ${errorName} (${errorCode ?? 'unknown'})`
   );
   return { valid: false, reason: 'stat_error' };
 }
@@ -480,13 +479,12 @@ function validateKeyFileType(stats: Awaited<ReturnType<typeof fs.stat>>): KeyFil
   if (stats.isDirectory()) {
     securityLogger.logValidationFailure(
       'ssh-key-file',
-      'Path points to a directory, not a file',
-      undefined
+      'Path points to a directory, not a file'
     );
     return { valid: false, reason: 'is_directory' };
   }
 
-  securityLogger.logValidationFailure('ssh-key-file', 'Path is not a regular file', undefined);
+  securityLogger.logValidationFailure('ssh-key-file', 'Path is not a regular file');
   return { valid: false, reason: 'not_regular_file' };
 }
 
@@ -498,8 +496,7 @@ function validateKeyFileSize(size: number): KeyFileValidationResult | null {
   if (size < MIN_SSH_KEY_FILE_SIZE) {
     securityLogger.logValidationFailure(
       'ssh-key-file',
-      `File size ${size} is below minimum ${MIN_SSH_KEY_FILE_SIZE}`,
-      undefined
+      `File size ${size} is below minimum ${MIN_SSH_KEY_FILE_SIZE}`
     );
     return { valid: false, reason: 'file_too_small' };
   }
@@ -507,8 +504,7 @@ function validateKeyFileSize(size: number): KeyFileValidationResult | null {
   if (size > MAX_SSH_KEY_FILE_SIZE) {
     securityLogger.logValidationFailure(
       'ssh-key-file',
-      `File size ${size} exceeds maximum ${MAX_SSH_KEY_FILE_SIZE}`,
-      undefined
+      `File size ${size} exceeds maximum ${MAX_SSH_KEY_FILE_SIZE}`
     );
     return { valid: false, reason: 'file_too_large' };
   }
@@ -532,8 +528,7 @@ function validateKeyFilePermissions(mode: number): KeyFileValidationResult | nul
   if ((mode & INSECURE_PERMISSION_BITS) !== 0) {
     securityLogger.logValidationFailure(
       'ssh-key-file',
-      `Insecure permissions: ${modeString} (group/others have access)`,
-      undefined
+      `Insecure permissions: ${modeString} (group/others have access)`
     );
     return { valid: false, reason: 'insecure_permissions' };
   }
@@ -542,8 +537,7 @@ function validateKeyFilePermissions(mode: number): KeyFileValidationResult | nul
   if ((mode & OWNER_EXECUTE_BIT) !== 0) {
     securityLogger.logValidationFailure(
       'ssh-key-file',
-      `Insecure permissions: ${modeString} (owner execute bit set)`,
-      undefined
+      `Insecure permissions: ${modeString} (owner execute bit set)`
     );
     return { valid: false, reason: 'insecure_permissions' };
   }
@@ -596,8 +590,7 @@ async function validateKeyFileForSshAdd(
     if (!isValidFormat) {
       securityLogger.logValidationFailure(
         'ssh-key-file',
-        'File does not have a valid SSH private key format',
-        undefined
+        'File does not have a valid SSH private key format'
       );
       return { valid: false, reason: 'invalid_format' };
     }

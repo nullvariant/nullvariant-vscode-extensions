@@ -402,8 +402,10 @@ export function getSchemaDocumentation(): string {
 
   for (const [field, schema] of Object.entries(IDENTITY_SCHEMA)) {
     const required = schema.required ? ' (required)' : '';
-    lines.push(`  ${field}${required}: ${schema.type}`);
-    lines.push(`    ${schema.description}`);
+    lines.push(
+      `  ${field}${required}: ${schema.type}`,
+      `    ${schema.description}`
+    );
 
     if (schema.maxLength) {
       lines.push(`    Max length: ${schema.maxLength}`);
