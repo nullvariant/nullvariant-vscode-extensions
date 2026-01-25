@@ -45,15 +45,6 @@ export const CONTROL_CHAR_REGEX_STRICT = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/;
 export const CONTROL_CHAR_REGEX_ALL = /[\x00-\x1f\x7f]/;
 
 /**
- * Email validation regex (simplified RFC 5322)
- *
- * @deprecated Use isValidEmail() instead. This regex is kept for backward
- * compatibility but should not be used directly due to potential ReDoS concerns.
- * @see isValidEmail
- */
-export const EMAIL_REGEX = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
-
-/**
  * Check if a string contains null bytes
  *
  * Null bytes are a common attack vector for path truncation attacks.
