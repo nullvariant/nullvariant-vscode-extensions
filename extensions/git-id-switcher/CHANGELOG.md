@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.4] - 2026-01-25
+
+### Changed
+
+- **ARCHITECTURE.md Improvements**: Enhanced documentation maintainability
+  - Added "Function Naming Conventions" section with naming rules table
+  - Added "ESLint Exclusion Patterns" section documenting intentional lint bypasses
+  - Removed concrete values (line counts, file counts, validator counts) to prevent documentation drift
+  - Replaced specific numbers with generic terms (e.g., "Multi-Layer" instead of "2 Layers")
+
+### Added
+
+- **PR Template**: Created `.github/PULL_REQUEST_TEMPLATE.md`
+  - General checklist (tests, linter, coverage)
+  - Naming conventions checklist for function additions/renames
+  - Security checklist for validation/security code changes
+
 ## [0.14.3] - 2026-01-25
 
 ### Security
