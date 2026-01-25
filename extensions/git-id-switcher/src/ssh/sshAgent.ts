@@ -153,13 +153,23 @@ export async function listSshKeys(
 
     return lines.map(line => {
       // Format: "256 SHA256:xxx comment (type)"
-      const match = line.match(/^(\d+)\s+(\S+)\s+(.+)\s+\((\w+)\)$/);
-      if (match) {
-        return {
-          fingerprint: match[2],
-          comment: match[3],
-          type: match[4],
-        };
+      // SECURITY: Use split-based parsing to avoid ReDoS (SonarQube S5852)
+      const parts = line.split(/\s+/);
+      if (parts.length >= 4) {
+        // Extract type from last part: "(type)" -> "type"
+        const lastPart = parts.at(-1) ?? '';
+        const typeMatch = lastPart.startsWith('(') && lastPart.endsWith(')')
+          ? lastPart.slice(1, -1)
+          : null;
+        if (typeMatch && /^\w+$/.test(typeMatch)) {
+          // Comment is everything between fingerprint and type
+          const comment = parts.slice(2, -1).join(' ');
+          return {
+            fingerprint: parts[1],
+            comment,
+            type: typeMatch,
+          };
+        }
       }
       return {
         fingerprint: '',
@@ -350,8 +360,9 @@ export async function getKeyFingerprint(keyPath: string): Promise<string | undef
   try {
     // SECURITY: Using sshKeygenExec with array args
     const { stdout } = await sshKeygenExec(['-lf', expandedPath]);
-    const match = stdout.match(/(\S+)\s+(\S+)/);
-    return match ? match[2] : undefined;
+    // SECURITY: Use split-based parsing to avoid ReDoS (SonarQube S5852)
+    const parts = stdout.trim().split(/\s+/);
+    return parts.length >= 2 ? parts[1] : undefined;
   } catch {
     return undefined;
   }

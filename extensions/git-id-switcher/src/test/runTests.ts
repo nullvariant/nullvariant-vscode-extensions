@@ -27,6 +27,7 @@ import { runWorkspaceTrustTests } from './workspaceTrust.test';
 import { runSubmoduleTests } from './submodule.test';
 import { runPathSeparatorTests } from './pathSeparator.test';
 import { runDisplayLimitsTests } from './displayLimits.test';
+import { runSshAgentParsingTests } from './sshAgentParsing.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -102,6 +103,9 @@ async function main(): Promise<void> {
 
     // Run display limits tests
     runDisplayLimitsTests();
+
+    // Run SSH agent parsing tests (ReDoS-safe split-based parsing)
+    await runSshAgentParsingTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
