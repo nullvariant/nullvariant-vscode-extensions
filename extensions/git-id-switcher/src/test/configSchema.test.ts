@@ -16,7 +16,7 @@ import {
   validateIdentitiesSchema,
   getSchemaDocumentation,
   IDENTITY_SCHEMA,
-} from '../configSchema';
+} from '../identity/configSchema';
 
 /**
  * Test empty string handling for required fields

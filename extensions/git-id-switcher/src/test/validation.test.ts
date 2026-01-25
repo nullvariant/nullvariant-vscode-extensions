@@ -5,8 +5,8 @@
  */
 
 import * as assert from 'node:assert';
-import { validateIdentity, validateIdentities, isPathSafe } from '../validation';
-import { Identity } from '../identity';
+import { validateIdentity, validateIdentities, isPathSafe } from '../identity/inputValidator';
+import { Identity } from '../identity/identity';
 
 /**
  * Test suite for validateIdentity

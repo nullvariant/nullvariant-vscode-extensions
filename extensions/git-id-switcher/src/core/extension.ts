@@ -5,7 +5,7 @@
  */
 
 import * as vscode from 'vscode';
-import { Identity, getIdentitiesWithValidation, resetValidationNotificationFlag } from '../identity';
+import { Identity, getIdentitiesWithValidation, resetValidationNotificationFlag } from '../identity/identity';
 import { createStatusBar, IdentityStatusBar } from '../statusBar';
 import { showDocumentation } from '../documentation';
 import { securityLogger } from '../security/securityLogger';

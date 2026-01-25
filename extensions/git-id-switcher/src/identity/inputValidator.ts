@@ -9,7 +9,7 @@
  */
 
 import { Identity } from './identity';
-import { EMAIL_REGEX, hasPathTraversal } from './validators/common';
+import { EMAIL_REGEX, hasPathTraversal } from '../validators/common';
 
 export interface ValidationResult {
   valid: boolean;
