@@ -18,7 +18,7 @@ export default tseslint.config(
       "no-new-func": "error",
       // Prevent magic numbers - force use of named constants (Phase 0 of Issue-00071)
       "no-magic-numbers": [
-        "warn",
+        "error",
         {
           ignore: [0, 1, -1, 2, 10, 100, 1000],
           ignoreArrayIndexes: true,
@@ -27,7 +27,7 @@ export default tseslint.config(
       ],
       // Prevent inline regex literals - force use of shared patterns (Phase 0 of Issue-00071)
       "no-restricted-syntax": [
-        "warn",
+        "error",
         {
           selector: "Literal[regex]",
           message:
