@@ -268,10 +268,9 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
  * - `safe`: Safe for a specific context (shell execution in this case)
  * - `secure`: Resistant to security attacks (use `validatePathSecurity` instead)
  *
- * @deprecated Use `validatePathSecurity` from security/pathValidator instead
- * for comprehensive security checks. This function is kept for backwards
- * compatibility and maintains the original behavior of checking for path
- * traversal and shell metacharacters only.
+ * @see validatePathSecurity from security/pathValidator for comprehensive
+ * security checks. This function maintains the original behavior of checking
+ * for path traversal and shell metacharacters only.
  *
  * @param path - The path to check
  * @returns true if the path appears safe for shell execution
