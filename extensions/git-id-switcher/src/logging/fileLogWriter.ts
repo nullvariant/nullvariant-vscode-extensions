@@ -8,7 +8,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { StructuredLog, ILogWriter, FileLogConfig } from './logTypes';
-import { isSecurePath } from './security/pathValidator';
+import { isSecurePath } from '../security/pathValidator';
 
 /**
  * File log writer with rotation support
@@ -182,7 +182,7 @@ export class FileLogWriter implements ILogWriter {
    * Handles the actual file rotation operation.
    */
   private performRotation(): string | null {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const timestamp = new Date().toISOString().replaceAll(/[:.]/g, '-');
     const ext = path.extname(this.currentFilePath);
     const base = path.basename(this.currentFilePath, ext);
     const dir = path.dirname(this.currentFilePath);

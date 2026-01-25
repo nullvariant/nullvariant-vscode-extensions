@@ -12,7 +12,7 @@ import * as assert from 'node:assert';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { keyFileExists } from '../sshAgent';
+import { keyFileExists } from '../ssh/sshAgent';
 
 /**
  * Create a temporary test directory

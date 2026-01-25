@@ -11,15 +11,15 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { Identity, getIdentitiesWithValidation } from './identity/identity';
-import { sshAgentExec, sshKeygenExec } from './security/secureExec';
-import { isPathSafe } from './identity/inputValidator';
+import { Identity, getIdentitiesWithValidation } from '../identity/identity';
+import { sshAgentExec, sshKeygenExec } from '../security/secureExec';
+import { isPathSafe } from '../identity/inputValidator';
 import {
   normalizeAndValidatePath,
   validateSshKeyPath,
-} from './security/pathUtils';
-import { createSecurityViolationError, wrapError } from './core/errors';
-import { securityLogger } from './security/securityLogger';
+} from '../security/pathUtils';
+import { createSecurityViolationError, wrapError } from '../core/errors';
+import { securityLogger } from '../security/securityLogger';
 
 /**
  * Maximum allowed SSH key file size (1MB)
@@ -153,13 +153,23 @@ export async function listSshKeys(
 
     return lines.map(line => {
       // Format: "256 SHA256:xxx comment (type)"
-      const match = line.match(/^(\d+)\s+(\S+)\s+(.+)\s+\((\w+)\)$/);
-      if (match) {
-        return {
-          fingerprint: match[2],
-          comment: match[3],
-          type: match[4],
-        };
+      // SECURITY: Use split-based parsing to avoid ReDoS (SonarQube S5852)
+      const parts = line.split(/\s+/);
+      if (parts.length >= 4) {
+        // Extract type from last part: "(type)" -> "type"
+        const lastPart = parts.at(-1) ?? '';
+        const typeMatch = lastPart.startsWith('(') && lastPart.endsWith(')')
+          ? lastPart.slice(1, -1)
+          : null;
+        if (typeMatch && /^\w+$/.test(typeMatch)) {
+          // Comment is everything between fingerprint and type
+          const comment = parts.slice(2, -1).join(' ');
+          return {
+            fingerprint: parts[1],
+            comment,
+            type: typeMatch,
+          };
+        }
       }
       return {
         fingerprint: '',
@@ -167,7 +177,7 @@ export async function listSshKeys(
         type: 'unknown',
       };
     });
-  } catch (error) {
+  } catch {
     // ssh-add -l returns exit code 1 if no keys
     return [];
   }
@@ -239,7 +249,7 @@ export async function removeSshKey(keyPath: string): Promise<void> {
   try {
     // SECURITY: Using sshAgentExec with array args
     await sshAgentExec(['-d', expandedPath]);
-  } catch (error) {
+  } catch {
     // Ignore errors (key might not be loaded)
   }
 }
@@ -350,8 +360,9 @@ export async function getKeyFingerprint(keyPath: string): Promise<string | undef
   try {
     // SECURITY: Using sshKeygenExec with array args
     const { stdout } = await sshKeygenExec(['-lf', expandedPath]);
-    const match = stdout.match(/(\S+)\s+(\S+)/);
-    return match ? match[2] : undefined;
+    // SECURITY: Use split-based parsing to avoid ReDoS (SonarQube S5852)
+    const parts = stdout.trim().split(/\s+/);
+    return parts.length >= 2 ? parts[1] : undefined;
   } catch {
     return undefined;
   }

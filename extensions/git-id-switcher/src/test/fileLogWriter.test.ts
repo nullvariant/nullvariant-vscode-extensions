@@ -67,8 +67,8 @@ import * as assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { FileLogWriter } from '../fileLogWriter';
-import { LogLevel, FileLogConfig, StructuredLog } from '../logTypes';
+import { FileLogWriter } from '../logging/fileLogWriter';
+import { LogLevel, FileLogConfig, StructuredLog } from '../logging/logTypes';
 
 /**
  * Convert Windows backslashes to forward slashes for cross-platform compatibility.

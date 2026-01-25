@@ -25,8 +25,8 @@ import {
   severityToLogLevel,
   shouldLog,
   parseLogLevel,
-} from '../logTypes';
-import { FileLogWriter } from '../fileLogWriter';
+} from '../logging/logTypes';
+import { FileLogWriter } from '../logging/fileLogWriter';
 
 // Re-export for backwards compatibility
 export { sanitizePath } from './pathSanitizer';
@@ -69,7 +69,7 @@ export interface SecurityEvent {
 }
 
 // Re-export LogLevel for external use
-export { LogLevel } from '../logTypes';
+export { LogLevel } from '../logging/logTypes';
 
 /**
  * Security Logger interface for dependency injection
