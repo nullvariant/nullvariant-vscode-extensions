@@ -311,12 +311,16 @@ export function isValidIdentityId(value: string, maxLength: number): boolean {
  * - Ampersand: &
  * - Angle brackets: <>
  */
-export const SAFE_TEXT_PATTERN = '^[^\\u0000-\\u001f\\u007f`$(){}|&<>]+$';
+export const SAFE_TEXT_PATTERN = '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$';
 
 /**
  * Safe text regex
+ *
+ * Note: Using regex literal to avoid SonarQube control character warnings.
+ * The pattern string above is for documentation and schema validation.
  */
-export const SAFE_TEXT_REGEX = new RegExp(SAFE_TEXT_PATTERN);
+// eslint-disable-next-line no-control-regex
+export const SAFE_TEXT_REGEX = /^[^\x00-\x1f\x7f`$(){}|&<>]+$/;
 
 /**
  * Dangerous character patterns for validation (with descriptions)
