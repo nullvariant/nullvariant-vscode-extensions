@@ -9,7 +9,7 @@
  */
 
 import { Identity } from './identity';
-import { EMAIL_REGEX, hasPathTraversal } from '../validators/common';
+import { isValidEmail, hasPathTraversal } from '../validators/common';
 
 export interface ValidationResult {
   valid: boolean;
@@ -70,11 +70,12 @@ function validateEmail(email: string | undefined, errors: string[]): void {
     return;
   }
 
-  if (!EMAIL_REGEX.test(email)) {
+  if (!isValidEmail(email)) {
     errors.push('email: invalid email format');
   }
 
   // Additional length check (RFC 5321)
+  // Note: isValidEmail already checks for 254 chars, but identity config allows 320
   if (email.length > 320) {
     errors.push('email: exceeds maximum length (320 characters)');
   }

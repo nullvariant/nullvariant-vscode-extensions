@@ -47,8 +47,9 @@ export const CONTROL_CHAR_REGEX_ALL = /[\x00-\x1f\x7f]/;
 /**
  * Email validation regex (simplified RFC 5322)
  *
- * Allows most valid email addresses while rejecting obvious invalid ones.
- * Used in validation.ts and configSchema.ts.
+ * @deprecated Use isValidEmail() instead. This regex is kept for backward
+ * compatibility but should not be used directly due to potential ReDoS concerns.
+ * @see isValidEmail
  */
 export const EMAIL_REGEX = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 
@@ -160,11 +161,48 @@ export function hasInvisibleUnicode(s: string): boolean {
 /**
  * Validate an email address format
  *
+ * Uses a split-based approach to avoid ReDoS vulnerabilities.
+ * Validates: non-empty local part, single @, domain with at least one dot.
+ *
  * @param email - The email string to validate
  * @returns true if email format is valid
  */
 export function isValidEmail(email: string): boolean {
-  return EMAIL_REGEX.test(email);
+  // Length limit (RFC 5321: 254 chars max for email address)
+  if (email.length > 254 || email.length === 0) {
+    return false;
+  }
+
+  // No whitespace allowed
+  if (/\s/.test(email)) {
+    return false;
+  }
+
+  // No angle brackets allowed
+  if (email.includes('<') || email.includes('>')) {
+    return false;
+  }
+
+  // Split by @ - must have exactly one @
+  const atIndex = email.indexOf('@');
+  if (atIndex === -1 || atIndex !== email.lastIndexOf('@')) {
+    return false;
+  }
+
+  const local = email.slice(0, atIndex);
+  const domain = email.slice(atIndex + 1);
+
+  // Local part and domain must be non-empty
+  if (local.length === 0 || domain.length === 0) {
+    return false;
+  }
+
+  // Domain must contain at least one dot and not end with dot
+  if (!domain.includes('.') || domain.endsWith('.')) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
