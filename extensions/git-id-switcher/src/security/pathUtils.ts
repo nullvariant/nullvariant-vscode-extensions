@@ -116,10 +116,16 @@ function validateSubmodulePathPreChecks(
 }
 
 /**
- * Check if normalized path is within workspace boundary.
+ * Assert that normalized path is within workspace boundary.
+ *
+ * @remarks
+ * **Naming convention**: Named with `assert` prefix because this function
+ * returns an error result if the assertion fails (path escapes workspace),
+ * or null if the assertion passes (path is within boundary).
+ *
  * @internal
  */
-function checkWorkspaceBoundary(
+function assertWithinWorkspaceBoundary(
   normalizedPath: string,
   workspacePath: string,
   originalPath: string
@@ -187,7 +193,7 @@ function verifySubmoduleSymlinks(
     const resolvedPath = resolvedByRealpath;
 
     // SECURITY: Re-check workspace boundary after symlink resolution
-    const boundaryCheck = checkWorkspaceBoundary(resolvedPath, normalizedWorkspace, originalPath);
+    const boundaryCheck = assertWithinWorkspaceBoundary(resolvedPath, normalizedWorkspace, originalPath);
     if (boundaryCheck) {
       return {
         valid: false,
@@ -396,7 +402,7 @@ export function validateSubmodulePath(
   const normalizedSubmodulePath = result.normalizedPath!;
 
   // SECURITY: Ensure the normalized path is still within workspace
-  const boundaryCheck = checkWorkspaceBoundary(normalizedSubmodulePath, normalizedWorkspace, submodulePath);
+  const boundaryCheck = assertWithinWorkspaceBoundary(normalizedSubmodulePath, normalizedWorkspace, submodulePath);
   /* c8 ignore start - Boundary escape after normalization (requires path traversal which is blocked earlier) */
   if (boundaryCheck) {
     return boundaryCheck;

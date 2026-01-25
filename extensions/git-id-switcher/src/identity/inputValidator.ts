@@ -33,9 +33,18 @@ export interface ValidationResult {
 }
 
 /**
- * Validate a string field for dangerous patterns
+ * Validate a string field for dangerous command injection patterns.
+ *
+ * @remarks
+ * **Naming convention**: Named with `validate` prefix and explicit purpose
+ * (`ForDangerousPatterns`) because this function checks for security-critical
+ * patterns like command injection, not format validity.
+ *
+ * @param value - The field value to validate
+ * @param fieldName - The name of the field (for error messages)
+ * @param errors - Array to accumulate validation errors
  */
-function validateField(
+function validateFieldForDangerousPatterns(
   value: string | undefined,
   fieldName: string,
   errors: string[]
@@ -72,13 +81,23 @@ function validateEmail(email: string | undefined, errors: string[]): void {
 }
 
 /**
- * Validate SSH key path
+ * Validate SSH key path format.
  *
+ * This validates only the format/structure of the path:
  * - Must be absolute or start with ~
  * - No path traversal (..)
  * - No dangerous characters
+ *
+ * @remarks
+ * **Naming convention**: Named with `Format` suffix to distinguish from
+ * `validateSshKeyPath` in pathUtils.ts which performs full path normalization
+ * and symlink resolution. This function only validates format.
+ *
+ * **Terminology**:
+ * - `valid`: Format/structure is correct (this function)
+ * - `secure`: Resistant to security attacks (pathUtils.validateSshKeyPath)
  */
-function validateSshKeyPath(
+function validateSshKeyPathFormat(
   sshKeyPath: string | undefined,
   errors: string[]
 ): void {
@@ -97,7 +116,7 @@ function validateSshKeyPath(
   }
 
   // No dangerous characters in path
-  validateField(sshKeyPath, 'sshKeyPath', errors);
+  validateFieldForDangerousPatterns(sshKeyPath, 'sshKeyPath', errors);
 }
 
 /**
@@ -169,15 +188,15 @@ export function validateIdentity(identity: Identity): ValidationResult {
   }
 
   // Text field validation (dangerous patterns)
-  validateField(identity.name, 'name', errors);
-  validateField(identity.email, 'email', errors);
-  validateField(identity.service, 'service', errors);
-  validateField(identity.description, 'description', errors);
-  validateField(identity.icon, 'icon', errors);
+  validateFieldForDangerousPatterns(identity.name, 'name', errors);
+  validateFieldForDangerousPatterns(identity.email, 'email', errors);
+  validateFieldForDangerousPatterns(identity.service, 'service', errors);
+  validateFieldForDangerousPatterns(identity.description, 'description', errors);
+  validateFieldForDangerousPatterns(identity.icon, 'icon', errors);
 
   // Format-specific validation
   validateEmail(identity.email, errors);
-  validateSshKeyPath(identity.sshKeyPath, errors);
+  validateSshKeyPathFormat(identity.sshKeyPath, errors);
   validateGpgKeyId(identity.gpgKeyId, errors);
   validateSshHost(identity.sshHost, errors);
 
@@ -235,18 +254,28 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
 }
 
 /**
- * Check if a path is safe (no injection risk)
+ * Check if a path is safe for shell execution (no injection risk).
  *
- * Used for SSH key paths and other file system operations.
+ * Used for SSH key paths and other file system operations where the path
+ * may be passed to shell commands.
  *
- * @deprecated Use isSecurePath from security/pathValidator instead.
- * This function is kept for backwards compatibility and maintains the original
- * behavior of checking for path traversal and shell metacharacters.
+ * @remarks
+ * **Naming convention**: Named with `is` prefix (boolean predicate) and
+ * `ShellSafe` to indicate this specifically checks for shell injection safety,
+ * not comprehensive path security.
+ *
+ * **Terminology**:
+ * - `safe`: Safe for a specific context (shell execution in this case)
+ * - `secure`: Resistant to security attacks (use `validatePathSecurity` instead)
+ *
+ * @see validatePathSecurity from security/pathValidator for comprehensive
+ * security checks. This function maintains the original behavior of checking
+ * for path traversal and shell metacharacters only.
  *
  * @param path - The path to check
- * @returns true if the path appears safe
+ * @returns true if the path appears safe for shell execution
  */
-export function isPathSafe(path: string): boolean {
+export function isShellSafePath(path: string): boolean {
   // Original check: path traversal detection (simple check for "..")
   // This is stricter than isSecurePath's traversal detection
   if (hasPathTraversal(path)) {
@@ -262,3 +291,8 @@ export function isPathSafe(path: string): boolean {
 
   return true;
 }
+
+/**
+ * @deprecated Use `isShellSafePath` instead. This alias will be removed in a future version.
+ */
+export const isPathSafe = isShellSafePath;

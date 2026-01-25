@@ -8,7 +8,7 @@
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { isSecurePath, SecurePathResult } from './pathValidator';
+import { validatePathSecurity, SecurePathResult } from './pathValidator';
 import { PATH_MAX } from '../core/constants';
 import { hasNullByte, hasPathTraversal } from '../validators/common';
 import { resolveSymlinksSecurely } from './pathSymlinkResolver';
@@ -97,13 +97,18 @@ function validatePathLength(
 }
 
 /**
- * Security check specifically for normalized paths
+ * Security check specifically for normalized paths.
  *
  * After path.normalize(), we need to verify:
  * 1. Path doesn't escape to unexpected locations
  * 2. No remaining traversal patterns
+ *
+ * @remarks
+ * **Naming convention**: Named with `validate` prefix and `Security` suffix because:
+ * - `validate*()` returns a result object with `valid` boolean and optional `reason`
+ * - `Security` indicates this checks for attack resistance post-normalization
  */
-function isSecurePathAfterNormalization(
+function validateNormalizedPathSecurity(
   normalizedPath: string,
   originalPath: string
 ): SecurePathResult {
@@ -166,7 +171,7 @@ function resolveAndValidateSymlinks(
   const resolvedPath = symlinkResult.resolvedPath ?? normalizedPath;
 
   // Re-validate after symlink resolution
-  const symlinkCheck = isSecurePathAfterNormalization(resolvedPath, inputPath);
+  const symlinkCheck = validateNormalizedPathSecurity(resolvedPath, inputPath);
   if (!symlinkCheck.valid) {
     return { invalidResult: { valid: false, originalPath: inputPath, reason: `Post-symlink check failed: ${symlinkCheck.reason}` } };
   }
@@ -210,7 +215,7 @@ export function normalizeAndValidatePath(
   if (inputLengthCheck) return inputLengthCheck;
 
   // Step 3: Pre-normalization security check on raw input
-  const preCheck = isSecurePath(inputPath);
+  const preCheck = validatePathSecurity(inputPath);
   if (!preCheck.valid) {
     return { valid: false, originalPath: inputPath, reason: `Pre-normalization check failed: ${preCheck.reason}` };
   }
@@ -233,7 +238,7 @@ export function normalizeAndValidatePath(
   /* c8 ignore stop */
 
   // Step 6: Post-normalization security check
-  const postCheck = isSecurePathAfterNormalization(normalizedPath, inputPath);
+  const postCheck = validateNormalizedPathSecurity(normalizedPath, inputPath);
   /* c8 ignore start - Defense-in-depth: pre-check catches most issues, this is fallback */
   if (!postCheck.valid) {
     return { valid: false, originalPath: inputPath, reason: `Post-normalization check failed: ${postCheck.reason}` };

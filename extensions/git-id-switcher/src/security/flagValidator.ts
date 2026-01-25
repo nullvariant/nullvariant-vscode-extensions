@@ -39,10 +39,16 @@ const ALLOWED_COMBINED_PATTERNS: Record<string, readonly string[]> = {
 };
 
 /**
- * Check for security-critical character issues in a flag.
+ * Detect unsafe characters in a flag argument.
+ *
+ * @remarks
+ * **Naming convention**: Named with `detect` prefix because this function
+ * looks for and reports security issues (whitespace, null bytes, control chars,
+ * invisible Unicode) rather than just validating format.
+ *
  * @internal
  */
-function checkFlagSecurityChars(flag: string): CombinedFlagResult | null {
+function detectUnsafeCharsInFlag(flag: string): CombinedFlagResult | null {
   // CRITICAL: Check for leading/trailing whitespace (potential obfuscation)
   if (flag !== flag.trim()) {
     return { valid: false, reason: 'Flag contains leading or trailing whitespace' };
@@ -98,10 +104,16 @@ function validateCombinedFlagChars(flagChars: string): CombinedFlagResult | null
 }
 
 /**
- * Check combined flag against allowlist patterns and individual flags.
+ * Validate combined flag characters against the allowlist.
+ *
+ * @remarks
+ * **Naming convention**: Named with `validate` prefix because this returns
+ * a result object with `valid` boolean and optional `reason`. The explicit
+ * `AgainstAllowlist` suffix clarifies what it's being validated against.
+ *
  * @internal
  */
-function checkCombinedFlagAllowlist(
+function validateCombinedFlagAgainstAllowlist(
   flagChars: string,
   command: string,
   allowedArgs: readonly string[]
@@ -165,7 +177,7 @@ export function validateCombinedFlags(
   }
 
   // CRITICAL: Security character checks (whitespace, null bytes, control chars, invisible unicode)
-  const securityCheck = checkFlagSecurityChars(flag);
+  const securityCheck = detectUnsafeCharsInFlag(flag);
   if (securityCheck) {
     return securityCheck;
   }
@@ -175,7 +187,7 @@ export function validateCombinedFlags(
 
   /* c8 ignore start - Post-normalization check for edge cases in Unicode normalization */
   // CRITICAL: Re-check after normalization
-  const normalizedSecurityCheck = checkFlagSecurityChars(normalizedFlag);
+  const normalizedSecurityCheck = detectUnsafeCharsInFlag(normalizedFlag);
   if (normalizedSecurityCheck) {
     return {
       valid: false,
@@ -242,5 +254,5 @@ export function validateCombinedFlags(
   }
 
   // Check against allowlist patterns and individual flags
-  return checkCombinedFlagAllowlist(flagChars, command, allowedArgs);
+  return validateCombinedFlagAgainstAllowlist(flagChars, command, allowedArgs);
 }
