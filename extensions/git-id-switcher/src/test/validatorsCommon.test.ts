@@ -16,7 +16,6 @@ import {
   INVISIBLE_CHARS,
   CONTROL_CHAR_REGEX_STRICT,
   CONTROL_CHAR_REGEX_ALL,
-  EMAIL_REGEX,
 } from '../validators/common';
 
 /**
@@ -212,9 +211,6 @@ function testConstants(): void {
   // CONTROL_CHAR_REGEX should be regex objects
   assert.ok(CONTROL_CHAR_REGEX_STRICT instanceof RegExp, 'CONTROL_CHAR_REGEX_STRICT should be a RegExp');
   assert.ok(CONTROL_CHAR_REGEX_ALL instanceof RegExp, 'CONTROL_CHAR_REGEX_ALL should be a RegExp');
-
-  // EMAIL_REGEX should be a regex object
-  assert.ok(EMAIL_REGEX instanceof RegExp, 'EMAIL_REGEX should be a RegExp');
 
   console.log('✅ Constants tests passed!');
 }
