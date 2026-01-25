@@ -72,11 +72,11 @@ The same check may appear at multiple layers. This is by design.
 
 #### Null Byte Validation
 
-| Layer                 | File                          | Purpose                               |
-| --------------------- | ----------------------------- | ------------------------------------- |
-| 1. Common             | `validators/common.ts`        | `hasNullByte()` utility               |
-| 2. Path Security      | `security/pathValidator.ts`   | `validateNoNullBytes()` in pipeline   |
-| 3. Path Normalization | `security/pathNormalizer.ts`  | Defense-in-depth before normalization |
+| Layer                 | File                         | Purpose                               |
+| --------------------- | ---------------------------- | ------------------------------------- |
+| 1. Common             | `validators/common.ts`       | `hasNullByte()` utility               |
+| 2. Path Security      | `security/pathValidator.ts`  | `validateNoNullBytes()` in pipeline   |
+| 3. Path Normalization | `security/pathNormalizer.ts` | Defense-in-depth before normalization |
 
 **Why multiple layers?**
 
@@ -107,10 +107,10 @@ Checked at multiple points because:
 
 ### Identity Duplicate Detection (2 Layers)
 
-| Layer      | Location                            | Trigger                           |
-| ---------- | ----------------------------------- | --------------------------------- |
-| 1. Schema  | `identity/configSchema.ts:361-377`  | Configuration validation          |
-| 2. Runtime | `identity/identity.ts:126-138`      | Before adding to valid identities |
+| Layer      | Location                           | Trigger                           |
+| ---------- | ---------------------------------- | --------------------------------- |
+| 1. Schema  | `identity/configSchema.ts:361-377` | Configuration validation          |
+| 2. Runtime | `identity/identity.ts:126-138`     | Before adding to valid identities |
 
 Layer 2 has explicit comment:
 
@@ -332,11 +332,11 @@ This is a known gap, not an oversight.
 
 These are legitimate improvement opportunities:
 
-| Area                     | Issue                                                                      | Safe to Change                           |
-| ------------------------ | -------------------------------------------------------------------------- | ---------------------------------------- |
-| `SSH_HOST_REGEX`         | Duplicated in `identity/inputValidator.ts` and `identity/configSchema.ts`  | Yes - extract to shared constant         |
-| Error message formatting | Inconsistent patterns                                                      | Yes - standardize format                 |
-| Path utility functions   | Some duplication exists                                                    | Yes - extract to `security/pathUtils.ts` |
+| Area                     | Issue                                                                     | Safe to Change                           |
+| ------------------------ | ------------------------------------------------------------------------- | ---------------------------------------- |
+| `SSH_HOST_REGEX`         | Duplicated in `identity/inputValidator.ts` and `identity/configSchema.ts` | Yes - extract to shared constant         |
+| Error message formatting | Inconsistent patterns                                                     | Yes - standardize format                 |
+| Path utility functions   | Some duplication exists                                                   | Yes - extract to `security/pathUtils.ts` |
 
 ### Do Not Touch
 
