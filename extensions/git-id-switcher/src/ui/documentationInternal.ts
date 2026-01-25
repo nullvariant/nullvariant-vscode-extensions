@@ -26,7 +26,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'CODE_OF_CONDUCT.md': 'a5eb286c902437bbe0f6d409894f20e51c172fa869fe2f151bfa388f9d911b54',
   'CONTRIBUTING.md': '4150f8810aec7b2e8eff9f3c69ee1bae1374843f50a812efa6778cba27a833cd',
   'extensions/git-id-switcher/CHANGELOG.md': 'be7dae0e7edf02b42bf886dae0c54ac19f26f69f65b58ea0c4344b72155e5f16',
-  'extensions/git-id-switcher/docs/ARCHITECTURE.md': 'a7f9efa1eefdc535d516aa46357cffc916c8cb982e6b8943152cd06818d7ec1c',
+  'extensions/git-id-switcher/docs/ARCHITECTURE.md': '0df540b7e6e6cc4d4b0e9816e1094f37059a3866e9f58fe697bbdacc74b6c522',
   'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
   'extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md': 'f9718b61ac161cb466dbc76845688e7acacf4e5fdc4b8b9553269dba4a094f6b',
   'extensions/git-id-switcher/docs/i18n/ain/README.md': '4d309165e22a943b2a1791914db02bc2762d5fb643f5350a2426558ac7b3ae19',
