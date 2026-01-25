@@ -325,6 +325,9 @@ export function renderMarkdown(raw: string): string {
   // Step 2: Extract code blocks to placeholders (prevent internal transformation)
   // Use %% delimiters to avoid confusion with HTML tags
   const codeBlocks: string[] = [];
+  // Regex optimized to avoid catastrophic backtracking (ReDoS)
+  // - Language identifier: [^\n\r]* is bounded by line break
+  // - Code content: [\s\S]*? is non-greedy with explicit terminator
   html = html.replace(/```([^\n\r]*)\r?\n([\s\S]*?)```/g, (_match, _lang, code: string) => {
     const index = codeBlocks.length;
     codeBlocks.push(`<pre><code>${escapeHtmlEntities(code.trim())}</code></pre>`);
@@ -387,16 +390,19 @@ export function renderMarkdown(raw: string): string {
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
 
   // Step 9: Markdown links [text](url)
+  // Regex uses negated character classes to prevent backtracking
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
   // Step 10: Blockquotes - merge consecutive lines into single blockquote
-  html = html.replace(/(^>\s*.+$(\r?\n^>\s*.+$)*)/gm, (match) => {
+  // Use [^\r\n]+ instead of .+ to prevent catastrophic backtracking
+  html = html.replace(/(^>\s*[^\r\n]+$(\r?\n^>\s*[^\r\n]+$)*)/gm, (match) => {
     const lines = match.split(/\r?\n/).map((line: string) => line.replace(/^>\s*/, ''));
     return `<blockquote>${lines.join(' ')}</blockquote>`;
   });
 
   // Step 11: Ordered lists
-  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+  // Use [^\r\n]+ instead of .+ to prevent catastrophic backtracking
+  html = html.replace(/^\d+\.\s+([^\r\n]+)$/gm, '<li>$1</li>');
 
   // Step 12: Unordered lists
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
