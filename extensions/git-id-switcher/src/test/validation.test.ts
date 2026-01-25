@@ -267,6 +267,37 @@ function testValidateIdentity(): void {
     );
   }
 
+  // Test 20: Icon exceeding max byte length (32) should fail
+  {
+    const longIcon: Identity = {
+      id: 'test',
+      name: 'Test User',
+      email: 'test@example.com',
+      icon: 'a'.repeat(33), // > 32 bytes
+    };
+    const result = validateIdentity(longIcon);
+    assert.strictEqual(result.valid, false, 'Icon exceeding max byte length should fail');
+    assert.ok(
+      result.errors.some(e => e.includes('icon') && e.includes('maximum length')),
+      'Error should mention icon max length'
+    );
+  }
+
+  // Test 21: Name exceeding max length (256) should fail
+  {
+    const longName: Identity = {
+      id: 'test',
+      name: 'a'.repeat(257), // > 256 chars
+      email: 'test@example.com',
+    };
+    const result = validateIdentity(longName);
+    assert.strictEqual(result.valid, false, 'Name exceeding max length should fail');
+    assert.ok(
+      result.errors.some(e => e.includes('name') && e.includes('256')),
+      'Error should mention name max length 256'
+    );
+  }
+
   console.log('✅ All validateIdentity tests passed!');
 }
 
