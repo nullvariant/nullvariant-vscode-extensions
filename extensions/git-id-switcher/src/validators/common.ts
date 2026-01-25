@@ -205,3 +205,153 @@ export function isValidEmail(email: string): boolean {
 export function isValidHex(value: string): boolean {
   return /^[A-Fa-f0-9]+$/.test(value);
 }
+
+// =============================================================================
+// SSH Host Validation
+// =============================================================================
+
+/**
+ * SSH host alias pattern (DNS-safe characters)
+ *
+ * Must start with alphanumeric, followed by alphanumeric, dots, underscores, or hyphens.
+ */
+export const SSH_HOST_PATTERN = '^[a-zA-Z0-9][a-zA-Z0-9._-]*$';
+
+/**
+ * SSH host alias regex
+ */
+export const SSH_HOST_REGEX = new RegExp(SSH_HOST_PATTERN);
+
+/**
+ * Validate SSH host alias format
+ *
+ * @param value - The SSH host alias to validate
+ * @returns true if format is valid
+ */
+export function isValidSshHost(value: string): boolean {
+  return SSH_HOST_REGEX.test(value);
+}
+
+// =============================================================================
+// GPG Key ID Validation
+// =============================================================================
+
+/**
+ * GPG key ID pattern (8-40 hex characters)
+ *
+ * GPG key IDs can be:
+ * - Short key ID: 8 characters (32 bits)
+ * - Long key ID: 16 characters (64 bits)
+ * - Full fingerprint: 40 characters (160 bits, SHA-1)
+ */
+export const GPG_KEY_PATTERN = '^[A-Fa-f0-9]{8,40}$';
+
+/**
+ * GPG key ID regex
+ */
+export const GPG_KEY_REGEX = new RegExp(GPG_KEY_PATTERN);
+
+/**
+ * Validate GPG key ID format
+ *
+ * Uses existing isValidHex() for hex character validation,
+ * combined with length check.
+ *
+ * @param value - The GPG key ID to validate
+ * @returns true if format is valid (8-40 hex characters)
+ */
+export function isValidGpgKeyId(value: string): boolean {
+  return value.length >= 8 && value.length <= 40 && isValidHex(value);
+}
+
+// =============================================================================
+// Identity ID Validation
+// =============================================================================
+
+/**
+ * Identity ID pattern (alphanumeric, underscores, hyphens)
+ *
+ * Used for identity configuration keys.
+ * Length validation is separate (via maxLength parameter).
+ */
+export const IDENTITY_ID_PATTERN = '^[a-zA-Z0-9_-]+$';
+
+/**
+ * Identity ID regex
+ */
+export const IDENTITY_ID_REGEX = new RegExp(IDENTITY_ID_PATTERN);
+
+/**
+ * Validate identity ID format and length
+ *
+ * @param value - The identity ID to validate
+ * @param maxLength - Maximum allowed length
+ * @returns true if format and length are valid
+ */
+export function isValidIdentityId(value: string, maxLength: number): boolean {
+  return value.length > 0 && value.length <= maxLength && IDENTITY_ID_REGEX.test(value);
+}
+
+// =============================================================================
+// Safe Text Validation (Shell Metacharacter Prevention)
+// =============================================================================
+
+/**
+ * Pattern to match safe text (no control chars or shell metacharacters)
+ *
+ * Note: Semicolon (;) is intentionally ALLOWED - valid in names like "Null;Variant"
+ *
+ * Blocked characters:
+ * - Control characters: \x00-\x1f, \x7f
+ * - Backtick: `
+ * - Dollar sign: $
+ * - Parentheses: ()
+ * - Braces: {}
+ * - Pipe: |
+ * - Ampersand: &
+ * - Angle brackets: <>
+ */
+export const SAFE_TEXT_PATTERN = '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$';
+
+/**
+ * Safe text regex
+ *
+ * The pattern string above is for JSON Schema validation.
+ * This regex is for runtime validation with the same pattern.
+ * Using regex literal (consistent with CONTROL_CHAR_REGEX_ALL above).
+ */
+// eslint-disable-next-line no-control-regex
+export const SAFE_TEXT_REGEX = /^[^\x00-\x1f\x7f`$(){}|&<>]+$/;
+
+/**
+ * Dangerous character patterns for validation (with descriptions)
+ *
+ * Used by inputValidator for detailed error messages.
+ * Each pattern includes a human-readable description for user feedback.
+ *
+ * Note: For simple boolean check, use `hasDangerousChars()` instead.
+ * This array is for cases where you need to report which specific
+ * dangerous pattern was detected.
+ */
+export const DANGEROUS_PATTERNS: ReadonlyArray<{ pattern: RegExp; description: string }> = [
+  { pattern: /[`$(){}|&<>]/, description: 'shell metacharacters' },
+  { pattern: /[\n\r]/, description: 'newline characters' },
+  { pattern: /\\x[0-9a-f]{2}/i, description: 'hex escape sequences' },
+  { pattern: /\0/, description: 'null bytes' },
+] as const;
+
+/**
+ * Check if text contains dangerous characters
+ *
+ * Uses SAFE_TEXT_REGEX for efficient single-pass validation.
+ * Returns true if text is empty or contains any blocked character.
+ *
+ * For detailed error messages identifying which pattern matched,
+ * iterate over DANGEROUS_PATTERNS instead.
+ *
+ * @param text - The text to check
+ * @returns true if text is empty or contains dangerous characters (unsafe for shell)
+ */
+export function hasDangerousChars(text: string): boolean {
+  return !SAFE_TEXT_REGEX.test(text);
+}

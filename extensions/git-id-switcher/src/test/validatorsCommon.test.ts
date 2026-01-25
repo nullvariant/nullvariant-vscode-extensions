@@ -13,9 +13,22 @@ import {
   hasInvisibleUnicode,
   isValidEmail,
   isValidHex,
+  isValidSshHost,
+  isValidGpgKeyId,
+  isValidIdentityId,
+  hasDangerousChars,
   INVISIBLE_CHARS,
   CONTROL_CHAR_REGEX_STRICT,
   CONTROL_CHAR_REGEX_ALL,
+  SSH_HOST_PATTERN,
+  SSH_HOST_REGEX,
+  GPG_KEY_PATTERN,
+  GPG_KEY_REGEX,
+  IDENTITY_ID_PATTERN,
+  IDENTITY_ID_REGEX,
+  SAFE_TEXT_PATTERN,
+  SAFE_TEXT_REGEX,
+  DANGEROUS_PATTERNS,
 } from '../validators/common';
 
 /**
@@ -212,7 +225,142 @@ function testConstants(): void {
   assert.ok(CONTROL_CHAR_REGEX_STRICT instanceof RegExp, 'CONTROL_CHAR_REGEX_STRICT should be a RegExp');
   assert.ok(CONTROL_CHAR_REGEX_ALL instanceof RegExp, 'CONTROL_CHAR_REGEX_ALL should be a RegExp');
 
+  // New pattern constants - verify types
+  assert.ok(typeof SSH_HOST_PATTERN === 'string', 'SSH_HOST_PATTERN should be a string');
+  assert.ok(SSH_HOST_REGEX instanceof RegExp, 'SSH_HOST_REGEX should be a RegExp');
+  assert.ok(typeof GPG_KEY_PATTERN === 'string', 'GPG_KEY_PATTERN should be a string');
+  assert.ok(GPG_KEY_REGEX instanceof RegExp, 'GPG_KEY_REGEX should be a RegExp');
+  assert.ok(typeof IDENTITY_ID_PATTERN === 'string', 'IDENTITY_ID_PATTERN should be a string');
+  assert.ok(IDENTITY_ID_REGEX instanceof RegExp, 'IDENTITY_ID_REGEX should be a RegExp');
+  assert.ok(typeof SAFE_TEXT_PATTERN === 'string', 'SAFE_TEXT_PATTERN should be a string');
+  assert.ok(SAFE_TEXT_REGEX instanceof RegExp, 'SAFE_TEXT_REGEX should be a RegExp');
+  assert.ok(Array.isArray(DANGEROUS_PATTERNS), 'DANGEROUS_PATTERNS should be an array');
+  assert.ok(DANGEROUS_PATTERNS.length > 0, 'DANGEROUS_PATTERNS should not be empty');
+
+  // Verify pattern values match expected (ensures consistency across refactoring)
+  assert.strictEqual(SSH_HOST_PATTERN, '^[a-zA-Z0-9][a-zA-Z0-9._-]*$', 'SSH_HOST_PATTERN value should match');
+  assert.strictEqual(GPG_KEY_PATTERN, '^[A-Fa-f0-9]{8,40}$', 'GPG_KEY_PATTERN value should match');
+  assert.strictEqual(IDENTITY_ID_PATTERN, '^[a-zA-Z0-9_-]+$', 'IDENTITY_ID_PATTERN value should match');
+
+  // Verify DANGEROUS_PATTERNS has expected number of patterns
+  assert.strictEqual(DANGEROUS_PATTERNS.length, 4, 'DANGEROUS_PATTERNS should have 4 patterns');
+
   console.log('✅ Constants tests passed!');
+}
+
+/**
+ * Test suite for isValidSshHost
+ */
+function testIsValidSshHost(): void {
+  console.log('Testing isValidSshHost...');
+
+  // Valid SSH hosts
+  assert.strictEqual(isValidSshHost('github'), true, 'Simple host name should pass');
+  assert.strictEqual(isValidSshHost('my-server'), true, 'Host with hyphen should pass');
+  assert.strictEqual(isValidSshHost('host.example.com'), true, 'Host with dots should pass');
+  assert.strictEqual(isValidSshHost('a123'), true, 'Alphanumeric host should pass');
+  assert.strictEqual(isValidSshHost('server_1'), true, 'Host with underscore should pass');
+  assert.strictEqual(isValidSshHost('A'), true, 'Single uppercase char should pass');
+  assert.strictEqual(isValidSshHost('0'), true, 'Single digit should pass');
+
+  // Invalid SSH hosts
+  assert.strictEqual(isValidSshHost(''), false, 'Empty string should fail');
+  assert.strictEqual(isValidSshHost('-start'), false, 'Host starting with hyphen should fail');
+  assert.strictEqual(isValidSshHost('.start'), false, 'Host starting with dot should fail');
+  assert.strictEqual(isValidSshHost('_start'), false, 'Host starting with underscore should fail');
+  assert.strictEqual(isValidSshHost('has space'), false, 'Host with space should fail');
+  assert.strictEqual(isValidSshHost('日本語'), false, 'Non-ASCII host should fail');
+  assert.strictEqual(isValidSshHost('host@domain'), false, 'Host with @ should fail');
+  assert.strictEqual(isValidSshHost('host:22'), false, 'Host with colon should fail');
+
+  console.log('✅ isValidSshHost tests passed!');
+}
+
+/**
+ * Test suite for isValidGpgKeyId
+ */
+function testIsValidGpgKeyId(): void {
+  console.log('Testing isValidGpgKeyId...');
+
+  // Valid GPG key IDs
+  assert.strictEqual(isValidGpgKeyId('ABCD1234'), true, '8-char hex should pass');
+  assert.strictEqual(isValidGpgKeyId('abcd1234'), true, '8-char lowercase hex should pass');
+  assert.strictEqual(isValidGpgKeyId('ABCD1234ABCD1234'), true, '16-char hex should pass');
+  assert.strictEqual(isValidGpgKeyId('ABCD1234ABCD1234ABCD1234ABCD1234ABCD1234'), true, '40-char hex should pass');
+  assert.strictEqual(isValidGpgKeyId('ABCD12345'), true, '9-char hex should pass');
+
+  // Boundary cases
+  assert.strictEqual(isValidGpgKeyId('ABCD123'), false, '7-char hex should fail (too short)');
+  assert.strictEqual(isValidGpgKeyId('abcd1234abcd1234abcd1234abcd1234abcd12345'), false, '41-char hex should fail (too long)');
+
+  // Invalid GPG key IDs
+  assert.strictEqual(isValidGpgKeyId(''), false, 'Empty string should fail');
+  assert.strictEqual(isValidGpgKeyId('GHIJKLMN'), false, 'Non-hex chars should fail');
+  assert.strictEqual(isValidGpgKeyId('ABCD 1234'), false, 'Hex with space should fail');
+  assert.strictEqual(isValidGpgKeyId('ABCD-1234'), false, 'Hex with hyphen should fail');
+
+  console.log('✅ isValidGpgKeyId tests passed!');
+}
+
+/**
+ * Test suite for isValidIdentityId
+ */
+function testIsValidIdentityId(): void {
+  console.log('Testing isValidIdentityId...');
+
+  // Valid identity IDs
+  assert.strictEqual(isValidIdentityId('work', 64), true, 'Simple ID should pass');
+  assert.strictEqual(isValidIdentityId('personal-github', 64), true, 'ID with hyphen should pass');
+  assert.strictEqual(isValidIdentityId('id_123', 64), true, 'ID with underscore and digits should pass');
+  assert.strictEqual(isValidIdentityId('A', 64), true, 'Single char ID should pass');
+  assert.strictEqual(isValidIdentityId('a'.repeat(64), 64), true, 'ID at max length should pass');
+
+  // Length validation
+  assert.strictEqual(isValidIdentityId('a'.repeat(65), 64), false, 'ID exceeding max length should fail');
+  assert.strictEqual(isValidIdentityId('abc', 2), false, 'ID exceeding custom max length should fail');
+  assert.strictEqual(isValidIdentityId('ab', 2), true, 'ID at custom max length should pass');
+
+  // Invalid identity IDs
+  assert.strictEqual(isValidIdentityId('', 64), false, 'Empty string should fail');
+  assert.strictEqual(isValidIdentityId('has space', 64), false, 'ID with space should fail');
+  assert.strictEqual(isValidIdentityId('日本語', 64), false, 'Non-ASCII ID should fail');
+  assert.strictEqual(isValidIdentityId('has.dot', 64), false, 'ID with dot should fail');
+  assert.strictEqual(isValidIdentityId('has@at', 64), false, 'ID with @ should fail');
+
+  console.log('✅ isValidIdentityId tests passed!');
+}
+
+/**
+ * Test suite for hasDangerousChars
+ */
+function testHasDangerousChars(): void {
+  console.log('Testing hasDangerousChars...');
+
+  // Dangerous characters (should return true)
+  assert.strictEqual(hasDangerousChars('`cmd`'), true, 'Backtick command should be dangerous');
+  assert.strictEqual(hasDangerousChars('$(cmd)'), true, 'Command substitution should be dangerous');
+  assert.strictEqual(hasDangerousChars('a|b'), true, 'Pipe should be dangerous');
+  assert.strictEqual(hasDangerousChars('a&b'), true, 'Ampersand should be dangerous');
+  assert.strictEqual(hasDangerousChars('a\nb'), true, 'Newline should be dangerous');
+  assert.strictEqual(hasDangerousChars('a\rb'), true, 'Carriage return should be dangerous');
+  assert.strictEqual(hasDangerousChars('\x00'), true, 'Null byte should be dangerous');
+  assert.strictEqual(hasDangerousChars('a<b'), true, 'Less than should be dangerous');
+  assert.strictEqual(hasDangerousChars('a>b'), true, 'Greater than should be dangerous');
+  assert.strictEqual(hasDangerousChars('a{b}'), true, 'Braces should be dangerous');
+  assert.strictEqual(hasDangerousChars('$VAR'), true, 'Dollar sign should be dangerous');
+
+  // Safe characters (should return false)
+  assert.strictEqual(hasDangerousChars('normal text'), false, 'Normal text should be safe');
+  assert.strictEqual(hasDangerousChars('Null;Variant'), false, 'Semicolon should be allowed');
+  assert.strictEqual(hasDangerousChars('hello-world_123'), false, 'Alphanumeric with hyphen/underscore should be safe');
+  assert.strictEqual(hasDangerousChars('user@example.com'), false, 'Email format should be safe');
+  assert.strictEqual(hasDangerousChars('/path/to/file'), false, 'Path should be safe');
+  assert.strictEqual(hasDangerousChars('value=123'), false, 'Equals sign should be safe');
+
+  // Empty string edge case - empty input is rejected as unsafe
+  assert.strictEqual(hasDangerousChars(''), true, 'Empty string should be dangerous (no valid content)');
+
+  console.log('✅ hasDangerousChars tests passed!');
 }
 
 /**
@@ -229,6 +377,10 @@ export function runValidatorsCommonTests(): void {
     testHasInvisibleUnicode();
     testIsValidEmail();
     testIsValidHex();
+    testIsValidSshHost();
+    testIsValidGpgKeyId();
+    testIsValidIdentityId();
+    testHasDangerousChars();
     testConstants();
 
     console.log('\n✅ All common validators tests passed!\n');
