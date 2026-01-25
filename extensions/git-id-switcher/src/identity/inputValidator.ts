@@ -9,38 +9,28 @@
  */
 
 import { Identity } from './identity';
-import { isValidEmail, hasPathTraversal } from '../validators/common';
+import {
+  isValidEmail,
+  hasPathTraversal,
+  isValidIdentityId,
+  GPG_KEY_REGEX,
+  SSH_HOST_REGEX,
+  DANGEROUS_PATTERNS,
+} from '../validators/common';
+import {
+  MAX_ID_LENGTH,
+  MAX_EMAIL_LENGTH,
+  MAX_SSH_HOST_LENGTH,
+  MAX_NAME_LENGTH,
+  MAX_SERVICE_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_ICON_BYTE_LENGTH,
+} from '../core/constants';
 
 export interface ValidationResult {
   valid: boolean;
   errors: string[];
 }
-
-/**
- * Dangerous character patterns that could indicate injection attempts
- *
- * Even though we use execFile(), defense-in-depth requires input validation.
- * These patterns catch obvious attack attempts early.
- */
-const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; description: string }> = [
-  // Note: execFile() doesn't invoke shell, so most metacharacters are safe.
-  // We still block the most dangerous ones as defense-in-depth.
-  // Semicolon (;) is intentionally allowed - valid in names like "Null;Variant"
-  { pattern: /[`$(){}|&<>]/, description: 'shell metacharacters' },
-  { pattern: /[\n\r]/, description: 'newline characters' },
-  { pattern: /\\x[0-9a-f]{2}/i, description: 'hex escape sequences' },
-  { pattern: /\0/, description: 'null bytes' },
-];
-
-/**
- * GPG Key ID pattern (8-40 hex characters)
- */
-const GPG_KEY_REGEX = /^[A-Fa-f0-9]{8,40}$/;
-
-/**
- * SSH host alias pattern (DNS-safe characters)
- */
-const SSH_HOST_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
 
 /**
  * Validate a string field for dangerous patterns
@@ -76,8 +66,8 @@ function validateEmail(email: string | undefined, errors: string[]): void {
 
   // Additional length check (RFC 5321)
   // Note: isValidEmail already checks for 254 chars, but identity config allows 320
-  if (email.length > 320) {
-    errors.push('email: exceeds maximum length (320 characters)');
+  if (email.length > MAX_EMAIL_LENGTH) {
+    errors.push(`email: exceeds maximum length (${MAX_EMAIL_LENGTH} characters)`);
   }
 }
 
@@ -136,8 +126,8 @@ function validateSshHost(sshHost: string | undefined, errors: string[]): void {
   }
 
   // DNS maximum label length
-  if (sshHost.length > 253) {
-    errors.push('sshHost: exceeds maximum length (253 characters)');
+  if (sshHost.length > MAX_SSH_HOST_LENGTH) {
+    errors.push(`sshHost: exceeds maximum length (${MAX_SSH_HOST_LENGTH} characters)`);
   }
 }
 
@@ -174,8 +164,8 @@ export function validateIdentity(identity: Identity): ValidationResult {
   }
 
   // ID validation (alphanumeric, underscores, hyphens only)
-  if (identity.id && !/^[a-zA-Z0-9_-]{1,64}$/.test(identity.id)) {
-    errors.push('id: must be 1-64 alphanumeric characters, underscores, or hyphens');
+  if (identity.id && !isValidIdentityId(identity.id, MAX_ID_LENGTH)) {
+    errors.push(`id: must be 1-${MAX_ID_LENGTH} alphanumeric characters, underscores, or hyphens`);
   }
 
   // Text field validation (dangerous patterns)
@@ -192,17 +182,17 @@ export function validateIdentity(identity: Identity): ValidationResult {
   validateSshHost(identity.sshHost, errors);
 
   // Length limits
-  if (identity.name && identity.name.length > 256) {
-    errors.push('name: exceeds maximum length (256 characters)');
+  if (identity.name && identity.name.length > MAX_NAME_LENGTH) {
+    errors.push(`name: exceeds maximum length (${MAX_NAME_LENGTH} characters)`);
   }
-  if (identity.service && identity.service.length > 64) {
-    errors.push('service: exceeds maximum length (64 characters)');
+  if (identity.service && identity.service.length > MAX_SERVICE_LENGTH) {
+    errors.push(`service: exceeds maximum length (${MAX_SERVICE_LENGTH} characters)`);
   }
-  if (identity.description && identity.description.length > 500) {
-    errors.push('description: exceeds maximum length (500 characters)');
+  if (identity.description && identity.description.length > MAX_DESCRIPTION_LENGTH) {
+    errors.push(`description: exceeds maximum length (${MAX_DESCRIPTION_LENGTH} characters)`);
   }
-  if (identity.icon && identity.icon.length > 8) {
-    // Emoji can be 1-4 bytes, allowing up to 8 for composed emoji
+  if (identity.icon && identity.icon.length > MAX_ICON_BYTE_LENGTH) {
+    // MAX_ICON_BYTE_LENGTH allows for complex composed emoji (e.g., family emoji with ZWJ sequences)
     errors.push('icon: exceeds maximum length');
   }
 
@@ -249,16 +239,21 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
  *
  * Used for SSH key paths and other file system operations.
  *
+ * @deprecated Use isSecurePath from security/pathValidator instead.
+ * This function is kept for backwards compatibility and maintains the original
+ * behavior of checking for path traversal and shell metacharacters.
+ *
  * @param path - The path to check
  * @returns true if the path appears safe
  */
 export function isPathSafe(path: string): boolean {
-  // No path traversal
+  // Original check: path traversal detection (simple check for "..")
+  // This is stricter than isSecurePath's traversal detection
   if (hasPathTraversal(path)) {
     return false;
   }
 
-  // No shell metacharacters
+  // Original check: shell metacharacters
   for (const { pattern } of DANGEROUS_PATTERNS) {
     if (pattern.test(path)) {
       return false;

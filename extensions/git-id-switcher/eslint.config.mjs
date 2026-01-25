@@ -70,14 +70,12 @@ export default tseslint.config(
       "no-magic-numbers": "off",
     },
   },
-  // Temporary: existing files with patterns/magic numbers to be refactored in Phase 1-3
+  // Temporary: existing files with patterns/magic numbers to be refactored
   // Remove files from this list after refactoring (Issue-00071)
   {
     files: [
       "**/core/errors.ts",
       "**/core/submodule.ts",
-      "**/identity/inputValidator.ts",
-      "**/identity/configSchema.ts",
       "**/logging/fileLogWriter.ts",
       "**/logging/logTypes.ts",
       "**/security/binaryResolver.ts",

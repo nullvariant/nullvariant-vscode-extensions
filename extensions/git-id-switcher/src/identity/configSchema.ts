@@ -8,8 +8,19 @@
  */
 
 import { isSingleGrapheme } from '../ui/displayLimits';
-import { isValidEmail, isValidHex } from '../validators/common';
-import { PATH_MAX } from '../core/constants';
+import { isValidEmail, isValidHex, SSH_HOST_PATTERN } from '../validators/common';
+import {
+  PATH_MAX,
+  MAX_ID_LENGTH,
+  MAX_NAME_LENGTH,
+  MAX_SERVICE_LENGTH,
+  MAX_EMAIL_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_SSH_HOST_LENGTH,
+  MAX_ICON_BYTE_LENGTH,
+  MIN_GPG_KEY_LENGTH,
+  MAX_GPG_KEY_LENGTH,
+} from '../core/constants';
 
 /**
  * Property schema definition
@@ -37,13 +48,13 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     description: 'Unique identifier (alphanumeric, underscores, hyphens)',
     required: true,
     minLength: 1,
-    maxLength: 64,
+    maxLength: MAX_ID_LENGTH,
     pattern: '^[a-zA-Z0-9_-]+$',
   },
   icon: {
     type: 'string',
     description: 'Display emoji (single emoji character)',
-    maxLength: 32, // Allow for complex composed emoji (byte length)
+    maxLength: MAX_ICON_BYTE_LENGTH, // Allow for complex composed emoji (byte length)
     format: 'single-grapheme', // Validate as single visible character
   },
   name: {
@@ -51,7 +62,7 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     description: 'Git user.name (pure name without service info)',
     required: true,
     minLength: 1,
-    maxLength: 256,
+    maxLength: MAX_NAME_LENGTH,
     // Disallow control characters and shell metacharacters
     // Note: Semicolon (;) is intentionally ALLOWED - valid in names like "Null;Variant"
     pattern: '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$',
@@ -59,7 +70,7 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
   service: {
     type: 'string',
     description: 'Git hosting service (e.g., GitHub, GitLab, Bitbucket)',
-    maxLength: 64,
+    maxLength: MAX_SERVICE_LENGTH,
     // Allow Unicode (for i18n) but block control characters and shell metacharacters
     // Same pattern as 'name' field for consistency
     pattern: '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$',
@@ -68,13 +79,13 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     type: 'string',
     description: 'Git user.email',
     required: true,
-    maxLength: 320, // RFC 5321 max email length
+    maxLength: MAX_EMAIL_LENGTH, // RFC 5321 max email length
     format: 'email',
   },
   description: {
     type: 'string',
     description: 'Optional description of this identity',
-    maxLength: 500,
+    maxLength: MAX_DESCRIPTION_LENGTH,
     // Allow Unicode (for i18n) but block control characters and shell metacharacters
     // Same pattern as 'name' field for consistency
     pattern: '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$',
@@ -89,15 +100,15 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
   sshHost: {
     type: 'string',
     description: 'SSH config host alias',
-    maxLength: 253, // DNS max length
+    maxLength: MAX_SSH_HOST_LENGTH, // DNS max length
     // DNS-safe characters only
-    pattern: '^[a-zA-Z0-9][a-zA-Z0-9._-]*$',
+    pattern: SSH_HOST_PATTERN,
   },
   gpgKeyId: {
     type: 'string',
     description: 'GPG key ID (hex)',
-    minLength: 8,
-    maxLength: 40, // SHA-1 fingerprint length
+    minLength: MIN_GPG_KEY_LENGTH,
+    maxLength: MAX_GPG_KEY_LENGTH, // SHA-1 fingerprint length
     format: 'hex',
   },
 } as const;
