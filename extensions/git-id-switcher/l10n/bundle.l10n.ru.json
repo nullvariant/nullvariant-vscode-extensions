@@ -41,7 +41,7 @@
   "Git user.name": "Git user.name",
   "Git user.email": "Git user.email",
   "Edit Identity: Select": "Редактировать идентификатор: Выбор",
-  "Edit Identity: Select Field": "Редактировать идентификатор: Выбор поля",
+  "Edit Identity: Select Field": "Редактировать идентификатор: Выберите что редактировать",
   "Edit Identity: {0}": "Редактировать идентификатор: {0}",
   "Name": "Имя",
   "Email": "Email",

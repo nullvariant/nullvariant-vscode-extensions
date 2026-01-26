@@ -41,7 +41,7 @@
   "Git user.name": "Git user.name",
   "Git user.email": "Git user.email",
   "Edit Identity: Select": "Kimliği Düzenle: Seç",
-  "Edit Identity: Select Field": "Kimliği Düzenle: Alan Seç",
+  "Edit Identity: Select Field": "Kimliği Düzenle: Düzenlenecek öğeyi seçin",
   "Edit Identity: {0}": "Kimliği Düzenle: {0}",
   "Name": "Ad",
   "Email": "E-posta",

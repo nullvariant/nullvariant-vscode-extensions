@@ -41,7 +41,7 @@
   "Git user.name": "Git user.name",
   "Git user.email": "Git user.email",
   "Edit Identity: Select": "Identitás szerkesztése: Kiválasztás",
-  "Edit Identity: Select Field": "Identitás szerkesztése: Mező kiválasztása",
+  "Edit Identity: Select Field": "Identitás szerkesztése: Válassza ki a szerkesztendő elemet",
   "Edit Identity: {0}": "Identitás szerkesztése: {0}",
   "Name": "Név",
   "Email": "E-mail",

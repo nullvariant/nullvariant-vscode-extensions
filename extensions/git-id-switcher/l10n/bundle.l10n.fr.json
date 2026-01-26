@@ -41,7 +41,7 @@
   "Git user.name": "Git user.name",
   "Git user.email": "Git user.email",
   "Edit Identity: Select": "Modifier l'identité : Sélectionner",
-  "Edit Identity: Select Field": "Modifier l'identité : Sélectionner le champ",
+  "Edit Identity: Select Field": "Modifier l'identité : Sélectionner la propriété à modifier",
   "Edit Identity: {0}": "Modifier l'identité : {0}",
   "Name": "Nom",
   "Email": "E-mail",
