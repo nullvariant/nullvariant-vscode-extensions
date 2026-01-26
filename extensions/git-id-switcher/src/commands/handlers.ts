@@ -5,14 +5,30 @@
  * - Selecting identity
  * - Showing current identity
  * - Welcome notification
+ * - Managing identities (Add/Edit/Delete)
  *
  * @module commands/handlers
  */
 
 import * as vscode from 'vscode';
 import { getVSCode } from '../core/vscodeLoader';
-import { Identity, getIdentityLabel, deleteIdentityFromConfig } from '../identity/identity';
-import { showIdentityQuickPick, showDeleteIdentityQuickPick, showErrorNotification } from '../ui/identityPicker';
+import {
+  Identity,
+  getIdentityLabel,
+  getIdentitiesWithValidation,
+  deleteIdentityFromConfig,
+  addIdentityToConfig,
+} from '../identity/identity';
+import {
+  showIdentityQuickPick,
+  showDeleteIdentityQuickPick,
+  showErrorNotification,
+} from '../ui/identityPicker';
+import {
+  showManageMenu,
+  showAddIdentityWizard,
+  showEditIdentityWizard,
+} from '../ui/identityManager';
 import { requireWorkspaceTrust } from '../core/workspaceTrust';
 import { getUserSafeMessage, isFatalError } from '../core/errors';
 import { IdentityStatusBar } from '../ui/identityStatusBar';
@@ -43,6 +59,12 @@ export async function selectIdentityCommand(
       return;
     }
 
+    // Handle manage option
+    if (selectedIdentity === 'manage') {
+      await handleManageIdentities(context, statusBar);
+      return;
+    }
+
     if (selectedIdentity.id === currentIdentity?.id) {
       // Same identity selected, no change needed
       vscode.window.showInformationMessage(
@@ -69,6 +91,38 @@ export async function selectIdentityCommand(
     if (isFatalError(error)) {
       throw error;
     }
+  }
+}
+
+/**
+ * Handle the manage identities submenu.
+ *
+ * @param context - VS Code extension context
+ * @param statusBar - Identity status bar instance
+ */
+async function handleManageIdentities(
+  context: vscode.ExtensionContext,
+  statusBar: IdentityStatusBar
+): Promise<void> {
+  const identities = getIdentitiesWithValidation();
+  const hasIdentities = identities.length > 0;
+
+  const action = await showManageMenu(hasIdentities);
+
+  if (!action) {
+    return;
+  }
+
+  switch (action) {
+    case 'add':
+      await handleAddIdentity();
+      break;
+    case 'edit':
+      await handleEditIdentity(statusBar, context);
+      break;
+    case 'delete':
+      await handleDeleteIdentity(context, statusBar);
+      break;
   }
 }
 
@@ -104,6 +158,104 @@ export async function showWelcomeNotification(): Promise<void> {
       'workbench.action.openSettings',
       'gitIdSwitcher.identities'
     );
+  }
+}
+
+/**
+ * Handle the add identity command.
+ *
+ * Uses vscodeLoader for testability (allows mocking in E2E tests).
+ *
+ * Flow:
+ * 1. Show add identity wizard
+ * 2. Add identity to config
+ * 3. Show success notification
+ */
+export async function handleAddIdentity(): Promise<void> {
+  const vs = getVSCode();
+  if (!vs) {
+    return;
+  }
+
+  // SECURITY: Block command execution in untrusted workspaces
+  if (!requireWorkspaceTrust()) {
+    return;
+  }
+
+  try {
+    const newIdentity = await showAddIdentityWizard();
+
+    if (!newIdentity) {
+      // User cancelled
+      return;
+    }
+
+    await addIdentityToConfig(newIdentity);
+
+    vs.window.showInformationMessage(
+      vs.l10n.t("Identity '{0}' has been created.", newIdentity.id)
+    );
+  } catch (error) {
+    // SECURITY: Use getUserSafeMessage to prevent information leakage
+    const safeMessage = getUserSafeMessage(error);
+    showErrorNotification(vs.l10n.t('Failed to add identity: {0}', safeMessage));
+
+    // Propagate fatal errors (security violations)
+    if (isFatalError(error)) {
+      throw error;
+    }
+  }
+}
+
+/**
+ * Handle the edit identity command.
+ *
+ * Uses vscodeLoader for testability (allows mocking in E2E tests).
+ *
+ * Flow:
+ * 1. Show edit identity wizard (handles all steps internally)
+ * 2. Update status bar if current identity was edited
+ *
+ * @param statusBar - Identity status bar instance for UI update
+ * @param context - VS Code extension context
+ */
+export async function handleEditIdentity(
+  statusBar: IdentityStatusBar,
+  context: vscode.ExtensionContext
+): Promise<void> {
+  const vs = getVSCode();
+  if (!vs) {
+    return;
+  }
+
+  // SECURITY: Block command execution in untrusted workspaces
+  if (!requireWorkspaceTrust()) {
+    return;
+  }
+
+  try {
+    // The wizard handles all steps and updates internally
+    await showEditIdentityWizard();
+
+    // Refresh status bar to reflect any changes to current identity
+    const currentIdentityId = context.workspaceState.get<string>('currentIdentityId');
+    if (currentIdentityId) {
+      const updatedIdentity = getIdentitiesWithValidation().find(
+        i => i.id === currentIdentityId
+      );
+      if (updatedIdentity) {
+        statusBar.setIdentity(updatedIdentity);
+      }
+    }
+  } catch (error) {
+    // SECURITY: Use getUserSafeMessage to prevent information leakage
+    const safeMessage = getUserSafeMessage(error);
+    showErrorNotification(vs.l10n.t('Failed to edit identity: {0}', safeMessage));
+
+    // Propagate fatal errors (security violations)
+    if (isFatalError(error)) {
+      throw error;
+    }
   }
 }
 

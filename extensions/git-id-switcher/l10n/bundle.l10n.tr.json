@@ -58,5 +58,16 @@
   "(none)": "(yok)",
   "Clear": "Temizle",
   "(cannot be changed)": "(değiştirilemez)",
-  "e.g., GitHub, GitLab, Bitbucket": "örn. GitHub, GitLab, Bitbucket"
+  "e.g., GitHub, GitLab, Bitbucket": "örn. GitHub, GitLab, Bitbucket",
+  "ID cannot be empty": "Kimlik boş olamaz",
+  "Name is too long (max {0} characters)": "Ad çok uzun (maks. {0} karakter)",
+  "Email is too long (max {0} characters)": "E-posta çok uzun (maks. {0} karakter)",
+  "Email cannot be empty": "E-posta boş olamaz",
+  "Leave empty to clear": "Temizlemek için boş bırakın",
+  "Emoji icon (e.g., 👤, 🏠)": "Emoji simgesi (örn. 👤, 🏠)",
+  "Short description": "Kısa açıklama",
+  "Select an action": "Bir eylem seçin",
+  "Select identity to edit": "Düzenlenecek kimliği seçin",
+  "Failed to add identity: {0}": "Kimlik eklenemedi: {0}",
+  "Failed to edit identity: {0}": "Kimlik düzenlenemedi: {0}"
 }

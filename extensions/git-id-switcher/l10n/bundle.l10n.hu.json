@@ -58,5 +58,16 @@
   "(none)": "(nincs)",
   "Clear": "Törlés",
   "(cannot be changed)": "(nem módosítható)",
-  "e.g., GitHub, GitLab, Bitbucket": "pl. GitHub, GitLab, Bitbucket"
+  "e.g., GitHub, GitLab, Bitbucket": "pl. GitHub, GitLab, Bitbucket",
+  "ID cannot be empty": "Az ID nem lehet üres",
+  "Name is too long (max {0} characters)": "A név túl hosszú (max {0} karakter)",
+  "Email is too long (max {0} characters)": "Az e-mail túl hosszú (max {0} karakter)",
+  "Email cannot be empty": "Az e-mail nem lehet üres",
+  "Leave empty to clear": "Hagyja üresen a törléshez",
+  "Emoji icon (e.g., 👤, 🏠)": "Emoji ikon (pl. 👤, 🏠)",
+  "Short description": "Rövid leírás",
+  "Select an action": "Válasszon műveletet",
+  "Select identity to edit": "Válassza ki a szerkesztendő identitást",
+  "Failed to add identity: {0}": "Nem sikerült hozzáadni az identitást: {0}",
+  "Failed to edit identity: {0}": "Nem sikerült szerkeszteni az identitást: {0}"
 }

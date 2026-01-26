@@ -58,5 +58,16 @@
   "(none)": "(無)",
   "Clear": "清除",
   "(cannot be changed)": "(無法變更)",
-  "e.g., GitHub, GitLab, Bitbucket": "例如: GitHub, GitLab, Bitbucket"
+  "e.g., GitHub, GitLab, Bitbucket": "例如: GitHub, GitLab, Bitbucket",
+  "ID cannot be empty": "ID不能為空",
+  "Name is too long (max {0} characters)": "名稱過長（最多{0}個字元）",
+  "Email is too long (max {0} characters)": "電子郵件過長（最多{0}個字元）",
+  "Email cannot be empty": "電子郵件不能為空",
+  "Leave empty to clear": "留空以清除",
+  "Emoji icon (e.g., 👤, 🏠)": "表情圖示（例如：👤, 🏠）",
+  "Short description": "簡短描述",
+  "Select an action": "選擇操作",
+  "Select identity to edit": "選擇要編輯的身分",
+  "Failed to add identity: {0}": "新增身分失敗: {0}",
+  "Failed to edit identity: {0}": "編輯身分失敗: {0}"
 }

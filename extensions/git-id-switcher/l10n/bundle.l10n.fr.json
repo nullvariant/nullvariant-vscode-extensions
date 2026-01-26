@@ -58,5 +58,16 @@
   "(none)": "(aucun)",
   "Clear": "Effacer",
   "(cannot be changed)": "(ne peut pas être modifié)",
-  "e.g., GitHub, GitLab, Bitbucket": "ex. GitHub, GitLab, Bitbucket"
+  "e.g., GitHub, GitLab, Bitbucket": "ex. GitHub, GitLab, Bitbucket",
+  "ID cannot be empty": "L'ID ne peut pas être vide",
+  "Name is too long (max {0} characters)": "Le nom est trop long (max {0} caractères)",
+  "Email is too long (max {0} characters)": "L'e-mail est trop long (max {0} caractères)",
+  "Email cannot be empty": "L'e-mail ne peut pas être vide",
+  "Leave empty to clear": "Laisser vide pour effacer",
+  "Emoji icon (e.g., 👤, 🏠)": "Icône emoji (ex: 👤, 🏠)",
+  "Short description": "Description courte",
+  "Select an action": "Sélectionner une action",
+  "Select identity to edit": "Sélectionner l'identité à modifier",
+  "Failed to add identity: {0}": "Échec de l'ajout de l'identité: {0}",
+  "Failed to edit identity: {0}": "Échec de la modification de l'identité: {0}"
 }

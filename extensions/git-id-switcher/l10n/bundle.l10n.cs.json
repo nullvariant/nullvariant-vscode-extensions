@@ -58,5 +58,16 @@
   "(none)": "(žádné)",
   "Clear": "Vymazat",
   "(cannot be changed)": "(nelze změnit)",
-  "e.g., GitHub, GitLab, Bitbucket": "např. GitHub, GitLab, Bitbucket"
+  "e.g., GitHub, GitLab, Bitbucket": "např. GitHub, GitLab, Bitbucket",
+  "ID cannot be empty": "ID nemůže být prázdné",
+  "Name is too long (max {0} characters)": "Jméno je příliš dlouhé (max {0} znaků)",
+  "Email is too long (max {0} characters)": "E-mail je příliš dlouhý (max {0} znaků)",
+  "Email cannot be empty": "E-mail nemůže být prázdný",
+  "Leave empty to clear": "Ponechte prázdné pro vymazání",
+  "Emoji icon (e.g., 👤, 🏠)": "Ikona emoji (např. 👤, 🏠)",
+  "Short description": "Krátký popis",
+  "Select an action": "Vyberte akci",
+  "Select identity to edit": "Vyberte identitu k úpravě",
+  "Failed to add identity: {0}": "Nepodařilo se přidat identitu: {0}",
+  "Failed to edit identity: {0}": "Nepodařilo se upravit identitu: {0}"
 }

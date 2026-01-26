@@ -58,5 +58,16 @@
   "(none)": "(없음)",
   "Clear": "지우기",
   "(cannot be changed)": "(변경 불가)",
-  "e.g., GitHub, GitLab, Bitbucket": "예: GitHub, GitLab, Bitbucket"
+  "e.g., GitHub, GitLab, Bitbucket": "예: GitHub, GitLab, Bitbucket",
+  "ID cannot be empty": "ID는 비어 있을 수 없습니다",
+  "Name is too long (max {0} characters)": "이름이 너무 깁니다 (최대 {0}자)",
+  "Email is too long (max {0} characters)": "이메일이 너무 깁니다 (최대 {0}자)",
+  "Email cannot be empty": "이메일은 비어 있을 수 없습니다",
+  "Leave empty to clear": "비우려면 빈칸으로 두세요",
+  "Emoji icon (e.g., 👤, 🏠)": "이모지 아이콘 (예: 👤, 🏠)",
+  "Short description": "간단한 설명",
+  "Select an action": "작업 선택",
+  "Select identity to edit": "편집할 ID 선택",
+  "Failed to add identity: {0}": "ID 추가 실패: {0}",
+  "Failed to edit identity: {0}": "ID 편집 실패: {0}"
 }
