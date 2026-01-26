@@ -64,6 +64,11 @@
         "command": "git-id-switcher.showDocumentation",
         "title": "%command.showDocumentation%",
         "category": "Git ID Switcher"
+      },
+      {
+        "command": "git-id-switcher.deleteIdentity",
+        "title": "%command.deleteIdentity%",
+        "category": "Git ID Switcher"
       }
     ],
     "configuration": [

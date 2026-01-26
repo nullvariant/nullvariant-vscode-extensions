@@ -4,6 +4,7 @@
   "command.selectIdentity": "选择身份",
   "command.showCurrentIdentity": "显示当前身份",
   "command.showDocumentation": "显示文档",
+  "command.deleteIdentity": "删除身份",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: 身份管理",
   "config.category.submodule": "Git ID Switcher: 子模块",

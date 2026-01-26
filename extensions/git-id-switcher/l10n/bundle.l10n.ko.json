@@ -24,5 +24,11 @@
   "Git ID Switcher: {0}": "Git ID Switcher: {0}",
   "Cancel": "취소",
   "Internal document not found. Open on GitHub?": "내부 문서를 찾을 수 없습니다. GitHub에서 열까요?",
-  "Open on GitHub": "GitHub에서 열기"
+  "Open on GitHub": "GitHub에서 열기",
+  "Select identity to delete": "삭제할 ID 선택",
+  "Are you sure you want to delete '{0}'?": "'{0}'을(를) 삭제하시겠습니까?",
+  "'{0}' is your current identity. Delete anyway?": "'{0}'은(는) 현재 사용 중인 ID입니다. 그래도 삭제하시겠습니까?",
+  "Identity '{0}' has been deleted.": "ID '{0}'이(가) 삭제되었습니다.",
+  "Failed to delete identity: {0}": "ID 삭제 실패: {0}",
+  "Delete": "삭제"
 }
