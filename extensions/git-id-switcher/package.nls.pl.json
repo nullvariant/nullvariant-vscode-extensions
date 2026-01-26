@@ -4,6 +4,7 @@
   "command.selectIdentity": "Wybierz tożsamość",
   "command.showCurrentIdentity": "Pokaż bieżącą tożsamość",
   "command.showDocumentation": "Pokaż dokumentację",
+  "command.deleteIdentity": "Usuń tożsamość",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Tożsamość",
   "config.category.submodule": "Git ID Switcher: Submoduł",
