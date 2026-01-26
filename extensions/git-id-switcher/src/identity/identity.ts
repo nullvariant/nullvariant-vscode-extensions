@@ -3,9 +3,11 @@
  *
  * Identities are loaded from VS Code settings, not hardcoded.
  * Each identity represents a Git persona with optional SSH/GPG keys.
+ *
+ * Uses vscodeLoader for testability (allows mocking in E2E tests).
  */
 
-import * as vscode from 'vscode';
+import { getVSCode } from '../core/vscodeLoader';
 import { validateIdentitySchema } from './configSchema';
 import { securityLogger } from '../security/securityLogger';
 import { MAX_IDENTITIES, MAX_ID_LENGTH } from '../core/constants';
@@ -53,7 +55,11 @@ export interface Identity {
  * Use getIdentitiesWithValidation() for security-critical code paths.
  */
 export function getIdentities(): Identity[] {
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const vs = getVSCode();
+  if (!vs) {
+    return [];
+  }
+  const config = vs.workspace.getConfiguration('gitIdSwitcher');
   const identities = config.get<Identity[]>('identities', []);
   return identities;
 }
@@ -67,7 +73,12 @@ export function getIdentities(): Identity[] {
  * @returns Array of valid identities (invalid ones are filtered out)
  */
 export function getIdentitiesWithValidation(): Identity[] {
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const vs = getVSCode();
+  if (!vs) {
+    return [];
+  }
+
+  const config = vs.workspace.getConfiguration('gitIdSwitcher');
   const rawIdentities = config.get<unknown[]>('identities', []);
 
   // Type check: must be an array
@@ -148,10 +159,10 @@ export function getIdentitiesWithValidation(): Identity[] {
     hasShownValidationError = true;
 
     const message = invalidIndices.length === 1
-      ? vscode.l10n.t(
+      ? vs.l10n.t(
           'Git ID Switcher: 1 identity configuration is invalid and was skipped. Check the settings.'
         )
-      : vscode.l10n.t(
+      : vs.l10n.t(
           'Git ID Switcher: {0} identity configurations are invalid and were skipped. Check the settings.',
           invalidIndices.length
         );
@@ -159,11 +170,11 @@ export function getIdentitiesWithValidation(): Identity[] {
     // Fire and forget: notification is non-blocking
     // User can dismiss or open settings as needed
     // Note: VS Code's Thenable doesn't have .catch(), so we use .then(onFulfilled, onRejected)
-    vscode.window.showWarningMessage(message, vscode.l10n.t('Open Settings'))
+    vs.window.showWarningMessage(message, vs.l10n.t('Open Settings'))
       .then(
         action => {
           if (action) {
-            vscode.commands.executeCommand(
+            vs.commands.executeCommand(
               'workbench.action.openSettings',
               'gitIdSwitcher.identities'
             );
@@ -201,7 +212,12 @@ export function getIdentityById(id: string): Identity | undefined {
  * Uses validated identities to ensure only valid identities are returned.
  */
 export function getDefaultIdentity(): Identity | undefined {
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const vs = getVSCode();
+  if (!vs) {
+    return undefined;
+  }
+
+  const config = vs.workspace.getConfiguration('gitIdSwitcher');
   const defaultId = config.get<string>('defaultIdentity', '');
 
   const identities = getIdentitiesWithValidation();
@@ -263,17 +279,23 @@ export function formatGitAuthor(identity: Identity): string {
  * @throws Error if identity ID format is invalid
  * @throws Error if identity with given ID is not found
  * @throws Error if configuration update fails
+ * @throws Error if VS Code API is not available
  *
  * @example
  * await deleteIdentityFromConfig('work-github');
  */
 export async function deleteIdentityFromConfig(id: string): Promise<void> {
+  const vs = getVSCode();
+  if (!vs) {
+    throw new Error('VS Code API not available');
+  }
+
   // Validate ID format
   if (!isValidIdentityId(id, MAX_ID_LENGTH)) {
     throw new Error(`Invalid identity ID format: ${id}`);
   }
 
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const config = vs.workspace.getConfiguration('gitIdSwitcher');
   const identities = config.get<Identity[]>('identities', []);
 
   // Find the identity to delete
@@ -286,7 +308,7 @@ export async function deleteIdentityFromConfig(id: string): Promise<void> {
   const updatedIdentities = identities.filter(i => i.id !== id);
 
   // Update configuration
-  await config.update('identities', updatedIdentities, vscode.ConfigurationTarget.Global);
+  await config.update('identities', updatedIdentities, vs.ConfigurationTarget.Global);
 
   // Log security event
   securityLogger.logConfigChange('identities');

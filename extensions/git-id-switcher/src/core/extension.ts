@@ -12,7 +12,7 @@ import { securityLogger } from '../security/securityLogger';
 import { getUserSafeMessage, isFatalError } from './errors';
 import { initializeWorkspaceTrust } from './workspaceTrust';
 import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetectedIdentity } from '../services/detection';
-import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotification } from '../commands/handlers';
+import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotification, handleDeleteIdentity } from '../commands/handlers';
 
 // Global state
 let statusBar: IdentityStatusBar;
@@ -48,7 +48,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     'git-id-switcher.showDocumentation',
     () => showDocumentation(context)
   );
-  context.subscriptions.push(selectCommand, showCurrentCommand, showDocsCommand);
+  const deleteCommand = vscode.commands.registerCommand(
+    'git-id-switcher.deleteIdentity',
+    () => handleDeleteIdentity(context, statusBar)
+  );
+  context.subscriptions.push(selectCommand, showCurrentCommand, showDocsCommand, deleteCommand);
 
   // SECURITY: Check workspace trust before initializing sensitive operations
   const isTrusted = initializeWorkspaceTrust(context, async () => {
