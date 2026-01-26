@@ -12,8 +12,11 @@
  * - Default Values: package.json defaults verification for all settings
  * - Error Handling: invalid values, undefined settings, empty arrays
  * - Configuration Scopes: global vs workspace, inspection properties
+ * - deleteIdentityFromConfig: deletion and validation tests
+ * - addIdentityToConfig: security validation and business logic tests
+ * - updateIdentityInConfig: security validation and business logic tests
  *
- * Test Count: 36 tests covering identity.ts related functionality
+ * Test Count: 48 tests covering identity.ts related functionality
  *
  * Note: These tests use the real VS Code API (no mocks) to ensure actual behavior.
  * Each test restores original configuration values after execution.
@@ -21,7 +24,11 @@
 
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { deleteIdentityFromConfig } from '../../identity/identity';
+import {
+  deleteIdentityFromConfig,
+  addIdentityToConfig,
+  updateIdentityInConfig,
+} from '../../identity/identity';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';
 const CONFIG_SECTION = 'gitIdSwitcher';
@@ -857,6 +864,371 @@ describe('Identity E2E Test Suite', function () {
 
       // Restore original state
       await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+  });
+
+  // ===========================================================================
+  // 4.9.1 addIdentityToConfig() Tests
+  // ===========================================================================
+
+  describe('addIdentityToConfig', () => {
+    describe('Security Validation Integration', () => {
+      it('should throw error for duplicate ID', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up existing identity
+        const existingIdentity: TestIdentity = {
+          id: 'existing-identity',
+          name: 'Existing User',
+          email: 'existing@example.com',
+        };
+        await config.update('identities', [existingIdentity], vscode.ConfigurationTarget.Global);
+
+        // Try to add identity with same ID
+        try {
+          await addIdentityToConfig({
+            id: 'existing-identity',
+            name: 'Duplicate User',
+            email: 'duplicate@example.com',
+          });
+          assert.fail('Should have thrown an error for duplicate ID');
+        } catch (error) {
+          assert.ok(error instanceof Error, 'Should throw an Error');
+          assert.ok(
+            error.message.includes('already exists') || error.message.includes('duplicate'),
+            `Error should mention duplicate ID, got: ${error.message}`
+          );
+        }
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+
+      it('should throw error for schema violation (missing required field)', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up empty identities
+        await config.update('identities', [], vscode.ConfigurationTarget.Global);
+
+        // Try to add identity with missing email (cast to bypass TypeScript)
+        try {
+          await addIdentityToConfig({
+            id: 'invalid-identity',
+            name: 'Invalid User',
+          } as TestIdentity);
+          assert.fail('Should have thrown an error for missing required field');
+        } catch (error) {
+          assert.ok(error instanceof Error, 'Should throw an Error');
+          assert.ok(
+            error.message.includes('Invalid') || error.message.includes('schema'),
+            `Error should mention validation failure, got: ${error.message}`
+          );
+        }
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+
+      it('should throw error for invalid email format', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up empty identities
+        await config.update('identities', [], vscode.ConfigurationTarget.Global);
+
+        // Try to add identity with invalid email
+        try {
+          await addIdentityToConfig({
+            id: 'invalid-email-identity',
+            name: 'Invalid Email User',
+            email: 'not-an-email',
+          });
+          assert.fail('Should have thrown an error for invalid email');
+        } catch (error) {
+          assert.ok(error instanceof Error, 'Should throw an Error');
+          assert.ok(
+            error.message.includes('Invalid') || error.message.includes('email'),
+            `Error should mention validation failure, got: ${error.message}`
+          );
+        }
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+    });
+
+    describe('Business Logic', () => {
+      it('should add identity successfully with required fields only', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up empty identities
+        await config.update('identities', [], vscode.ConfigurationTarget.Global);
+
+        // Add new identity
+        const newIdentity: TestIdentity = {
+          id: 'new-identity',
+          name: 'New User',
+          email: 'new@example.com',
+        };
+        await addIdentityToConfig(newIdentity);
+
+        // Verify identity was added
+        const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const afterAdd = freshConfig.get<TestIdentity[]>('identities', []);
+        assert.strictEqual(afterAdd.length, 1, 'Should have 1 identity');
+        assert.ok(
+          afterAdd.some(i => i.id === 'new-identity'),
+          'New identity should exist'
+        );
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+
+      it('should add to empty identities array (0 to 1)', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Start with empty identities
+        await config.update('identities', [], vscode.ConfigurationTarget.Global);
+
+        // Verify empty
+        const emptyConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const emptyIdentities = emptyConfig.get<TestIdentity[]>('identities', []);
+        assert.strictEqual(emptyIdentities.length, 0, 'Should start with 0 identities');
+
+        // Add identity
+        await addIdentityToConfig({
+          id: 'first-identity',
+          name: 'First User',
+          email: 'first@example.com',
+        });
+
+        // Verify 1 identity
+        const afterConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const afterIdentities = afterConfig.get<TestIdentity[]>('identities', []);
+        assert.strictEqual(afterIdentities.length, 1, 'Should have 1 identity after add');
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+
+      it('should preserve all optional fields when specified', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up empty identities
+        await config.update('identities', [], vscode.ConfigurationTarget.Global);
+
+        // Add identity with all fields
+        const fullIdentity: TestIdentity = {
+          id: 'full-identity',
+          name: 'Full User',
+          email: 'full@example.com',
+          icon: '🧪',
+          service: 'GitHub',
+          description: 'Test identity with all fields',
+          sshKeyPath: '~/.ssh/test_key',
+          sshHost: 'github-test',
+          gpgKeyId: 'ABCD1234',
+        };
+        await addIdentityToConfig(fullIdentity);
+
+        // Verify all fields preserved
+        const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const afterAdd = freshConfig.get<TestIdentity[]>('identities', []);
+        const added = afterAdd.find(i => i.id === 'full-identity');
+
+        assert.ok(added, 'Full identity should be added');
+        assert.strictEqual(added?.icon, '🧪', 'icon should be preserved');
+        assert.strictEqual(added?.service, 'GitHub', 'service should be preserved');
+        assert.strictEqual(added?.description, 'Test identity with all fields', 'description should be preserved');
+        assert.strictEqual(added?.sshKeyPath, '~/.ssh/test_key', 'sshKeyPath should be preserved');
+        assert.strictEqual(added?.sshHost, 'github-test', 'sshHost should be preserved');
+        assert.strictEqual(added?.gpgKeyId, 'ABCD1234', 'gpgKeyId should be preserved');
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+    });
+  });
+
+  // ===========================================================================
+  // 4.9.2 updateIdentityInConfig() Tests
+  // ===========================================================================
+
+  describe('updateIdentityInConfig', () => {
+    describe('Security Validation Integration', () => {
+      it('should throw error for non-existent ID', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up with one identity
+        const existingIdentity: TestIdentity = {
+          id: 'existing-identity',
+          name: 'Existing User',
+          email: 'existing@example.com',
+        };
+        await config.update('identities', [existingIdentity], vscode.ConfigurationTarget.Global);
+
+        // Try to update non-existent identity
+        try {
+          await updateIdentityInConfig('non-existent-id', 'name', 'New Name');
+          assert.fail('Should have thrown an error for non-existent ID');
+        } catch (error) {
+          assert.ok(error instanceof Error, 'Should throw an Error');
+          assert.ok(
+            error.message.includes('not found') || error.message.includes('Invalid'),
+            `Error should mention identity not found, got: ${error.message}`
+          );
+        }
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+
+      it('should throw error for invalid email format update', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up with one identity
+        const existingIdentity: TestIdentity = {
+          id: 'existing-identity',
+          name: 'Existing User',
+          email: 'existing@example.com',
+        };
+        await config.update('identities', [existingIdentity], vscode.ConfigurationTarget.Global);
+
+        // Try to update email to invalid format
+        try {
+          await updateIdentityInConfig('existing-identity', 'email', 'invalid-email');
+          assert.fail('Should have thrown an error for invalid email');
+        } catch (error) {
+          assert.ok(error instanceof Error, 'Should throw an Error');
+          assert.ok(
+            error.message.includes('Invalid') || error.message.includes('email'),
+            `Error should mention validation failure, got: ${error.message}`
+          );
+        }
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+
+      it('should throw error for schema violation value', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up with one identity
+        const existingIdentity: TestIdentity = {
+          id: 'existing-identity',
+          name: 'Existing User',
+          email: 'existing@example.com',
+        };
+        await config.update('identities', [existingIdentity], vscode.ConfigurationTarget.Global);
+
+        // Try to update name to empty string (schema violation)
+        try {
+          await updateIdentityInConfig('existing-identity', 'name', '');
+          assert.fail('Should have thrown an error for empty name');
+        } catch (error) {
+          assert.ok(error instanceof Error, 'Should throw an Error');
+          assert.ok(
+            error.message.includes('Invalid'),
+            `Error should mention validation failure, got: ${error.message}`
+          );
+        }
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+    });
+
+    describe('Business Logic', () => {
+      it('should update name successfully', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up with one identity
+        const existingIdentity: TestIdentity = {
+          id: 'update-test-identity',
+          name: 'Original Name',
+          email: 'update@example.com',
+        };
+        await config.update('identities', [existingIdentity], vscode.ConfigurationTarget.Global);
+
+        // Update name
+        await updateIdentityInConfig('update-test-identity', 'name', 'Updated Name');
+
+        // Verify update
+        const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const afterUpdate = freshConfig.get<TestIdentity[]>('identities', []);
+        const updated = afterUpdate.find(i => i.id === 'update-test-identity');
+
+        assert.ok(updated, 'Identity should still exist');
+        assert.strictEqual(updated?.name, 'Updated Name', 'Name should be updated');
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+
+      it('should update email successfully', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up with one identity
+        const existingIdentity: TestIdentity = {
+          id: 'email-update-identity',
+          name: 'Email Test User',
+          email: 'original@example.com',
+        };
+        await config.update('identities', [existingIdentity], vscode.ConfigurationTarget.Global);
+
+        // Update email
+        await updateIdentityInConfig('email-update-identity', 'email', 'updated@example.com');
+
+        // Verify update
+        const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const afterUpdate = freshConfig.get<TestIdentity[]>('identities', []);
+        const updated = afterUpdate.find(i => i.id === 'email-update-identity');
+
+        assert.ok(updated, 'Identity should still exist');
+        assert.strictEqual(updated?.email, 'updated@example.com', 'Email should be updated');
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
+
+      it('should clear optional field with undefined', async () => {
+        const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+        // Set up with identity that has service
+        const existingIdentity: TestIdentity = {
+          id: 'service-clear-identity',
+          name: 'Service Test User',
+          email: 'service@example.com',
+          service: 'GitHub',
+        };
+        await config.update('identities', [existingIdentity], vscode.ConfigurationTarget.Global);
+
+        // Clear service by setting to undefined
+        await updateIdentityInConfig('service-clear-identity', 'service', undefined);
+
+        // Verify service is cleared
+        const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+        const afterUpdate = freshConfig.get<TestIdentity[]>('identities', []);
+        const updated = afterUpdate.find(i => i.id === 'service-clear-identity');
+
+        assert.ok(updated, 'Identity should still exist');
+        assert.strictEqual(updated?.service, undefined, 'Service should be cleared');
+
+        // Restore original state
+        await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+      });
     });
   });
 });
