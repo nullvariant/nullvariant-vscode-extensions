@@ -24,5 +24,11 @@
   "Git ID Switcher: {0}": "Git ID Switcher: {0}",
   "Cancel": "キャンセル",
   "Internal document not found. Open on GitHub?": "内部ドキュメントが見つかりませんでした。GitHubで開きますか？",
-  "Open on GitHub": "GitHubで開く"
+  "Open on GitHub": "GitHubで開く",
+  "Select identity to delete": "削除するプロフィールを選択",
+  "Are you sure you want to delete '{0}'?": "'{0}' を削除してもよろしいですか？",
+  "'{0}' is your current identity. Delete anyway?": "'{0}' は現在使用中のプロフィールです。削除しますか？",
+  "Identity '{0}' has been deleted.": "プロフィール '{0}' を削除しました。",
+  "Failed to delete identity: {0}": "プロフィールの削除に失敗しました: {0}",
+  "Delete": "削除"
 }
