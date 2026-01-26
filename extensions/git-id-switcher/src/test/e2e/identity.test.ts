@@ -21,6 +21,7 @@
 
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
+import { deleteIdentityFromConfig } from '../../identity/identity';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';
 const CONFIG_SECTION = 'gitIdSwitcher';
@@ -704,6 +705,158 @@ describe('Identity E2E Test Suite', function () {
 
       assert.ok(inspection, 'Inspection should return an object');
       assert.strictEqual(inspection?.key, 'gitIdSwitcher.identities', 'Key should be fully qualified');
+    });
+  });
+
+  describe('deleteIdentityFromConfig', () => {
+    it('should delete an existing identity successfully', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Add a test identity to delete
+      const testIdentity: TestIdentity = {
+        id: 'test-delete-identity',
+        name: 'Delete Test User',
+        email: 'delete-test@example.com',
+      };
+      const identitiesWithTest = [...currentIdentities, testIdentity];
+      await config.update('identities', identitiesWithTest, vscode.ConfigurationTarget.Global);
+
+      // Verify test identity was added
+      const configAfterAdd = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const afterAdd = configAfterAdd.get<TestIdentity[]>('identities', []);
+      assert.ok(
+        afterAdd.some(i => i.id === 'test-delete-identity'),
+        'Test identity should be added before deletion'
+      );
+
+      // Delete the test identity
+      await deleteIdentityFromConfig('test-delete-identity');
+
+      // Verify identity was deleted
+      const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const afterDelete = freshConfig.get<TestIdentity[]>('identities', []);
+      assert.ok(
+        !afterDelete.some(i => i.id === 'test-delete-identity'),
+        'Test identity should be deleted'
+      );
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should preserve other identities after deletion', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Add multiple test identities
+      const testIdentities: TestIdentity[] = [
+        { id: 'test-keep-1', name: 'Keep User 1', email: 'keep1@example.com' },
+        { id: 'test-delete-me', name: 'Delete Me', email: 'delete@example.com' },
+        { id: 'test-keep-2', name: 'Keep User 2', email: 'keep2@example.com' },
+      ];
+      await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
+
+      // Delete the middle identity
+      await deleteIdentityFromConfig('test-delete-me');
+
+      // Verify correct identities remain
+      const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const afterDelete = freshConfig.get<TestIdentity[]>('identities', []);
+      assert.strictEqual(afterDelete.length, 2, 'Should have 2 identities remaining');
+      assert.ok(afterDelete.some(i => i.id === 'test-keep-1'), 'First identity should remain');
+      assert.ok(afterDelete.some(i => i.id === 'test-keep-2'), 'Second identity should remain');
+      assert.ok(!afterDelete.some(i => i.id === 'test-delete-me'), 'Deleted identity should not exist');
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should throw error for non-existent identity ID', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set up a known state
+      const testIdentity: TestIdentity = {
+        id: 'existing-identity',
+        name: 'Existing User',
+        email: 'existing@example.com',
+      };
+      await config.update('identities', [testIdentity], vscode.ConfigurationTarget.Global);
+
+      // Try to delete non-existent identity
+      try {
+        await deleteIdentityFromConfig('non-existent-id');
+        assert.fail('Should have thrown an error');
+      } catch (error) {
+        assert.ok(error instanceof Error, 'Should throw an Error');
+        assert.ok(
+          error.message.includes('not found'),
+          `Error message should indicate identity not found, got: ${error.message}`
+        );
+      }
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should throw error for empty string ID', async () => {
+      try {
+        await deleteIdentityFromConfig('');
+        assert.fail('Should have thrown an error');
+      } catch (error) {
+        assert.ok(error instanceof Error, 'Should throw an Error');
+        assert.ok(
+          error.message.includes('Invalid'),
+          `Error message should indicate invalid ID, got: ${error.message}`
+        );
+      }
+    });
+
+    it('should throw error for invalid ID format', async () => {
+      // Test with characters that are not allowed in identity IDs
+      const invalidIds = [
+        'id with spaces',
+        'id@with@symbols',
+        'id/with/slashes',
+        'id$with$dollar',
+      ];
+
+      for (const invalidId of invalidIds) {
+        try {
+          await deleteIdentityFromConfig(invalidId);
+          assert.fail(`Should have thrown an error for invalid ID: ${invalidId}`);
+        } catch (error) {
+          assert.ok(error instanceof Error, 'Should throw an Error');
+          assert.ok(
+            error.message.includes('Invalid'),
+            `Error message should indicate invalid ID format for "${invalidId}", got: ${error.message}`
+          );
+        }
+      }
+    });
+
+    it('should throw error when deleting from empty identities array', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set empty identities array
+      await config.update('identities', [], vscode.ConfigurationTarget.Global);
+
+      // Try to delete from empty array
+      try {
+        await deleteIdentityFromConfig('any-valid-id');
+        assert.fail('Should have thrown an error');
+      } catch (error) {
+        assert.ok(error instanceof Error, 'Should throw an Error');
+        assert.ok(
+          error.message.includes('not found'),
+          `Error message should indicate identity not found, got: ${error.message}`
+        );
+      }
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
     });
   });
 });

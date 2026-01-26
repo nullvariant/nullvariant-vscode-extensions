@@ -8,7 +8,8 @@
 import * as vscode from 'vscode';
 import { validateIdentitySchema } from './configSchema';
 import { securityLogger } from '../security/securityLogger';
-import { MAX_IDENTITIES } from '../core/constants';
+import { MAX_IDENTITIES, MAX_ID_LENGTH } from '../core/constants';
+import { isValidIdentityId } from '../validators/common';
 
 /**
  * Session-level flag to prevent multiple validation error notifications.
@@ -252,4 +253,41 @@ export function formatGitAuthor(identity: Identity): string {
     return `${identity.icon} ${identity.name} <${identity.email}>`;
   }
   return `${identity.name} <${identity.email}>`;
+}
+
+/**
+ * Delete an identity from VS Code configuration.
+ *
+ * @param id - The identity ID to delete (must pass isValidIdentityId validation)
+ * @returns Promise that resolves when deletion is complete
+ * @throws Error if identity ID format is invalid
+ * @throws Error if identity with given ID is not found
+ * @throws Error if configuration update fails
+ *
+ * @example
+ * await deleteIdentityFromConfig('work-github');
+ */
+export async function deleteIdentityFromConfig(id: string): Promise<void> {
+  // Validate ID format
+  if (!isValidIdentityId(id, MAX_ID_LENGTH)) {
+    throw new Error(`Invalid identity ID format: ${id}`);
+  }
+
+  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const identities = config.get<Identity[]>('identities', []);
+
+  // Find the identity to delete
+  const index = identities.findIndex(i => i.id === id);
+  if (index === -1) {
+    throw new Error(`Identity not found: ${id}`);
+  }
+
+  // Remove the identity from array
+  const updatedIdentities = identities.filter(i => i.id !== id);
+
+  // Update configuration
+  await config.update('identities', updatedIdentities, vscode.ConfigurationTarget.Global);
+
+  // Log security event
+  securityLogger.logConfigChange('identities');
 }
