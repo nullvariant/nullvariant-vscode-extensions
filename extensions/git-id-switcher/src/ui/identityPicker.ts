@@ -11,6 +11,7 @@ import {
   getIdentityLabel,
   getIdentityDetail,
 } from '../identity/identity';
+import { getVSCode } from '../core/vscodeLoader';
 
 /**
  * Quick pick item for an identity
@@ -110,7 +111,73 @@ export function showIdentitySwitchedNotification(identity: Identity): void {
 
 /**
  * Show error notification
+ *
+ * Uses vscodeLoader for testability (allows mocking in E2E tests).
  */
 export function showErrorNotification(message: string): void {
-  vscode.window.showErrorMessage(vscode.l10n.t('Git ID Switcher: {0}', message));
+  const vs = getVSCode();
+  if (!vs) {
+    return;
+  }
+  vs.window.showErrorMessage(vs.l10n.t('Git ID Switcher: {0}', message));
+}
+
+/**
+ * Show identity deletion quick pick
+ *
+ * Uses vscodeLoader for testability (allows mocking in E2E tests).
+ *
+ * @param currentIdentityId - The ID of the currently active identity (for marking)
+ * @returns Selected identity or undefined if cancelled
+ */
+export async function showDeleteIdentityQuickPick(
+  currentIdentityId?: string
+): Promise<Identity | undefined> {
+  const vs = getVSCode();
+  if (!vs) {
+    return undefined;
+  }
+
+  const identities = getIdentitiesWithValidation();
+
+  if (identities.length === 0) {
+    vs.window.showWarningMessage(
+      vs.l10n.t('No identities configured. Add identities in settings: {0}', 'gitIdSwitcher.identities')
+    );
+    return undefined;
+  }
+
+  // Create items with (Current) mark for the active identity
+  const items: IdentityQuickPickItem[] = identities.map(identity => {
+    const isCurrent = currentIdentityId === identity.id;
+
+    return {
+      identity,
+      label: getIdentityLabel(identity),
+      description: isCurrent ? '$(check) ' + vs.l10n.t('Current') : undefined,
+      detail: getIdentityDetail(identity),
+    };
+  });
+
+  const quickPick = vs.window.createQuickPick<IdentityQuickPickItem>();
+  quickPick.items = items;
+  quickPick.title = vs.l10n.t('Delete Identity');
+  quickPick.placeholder = vs.l10n.t('Select identity to delete');
+  quickPick.matchOnDescription = true;
+  quickPick.matchOnDetail = true;
+
+  return new Promise<Identity | undefined>(resolve => {
+    quickPick.onDidAccept(() => {
+      const selected = quickPick.selectedItems[0];
+      quickPick.hide();
+      resolve(selected?.identity);
+    });
+
+    quickPick.onDidHide(() => {
+      quickPick.dispose();
+      resolve(undefined);
+    });
+
+    quickPick.show();
+  });
 }
