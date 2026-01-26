@@ -2,9 +2,10 @@
  * Quick Pick for Identity Selection
  *
  * Shows a searchable list of all configured identities.
+ * Uses vscodeLoader for testability (allows mocking in E2E tests).
  */
 
-import * as vscode from 'vscode';
+import type * as vscodeTypes from 'vscode';
 import {
   Identity,
   getIdentitiesWithValidation,
@@ -18,8 +19,9 @@ import { getVSCode } from '../core/vscodeLoader';
  *
  * @internal Exported for testing purposes
  */
-export interface IdentityQuickPickItem extends vscode.QuickPickItem {
+export interface IdentityQuickPickItem extends vscodeTypes.QuickPickItem {
   identity: Identity;
+  _isManageOption?: boolean;
 }
 
 /**
@@ -30,6 +32,11 @@ export interface IdentityQuickPickItem extends vscode.QuickPickItem {
 export function createQuickPickItems(
   currentIdentity?: Identity
 ): IdentityQuickPickItem[] {
+  const vs = getVSCode();
+  if (!vs) {
+    return [];
+  }
+
   const identities = getIdentitiesWithValidation();
 
   return identities.map(identity => {
@@ -38,7 +45,7 @@ export function createQuickPickItems(
     return {
       identity,
       label: getIdentityLabel(identity),
-      description: isCurrent ? '$(check) ' + vscode.l10n.t('Current') : undefined,
+      description: isCurrent ? '$(check) ' + vs.l10n.t('Current') : undefined,
       detail: getIdentityDetail(identity),
       picked: isCurrent,
     };
@@ -48,24 +55,44 @@ export function createQuickPickItems(
 /**
  * Show identity selection quick pick
  *
- * @returns Selected identity or undefined if cancelled
+ * @returns Selected identity, 'manage' for management menu, or undefined if cancelled
  */
 export async function showIdentityQuickPick(
   currentIdentity?: Identity
-): Promise<Identity | undefined> {
+): Promise<Identity | 'manage' | undefined> {
+  const vs = getVSCode();
+  if (!vs) {
+    return undefined;
+  }
+
   const items = createQuickPickItems(currentIdentity);
 
   if (items.length === 0) {
-    vscode.window.showWarningMessage(
-      vscode.l10n.t('No identities configured. Add identities in settings: {0}', 'gitIdSwitcher.identities')
+    vs.window.showWarningMessage(
+      vs.l10n.t('No identities configured. Add identities in settings: {0}', 'gitIdSwitcher.identities')
     );
     return undefined;
   }
 
-  const quickPick = vscode.window.createQuickPick<IdentityQuickPickItem>();
-  quickPick.items = items;
-  quickPick.title = vscode.l10n.t('Select Git Identity');
-  quickPick.placeholder = vscode.l10n.t('Search identities...');
+  // Add separator and manage option
+  const separatorItem = {
+    label: '',
+    kind: vs.QuickPickItemKind.Separator,
+    identity: null as unknown as Identity,
+  } as IdentityQuickPickItem;
+
+  const manageItem: IdentityQuickPickItem = {
+    label: '$(gear) ' + vs.l10n.t('Manage identities...'),
+    identity: null as unknown as Identity,
+    _isManageOption: true,
+  };
+
+  const allItems = [...items, separatorItem, manageItem];
+
+  const quickPick = vs.window.createQuickPick<IdentityQuickPickItem>();
+  quickPick.items = allItems;
+  quickPick.title = vs.l10n.t('Select Git Identity');
+  quickPick.placeholder = vs.l10n.t('Search identities...');
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
 
@@ -79,11 +106,15 @@ export async function showIdentityQuickPick(
     }
   }
 
-  return new Promise<Identity | undefined>(resolve => {
+  return new Promise<Identity | 'manage' | undefined>(resolve => {
     quickPick.onDidAccept(() => {
       const selected = quickPick.selectedItems[0];
       quickPick.hide();
-      resolve(selected?.identity);
+      if (selected?._isManageOption) {
+        resolve('manage');
+      } else {
+        resolve(selected?.identity);
+      }
     });
 
     quickPick.onDidHide(() => {
@@ -99,12 +130,17 @@ export async function showIdentityQuickPick(
  * Show identity switched notification
  */
 export function showIdentitySwitchedNotification(identity: Identity): void {
-  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  const vs = getVSCode();
+  if (!vs) {
+    return;
+  }
+
+  const config = vs.workspace.getConfiguration('gitIdSwitcher');
   const showNotifications = config.get<boolean>('showNotifications', true);
 
   if (showNotifications) {
-    vscode.window.showInformationMessage(
-      vscode.l10n.t('Switched to {0}', getIdentityLabel(identity))
+    vs.window.showInformationMessage(
+      vs.l10n.t('Switched to {0}', getIdentityLabel(identity))
     );
   }
 }

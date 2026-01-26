@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-01-26
+
+### Added
+
+- **Identity Management UI**: New in-editor identity management functionality
+  - `Git ID Switcher: Select Identity` now includes "Manage identities..." option
+  - Add new identities via wizard with ID, Name, and Email input
+  - Edit existing identities (name, email fields)
+  - Delete identities with confirmation dialog
+  - `Git ID Switcher: Delete Identity` command for direct deletion
+  - All UI strings localized in 17 languages
+
+### Changed
+
+- **Identity Picker Enhancement**: Added management option with separator in quick pick
+  - Select identity or manage identities from single unified UI
+  - Management menu provides Add/Edit/Delete options
+
 ## [0.14.4] - 2026-01-25
 
 ### Changed
