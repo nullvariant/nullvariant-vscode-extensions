@@ -326,3 +326,155 @@ export async function deleteIdentityFromConfig(id: string): Promise<void> {
   // Log security event
   securityLogger.logConfigChange('identities');
 }
+
+/**
+ * Add a new identity to VS Code configuration.
+ *
+ * @param identity - The identity to add (must pass schema validation)
+ * @returns Promise that resolves when addition is complete
+ * @throws Error if identity fails schema validation
+ * @throws Error if identity with same ID already exists (duplicate check)
+ * @throws Error if maximum identity limit is reached
+ * @throws Error if configuration update fails
+ * @throws Error if VS Code API is not available
+ *
+ * @example
+ * await addIdentityToConfig({
+ *   id: 'new-identity',
+ *   name: 'New User',
+ *   email: 'new@example.com'
+ * });
+ */
+export async function addIdentityToConfig(identity: Identity): Promise<void> {
+  const vs = getVSCode();
+  if (!vs) {
+    throw new Error('VS Code API not available');
+  }
+
+  // Validate schema
+  const validationResult = validateIdentitySchema(identity);
+  if (!validationResult.valid) {
+    const errorMessages = validationResult.errors
+      .map(e => `${e.field}: ${e.message}`)
+      .join(', ');
+    throw new Error(`Invalid identity schema: ${errorMessages}`);
+  }
+
+  const config = vs.workspace.getConfiguration('gitIdSwitcher');
+  const identities = config.get<Identity[]>('identities', []);
+
+  // Check for duplicate ID
+  const duplicateExists = identities.some(i => i.id === identity.id);
+  if (duplicateExists) {
+    throw new Error(`Identity with ID already exists: ${identity.id}`);
+  }
+
+  // Check maximum limit
+  if (identities.length >= MAX_IDENTITIES) {
+    throw new Error(`Maximum identity limit reached: ${MAX_IDENTITIES}`);
+  }
+
+  // Add the new identity
+  const updatedIdentities = [...identities, identity];
+
+  // Update configuration
+  await config.update('identities', updatedIdentities, vs.ConfigurationTarget.Global);
+
+  // Log security event
+  securityLogger.logConfigChange('identities');
+}
+
+/**
+ * Update a specific field of an existing identity in VS Code configuration.
+ *
+ * @param id - The identity ID to update (must exist in configuration)
+ * @param field - The field to update (keyof Identity)
+ * @param value - The new value for the field (string or undefined to clear optional fields)
+ * @returns Promise that resolves when update is complete
+ * @throws Error if identity ID format is invalid
+ * @throws Error if identity with given ID is not found
+ * @throws Error if field validation fails
+ * @throws Error if trying to set undefined for required fields (id, name, email)
+ * @throws Error if changing ID and new ID format is invalid
+ * @throws Error if changing ID and new ID already exists (duplicate check)
+ * @throws Error if configuration update fails
+ * @throws Error if VS Code API is not available
+ *
+ * @example
+ * // Update name
+ * await updateIdentityInConfig('work-github', 'name', 'New Name');
+ *
+ * // Clear optional field
+ * await updateIdentityInConfig('work-github', 'description', undefined);
+ */
+export async function updateIdentityInConfig(
+  id: string,
+  field: keyof Identity,
+  value: string | undefined
+): Promise<void> {
+  const vs = getVSCode();
+  if (!vs) {
+    throw new Error('VS Code API not available');
+  }
+
+  // Validate ID format
+  if (!isValidIdentityId(id, MAX_ID_LENGTH)) {
+    throw new Error(`Invalid identity ID format: ${id}`);
+  }
+
+  // Required fields cannot be set to undefined
+  const requiredFields: (keyof Identity)[] = ['id', 'name', 'email'];
+  if (requiredFields.includes(field) && value === undefined) {
+    throw new Error(`Cannot set required field to undefined: ${field}`);
+  }
+
+  const config = vs.workspace.getConfiguration('gitIdSwitcher');
+  const identities = config.get<Identity[]>('identities', []);
+
+  // If changing ID, validate new ID format and check for duplicates
+  if (field === 'id' && value !== undefined && value !== id) {
+    if (!isValidIdentityId(value, MAX_ID_LENGTH)) {
+      throw new Error(`Invalid new identity ID format: ${value}`);
+    }
+    const duplicateExists = identities.some(i => i.id === value);
+    if (duplicateExists) {
+      throw new Error(`Identity with ID already exists: ${value}`);
+    }
+  }
+
+  // Find the identity to update
+  const index = identities.findIndex(i => i.id === id);
+  if (index === -1) {
+    throw new Error(`Identity not found: ${id}`);
+  }
+
+  // Create updated identity
+  const updatedIdentity = { ...identities[index] };
+
+  if (value === undefined) {
+    // Remove optional field
+    delete updatedIdentity[field];
+  } else {
+    // Set field value
+    updatedIdentity[field] = value;
+  }
+
+  // Validate the updated identity
+  const validationResult = validateIdentitySchema(updatedIdentity);
+  if (!validationResult.valid) {
+    const errorMessages = validationResult.errors
+      .map(e => `${e.field}: ${e.message}`)
+      .join(', ');
+    throw new Error(`Invalid identity after update: ${errorMessages}`);
+  }
+
+  // Update the identities array
+  const updatedIdentities = [...identities];
+  updatedIdentities[index] = updatedIdentity;
+
+  // Update configuration
+  await config.update('identities', updatedIdentities, vs.ConfigurationTarget.Global);
+
+  // Log security event
+  securityLogger.logConfigChange('identities');
+}
