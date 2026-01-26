@@ -24,5 +24,11 @@
   "Git ID Switcher: {0}": "Git ID Switcher: {0}",
   "Cancel": "取消",
   "Internal document not found. Open on GitHub?": "內部文件未找到。是否在 GitHub 上開啟？",
-  "Open on GitHub": "在 GitHub 上開啟"
+  "Open on GitHub": "在 GitHub 上開啟",
+  "Select identity to delete": "選擇要刪除的身分",
+  "Are you sure you want to delete '{0}'?": "確定要刪除 '{0}' 嗎？",
+  "'{0}' is your current identity. Delete anyway?": "'{0}' 是您目前的身分。仍然刪除嗎？",
+  "Identity '{0}' has been deleted.": "身分 '{0}' 已刪除。",
+  "Failed to delete identity: {0}": "刪除身分失敗: {0}",
+  "Delete": "刪除"
 }

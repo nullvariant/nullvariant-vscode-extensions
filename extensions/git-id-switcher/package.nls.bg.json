@@ -4,6 +4,7 @@
   "command.selectIdentity": "Избор на самоличност",
   "command.showCurrentIdentity": "Показване на текущата самоличност",
   "command.showDocumentation": "Показване на документация",
+  "command.deleteIdentity": "Изтриване на самоличност",
   "config.title": "Git ID Switcher",
   "config.category.identity": "Git ID Switcher: Идентичност",
   "config.category.submodule": "Git ID Switcher: Подмодул",

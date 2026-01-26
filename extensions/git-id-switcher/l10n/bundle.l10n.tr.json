@@ -24,5 +24,11 @@
   "Git ID Switcher: {0}": "Git ID Switcher: {0}",
   "Cancel": "İptal",
   "Internal document not found. Open on GitHub?": "Dahili belge bulunamadı. GitHub'da açılsın mı?",
-  "Open on GitHub": "GitHub'da Aç"
+  "Open on GitHub": "GitHub'da Aç",
+  "Select identity to delete": "Silinecek kimliği seçin",
+  "Are you sure you want to delete '{0}'?": "'{0}' kimliğini silmek istediğinizden emin misiniz?",
+  "'{0}' is your current identity. Delete anyway?": "'{0}' mevcut kimliğiniz. Yine de silinsin mi?",
+  "Identity '{0}' has been deleted.": "'{0}' kimliği silindi.",
+  "Failed to delete identity: {0}": "Kimlik silinemedi: {0}",
+  "Delete": "Sil"
 }
