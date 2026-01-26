@@ -24,5 +24,11 @@
   "Git ID Switcher: {0}": "Git ID Switcher: {0}",
   "Cancel": "Mégse",
   "Internal document not found. Open on GitHub?": "Belső dokumentum nem található. Megnyitás GitHubon?",
-  "Open on GitHub": "Megnyitás GitHubon"
+  "Open on GitHub": "Megnyitás GitHubon",
+  "Select identity to delete": "Válassza ki a törlendő identitást",
+  "Are you sure you want to delete '{0}'?": "Biztosan törölni szeretné a '{0}' identitást?",
+  "'{0}' is your current identity. Delete anyway?": "A '{0}' az aktuális identitása. Mégis törli?",
+  "Identity '{0}' has been deleted.": "A '{0}' identitás törölve.",
+  "Failed to delete identity: {0}": "Nem sikerült törölni az identitást: {0}",
+  "Delete": "Törlés"
 }
