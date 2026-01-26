@@ -19,6 +19,50 @@ import { isValidIdentityId } from '../validators/common';
  */
 let hasShownValidationError = false;
 
+/**
+ * Show one-time validation error notification to user.
+ *
+ * Extracted from getIdentitiesWithValidation() to reduce cognitive complexity.
+ * Sets flag immediately to prevent concurrent notifications from race conditions.
+ *
+ * @param invalidCount - Number of invalid identity configurations
+ */
+function showValidationErrorNotification(invalidCount: number): void {
+  const vs = getVSCode();
+  if (!vs || hasShownValidationError) {
+    return;
+  }
+
+  // Set flag immediately to prevent concurrent notifications
+  hasShownValidationError = true;
+
+  const message = invalidCount === 1
+    ? vs.l10n.t(
+        'Git ID Switcher: 1 identity configuration is invalid and was skipped. Check the settings.'
+      )
+    : vs.l10n.t(
+        'Git ID Switcher: {0} identity configurations are invalid and were skipped. Check the settings.',
+        invalidCount
+      );
+
+  // Fire and forget: notification is non-blocking
+  // Note: VS Code's Thenable doesn't have .catch(), so we use .then(onFulfilled, onRejected)
+  vs.window.showWarningMessage(message, vs.l10n.t('Open Settings'))
+    .then(
+      action => {
+        if (action) {
+          vs.commands.executeCommand(
+            'workbench.action.openSettings',
+            'gitIdSwitcher.identities'
+          );
+        }
+      },
+      () => {
+        // SECURITY: Don't let notification errors affect validation flow
+      }
+    );
+}
+
 export interface Identity {
   /** Unique identifier (lowercase, no spaces) */
   id: string;
@@ -152,39 +196,8 @@ export function getIdentitiesWithValidation(): Identity[] {
   }
 
   // Show one-time notification if there are invalid identities
-  // SECURITY: Set flag before async operation to prevent race conditions
-  // Multiple concurrent validations won't trigger duplicate notifications
-  if (invalidIndices.length > 0 && !hasShownValidationError) {
-    // Set flag immediately to prevent concurrent notifications
-    hasShownValidationError = true;
-
-    const message = invalidIndices.length === 1
-      ? vs.l10n.t(
-          'Git ID Switcher: 1 identity configuration is invalid and was skipped. Check the settings.'
-        )
-      : vs.l10n.t(
-          'Git ID Switcher: {0} identity configurations are invalid and were skipped. Check the settings.',
-          invalidIndices.length
-        );
-
-    // Fire and forget: notification is non-blocking
-    // User can dismiss or open settings as needed
-    // Note: VS Code's Thenable doesn't have .catch(), so we use .then(onFulfilled, onRejected)
-    vs.window.showWarningMessage(message, vs.l10n.t('Open Settings'))
-      .then(
-        action => {
-          if (action) {
-            vs.commands.executeCommand(
-              'workbench.action.openSettings',
-              'gitIdSwitcher.identities'
-            );
-          }
-        },
-        () => {
-          // SECURITY: Don't let notification errors affect validation flow
-          // Silently ignore notification errors
-        }
-      );
+  if (invalidIndices.length > 0) {
+    showValidationErrorNotification(invalidIndices.length);
   }
 
   return validIdentities;
