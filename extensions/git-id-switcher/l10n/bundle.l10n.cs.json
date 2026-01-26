@@ -24,5 +24,11 @@
   "Git ID Switcher: {0}": "Git ID Switcher: {0}",
   "Cancel": "Zrušit",
   "Internal document not found. Open on GitHub?": "Interní dokument nenalezen. Otevřít na GitHubu?",
-  "Open on GitHub": "Otevřít na GitHubu"
+  "Open on GitHub": "Otevřít na GitHubu",
+  "Select identity to delete": "Vyberte identitu k odstranění",
+  "Are you sure you want to delete '{0}'?": "Opravdu chcete odstranit '{0}'?",
+  "'{0}' is your current identity. Delete anyway?": "'{0}' je vaše aktuální identita. Přesto odstranit?",
+  "Identity '{0}' has been deleted.": "Identita '{0}' byla odstraněna.",
+  "Failed to delete identity: {0}": "Nepodařilo se odstranit identitu: {0}",
+  "Delete": "Odstranit"
 }

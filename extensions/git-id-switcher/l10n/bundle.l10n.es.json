@@ -24,5 +24,11 @@
   "Git ID Switcher: {0}": "Git ID Switcher: {0}",
   "Cancel": "Cancelar",
   "Internal document not found. Open on GitHub?": "Documento interno no encontrado. ¿Abrir en GitHub?",
-  "Open on GitHub": "Abrir en GitHub"
+  "Open on GitHub": "Abrir en GitHub",
+  "Select identity to delete": "Seleccionar identidad para eliminar",
+  "Are you sure you want to delete '{0}'?": "¿Está seguro de que desea eliminar '{0}'?",
+  "'{0}' is your current identity. Delete anyway?": "'{0}' es su identidad actual. ¿Eliminar de todos modos?",
+  "Identity '{0}' has been deleted.": "La identidad '{0}' ha sido eliminada.",
+  "Failed to delete identity: {0}": "Error al eliminar identidad: {0}",
+  "Delete": "Eliminar"
 }
