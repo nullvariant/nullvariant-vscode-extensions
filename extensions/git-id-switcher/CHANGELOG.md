@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-01-27
+
+### Changed
+
+- **Identity Management UX Overhaul (Phase 5.5)**:
+  - Profile list with inline edit/delete buttons replaces abstract action menu
+  - All identity fields now editable: sshKeyPath, sshHost, gpgKeyId (in addition to existing fields)
+  - New profile creation shows all properties as a list with required/optional markers
+  - File picker button for sshKeyPath field with SSH directory default path
+  - Back button in title bar (standard VS Code pattern)
+  - Esc key now goes back one step instead of cancelling entire wizard
+  - Focus position preserved after edit/delete operations
+  - Empty state message when no profiles exist
+  - Input values preserved when navigating back in wizard
+
+### Security
+
+- **SSH Key Path Validation Enhancement**:
+  - Multi-layer validation: dangerous characters → path traversal → SSH directory restriction
+  - SSH key paths restricted to `~/.ssh/` directory (user home directory protection)
+  - Real-time validation feedback in InputBox
+- **Comprehensive Security Tests**:
+  - Defense-in-depth validation tests for all input fields
+  - MAX_IDENTITIES limit enforcement tests
+  - Audit logging tests for add/edit/delete operations
+
 ## [0.15.1] - 2026-01-27
 
 ### Changed

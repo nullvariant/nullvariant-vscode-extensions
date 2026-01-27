@@ -984,7 +984,7 @@ describe('identityManager E2E Test Suite', function () {
       });
 
       it('should enable save button when all required fields are filled', async () => {
-        let capturedItemsHistory: unknown[][] = [];
+        const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [],
@@ -1018,7 +1018,7 @@ describe('identityManager E2E Test Suite', function () {
       });
 
       it('should disable save button when only id is filled', async () => {
-        let capturedItemsHistory: unknown[][] = [];
+        const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [],
@@ -1049,7 +1049,7 @@ describe('identityManager E2E Test Suite', function () {
       });
 
       it('should disable save button when id and name filled but email empty', async () => {
-        let capturedItemsHistory: unknown[][] = [];
+        const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [],
@@ -1107,7 +1107,7 @@ describe('identityManager E2E Test Suite', function () {
       });
 
       it('should keep save button disabled when ID is duplicate', async () => {
-        let capturedItemsHistory: unknown[][] = [];
+        const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
@@ -1327,7 +1327,7 @@ describe('identityManager E2E Test Suite', function () {
       });
 
       it('should show $(check) Saved for just-saved field', async () => {
-        let capturedItemsHistory: unknown[][] = [];
+        const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
