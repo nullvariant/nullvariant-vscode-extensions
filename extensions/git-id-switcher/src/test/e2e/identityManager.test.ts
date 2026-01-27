@@ -50,7 +50,22 @@ const TEST_IDENTITIES = {
 const BACK_BUTTON = Symbol('QuickInputButtons.Back');
 
 /**
+ * Mock ThemeIcon class for testing
+ */
+class MockThemeIcon {
+  constructor(public readonly id: string) {}
+}
+
+/** Special symbol to represent back button trigger in inputBox tests */
+const INPUT_BOX_BACK = Symbol('InputBox.Back');
+
+/**
  * Create a mock VS Code API for identity manager tests
+ *
+ * Options:
+ * - showInputBoxResults: Used by legacy showInputBox() API
+ * - inputBoxSelections: Used by createInputBox() API (supports symbol INPUT_BOX_BACK for back button)
+ * - quickPickSelections: Used by createQuickPick() API (supports 'back' string for back button)
  */
 function createMockVSCode(options: {
   identities?: Identity[];
@@ -58,12 +73,15 @@ function createMockVSCode(options: {
   showInputBoxResults?: (string | undefined)[];
   configUpdateError?: Error;
   quickPickSelections?: unknown[];
+  inputBoxSelections?: (string | typeof INPUT_BOX_BACK | undefined)[];
+  showOpenDialogResult?: string | undefined;
 }) {
   const showWarningMessageCalls: string[] = [];
   const showInformationMessageCalls: string[] = [];
   const showErrorMessageCalls: string[] = [];
   const configUpdateCalls: { key: string; value: unknown }[] = [];
   let inputBoxCallIndex = 0;
+  let inputBoxSelectionIndex = 0;
   let lastValidateInput: ((value: string) => string | null) | undefined;
   const allValidateInputs: ((value: string) => string | null)[] = [];
 
@@ -128,6 +146,87 @@ function createMockVSCode(options: {
         inputBoxCallIndex++;
         return result;
       },
+      createInputBox: () => {
+        let acceptCallback: (() => void) | undefined;
+        let hideCallback: (() => void) | undefined;
+        let buttonCallback: ((button: unknown) => void) | undefined;
+        let changeCallback: ((value: string) => void) | undefined;
+        let _value = '';
+        let _validationMessage: string | undefined;
+        let _buttons: unknown[] = [];
+
+        const inputBox = {
+          get value() { return _value; },
+          set value(v: string) {
+            _value = v;
+            if (changeCallback) changeCallback(v);
+          },
+          get validationMessage() { return _validationMessage; },
+          set validationMessage(v: string | undefined) { _validationMessage = v; },
+          placeholder: '',
+          prompt: '',
+          title: '',
+          get buttons() { return _buttons; },
+          set buttons(value: unknown[]) { _buttons = value; },
+          show: () => {
+            // Auto-trigger based on test configuration
+            const selections = options.inputBoxSelections ?? options.showInputBoxResults ?? [];
+            const selection = selections[inputBoxSelectionIndex];
+            inputBoxSelectionIndex++;
+            setTimeout(() => {
+              if (selection === INPUT_BOX_BACK && buttonCallback) {
+                buttonCallback(BACK_BUTTON);
+              } else if (selection === undefined && hideCallback) {
+                hideCallback();
+              } else if (typeof selection === 'string' && acceptCallback) {
+                _value = selection;
+                // Validate and trigger accept
+                if (lastValidateInput) {
+                  _validationMessage = lastValidateInput(selection) ?? undefined;
+                }
+                if (!_validationMessage) {
+                  acceptCallback();
+                }
+              }
+            }, 0);
+          },
+          hide: () => {
+            if (hideCallback) hideCallback();
+          },
+          dispose: () => {},
+          onDidAccept: (callback: () => void) => {
+            acceptCallback = callback;
+            return { dispose: () => {} };
+          },
+          onDidTriggerButton: (callback: (button: unknown) => void) => {
+            buttonCallback = callback;
+            return { dispose: () => {} };
+          },
+          onDidHide: (callback: () => void) => {
+            hideCallback = callback;
+            return { dispose: () => {} };
+          },
+          onDidChangeValue: (callback: (value: string) => void) => {
+            changeCallback = callback;
+            // Capture validateInput from the callback context
+            return { dispose: () => {} };
+          },
+        };
+
+        return inputBox;
+      },
+      showOpenDialog: async (_dialogOptions?: {
+        canSelectFiles?: boolean;
+        canSelectFolders?: boolean;
+        defaultUri?: unknown;
+        title?: string;
+      }) => {
+        const result = options.showOpenDialogResult;
+        if (result) {
+          return [{ fsPath: result }];
+        }
+        return undefined;
+      },
       createQuickPick: <T>() => {
         let quickPickSelectionIndex = 0;
         let acceptCallback: (() => void) | undefined;
@@ -135,6 +234,7 @@ function createMockVSCode(options: {
         let hideCallback: (() => void) | undefined;
         let _items: T[] = [];
         let _selectedItems: T[] = [];
+        let _activeItems: T[] = [];
 
         return {
           title: '',
@@ -143,6 +243,8 @@ function createMockVSCode(options: {
           get items() { return _items; },
           set items(value: T[]) { _items = value; },
           get selectedItems() { return _selectedItems; },
+          get activeItems() { return _activeItems; },
+          set activeItems(value: T[]) { _activeItems = value; },
           show: () => {
             // Auto-trigger selection based on test configuration
             const selections = options.quickPickSelections ?? [];
@@ -199,6 +301,10 @@ function createMockVSCode(options: {
         return result;
       },
     },
+    Uri: {
+      file: (path: string) => ({ fsPath: path }),
+    },
+    ThemeIcon: MockThemeIcon,
     ConfigurationTarget: {
       Global: 1,
       Workspace: 2,
