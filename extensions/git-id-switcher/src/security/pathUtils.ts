@@ -488,5 +488,12 @@ export function isUnderSshDirectory(value: string): boolean {
 
   // Check if the normalized path starts with the SSH directory
   // Must include path separator to prevent matching ~/.ssh_backup/
-  return normalizedValue.startsWith(sshDir + path.sep);
+  const sshDirWithSep = sshDir + path.sep;
+
+  // Windows paths are case-insensitive, use lowercase comparison
+  if (process.platform === 'win32') {
+    return normalizedValue.toLowerCase().startsWith(sshDirWithSep.toLowerCase());
+  }
+
+  return normalizedValue.startsWith(sshDirWithSep);
 }

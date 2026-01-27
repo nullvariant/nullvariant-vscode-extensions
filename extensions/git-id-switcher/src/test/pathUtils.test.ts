@@ -1015,13 +1015,32 @@ function testIsUnderSshDirectory(): void {
     );
   }
 
-  // Expanded path format (Unix)
-  if (process.platform !== 'win32') {
+  // Expanded path format (both Unix and Windows)
+  {
     assert.strictEqual(
       isUnderSshDirectory(path.join(homeDir, '.ssh', 'id_rsa')),
       true,
       'Expanded path should be valid'
     );
+  }
+
+  // Windows case-insensitivity test
+  if (process.platform === 'win32') {
+    const userProfile = process.env.USERPROFILE ?? '';
+    if (userProfile && userProfile.length > 0) {
+      // Test case insensitivity by toggling drive letter case
+      const firstChar = userProfile.charAt(0);
+      const altCase = firstChar === firstChar.toUpperCase()
+        ? firstChar.toLowerCase()
+        : firstChar.toUpperCase();
+      const altCasePath = altCase + userProfile.slice(1);
+
+      assert.strictEqual(
+        isUnderSshDirectory(path.join(altCasePath, '.ssh', 'id_rsa')),
+        true,
+        'Windows path with different case drive letter should be valid'
+      );
+    }
   }
 
   // Invalid paths
