@@ -74,5 +74,21 @@
   "⚙️ Manage Identities": "⚙️ Spravovat identity",
   "(No identities)": "(Žádné identity)",
   "Name contains invalid characters": "Jméno obsahuje neplatné znaky",
-  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID musí mít 1-{0} alfanumerických znaků, podtržítek nebo pomlček"
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID musí mít 1-{0} alfanumerických znaků, podtržítek nebo pomlček",
+  "Select Profile": "Vybrat profil",
+  "Search profiles...": "Hledat profily...",
+  "Manage Profiles": "Spravovat profily",
+  "New Profile": "Nový profil",
+  "Required": "Povinné",
+  "Optional": "Volitelné",
+  "Not set": "Nenastaveno",
+  "Save": "Uložit",
+  "SSH Key Path": "Cesta k SSH klíči",
+  "SSH Host": "SSH hostitel",
+  "GPG Key ID": "ID GPG klíče",
+  "Invalid path": "Neplatná cesta",
+  "Path must be under ~/.ssh/": "Cesta musí být ve složce .ssh vašeho domovského adresáře",
+  "File not found": "Soubor nenalezen",
+  "Saved": "Uloženo",
+  "Cannot be changed": "Nelze změnit"
 }

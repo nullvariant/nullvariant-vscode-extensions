@@ -74,5 +74,21 @@
   "⚙️ Manage Identities": "⚙️ プロフィール管理",
   "(No identities)": "(プロフィールがありません)",
   "Name contains invalid characters": "名前に無効な文字が含まれています",
-  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "IDは1〜{0}文字の英数字、アンダースコア、ハイフンで入力してください"
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "IDは1〜{0}文字の英数字、アンダースコア、ハイフンで入力してください",
+  "Select Profile": "プロフィールを選択",
+  "Search profiles...": "プロフィールを検索...",
+  "Manage Profiles": "プロフィール管理",
+  "New Profile": "新しいプロフィール",
+  "Required": "必須",
+  "Optional": "任意",
+  "Not set": "未設定",
+  "Save": "保存",
+  "SSH Key Path": "SSHキーパス",
+  "SSH Host": "SSHホスト",
+  "GPG Key ID": "GPGキーID",
+  "Invalid path": "無効なパスです",
+  "Path must be under ~/.ssh/": "パスはホームの .ssh フォルダ内にある必要があります",
+  "File not found": "ファイルが見つかりません",
+  "Saved": "保存しました",
+  "Cannot be changed": "変更できません"
 }

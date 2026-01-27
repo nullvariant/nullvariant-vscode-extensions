@@ -74,5 +74,21 @@
   "⚙️ Manage Identities": "⚙️ Управление на самоличности",
   "(No identities)": "(Няма самоличности)",
   "Name contains invalid characters": "Името съдържа невалидни символи",
-  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID трябва да съдържа от 1 до {0} буквено-цифрови символа, долни черти или тирета"
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID трябва да съдържа от 1 до {0} буквено-цифрови символа, долни черти или тирета",
+  "Select Profile": "Изберете профил",
+  "Search profiles...": "Търсене на профили...",
+  "Manage Profiles": "Управление на профили",
+  "New Profile": "Нов профил",
+  "Required": "Задължително",
+  "Optional": "По избор",
+  "Not set": "Не е зададено",
+  "Save": "Запази",
+  "SSH Key Path": "Път до SSH ключ",
+  "SSH Host": "SSH хост",
+  "GPG Key ID": "GPG ключ ID",
+  "Invalid path": "Невалиден път",
+  "Path must be under ~/.ssh/": "Пътят трябва да бъде в папката .ssh на вашата домашна директория",
+  "File not found": "Файлът не е намерен",
+  "Saved": "Запазено",
+  "Cannot be changed": "Не може да се промени"
 }

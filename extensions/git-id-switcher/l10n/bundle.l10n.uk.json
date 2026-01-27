@@ -74,5 +74,21 @@
   "⚙️ Manage Identities": "⚙️ Керування ідентифікаторами",
   "(No identities)": "(Немає ідентифікаторів)",
   "Name contains invalid characters": "Ім'я містить недопустимі символи",
-  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID має містити від 1 до {0} буквено-цифрових символів, підкреслень або дефісів"
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID має містити від 1 до {0} буквено-цифрових символів, підкреслень або дефісів",
+  "Select Profile": "Вибрати профіль",
+  "Search profiles...": "Пошук профілів...",
+  "Manage Profiles": "Керування профілями",
+  "New Profile": "Новий профіль",
+  "Required": "Обов'язково",
+  "Optional": "Необов'язково",
+  "Not set": "Не встановлено",
+  "Save": "Зберегти",
+  "SSH Key Path": "Шлях до SSH ключа",
+  "SSH Host": "SSH хост",
+  "GPG Key ID": "ID GPG ключа",
+  "Invalid path": "Невірний шлях",
+  "Path must be under ~/.ssh/": "Шлях має бути в папці .ssh вашого домашнього каталогу",
+  "File not found": "Файл не знайдено",
+  "Saved": "Збережено",
+  "Cannot be changed": "Не можна змінити"
 }

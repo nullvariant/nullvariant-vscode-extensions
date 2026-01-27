@@ -74,5 +74,21 @@
   "⚙️ Manage Identities": "⚙️ Gérer les identités",
   "(No identities)": "(Aucune identité)",
   "Name contains invalid characters": "Le nom contient des caractères non valides",
-  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "L'ID doit contenir de 1 à {0} caractères alphanumériques, underscores ou tirets"
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "L'ID doit contenir de 1 à {0} caractères alphanumériques, underscores ou tirets",
+  "Select Profile": "Sélectionner le profil",
+  "Search profiles...": "Rechercher des profils...",
+  "Manage Profiles": "Gérer les profils",
+  "New Profile": "Nouveau profil",
+  "Required": "Requis",
+  "Optional": "Facultatif",
+  "Not set": "Non défini",
+  "Save": "Enregistrer",
+  "SSH Key Path": "Chemin de la clé SSH",
+  "SSH Host": "Hôte SSH",
+  "GPG Key ID": "ID de la clé GPG",
+  "Invalid path": "Chemin invalide",
+  "Path must be under ~/.ssh/": "Le chemin doit être dans le dossier .ssh de votre répertoire personnel",
+  "File not found": "Fichier non trouvé",
+  "Saved": "Enregistré",
+  "Cannot be changed": "Ne peut pas être modifié"
 }

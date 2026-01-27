@@ -74,5 +74,21 @@
   "⚙️ Manage Identities": "⚙️ Kimlikleri yönet",
   "(No identities)": "(Kimlik yok)",
   "Name contains invalid characters": "Ad geçersiz karakterler içeriyor",
-  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "Kimlik 1-{0} arasında alfanümerik karakter, alt çizgi veya tire olmalıdır"
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "Kimlik 1-{0} arasında alfanümerik karakter, alt çizgi veya tire olmalıdır",
+  "Select Profile": "Profil Seç",
+  "Search profiles...": "Profil ara...",
+  "Manage Profiles": "Profilleri Yönet",
+  "New Profile": "Yeni Profil",
+  "Required": "Zorunlu",
+  "Optional": "İsteğe bağlı",
+  "Not set": "Ayarlanmadı",
+  "Save": "Kaydet",
+  "SSH Key Path": "SSH Anahtar Yolu",
+  "SSH Host": "SSH Ana Bilgisayar",
+  "GPG Key ID": "GPG Anahtar ID",
+  "Invalid path": "Geçersiz yol",
+  "Path must be under ~/.ssh/": "Yol, ana dizininizdeki .ssh klasöründe olmalıdır",
+  "File not found": "Dosya bulunamadı",
+  "Saved": "Kaydedildi",
+  "Cannot be changed": "Değiştirilemez"
 }

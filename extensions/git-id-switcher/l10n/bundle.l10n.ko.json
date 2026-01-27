@@ -74,5 +74,21 @@
   "⚙️ Manage Identities": "⚙️ ID 관리",
   "(No identities)": "(ID 없음)",
   "Name contains invalid characters": "이름에 잘못된 문자가 포함되어 있습니다",
-  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID는 1-{0}자의 영숫자, 밑줄 또는 하이픈이어야 합니다"
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID는 1-{0}자의 영숫자, 밑줄 또는 하이픈이어야 합니다",
+  "Select Profile": "프로필 선택",
+  "Search profiles...": "프로필 검색...",
+  "Manage Profiles": "프로필 관리",
+  "New Profile": "새 프로필",
+  "Required": "필수",
+  "Optional": "선택",
+  "Not set": "설정되지 않음",
+  "Save": "저장",
+  "SSH Key Path": "SSH 키 경로",
+  "SSH Host": "SSH 호스트",
+  "GPG Key ID": "GPG 키 ID",
+  "Invalid path": "잘못된 경로",
+  "Path must be under ~/.ssh/": "경로는 홈 디렉터리의 .ssh 폴더 안에 있어야 합니다",
+  "File not found": "파일을 찾을 수 없습니다",
+  "Saved": "저장됨",
+  "Cannot be changed": "변경할 수 없습니다"
 }

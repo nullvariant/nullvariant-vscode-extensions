@@ -74,5 +74,21 @@
   "⚙️ Manage Identities": "⚙️ 管理身分",
   "(No identities)": "(無身分)",
   "Name contains invalid characters": "名稱包含無效字元",
-  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID必須是1-{0}個字母數字、底線或連字號"
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID必須是1-{0}個字母數字、底線或連字號",
+  "Select Profile": "選擇設定檔",
+  "Search profiles...": "搜尋設定檔...",
+  "Manage Profiles": "管理設定檔",
+  "New Profile": "新設定檔",
+  "Required": "必填",
+  "Optional": "選填",
+  "Not set": "未設定",
+  "Save": "儲存",
+  "SSH Key Path": "SSH 金鑰路徑",
+  "SSH Host": "SSH 主機",
+  "GPG Key ID": "GPG 金鑰 ID",
+  "Invalid path": "無效路徑",
+  "Path must be under ~/.ssh/": "路徑必須在家目錄的 .ssh 資料夾內",
+  "File not found": "檔案未找到",
+  "Saved": "已儲存",
+  "Cannot be changed": "無法變更"
 }

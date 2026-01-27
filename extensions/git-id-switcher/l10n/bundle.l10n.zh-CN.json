@@ -74,5 +74,21 @@
   "⚙️ Manage Identities": "⚙️ 管理身份",
   "(No identities)": "(无身份)",
   "Name contains invalid characters": "名称包含无效字符",
-  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID必须是1-{0}个字母数字、下划线或连字符"
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID必须是1-{0}个字母数字、下划线或连字符",
+  "Select Profile": "选择配置文件",
+  "Search profiles...": "搜索配置文件...",
+  "Manage Profiles": "管理配置文件",
+  "New Profile": "新配置文件",
+  "Required": "必填",
+  "Optional": "可选",
+  "Not set": "未设置",
+  "Save": "保存",
+  "SSH Key Path": "SSH 密钥路径",
+  "SSH Host": "SSH 主机",
+  "GPG Key ID": "GPG 密钥 ID",
+  "Invalid path": "无效路径",
+  "Path must be under ~/.ssh/": "路径必须在主目录的 .ssh 文件夹内",
+  "File not found": "文件未找到",
+  "Saved": "已保存",
+  "Cannot be changed": "无法更改"
 }
