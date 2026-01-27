@@ -91,34 +91,47 @@ function createMockVSCode(options: {
         return undefined;
       },
       createQuickPick: () => {
-        let acceptCallback: (() => void) | undefined;
-        let hideCallback: (() => void) | undefined;
+        const callbacks: {
+          accept?: () => void;
+          hide?: () => void;
+          button?: (button: unknown) => void;
+        } = {};
 
         return {
           items: [],
           title: '',
           placeholder: '',
+          buttons: [],
           matchOnDescription: false,
           matchOnDetail: false,
           selectedItems: options.showQuickPickResult ? [{ identity: options.showQuickPickResult }] : [],
           onDidAccept: (callback: () => void) => {
-            acceptCallback = callback;
+            callbacks.accept = callback;
+            return { dispose: () => {} };
+          },
+          onDidTriggerButton: (callback: (button: unknown) => void) => {
+            callbacks.button = callback;
+            return { dispose: () => {} };
           },
           onDidHide: (callback: () => void) => {
-            hideCallback = callback;
+            callbacks.hide = callback;
+            return { dispose: () => {} };
           },
           show: () => {
             // Simulate user selection
             if (options.showQuickPickResult !== undefined) {
-              setTimeout(() => acceptCallback?.(), 0);
+              setTimeout(() => callbacks.accept?.(), 0);
             } else {
-              setTimeout(() => hideCallback?.(), 0);
+              setTimeout(() => callbacks.hide?.(), 0);
             }
           },
           hide: () => {},
           dispose: () => {},
         };
       },
+    },
+    QuickInputButtons: {
+      Back: Symbol('QuickInputButtons.Back'),
     },
     l10n: {
       t: (message: string, ...args: unknown[]) => {
@@ -514,6 +527,44 @@ describe('handleAddIdentity E2E Test Suite', function () {
           inputBoxCallIndex++;
           return result;
         },
+        createQuickPick: <T>() => {
+          const callbacks: {
+            accept?: () => void;
+            hide?: () => void;
+            button?: (button: unknown) => void;
+          } = {};
+          let _items: T[] = [];
+
+          return {
+            get items() { return _items; },
+            set items(value: T[]) { _items = value; },
+            title: '',
+            placeholder: '',
+            buttons: [],
+            selectedItems: [] as T[],
+            onDidAccept: (callback: () => void) => {
+              callbacks.accept = callback;
+              return { dispose: () => {} };
+            },
+            onDidTriggerButton: (callback: (button: unknown) => void) => {
+              callbacks.button = callback;
+              return { dispose: () => {} };
+            },
+            onDidHide: (callback: () => void) => {
+              callbacks.hide = callback;
+              return { dispose: () => {} };
+            },
+            show: () => {
+              // Simulate cancel (hide)
+              setTimeout(() => callbacks.hide?.(), 0);
+            },
+            hide: () => {},
+            dispose: () => {},
+          };
+        },
+      },
+      QuickInputButtons: {
+        Back: Symbol('QuickInputButtons.Back'),
       },
       l10n: {
         t: (message: string, ...args: unknown[]) => {

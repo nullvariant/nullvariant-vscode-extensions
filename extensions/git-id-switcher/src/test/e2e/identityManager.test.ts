@@ -46,6 +46,9 @@ const TEST_IDENTITIES = {
   },
 };
 
+/** Symbol for Back button */
+const BACK_BUTTON = Symbol('QuickInputButtons.Back');
+
 /**
  * Create a mock VS Code API for identity manager tests
  */
@@ -54,6 +57,7 @@ function createMockVSCode(options: {
   showQuickPickResult?: { identity?: Identity; field?: keyof Identity } | undefined;
   showInputBoxResults?: (string | undefined)[];
   configUpdateError?: Error;
+  quickPickSelections?: unknown[];
 }) {
   const showWarningMessageCalls: string[] = [];
   const showInformationMessageCalls: string[] = [];
@@ -124,6 +128,67 @@ function createMockVSCode(options: {
         inputBoxCallIndex++;
         return result;
       },
+      createQuickPick: <T>() => {
+        let quickPickSelectionIndex = 0;
+        let acceptCallback: (() => void) | undefined;
+        let buttonCallback: ((button: unknown) => void) | undefined;
+        let hideCallback: (() => void) | undefined;
+        let _items: T[] = [];
+        let _selectedItems: T[] = [];
+
+        return {
+          title: '',
+          placeholder: '',
+          buttons: [] as unknown[],
+          get items() { return _items; },
+          set items(value: T[]) { _items = value; },
+          get selectedItems() { return _selectedItems; },
+          show: () => {
+            // Auto-trigger selection based on test configuration
+            const selections = options.quickPickSelections ?? [];
+            const selection = selections[quickPickSelectionIndex];
+            quickPickSelectionIndex++;
+            setTimeout(() => {
+              if (selection === 'back' && buttonCallback) {
+                buttonCallback(BACK_BUTTON);
+              } else if (selection === undefined && hideCallback) {
+                hideCallback();
+              } else if (acceptCallback) {
+                // Find matching item from _items
+                const matchedItem = _items.find((item: unknown) => {
+                  if (typeof selection === 'object' && selection !== null) {
+                    if ('field' in selection && typeof item === 'object' && item !== null && 'field' in item) {
+                      return (item as { field: string }).field === (selection as { field: string }).field;
+                    }
+                  }
+                  return false;
+                });
+                _selectedItems = matchedItem ? [matchedItem] : [];
+                acceptCallback();
+              }
+            }, 0);
+          },
+          hide: () => {
+            if (hideCallback) hideCallback();
+          },
+          dispose: () => {},
+          onDidAccept: (callback: () => void) => {
+            acceptCallback = callback;
+            return { dispose: () => {} };
+          },
+          onDidTriggerButton: (callback: (button: unknown) => void) => {
+            buttonCallback = callback;
+            return { dispose: () => {} };
+          },
+          onDidHide: (callback: () => void) => {
+            hideCallback = callback;
+            return { dispose: () => {} };
+          },
+        };
+      },
+    },
+    QuickInputButtons: {
+      Back: BACK_BUTTON,
     },
     l10n: {
       t: (message: string, ...args: unknown[]) => {

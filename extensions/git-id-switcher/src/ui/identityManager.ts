@@ -295,62 +295,52 @@ function getPlaceholderForField(vs: VSCodeAPI, field: keyof Identity): string {
 }
 
 /**
- * Build field items for edit wizard.
+ * Build field items for edit wizard using FIELD_METADATA.
+ * Unified with Step 6 (showAddIdentityForm) for consistent UI.
  *
  * @param vs - VS Code API
  * @param identity - Identity being edited
+ * @param savedField - Field that was just saved (for visual feedback)
  * @returns Array of field items for QuickPick
  */
-function buildFieldItems(vs: VSCodeAPI, identity: Identity): FieldQuickPickItem[] {
-  return [
-    {
-      label: '$(lock) ID',
-      description: identity.id,
-      detail: vs.l10n.t('(cannot be changed)'),
-      field: null,
-      _isDisabled: true,
-    },
-    {
-      label: vs.l10n.t('Name'),
-      description: identity.name,
-      field: 'name',
-    },
-    {
-      label: vs.l10n.t('Email'),
-      description: identity.email,
-      field: 'email',
-    },
-    {
-      label: vs.l10n.t('Service'),
-      description: identity.service || vs.l10n.t('(none)'),
-      field: 'service',
-    },
-    {
-      label: vs.l10n.t('Icon'),
-      description: identity.icon || vs.l10n.t('(none)'),
-      field: 'icon',
-    },
-    {
-      label: vs.l10n.t('Description'),
-      description: identity.description || vs.l10n.t('(none)'),
-      field: 'description',
-    },
-    {
-      label: '$(key) ' + vs.l10n.t('SSH Key Path'),
-      description: identity.sshKeyPath || vs.l10n.t('(none)'),
-      field: 'sshKeyPath',
-    },
-    {
-      label: '$(globe) ' + vs.l10n.t('SSH Host'),
-      description: identity.sshHost || vs.l10n.t('(none)'),
-      field: 'sshHost',
-    },
-    {
-      label: '$(shield) ' + vs.l10n.t('GPG Key ID'),
-      description: identity.gpgKeyId || vs.l10n.t('(none)'),
-      field: 'gpgKeyId',
-    },
-  ];
+function buildFieldItems(
+  vs: VSCodeAPI,
+  identity: Identity,
+  savedField?: keyof Identity
+): FieldQuickPickItem[] {
+  const items: FieldQuickPickItem[] = [];
+
+  for (const meta of FIELD_METADATA) {
+    const value = identity[meta.key];
+    const hasValue = value !== undefined && String(value).trim() !== '';
+    const displayValue = hasValue ? String(value) : vs.l10n.t('(none)');
+
+    // ID field is not editable (locked)
+    // Using $(lock) icon in label (from FIELD_METADATA), value in description
+    if (meta.key === 'id') {
+      items.push({
+        label: `$(${meta.icon}) ${vs.l10n.t(meta.labelKey)}`,
+        description: displayValue,
+        detail: vs.l10n.t('(cannot be changed)'),
+        field: null,
+        _isDisabled: true,
+      });
+      continue;
+    }
+
+    // Visual feedback for just-saved field
+    const description = savedField === meta.key
+      ? `$(check) ${vs.l10n.t('Saved')}`
+      : displayValue;
+
+    items.push({
+      label: `$(${meta.icon}) ${vs.l10n.t(meta.labelKey)}`,
+      description,
+      field: meta.key,
+    });
+  }
+
+  return items;
 }
 
 // ============================================================================
@@ -556,20 +546,26 @@ async function promptAddFormFieldInput(
   });
 }
 
-/** QuickPick reference for add form */
-type AddFormQuickPick = ReturnType<VSCodeAPI['window']['createQuickPick']>;
+/** Generic QuickPick type */
+type GenericQuickPick<T> = ReturnType<VSCodeAPI['window']['createQuickPick']> & {
+  readonly selectedItems: readonly T[];
+};
+
+/** QuickPick type for add form (for backward compatibility) */
+type AddFormQuickPick = GenericQuickPick<AddFormQuickPickItem>;
 
 /**
  * Wait for QuickPick selection or button press.
+ * Generic helper used by both Add Form and Field Selection.
  *
  * @param vs - VS Code API
  * @param quickPick - The QuickPick instance
  * @returns Selected item, 'back' if back pressed, undefined if cancelled
  */
-function waitForAddFormSelection(
+function waitForQuickPickSelection<T>(
   vs: VSCodeAPI,
-  quickPick: AddFormQuickPick
-): Promise<AddFormQuickPickItem | 'back' | undefined> {
+  quickPick: GenericQuickPick<T>
+): Promise<T | 'back' | undefined> {
   return new Promise(resolve => {
     let resolved = false;
 
@@ -583,7 +579,7 @@ function waitForAddFormSelection(
     const disposables: { dispose(): void }[] = [
       quickPick.onDidAccept(() => {
         cleanup(disposables);
-        resolve(quickPick.selectedItems[0] as AddFormQuickPickItem | undefined);
+        resolve(quickPick.selectedItems[0] as T | undefined);
       }),
       quickPick.onDidTriggerButton(button => {
         if (button === vs.QuickInputButtons.Back) {
@@ -677,7 +673,7 @@ async function executeAddFormLoop(
       quickPick.items = buildAddFormItems(vs, state, existingIds);
       quickPick.show();
 
-      const selection = await waitForAddFormSelection(vs, quickPick);
+      const selection = await waitForQuickPickSelection<AddFormQuickPickItem>(vs, quickPick);
 
       // User cancelled or pressed back
       if (selection === undefined || selection === 'back') {
@@ -787,32 +783,46 @@ async function selectIdentityToEdit(vs: VSCodeAPI): Promise<Identity | undefined
 }
 
 /**
- * Select field to edit.
+ * Show field selection QuickPick with back button.
+ * Uses createQuickPick API for back button support and Filter... placeholder.
  *
  * @param vs - VS Code API
  * @param identity - Identity being edited
- * @returns Selected field item with non-null field, or undefined if cancelled
+ * @param savedField - Field that was just saved (for visual feedback)
+ * @returns Selected field, 'back' if back pressed, undefined if cancelled
  */
-async function selectFieldToEdit(
+async function showFieldSelectionQuickPick(
   vs: VSCodeAPI,
-  identity: Identity
-): Promise<{ item: FieldQuickPickItem; field: EditableField } | undefined> {
-  const fieldItems = buildFieldItems(vs, identity);
-  const selectedField = await vs.window.showQuickPick(fieldItems, {
-    title: vs.l10n.t('Edit Identity: Select Field'),
-    placeHolder: vs.l10n.t('Select property to edit'),
-  });
+  identity: Identity,
+  savedField?: keyof Identity
+): Promise<{ item: FieldQuickPickItem; field: EditableField } | 'back' | undefined> {
+  const quickPick = vs.window.createQuickPick<FieldQuickPickItem>();
+  quickPick.title = vs.l10n.t('Edit Identity: {0}', identity.id);
+  quickPick.placeholder = vs.l10n.t('Filter...');
+  quickPick.buttons = [vs.QuickInputButtons.Back];
+  quickPick.items = buildFieldItems(vs, identity, savedField);
 
-  // Return undefined if cancelled, disabled, or null field
-  if (!selectedField || selectedField._isDisabled || selectedField.field === null) {
-    return undefined;
+  try {
+    quickPick.show();
+    const selection = await waitForQuickPickSelection<FieldQuickPickItem>(vs, quickPick);
+
+    // Handle back button or cancel
+    if (selection === 'back' || selection === undefined) {
+      return selection;
+    }
+
+    // Skip disabled items (ID field)
+    if (selection._isDisabled || selection.field === null) {
+      return undefined;
+    }
+
+    return {
+      item: selection,
+      field: selection.field as EditableField,
+    };
+  } finally {
+    quickPick.dispose();
   }
-
-  // Type narrowing: at this point field is guaranteed to be non-null and editable
-  return {
-    item: selectedField,
-    field: selectedField.field as EditableField,
-  };
 }
 
 /**
@@ -841,45 +851,94 @@ async function promptFieldValueInput(
   });
 }
 
+/** State for edit loop */
+interface EditLoopState {
+  identity: Identity;
+  savedField?: keyof Identity;
+  hasUpdated: boolean;
+}
+
+/**
+ * Refresh identity after save to get updated values.
+ *
+ * @param identityId - ID of the identity to refresh
+ * @returns Refreshed identity or undefined if not found
+ */
+function refreshIdentity(identityId: string): Identity | undefined {
+  const identities = getIdentitiesWithValidation();
+  return identities.find(i => i.id === identityId);
+}
+
+/**
+ * Process the value input step and save the field.
+ *
+ * @param vs - VS Code API
+ * @param state - Edit loop state
+ * @param selection - Selected field info
+ * @param inputValue - Current input value
+ * @returns 'saved' if saved, 'back' if user pressed Esc, 'error' if save failed
+ */
+async function processFieldValueInput(
+  vs: VSCodeAPI,
+  state: EditLoopState,
+  selection: { item: FieldQuickPickItem; field: EditableField },
+  inputValue: string
+): Promise<'saved' | 'back' | 'error'> {
+  const { item, field } = selection;
+  const newValue = await promptFieldValueInput(vs, item, field, inputValue);
+
+  if (newValue === undefined) {
+    return 'back';
+  }
+
+  const optional = isOptionalField(field);
+  const finalValue = optional && newValue.trim() === '' ? undefined : newValue;
+  const saved = await saveEditedField(vs, state.identity.id, field, finalValue);
+
+  if (!saved) {
+    return 'error';
+  }
+
+  state.hasUpdated = true;
+  state.savedField = field;
+  const refreshed = refreshIdentity(state.identity.id);
+  if (refreshed) {
+    state.identity = refreshed;
+  }
+  return 'saved';
+}
+
 /**
  * Execute the field selection and value input loop.
+ * After editing a field, returns to field selection (loop continues).
  * Supports Esc to go back from value input to field selection.
+ * Shows visual feedback when a field is saved.
  *
  * @param vs - VS Code API
  * @param identity - Identity being edited
- * @returns true if updated, false if cancelled
+ * @returns true if any field was updated, false if cancelled without changes
  */
 async function executeFieldEditLoop(vs: VSCodeAPI, identity: Identity): Promise<boolean> {
-  let currentStep = 1;
-  let selection: { item: FieldQuickPickItem; field: EditableField } | undefined;
-  let lastInputValue = '';
+  const state: EditLoopState = {
+    identity,
+    hasUpdated: false,
+  };
 
-  while (currentStep >= 1 && currentStep <= 2) {
-    if (currentStep === 1) {
-      selection = await selectFieldToEdit(vs, identity);
-      if (!selection) {
-        return false; // Esc on field selection → return to caller
-      }
-      lastInputValue = identity[selection.field] ?? '';
-      currentStep++;
-      continue;
+  while (true) {
+    // Step 1: Field selection
+    const result = await showFieldSelectionQuickPick(vs, state.identity, state.savedField);
+    state.savedField = undefined; // Clear feedback after showing
+
+    if (result === 'back' || !result) {
+      return state.hasUpdated;
     }
 
-    // currentStep === 2: selection is guaranteed to be defined here
-    const { item, field } = selection!;
-    const newValue = await promptFieldValueInput(vs, item, field, lastInputValue);
-
-    if (newValue === undefined) {
-      currentStep--; // Esc → go back to field selection
-      continue;
-    }
-
-    const optional = isOptionalField(field);
-    const finalValue = optional && newValue.trim() === '' ? undefined : newValue;
-    return saveEditedField(vs, identity.id, field, finalValue);
+    // Step 2: Value input
+    // All outcomes ('back', 'saved', 'error') return to field selection
+    // Loop continues until user presses back button or cancels at field selection
+    const inputValue = state.identity[result.field] ?? '';
+    await processFieldValueInput(vs, state, result, inputValue);
   }
-
-  return false;
 }
 
 /**
