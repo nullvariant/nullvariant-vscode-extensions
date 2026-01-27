@@ -90,6 +90,7 @@ import {
   validateWorkspacePath,
   expandTilde,
   containsSymlinks,
+  isUnderSshDirectory,
 } from '../security/pathUtils';
 
 /**
@@ -990,6 +991,85 @@ function testValidateWorkspacePath(): void {
 }
 
 /**
+ * Test isUnderSshDirectory function
+ */
+function testIsUnderSshDirectory(): void {
+  console.log('Testing isUnderSshDirectory...');
+
+  const homeDir = os.homedir();
+
+  // Valid paths under ~/.ssh/
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/.ssh/id_rsa'),
+      true,
+      '~/.ssh/id_rsa should be valid'
+    );
+  }
+
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/.ssh/keys/work_key'),
+      true,
+      '~/.ssh/keys/work_key should be valid (subdirectory)'
+    );
+  }
+
+  // Expanded path format (Unix)
+  if (process.platform !== 'win32') {
+    assert.strictEqual(
+      isUnderSshDirectory(path.join(homeDir, '.ssh', 'id_rsa')),
+      true,
+      'Expanded path should be valid'
+    );
+  }
+
+  // Invalid paths
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/documents/key'),
+      false,
+      '~/documents/key should be invalid'
+    );
+  }
+
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/.ssh_backup/key'),
+      false,
+      '~/.ssh_backup/key should be invalid (not .ssh directory)'
+    );
+  }
+
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('/etc/passwd'),
+      false,
+      '/etc/passwd should be invalid'
+    );
+  }
+
+  // Edge cases
+  {
+    assert.strictEqual(
+      isUnderSshDirectory(''),
+      false,
+      'Empty string should be invalid'
+    );
+  }
+
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/.ssh'),
+      false,
+      '~/.ssh without trailing component should be invalid'
+    );
+  }
+
+  console.log('✅ isUnderSshDirectory tests passed!');
+}
+
+/**
  * Run all path utils tests
  */
 export async function runPathUtilsTests(): Promise<void> {
@@ -1019,6 +1099,7 @@ export async function runPathUtilsTests(): Promise<void> {
     testExpandTildeEdgeCases();
     testControlCharacterPrevention();
     testValidateWorkspacePath();
+    testIsUnderSshDirectory();
 
     console.log('\n✅ All path utils tests passed!\n');
   } catch (error) {

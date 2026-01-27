@@ -17,6 +17,8 @@ import {
   isValidGpgKeyId,
   isValidIdentityId,
   hasDangerousChars,
+  hasDangerousCharsForPath,
+  hasDangerousCharsForText,
   INVISIBLE_CHARS,
   CONTROL_CHAR_REGEX_STRICT,
   CONTROL_CHAR_REGEX_ALL,
@@ -29,6 +31,8 @@ import {
   SAFE_TEXT_PATTERN,
   SAFE_TEXT_REGEX,
   DANGEROUS_PATTERNS,
+  DANGEROUS_CHARS_FOR_PATH_REGEX,
+  DANGEROUS_CHARS_FOR_TEXT_REGEX,
 } from '../validators/common';
 
 /**
@@ -364,6 +368,62 @@ function testHasDangerousChars(): void {
 }
 
 /**
+ * Test suite for hasDangerousCharsForPath
+ */
+function testHasDangerousCharsForPath(): void {
+  console.log('Testing hasDangerousCharsForPath...');
+
+  // Dangerous characters for paths (should return true)
+  assert.strictEqual(hasDangerousCharsForPath('`cmd`'), true, 'Backtick should be dangerous');
+  assert.strictEqual(hasDangerousCharsForPath('$(cmd)'), true, 'Command substitution should be dangerous');
+  assert.strictEqual(hasDangerousCharsForPath('a|b'), true, 'Pipe should be dangerous');
+  assert.strictEqual(hasDangerousCharsForPath('a;b'), true, 'Semicolon should be dangerous for paths');
+  assert.strictEqual(hasDangerousCharsForPath('a&b'), true, 'Ampersand should be dangerous');
+  assert.strictEqual(hasDangerousCharsForPath('a<b'), true, 'Less than should be dangerous');
+  assert.strictEqual(hasDangerousCharsForPath('a>b'), true, 'Greater than should be dangerous');
+  assert.strictEqual(hasDangerousCharsForPath('$HOME'), true, 'Dollar sign should be dangerous');
+
+  // Safe characters for paths (should return false)
+  assert.strictEqual(hasDangerousCharsForPath('~/.ssh/id_rsa'), false, 'Normal path should be safe');
+  assert.strictEqual(hasDangerousCharsForPath('/home/user/.ssh/key'), false, 'Absolute path should be safe');
+  assert.strictEqual(hasDangerousCharsForPath('path/to/file'), false, 'Relative path should be safe');
+  assert.strictEqual(hasDangerousCharsForPath('file-name_123.txt'), false, 'Path with hyphen/underscore should be safe');
+
+  // Verify regex constant exists
+  assert.ok(DANGEROUS_CHARS_FOR_PATH_REGEX instanceof RegExp, 'DANGEROUS_CHARS_FOR_PATH_REGEX should be a RegExp');
+
+  console.log('✅ hasDangerousCharsForPath tests passed!');
+}
+
+/**
+ * Test suite for hasDangerousCharsForText
+ */
+function testHasDangerousCharsForText(): void {
+  console.log('Testing hasDangerousCharsForText...');
+
+  // Dangerous characters for text (should return true)
+  assert.strictEqual(hasDangerousCharsForText('`cmd`'), true, 'Backtick should be dangerous');
+  assert.strictEqual(hasDangerousCharsForText('$(cmd)'), true, 'Command substitution should be dangerous');
+  assert.strictEqual(hasDangerousCharsForText('$VAR'), true, 'Dollar sign should be dangerous');
+
+  // Characters allowed in text but not paths (should return false)
+  assert.strictEqual(hasDangerousCharsForText('Null;Variant'), false, 'Semicolon should be allowed in text');
+  assert.strictEqual(hasDangerousCharsForText('AT&T'), false, 'Ampersand should be allowed in text');
+  assert.strictEqual(hasDangerousCharsForText('a|b'), false, 'Pipe should be allowed in text');
+  assert.strictEqual(hasDangerousCharsForText('a<b>c'), false, 'Angle brackets should be allowed in text');
+
+  // Safe characters for text (should return false)
+  assert.strictEqual(hasDangerousCharsForText('normal text'), false, 'Normal text should be safe');
+  assert.strictEqual(hasDangerousCharsForText('hello-world_123'), false, 'Alphanumeric with hyphen/underscore should be safe');
+  assert.strictEqual(hasDangerousCharsForText('user@example.com'), false, 'Email format should be safe');
+
+  // Verify regex constant exists
+  assert.ok(DANGEROUS_CHARS_FOR_TEXT_REGEX instanceof RegExp, 'DANGEROUS_CHARS_FOR_TEXT_REGEX should be a RegExp');
+
+  console.log('✅ hasDangerousCharsForText tests passed!');
+}
+
+/**
  * Run all tests
  */
 export function runValidatorsCommonTests(): void {
@@ -381,6 +441,8 @@ export function runValidatorsCommonTests(): void {
     testIsValidGpgKeyId();
     testIsValidIdentityId();
     testHasDangerousChars();
+    testHasDangerousCharsForPath();
+    testHasDangerousCharsForText();
     testConstants();
 
     console.log('\n✅ All common validators tests passed!\n');

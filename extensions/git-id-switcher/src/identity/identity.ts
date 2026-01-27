@@ -26,8 +26,10 @@ import {
   isValidSshHost,
   isValidGpgKeyId,
   hasPathTraversal,
-  hasDangerousChars,
+  hasDangerousCharsForPath,
+  hasDangerousCharsForText,
 } from '../validators/common';
+import { isUnderSshDirectory } from '../security/pathUtils';
 
 /**
  * Session-level flag to prevent multiple validation error notifications.
@@ -167,28 +169,28 @@ export const EDITABLE_FIELDS: ReadonlyArray<keyof Identity> = [
 /**
  * Validate SSH key path format
  *
- * Reuses validators from validators/common.ts:
- * - Must be absolute path or start with ~
- * - No path traversal (..)
- * - No dangerous shell characters
+ * Defense-in-depth validation (lightest to heaviest):
+ * - Layer 1: hasDangerousCharsForPath() - dangerous character detection
+ * - Layer 2: hasPathTraversal() - path traversal detection
+ * - Layer 3: isUnderSshDirectory() - SSH directory restriction
  *
  * @param value - The SSH key path to validate
  * @returns Error message if invalid, undefined if valid
  */
 function validateSshKeyPathForField(value: string): string | undefined {
-  // Must start with / or ~
-  if (!value.startsWith('/') && !value.startsWith('~')) {
-    return 'sshKeyPath must be an absolute path or start with ~';
+  // Layer 1: Dangerous characters (fastest check)
+  if (hasDangerousCharsForPath(value)) {
+    return 'sshKeyPath contains dangerous characters';
   }
 
-  // No path traversal
+  // Layer 2: Path traversal
   if (hasPathTraversal(value)) {
     return 'sshKeyPath: path traversal (..) is not allowed';
   }
 
-  // No dangerous characters
-  if (hasDangerousChars(value)) {
-    return 'sshKeyPath contains dangerous characters';
+  // Layer 3: Must be under ~/.ssh/ directory
+  if (!isUnderSshDirectory(value)) {
+    return 'sshKeyPath must be under ~/.ssh/ directory';
   }
 
   return undefined;
@@ -223,7 +225,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     icon: 'person',
     maxLength: MAX_NAME_LENGTH,
     validator: (value: string) =>
-      hasDangerousChars(value) ? 'Name contains invalid characters' : undefined,
+      hasDangerousCharsForText(value) ? 'Name contains invalid characters' : undefined,
   },
   {
     key: 'email',
@@ -245,7 +247,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     icon: 'server',
     maxLength: MAX_SERVICE_LENGTH,
     validator: (value: string) =>
-      hasDangerousChars(value) ? 'Service contains invalid characters' : undefined,
+      hasDangerousCharsForText(value) ? 'Service contains invalid characters' : undefined,
   },
   {
     key: 'icon',
@@ -265,7 +267,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     icon: 'note',
     maxLength: MAX_DESCRIPTION_LENGTH,
     validator: (value: string) =>
-      hasDangerousChars(value)
+      hasDangerousCharsForText(value)
         ? 'Description contains invalid characters'
         : undefined,
   },
