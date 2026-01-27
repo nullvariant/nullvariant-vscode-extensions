@@ -102,5 +102,7 @@
   "(fill required fields)": "(vyplňte povinná pole)",
   "New Profile: {0}": "Nový profil: {0}",
   "Leave empty to skip": "Ponechte prázdné pro přeskočení",
-  "Filter...": "Filtrovat..."
+  "Filter...": "Filter...",
+  "Browse...": "Procházet...",
+  "Select SSH Key": "Vybrat SSH klíč"
 }

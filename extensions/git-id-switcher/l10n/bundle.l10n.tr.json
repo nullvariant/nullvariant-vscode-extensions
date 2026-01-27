@@ -102,5 +102,7 @@
   "(fill required fields)": "(zorunlu alanları doldurun)",
   "New Profile: {0}": "Yeni Profil: {0}",
   "Leave empty to skip": "Atlamak için boş bırakın",
-  "Filter...": "Filtrele..."
+  "Filter...": "Filter...",
+  "Browse...": "Gözat...",
+  "Select SSH Key": "SSH Anahtarı Seç"
 }

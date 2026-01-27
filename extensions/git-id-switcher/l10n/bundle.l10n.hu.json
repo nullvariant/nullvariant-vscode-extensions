@@ -102,5 +102,7 @@
   "(fill required fields)": "(töltse ki a kötelező mezőket)",
   "New Profile: {0}": "Új profil: {0}",
   "Leave empty to skip": "Hagyja üresen a kihagyáshoz",
-  "Filter...": "Szűrés..."
+  "Filter...": "Filter...",
+  "Browse...": "Tallózás...",
+  "Select SSH Key": "SSH kulcs kiválasztása"
 }

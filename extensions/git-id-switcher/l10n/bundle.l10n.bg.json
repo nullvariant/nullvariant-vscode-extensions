@@ -102,5 +102,7 @@
   "(fill required fields)": "(попълнете задължителните полета)",
   "New Profile: {0}": "Нов профил: {0}",
   "Leave empty to skip": "Оставете празно за пропускане",
-  "Filter...": "Филтър..."
+  "Filter...": "Filter...",
+  "Browse...": "Преглед...",
+  "Select SSH Key": "Изберете SSH ключ"
 }

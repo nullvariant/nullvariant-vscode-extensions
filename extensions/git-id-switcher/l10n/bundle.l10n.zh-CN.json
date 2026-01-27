@@ -102,5 +102,7 @@
   "(fill required fields)": "（请填写必填项）",
   "New Profile: {0}": "新建配置文件：{0}",
   "Leave empty to skip": "留空以跳过",
-  "Filter...": "筛选..."
+  "Filter...": "Filter...",
+  "Browse...": "浏览...",
+  "Select SSH Key": "选择SSH密钥"
 }

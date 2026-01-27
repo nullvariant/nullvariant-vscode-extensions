@@ -102,5 +102,7 @@
   "(fill required fields)": "（請填寫必填項）",
   "New Profile: {0}": "新建設定檔：{0}",
   "Leave empty to skip": "留空以跳過",
-  "Filter...": "篩選..."
+  "Filter...": "Filter...",
+  "Browse...": "瀏覽...",
+  "Select SSH Key": "選擇SSH金鑰"
 }

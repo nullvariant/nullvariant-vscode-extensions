@@ -102,5 +102,7 @@
   "(fill required fields)": "(必須項目を入力してください)",
   "New Profile: {0}": "新しいプロフィール: {0}",
   "Leave empty to skip": "空のままにするとスキップします",
-  "Filter...": "絞り込み..."
+  "Filter...": "Filter...",
+  "Browse...": "参照...",
+  "Select SSH Key": "SSH鍵を選択"
 }

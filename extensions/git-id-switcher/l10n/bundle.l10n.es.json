@@ -102,5 +102,7 @@
   "(fill required fields)": "(complete los campos obligatorios)",
   "New Profile: {0}": "Nuevo perfil: {0}",
   "Leave empty to skip": "Dejar vacío para omitir",
-  "Filter...": "Filtrar..."
+  "Filter...": "Filter...",
+  "Browse...": "Examinar...",
+  "Select SSH Key": "Seleccionar clave SSH"
 }

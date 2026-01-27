@@ -102,5 +102,7 @@
   "(fill required fields)": "(필수 항목을 입력하세요)",
   "New Profile: {0}": "새 프로필: {0}",
   "Leave empty to skip": "건너뛰려면 비워두세요",
-  "Filter...": "필터..."
+  "Filter...": "Filter...",
+  "Browse...": "찾아보기...",
+  "Select SSH Key": "SSH 키 선택"
 }

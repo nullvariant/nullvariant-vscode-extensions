@@ -102,5 +102,7 @@
   "(fill required fields)": "(заповніть обов'язкові поля)",
   "New Profile: {0}": "Новий профіль: {0}",
   "Leave empty to skip": "Залиште порожнім, щоб пропустити",
-  "Filter...": "Фільтр..."
+  "Filter...": "Filter...",
+  "Browse...": "Огляд...",
+  "Select SSH Key": "Вибрати SSH-ключ"
 }

@@ -515,29 +515,29 @@ function buildAddFormItems(
 
 /**
  * Prompt for field value input in add form.
+ * Uses showFieldInputBox for back button support.
  *
  * @param vs - VS Code API
  * @param meta - Field metadata
  * @param currentValue - Current field value
  * @param existingIds - Set of existing identity IDs (for ID validation)
- * @returns New value or undefined if cancelled
+ * @returns New value, 'back' if back pressed, undefined if cancelled
  */
 async function promptAddFormFieldInput(
   vs: VSCodeAPI,
   meta: FieldMetadata,
   currentValue: string,
   existingIds: Set<string>
-): Promise<string | undefined> {
+): Promise<QuickInputResult<string>> {
   const isOptional = !meta.required;
-  const title = vs.l10n.t('New Profile: {0}', vs.l10n.t(meta.labelKey));
 
-  return vs.window.showInputBox({
-    title,
+  return showFieldInputBox(vs, {
+    title: vs.l10n.t('New Profile: {0}', vs.l10n.t(meta.labelKey)),
     value: currentValue,
-    placeHolder: getPlaceholderForField(vs, meta.key),
+    placeholder: getPlaceholderForField(vs, meta.key),
     prompt: isOptional ? vs.l10n.t('Leave empty to skip') : undefined,
+    field: meta.key,
     validateInput: (value: string) => {
-      // ID field: check for duplicates
       if (meta.key === 'id') {
         return validateIdInput(vs, value, existingIds);
       }
@@ -553,6 +553,12 @@ type GenericQuickPick<T> = ReturnType<VSCodeAPI['window']['createQuickPick']> & 
 
 /** QuickPick type for add form (for backward compatibility) */
 type AddFormQuickPick = GenericQuickPick<AddFormQuickPickItem>;
+
+/** InputBox type */
+type GenericInputBox = ReturnType<VSCodeAPI['window']['createInputBox']>;
+
+/** Result type for QuickInput operations (QuickPick/InputBox with back button) */
+type QuickInputResult<T> = T | 'back' | undefined;
 
 /**
  * Wait for QuickPick selection or button press.
@@ -593,6 +599,123 @@ function waitForQuickPickSelection<T>(
       }),
     ];
   });
+}
+
+/**
+ * Wait for InputBox value or button press.
+ * Generic helper used by both Add Form and Field Selection.
+ * Supports optional file picker button for path fields.
+ *
+ * @param vs - VS Code API
+ * @param inputBox - The InputBox instance
+ * @param validateInput - Validation function
+ * @param onCustomButton - Optional handler for non-back buttons (e.g., file picker)
+ * @returns Input value, 'back' if back pressed, undefined if cancelled
+ */
+function waitForInputBoxValue(
+  vs: VSCodeAPI,
+  inputBox: GenericInputBox,
+  validateInput: (value: string) => string | null,
+  onCustomButton?: () => Promise<string | undefined>
+): Promise<QuickInputResult<string>> {
+  return new Promise(resolve => {
+    let resolved = false;
+
+    const cleanup = (disposables: { dispose(): void }[]): void => {
+      if (!resolved) {
+        resolved = true;
+        disposables.forEach(d => d.dispose());
+      }
+    };
+
+    const disposables: { dispose(): void }[] = [
+      inputBox.onDidChangeValue(value => {
+        inputBox.validationMessage = validateInput(value) ?? undefined;
+      }),
+      inputBox.onDidAccept(() => {
+        if (!inputBox.validationMessage) {
+          cleanup(disposables);
+          resolve(inputBox.value);
+        }
+      }),
+      inputBox.onDidTriggerButton(async button => {
+        if (button === vs.QuickInputButtons.Back) {
+          cleanup(disposables);
+          resolve('back');
+        } else if (onCustomButton) {
+          const newValue = await onCustomButton();
+          if (newValue !== undefined) {
+            inputBox.value = newValue;
+            inputBox.validationMessage = validateInput(newValue) ?? undefined;
+          }
+        }
+      }),
+      inputBox.onDidHide(() => {
+        cleanup(disposables);
+        resolve(undefined);
+      }),
+    ];
+  });
+}
+
+/** Options for showFieldInputBox */
+interface FieldInputBoxOptions {
+  readonly title: string;
+  readonly value: string;
+  readonly placeholder: string;
+  readonly prompt?: string;
+  readonly validateInput: (value: string) => string | null;
+  readonly field?: keyof Identity;
+}
+
+/**
+ * Show field input box with back button.
+ * Common function for both Add and Edit forms.
+ * Supports file picker button for sshKeyPath field.
+ *
+ * @param vs - VS Code API
+ * @param options - Input box options
+ * @returns Input value, 'back' if back pressed, undefined if cancelled
+ */
+async function showFieldInputBox(
+  vs: VSCodeAPI,
+  options: FieldInputBoxOptions
+): Promise<QuickInputResult<string>> {
+  const inputBox = vs.window.createInputBox();
+  inputBox.title = options.title;
+  inputBox.value = options.value;
+  inputBox.placeholder = options.placeholder;
+  inputBox.prompt = options.prompt;
+  inputBox.buttons = [vs.QuickInputButtons.Back];
+
+  // File picker handler for sshKeyPath field
+  let onCustomButton: (() => Promise<string | undefined>) | undefined;
+  if (options.field === 'sshKeyPath') {
+    inputBox.buttons = [
+      vs.QuickInputButtons.Back,
+      { iconPath: new vs.ThemeIcon('folder-opened'), tooltip: vs.l10n.t('Browse...') },
+    ];
+    onCustomButton = async (): Promise<string | undefined> => {
+      // Default to ~/.ssh - use HOME (Unix) or USERPROFILE (Windows)
+      const homeDir = process.env.HOME ?? process.env.USERPROFILE;
+      const defaultPath = homeDir ? `${homeDir}/.ssh` : undefined;
+      const fileUri = await vs.window.showOpenDialog({
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: false,
+        defaultUri: defaultPath ? vs.Uri.file(defaultPath) : undefined,
+        title: vs.l10n.t('Select SSH Key'),
+      });
+      return fileUri?.[0]?.fsPath;
+    };
+  }
+
+  try {
+    inputBox.show();
+    return await waitForInputBoxValue(vs, inputBox, options.validateInput, onCustomButton);
+  } finally {
+    inputBox.dispose();
+  }
 }
 
 /**
@@ -639,10 +762,12 @@ async function handleAddFormFieldEdit(
 
   quickPick.hide();
   const currentValue = state[fieldKey] ?? '';
-  const newValue = await promptAddFormFieldInput(vs, meta, currentValue, existingIds);
+  const result = await promptAddFormFieldInput(vs, meta, currentValue, existingIds);
 
-  if (newValue !== undefined) {
-    (state as Record<string, string | undefined>)[fieldKey] = newValue.trim() || undefined;
+  // 'back' or undefined: return to form without changes
+  // string: update state with new value
+  if (typeof result === 'string') {
+    (state as Record<string, string | undefined>)[fieldKey] = result.trim() || undefined;
   }
 }
 
@@ -827,26 +952,28 @@ async function showFieldSelectionQuickPick(
 
 /**
  * Prompt for field value input.
+ * Uses showFieldInputBox for back button and file picker support.
  *
  * @param vs - VS Code API
  * @param fieldItem - Field being edited
  * @param field - Field name (guaranteed non-null)
  * @param currentValue - Current field value
- * @returns New value or undefined if cancelled
+ * @returns New value, 'back' if back pressed, undefined if cancelled
  */
 async function promptFieldValueInput(
   vs: VSCodeAPI,
   fieldItem: FieldQuickPickItem,
   field: EditableField,
   currentValue: string
-): Promise<string | undefined> {
+): Promise<QuickInputResult<string>> {
   const optional = isOptionalField(field);
 
-  return vs.window.showInputBox({
+  return showFieldInputBox(vs, {
     title: vs.l10n.t('Edit Identity: {0}', fieldItem.label),
     value: currentValue,
-    placeHolder: getPlaceholderForField(vs, field),
+    placeholder: getPlaceholderForField(vs, field),
     prompt: optional ? vs.l10n.t('Leave empty to clear') : undefined,
+    field,
     validateInput: (value: string) => validateFieldInput(vs, field, value, optional),
   });
 }
@@ -885,14 +1012,15 @@ async function processFieldValueInput(
   inputValue: string
 ): Promise<'saved' | 'back' | 'error'> {
   const { item, field } = selection;
-  const newValue = await promptFieldValueInput(vs, item, field, inputValue);
+  const result = await promptFieldValueInput(vs, item, field, inputValue);
 
-  if (newValue === undefined) {
+  // 'back' or undefined: return to field selection
+  if (result === undefined || result === 'back') {
     return 'back';
   }
 
   const optional = isOptionalField(field);
-  const finalValue = optional && newValue.trim() === '' ? undefined : newValue;
+  const finalValue = optional && result.trim() === '' ? undefined : result;
   const saved = await saveEditedField(vs, state.identity.id, field, finalValue);
 
   if (!saved) {
