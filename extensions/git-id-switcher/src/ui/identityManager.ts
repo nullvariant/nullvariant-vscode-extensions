@@ -669,7 +669,7 @@ async function executeAddFormLoop(
 
   const quickPick = vs.window.createQuickPick<AddFormQuickPickItem>();
   quickPick.title = vs.l10n.t('New Profile');
-  quickPick.placeholder = vs.l10n.t('Select a field to edit');
+  quickPick.placeholder = vs.l10n.t('Filter...');
   quickPick.buttons = [vs.QuickInputButtons.Back];
 
   try {
