@@ -481,8 +481,13 @@ function createManageMockVSCode(options: {
                     itemButtonCallback({ item: item as T, button });
                   }
                 }
-              } else if (options.triggerAction === 'add' || options.triggerAction === 'selectIdentity' || options.triggerAction === 'selectPlaceholder') {
+              } else if (options.triggerAction === 'add') {
                 acceptCallback?.();
+              } else if (options.triggerAction === 'selectIdentity' || options.triggerAction === 'selectPlaceholder') {
+                // These selections should be ignored by the implementation
+                // After onDidAccept returns without action, trigger hide to end the test
+                acceptCallback?.();
+                setTimeout(() => hideCallback?.(), 10);
               } else if (options.triggerAction === 'hide') {
                 hideCallback?.();
               }

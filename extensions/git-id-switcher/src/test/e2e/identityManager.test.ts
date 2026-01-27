@@ -426,33 +426,37 @@ describe('identityManager E2E Test Suite', function () {
     it('should return error for invalid email format', async () => {
       const mockVSCode = createMockVSCode({
         identities: [],
-        showInputBoxResults: ['valid-id', 'Valid Name', undefined], // Cancel at email
+        showInputBoxResults: ['valid-id', 'Valid Name', 'valid@example.com'], // Complete wizard
       });
       _setMockVSCode(mockVSCode as never);
 
       await showAddIdentityWizard();
 
-      const validateInput = mockVSCode._getLastValidateInput();
-      assert.ok(validateInput, 'validateInput should be captured');
+      // Use getAllValidateInputs to get the email validator (index 2)
+      const allValidators = mockVSCode._getAllValidateInputs();
+      const emailValidator = allValidators[2];
+      assert.ok(emailValidator, 'Email validateInput should be captured');
 
-      const result = validateInput('notanemail');
+      const result = emailValidator('notanemail');
       assert.ok(result !== null, 'Invalid email should return error');
     });
 
     it('should return error for email exceeding MAX_EMAIL_LENGTH', async () => {
       const mockVSCode = createMockVSCode({
         identities: [],
-        showInputBoxResults: ['valid-id', 'Valid Name', undefined], // Cancel at email
+        showInputBoxResults: ['valid-id', 'Valid Name', 'valid@example.com'], // Complete wizard
       });
       _setMockVSCode(mockVSCode as never);
 
       await showAddIdentityWizard();
 
-      const validateInput = mockVSCode._getLastValidateInput();
-      assert.ok(validateInput, 'validateInput should be captured');
+      // Use getAllValidateInputs to get the email validator (index 2)
+      const allValidators = mockVSCode._getAllValidateInputs();
+      const emailValidator = allValidators[2];
+      assert.ok(emailValidator, 'Email validateInput should be captured');
 
       const longEmail = 'a'.repeat(MAX_EMAIL_LENGTH) + '@example.com';
-      const result = validateInput(longEmail);
+      const result = emailValidator(longEmail);
       assert.ok(result !== null, 'Email exceeding max length should return error');
     });
   });
