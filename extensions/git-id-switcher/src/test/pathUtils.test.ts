@@ -1024,7 +1024,10 @@ function testIsUnderSshDirectory(): void {
     );
   }
 
-  // Windows case-insensitivity test
+  // Windows case-insensitivity test (only runs on actual Windows)
+  // Note: Cannot mock process.platform effectively because Node.js path module
+  // behavior is determined at module load time, not by process.platform value.
+  // Windows CI will test this code path.
   if (process.platform === 'win32') {
     const userProfile = process.env.USERPROFILE ?? '';
     if (userProfile && userProfile.length > 0) {

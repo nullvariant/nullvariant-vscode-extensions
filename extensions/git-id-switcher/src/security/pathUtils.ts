@@ -491,9 +491,11 @@ export function isUnderSshDirectory(value: string): boolean {
   const sshDirWithSep = sshDir + path.sep;
 
   // Windows paths are case-insensitive, use lowercase comparison
+  /* c8 ignore start - Windows-only code path, tested on Windows CI */
   if (process.platform === 'win32') {
     return normalizedValue.toLowerCase().startsWith(sshDirWithSep.toLowerCase());
   }
+  /* c8 ignore stop */
 
   return normalizedValue.startsWith(sshDirWithSep);
 }
