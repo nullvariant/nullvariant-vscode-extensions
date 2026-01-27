@@ -436,8 +436,8 @@ describe('identityManager E2E Test Suite', function () {
   // ===========================================================================
 
   describe('Add Form: Normal Flow', () => {
-    it('should return true when all 3 steps completed', async () => {
-      // showAddIdentityForm now uses showAddIdentityForm (property list style)
+    it('should return Identity when all required fields completed', async () => {
+      // showAddIdentityForm returns Identity | undefined
       // User flow: QuickPick shows fields → select id → enter value → select name → enter value → ...
       const mockVSCode = createMockVSCode({
         identities: [],
@@ -453,12 +453,13 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, true, 'Should return true on success');
+      assert.ok(result !== undefined, 'Should return Identity on success');
+      assert.strictEqual(result?.id, 'test-id', 'Should return created Identity with correct id');
       const infoCalls = mockVSCode._getShowInformationMessageCalls();
       assert.ok(infoCalls.length >= 1, 'Should show success message');
     });
 
-    it('should return false when step 1 cancelled (Esc)', async () => {
+    it('should return undefined when cancelled (Esc)', async () => {
       // Cancel at QuickPick (property list)
       const mockVSCode = createMockVSCode({
         identities: [],
@@ -468,14 +469,14 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, false, 'Should return false when cancelled at QuickPick');
+      assert.strictEqual(result, undefined, 'Should return undefined when cancelled at QuickPick');
     });
   });
 
   describe('Add Form: Esc-back Navigation', () => {
-    it('should go back to step 1 when Esc pressed at step 2, preserving ID value', async () => {
-      // In property list style: select id → enter value → select name → Esc (back) → select name again
-      // Note: 'back' in inputBoxSelections triggers back button, returns to QuickPick
+    it('should go back to field list when back pressed at InputBox, preserving ID value', async () => {
+      // In property list style: select id → enter value → select name → back → select name again
+      // Note: INPUT_BOX_BACK in inputBoxSelections triggers back button, returns to QuickPick
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
@@ -497,11 +498,12 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, true, 'Should complete successfully after back-navigation');
+      assert.ok(result !== undefined, 'Should complete successfully after back-navigation');
+      assert.strictEqual(result?.id, 'my-id', 'Should preserve ID value');
     });
 
-    it('should go back to step 2 when Esc pressed at step 3, preserving Name value', async () => {
-      // In property list style: complete id/name, then Esc at email input
+    it('should go back to field list when back pressed at email, preserving Name value', async () => {
+      // In property list style: complete id/name, then back at email input
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
@@ -523,7 +525,8 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, true, 'Should complete successfully after back-navigation');
+      assert.ok(result !== undefined, 'Should complete successfully after back-navigation');
+      assert.strictEqual(result?.name, 'My Name', 'Should preserve Name value');
     });
   });
 
@@ -626,7 +629,7 @@ describe('identityManager E2E Test Suite', function () {
   });
 
   describe('Add Form: Return Type Verification', () => {
-    it('should return boolean type from showAddIdentityForm', async () => {
+    it('should return Identity object from showAddIdentityForm on success', async () => {
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
@@ -635,13 +638,16 @@ describe('identityManager E2E Test Suite', function () {
           { field: 'email' },
           { _isSaveButton: true },
         ],
-        inputBoxSelections: ['id', 'name', 'email@test.com'],
+        inputBoxSelections: ['return-type-id', 'Return Type Name', 'email@test.com'],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(typeof result, 'boolean', 'Return type should be boolean');
+      // showAddIdentityForm returns Identity | undefined
+      assert.ok(result !== undefined, 'Should return Identity object on success');
+      assert.strictEqual(typeof result, 'object', 'Return type should be object (Identity)');
+      assert.strictEqual(result?.id, 'return-type-id', 'Should have correct id');
     });
   });
 
@@ -666,8 +672,8 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      // Validation error causes hide (cancel), so result is false
-      assert.strictEqual(result, false, 'Invalid ID should cause validation failure');
+      // Validation error causes hide (cancel), so result is undefined
+      assert.strictEqual(result, undefined, 'Invalid ID should cause validation failure');
     });
 
     it('should show duplicate ID error in detail', async () => {
@@ -693,7 +699,7 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, false, 'Name with dangerous characters should cause validation failure');
+      assert.strictEqual(result, undefined, 'Name with dangerous characters should cause validation failure');
     });
 
     it('should reject name exceeding MAX_NAME_LENGTH', async () => {
@@ -711,7 +717,7 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, false, 'Name exceeding max length should cause validation failure');
+      assert.strictEqual(result, undefined, 'Name exceeding max length should cause validation failure');
     });
   });
 
@@ -731,7 +737,7 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, false, 'Invalid email format should cause validation failure');
+      assert.strictEqual(result, undefined, 'Invalid email format should cause validation failure');
     });
 
     it('should reject email exceeding MAX_EMAIL_LENGTH', async () => {
@@ -750,7 +756,7 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, false, 'Email exceeding max length should cause validation failure');
+      assert.strictEqual(result, undefined, 'Email exceeding max length should cause validation failure');
     });
   });
 
@@ -770,7 +776,8 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, true, 'Valid values should complete successfully');
+      assert.ok(result !== undefined, 'Valid values should complete successfully');
+      assert.strictEqual(result?.id, 'valid-id', 'Should return Identity with correct id');
     });
 
     it('should reject empty string inputs', async () => {
@@ -787,7 +794,7 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, false, 'Empty string should cause validation failure');
+      assert.strictEqual(result, undefined, 'Empty string should cause validation failure');
     });
   });
 
@@ -814,7 +821,7 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, false, 'Should return false when limit reached');
+      assert.strictEqual(result, undefined, 'Should return undefined when limit reached');
       const warnings = mockVSCode._getShowWarningMessageCalls();
       assert.strictEqual(warnings.length, 1, 'Should show warning');
       assert.ok(
