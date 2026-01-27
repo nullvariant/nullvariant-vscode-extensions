@@ -14,69 +14,22 @@ import {
   getIdentityLabel,
   getIdentityDetail,
   updateIdentityInConfig,
+  addIdentityToConfig,
 } from '../identity/identity';
 import { MAX_IDENTITIES, MAX_ID_LENGTH, MAX_NAME_LENGTH, MAX_EMAIL_LENGTH } from '../core/constants';
-import { isValidIdentityId, isValidEmail } from '../validators/common';
+import { isValidIdentityId, isValidEmail, hasDangerousChars } from '../validators/common';
 import { getUserSafeMessage } from '../core/errors';
-
-/**
- * Show the manage identities menu.
- *
- * @param hasIdentities - Whether there are any identities configured
- * @returns The selected action or undefined if cancelled
- */
-export async function showManageMenu(
-  hasIdentities: boolean
-): Promise<'add' | 'edit' | 'delete' | undefined> {
-  const vs = getVSCode();
-  if (!vs) {
-    return undefined;
-  }
-
-  interface ManageMenuItem {
-    label: string;
-    action: 'add' | 'edit' | 'delete';
-  }
-
-  const items: ManageMenuItem[] = hasIdentities
-    ? [
-        {
-          label: '$(add) ' + vs.l10n.t('Add new identity'),
-          action: 'add',
-        },
-        {
-          label: '$(pencil) ' + vs.l10n.t('Edit identity'),
-          action: 'edit',
-        },
-        {
-          label: '$(trash) ' + vs.l10n.t('Delete'),
-          action: 'delete',
-        },
-      ]
-    : [
-        {
-          label: '$(add) ' + vs.l10n.t('Add new identity'),
-          action: 'add',
-        },
-      ];
-
-  const selected = await vs.window.showQuickPick(items, {
-    title: vs.l10n.t('Manage identities...'),
-    placeHolder: vs.l10n.t('Select an action'),
-  });
-
-  return selected?.action;
-}
+import { securityLogger } from '../security/securityLogger';
 
 /**
  * Show the add identity wizard (3 steps: ID → Name → Email).
  *
- * @returns The new identity or undefined if cancelled
+ * @returns true if identity was created, false if cancelled
  */
-export async function showAddIdentityWizard(): Promise<Identity | undefined> {
+export async function showAddIdentityWizard(): Promise<boolean> {
   const vs = getVSCode();
   if (!vs) {
-    return undefined;
+    return false;
   }
 
   // Check maximum limit before starting
@@ -85,7 +38,7 @@ export async function showAddIdentityWizard(): Promise<Identity | undefined> {
     vs.window.showWarningMessage(
       vs.l10n.t('Maximum number of identities reached ({0})', MAX_IDENTITIES)
     );
-    return undefined;
+    return false;
   }
 
   const existingIds = new Set(identities.map(i => i.id));
@@ -99,7 +52,10 @@ export async function showAddIdentityWizard(): Promise<Identity | undefined> {
         return vs.l10n.t('ID cannot be empty');
       }
       if (!isValidIdentityId(value, MAX_ID_LENGTH)) {
-        return vs.l10n.t('Only letters, numbers, hyphens, underscores allowed');
+        return vs.l10n.t(
+          'ID must be 1-{0} alphanumeric characters, underscores, or hyphens',
+          MAX_ID_LENGTH
+        );
       }
       if (existingIds.has(value)) {
         return vs.l10n.t('ID already exists');
@@ -109,10 +65,10 @@ export async function showAddIdentityWizard(): Promise<Identity | undefined> {
   });
 
   if (id === undefined) {
-    return undefined;
+    return false;
   }
 
-  // Step 2: Name input
+  // Step 2: Name input with security validation
   const name = await vs.window.showInputBox({
     title: vs.l10n.t('Add Identity (2/3): Name'),
     placeHolder: vs.l10n.t('Git user.name'),
@@ -123,12 +79,16 @@ export async function showAddIdentityWizard(): Promise<Identity | undefined> {
       if (value.length > MAX_NAME_LENGTH) {
         return vs.l10n.t('Name is too long (max {0} characters)', MAX_NAME_LENGTH);
       }
+      // SECURITY: Check for dangerous shell metacharacters
+      if (hasDangerousChars(value)) {
+        return vs.l10n.t('Name contains invalid characters');
+      }
       return null;
     },
   });
 
   if (name === undefined) {
-    return undefined;
+    return false;
   }
 
   // Step 3: Email input
@@ -150,10 +110,28 @@ export async function showAddIdentityWizard(): Promise<Identity | undefined> {
   });
 
   if (email === undefined) {
-    return undefined;
+    return false;
   }
 
-  return { id, name, email };
+  // Create and return the identity (saving handled by caller)
+  const newIdentity: Identity = { id, name, email };
+
+  try {
+    await addIdentityToConfig(newIdentity);
+    // SECURITY: Log identity creation as config change
+    securityLogger.logConfigChange('identities');
+    vs.window.showInformationMessage(
+      vs.l10n.t("Identity '{0}' has been created.", id)
+    );
+    return true;
+  } catch (error) {
+    // SECURITY: Use getUserSafeMessage to prevent information leakage
+    const safeMessage = getUserSafeMessage(error);
+    vs.window.showErrorMessage(
+      vs.l10n.t('Git ID Switcher: {0}', safeMessage)
+    );
+    return false;
+  }
 }
 
 /**
@@ -170,45 +148,55 @@ interface FieldQuickPickItem {
 /**
  * Show the edit identity wizard.
  *
- * @returns Promise that resolves when editing is complete or cancelled
+ * @param targetIdentity - Optional identity to edit (skips selection step)
+ * @returns true if identity was updated, false if cancelled
  */
-export async function showEditIdentityWizard(): Promise<void> {
+export async function showEditIdentityWizard(
+  targetIdentity?: Identity
+): Promise<boolean> {
   const vs = getVSCode();
   if (!vs) {
-    return;
+    return false;
   }
 
-  const identities = getIdentitiesWithValidation();
-  if (identities.length === 0) {
-    vs.window.showWarningMessage(
-      vs.l10n.t('No identities configured. Add identities in settings: {0}', 'gitIdSwitcher.identities')
-    );
-    return;
+  let selectedIdentity: Identity;
+
+  if (targetIdentity) {
+    // Skip identity selection when target is provided
+    selectedIdentity = targetIdentity;
+  } else {
+    // Step 1: Select identity to edit
+    const identities = getIdentitiesWithValidation();
+    if (identities.length === 0) {
+      vs.window.showWarningMessage(
+        vs.l10n.t('No identities configured. Add identities in settings: {0}', 'gitIdSwitcher.identities')
+      );
+      return false;
+    }
+
+    interface IdentityQuickPickItem {
+      label: string;
+      detail?: string;
+      identity: Identity;
+    }
+
+    const identityItems: IdentityQuickPickItem[] = identities.map(identity => ({
+      label: getIdentityLabel(identity),
+      detail: getIdentityDetail(identity),
+      identity,
+    }));
+
+    const selectedIdentityItem = await vs.window.showQuickPick(identityItems, {
+      title: vs.l10n.t('Edit Identity: Select'),
+      placeHolder: vs.l10n.t('Select identity to edit'),
+    });
+
+    if (!selectedIdentityItem) {
+      return false;
+    }
+
+    selectedIdentity = selectedIdentityItem.identity;
   }
-
-  // Step 1: Select identity to edit
-  interface IdentityQuickPickItem {
-    label: string;
-    detail?: string;
-    identity: Identity;
-  }
-
-  const identityItems: IdentityQuickPickItem[] = identities.map(identity => ({
-    label: getIdentityLabel(identity),
-    detail: getIdentityDetail(identity),
-    identity,
-  }));
-
-  const selectedIdentityItem = await vs.window.showQuickPick(identityItems, {
-    title: vs.l10n.t('Edit Identity: Select'),
-    placeHolder: vs.l10n.t('Select identity to edit'),
-  });
-
-  if (!selectedIdentityItem) {
-    return;
-  }
-
-  const selectedIdentity = selectedIdentityItem.identity;
 
   // Step 2: Select field to edit
   const fieldItems: FieldQuickPickItem[] = [
@@ -252,7 +240,7 @@ export async function showEditIdentityWizard(): Promise<void> {
   });
 
   if (!selectedField || selectedField._isDisabled || selectedField.field === null) {
-    return;
+    return false;
   }
 
   const field = selectedField.field;
@@ -270,7 +258,7 @@ export async function showEditIdentityWizard(): Promise<void> {
   });
 
   if (newValue === undefined) {
-    return;
+    return false;
   }
 
   // Determine the final value (undefined for empty optional fields)
@@ -278,15 +266,19 @@ export async function showEditIdentityWizard(): Promise<void> {
 
   try {
     await updateIdentityInConfig(selectedIdentity.id, field, finalValue);
+    // SECURITY: Log identity update as config change
+    securityLogger.logConfigChange('identities');
     vs.window.showInformationMessage(
       vs.l10n.t("Identity '{0}' has been updated.", selectedIdentity.id)
     );
+    return true;
   } catch (error) {
     // SECURITY: Use getUserSafeMessage to prevent information leakage
     const safeMessage = getUserSafeMessage(error);
     vs.window.showErrorMessage(
       vs.l10n.t('Git ID Switcher: {0}', safeMessage)
     );
+    return false;
   }
 }
 
@@ -316,6 +308,45 @@ function getPlaceholderForField(
 }
 
 /**
+ * Validate name field input.
+ */
+function validateNameInput(
+  vs: NonNullable<ReturnType<typeof getVSCode>>,
+  value: string
+): string | null {
+  if (!value || value.trim().length === 0) {
+    return vs.l10n.t('Name cannot be empty');
+  }
+  if (value.length > MAX_NAME_LENGTH) {
+    return vs.l10n.t('Name is too long (max {0} characters)', MAX_NAME_LENGTH);
+  }
+  // SECURITY: Check for dangerous shell metacharacters
+  if (hasDangerousChars(value)) {
+    return vs.l10n.t('Name contains invalid characters');
+  }
+  return null;
+}
+
+/**
+ * Validate email field input.
+ */
+function validateEmailInput(
+  vs: NonNullable<ReturnType<typeof getVSCode>>,
+  value: string
+): string | null {
+  if (!value) {
+    return vs.l10n.t('Email cannot be empty');
+  }
+  if (value.length > MAX_EMAIL_LENGTH) {
+    return vs.l10n.t('Email is too long (max {0} characters)', MAX_EMAIL_LENGTH);
+  }
+  if (!isValidEmail(value)) {
+    return vs.l10n.t('Invalid email format');
+  }
+  return null;
+}
+
+/**
  * Validate field input.
  */
 function validateFieldInput(
@@ -331,35 +362,13 @@ function validateFieldInput(
     return null;
   }
 
-  switch (field) {
-    case 'name':
-      if (!value || value.trim().length === 0) {
-        return vs.l10n.t('Name cannot be empty');
-      }
-      if (value.length > MAX_NAME_LENGTH) {
-        return vs.l10n.t('Name is too long (max {0} characters)', MAX_NAME_LENGTH);
-      }
-      return null;
-
-    case 'email':
-      if (!value) {
-        return vs.l10n.t('Email cannot be empty');
-      }
-      if (value.length > MAX_EMAIL_LENGTH) {
-        return vs.l10n.t('Email is too long (max {0} characters)', MAX_EMAIL_LENGTH);
-      }
-      if (!isValidEmail(value)) {
-        return vs.l10n.t('Invalid email format');
-      }
-      return null;
-
-    case 'service':
-    case 'icon':
-    case 'description':
-      // Optional fields have no specific validation beyond empty check
-      return null;
-
-    default:
-      return null;
+  if (field === 'name') {
+    return validateNameInput(vs, value);
   }
+  if (field === 'email') {
+    return validateEmailInput(vs, value);
+  }
+
+  // Optional fields (service, icon, description) have no specific validation
+  return null;
 }

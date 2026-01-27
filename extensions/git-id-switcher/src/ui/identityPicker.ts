@@ -25,6 +25,27 @@ export interface IdentityQuickPickItem extends vscodeTypes.QuickPickItem {
 }
 
 /**
+ * Quick pick item for manage identities UI
+ *
+ * @internal Exported for testing purposes
+ */
+export interface ManageIdentityQuickPickItem extends vscodeTypes.QuickPickItem {
+  identity?: Identity;
+  index?: number;
+  _isPlaceholder?: boolean;
+  _isAddOption?: boolean;
+}
+
+/**
+ * Result from manage identities quick pick
+ */
+export type ManageIdentitiesResult =
+  | { action: 'back' }
+  | { action: 'add' }
+  | { action: 'edit'; identity: Identity; index: number }
+  | { action: 'delete'; identity: Identity; index: number };
+
+/**
  * Create quick pick items from identities
  *
  * @internal Exported for testing purposes
@@ -212,6 +233,144 @@ export async function showDeleteIdentityQuickPick(
     quickPick.onDidHide(() => {
       quickPick.dispose();
       resolve(undefined);
+    });
+
+    quickPick.show();
+  });
+}
+
+/**
+ * Show manage identities quick pick
+ *
+ * Displays a list of identities with inline edit/delete buttons.
+ * Uses createQuickPick for item button support.
+ *
+ * @param identities - List of configured identities
+ * @param lastIndex - Index to focus (for returning after edit/delete)
+ * @returns ManageIdentitiesResult or undefined if cancelled
+ */
+export async function showManageIdentitiesQuickPick(
+  identities: Identity[],
+  lastIndex = 0
+): Promise<ManageIdentitiesResult | undefined> {
+  const vs = getVSCode();
+  if (!vs) {
+    return undefined;
+  }
+
+  // Build items
+  const items: ManageIdentityQuickPickItem[] = [];
+
+  // Edit button (pencil icon)
+  const editButton: vscodeTypes.QuickInputButton = {
+    iconPath: new vs.ThemeIcon('pencil'),
+    tooltip: vs.l10n.t('Edit'),
+  };
+
+  // Delete button (trash icon)
+  const deleteButton: vscodeTypes.QuickInputButton = {
+    iconPath: new vs.ThemeIcon('trash'),
+    tooltip: vs.l10n.t('Delete'),
+  };
+
+  if (identities.length === 0) {
+    // Show placeholder when no identities
+    items.push({
+      label: vs.l10n.t('(No identities)'),
+      _isPlaceholder: true,
+    });
+  } else {
+    // Add identity items with inline buttons
+    identities.forEach((identity, index) => {
+      items.push({
+        label: getIdentityLabel(identity),
+        detail: getIdentityDetail(identity),
+        identity,
+        index,
+        buttons: [editButton, deleteButton],
+      });
+    });
+  }
+
+  // Add separator and "Add new identity" option
+  items.push(
+    {
+      label: '',
+      kind: vs.QuickPickItemKind.Separator,
+    } as ManageIdentityQuickPickItem,
+    {
+      label: '$(add) ' + vs.l10n.t('Add new identity'),
+      _isAddOption: true,
+    }
+  );
+
+  const quickPick = vs.window.createQuickPick<ManageIdentityQuickPickItem>();
+  quickPick.items = items;
+  quickPick.title = vs.l10n.t('⚙️ Manage Identities');
+  quickPick.buttons = [vs.QuickInputButtons.Back];
+  quickPick.matchOnDescription = true;
+  quickPick.matchOnDetail = true;
+
+  // Calculate safe index for focus
+  // Only focus on identity items (not placeholder or add option)
+  const identityItemCount = identities.length;
+  if (identityItemCount > 0) {
+    const safeIndex = Math.min(lastIndex, Math.max(0, identityItemCount - 1));
+    quickPick.activeItems = [items[safeIndex]];
+  }
+
+  return new Promise<ManageIdentitiesResult | undefined>(resolve => {
+    let resolved = false;
+
+    // Handle title bar back button
+    quickPick.onDidTriggerButton(button => {
+      if (button === vs.QuickInputButtons.Back) {
+        resolved = true;
+        quickPick.hide();
+        resolve({ action: 'back' });
+      }
+    });
+
+    // Handle inline item buttons (edit/delete)
+    quickPick.onDidTriggerItemButton(e => {
+      const item = e.item;
+      if (!item.identity || item.index === undefined) {
+        return;
+      }
+
+      resolved = true;
+      quickPick.hide();
+
+      if (e.button === editButton) {
+        resolve({ action: 'edit', identity: item.identity, index: item.index });
+      } else if (e.button === deleteButton) {
+        resolve({ action: 'delete', identity: item.identity, index: item.index });
+      }
+    });
+
+    // Handle selection (only for add option)
+    quickPick.onDidAccept(() => {
+      const selected = quickPick.selectedItems[0];
+
+      // Ignore identity items and placeholder
+      if (!selected || selected.identity || selected._isPlaceholder) {
+        return; // Don't resolve/hide, stay in picker
+      }
+
+      // Handle add option
+      if (selected._isAddOption) {
+        resolved = true;
+        quickPick.hide();
+        resolve({ action: 'add' });
+      }
+    });
+
+    // Handle hide (Esc or close button)
+    quickPick.onDidHide(() => {
+      quickPick.dispose();
+      if (!resolved) {
+        resolve({ action: 'back' });
+      }
     });
 
     quickPick.show();
