@@ -105,8 +105,13 @@ export function validateSshKeyPathFormat(
     return;
   }
 
-  // Must start with / or ~
-  if (!sshKeyPath.startsWith('/') && !sshKeyPath.startsWith('~')) {
+  // Must start with /, ~, or Windows drive letter (C:\)
+  // Windows drive letter pattern: single letter followed by colon
+  const isUnixAbsolute = sshKeyPath.startsWith('/');
+  const isTildePath = sshKeyPath.startsWith('~');
+  const isWindowsAbsolute = /^[A-Za-z]:/.test(sshKeyPath);
+
+  if (!isUnixAbsolute && !isTildePath && !isWindowsAbsolute) {
     errors.push('sshKeyPath: must be an absolute path or start with ~');
   }
 
