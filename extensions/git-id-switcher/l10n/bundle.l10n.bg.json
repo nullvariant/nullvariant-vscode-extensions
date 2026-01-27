@@ -98,5 +98,9 @@
   "SSH host is too long (max {0} characters)": "SSH хостът е твърде дълъг (макс. {0} символа)",
   "e.g., ~/.ssh/id_ed25519_work": "напр., ~/.ssh/id_ed25519_work",
   "e.g., github-work, gitlab-personal": "напр., github-work, gitlab-personal",
-  "e.g., ABCD1234EF567890": "напр., ABCD1234EF567890"
+  "e.g., ABCD1234EF567890": "напр., ABCD1234EF567890",
+  "(fill required fields)": "(попълнете задължителните полета)",
+  "New Profile: {0}": "Нов профил: {0}",
+  "Leave empty to skip": "Оставете празно за пропускане",
+  "Select a field to edit": "Изберете поле за редактиране"
 }

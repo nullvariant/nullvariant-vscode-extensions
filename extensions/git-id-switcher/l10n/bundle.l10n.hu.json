@@ -98,5 +98,9 @@
   "SSH host is too long (max {0} characters)": "Az SSH gazdagép túl hosszú (max. {0} karakter)",
   "e.g., ~/.ssh/id_ed25519_work": "pl., ~/.ssh/id_ed25519_work",
   "e.g., github-work, gitlab-personal": "pl., github-work, gitlab-personal",
-  "e.g., ABCD1234EF567890": "pl., ABCD1234EF567890"
+  "e.g., ABCD1234EF567890": "pl., ABCD1234EF567890",
+  "(fill required fields)": "(töltse ki a kötelező mezőket)",
+  "New Profile: {0}": "Új profil: {0}",
+  "Leave empty to skip": "Hagyja üresen a kihagyáshoz",
+  "Select a field to edit": "Válasszon mezőt a szerkesztéshez"
 }

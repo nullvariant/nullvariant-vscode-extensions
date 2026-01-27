@@ -98,5 +98,9 @@
   "SSH host is too long (max {0} characters)": "SSH主机过长（最多{0}个字符）",
   "e.g., ~/.ssh/id_ed25519_work": "例如：~/.ssh/id_ed25519_work",
   "e.g., github-work, gitlab-personal": "例如：github-work, gitlab-personal",
-  "e.g., ABCD1234EF567890": "例如：ABCD1234EF567890"
+  "e.g., ABCD1234EF567890": "例如：ABCD1234EF567890",
+  "(fill required fields)": "（请填写必填项）",
+  "New Profile: {0}": "新建配置文件：{0}",
+  "Leave empty to skip": "留空以跳过",
+  "Select a field to edit": "选择要编辑的字段"
 }

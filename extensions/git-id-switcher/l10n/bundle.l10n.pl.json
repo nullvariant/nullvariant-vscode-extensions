@@ -98,5 +98,9 @@
   "SSH host is too long (max {0} characters)": "Host SSH jest za długi (maks. {0} znaków)",
   "e.g., ~/.ssh/id_ed25519_work": "np., ~/.ssh/id_ed25519_work",
   "e.g., github-work, gitlab-personal": "np., github-work, gitlab-personal",
-  "e.g., ABCD1234EF567890": "np., ABCD1234EF567890"
+  "e.g., ABCD1234EF567890": "np., ABCD1234EF567890",
+  "(fill required fields)": "(wypełnij wymagane pola)",
+  "New Profile: {0}": "Nowy profil: {0}",
+  "Leave empty to skip": "Pozostaw puste, aby pominąć",
+  "Select a field to edit": "Wybierz pole do edycji"
 }

@@ -98,5 +98,9 @@
   "SSH host is too long (max {0} characters)": "SSH 호스트가 너무 깁니다 (최대 {0}자)",
   "e.g., ~/.ssh/id_ed25519_work": "예: ~/.ssh/id_ed25519_work",
   "e.g., github-work, gitlab-personal": "예: github-work, gitlab-personal",
-  "e.g., ABCD1234EF567890": "예: ABCD1234EF567890"
+  "e.g., ABCD1234EF567890": "예: ABCD1234EF567890",
+  "(fill required fields)": "(필수 항목을 입력하세요)",
+  "New Profile: {0}": "새 프로필: {0}",
+  "Leave empty to skip": "건너뛰려면 비워두세요",
+  "Select a field to edit": "편집할 항목 선택"
 }

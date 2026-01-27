@@ -18,6 +18,8 @@ import {
   getIdentityDetail,
   updateIdentityInConfig,
   addIdentityToConfig,
+  FIELD_METADATA,
+  FieldMetadata,
 } from '../identity/identity';
 import {
   MAX_IDENTITIES,
@@ -68,10 +70,6 @@ const OPTIONAL_FIELDS: ReadonlySet<keyof Identity> = new Set([
   'service', 'icon', 'description',
   'sshKeyPath', 'sshHost', 'gpgKeyId',
 ]);
-
-/** Add wizard step constants */
-const ADD_WIZARD_FIRST_STEP = 1;
-const ADD_WIZARD_LAST_STEP = 3;
 
 // ============================================================================
 // Validation Utilities
@@ -425,162 +423,301 @@ async function saveEditedField(
 }
 
 // ============================================================================
-// Add Identity Wizard
+// Add Identity Form
 // ============================================================================
 
+/** State for add identity form */
+interface AddFormState {
+  [key: string]: string | undefined;
+  id: string;
+  name: string;
+  email: string;
+  service?: string;
+  icon?: string;
+  description?: string;
+  sshKeyPath?: string;
+  sshHost?: string;
+  gpgKeyId?: string;
+}
+
+/** QuickPick item for add form field */
+interface AddFormQuickPickItem {
+  readonly label: string;
+  readonly description?: string;
+  readonly detail?: string;
+  readonly field: keyof Identity | 'save' | null;
+  readonly _isDisabled?: boolean;
+  readonly _isSaveButton?: boolean;
+}
+
 /**
- * Prompt for ID input in add wizard.
+ * Check if all required fields are filled.
+ *
+ * @param state - Current form state
+ * @returns true if all required fields have values
+ */
+function areRequiredFieldsFilled(state: AddFormState): boolean {
+  return state.id.trim() !== '' &&
+         state.name.trim() !== '' &&
+         state.email.trim() !== '';
+}
+
+/**
+ * Build QuickPick items for add form.
+ *
+ * @param vs - VS Code API
+ * @param state - Current form state
+ * @param existingIds - Set of existing identity IDs for duplicate check
+ * @returns Array of QuickPick items
+ */
+function buildAddFormItems(
+  vs: VSCodeAPI,
+  state: AddFormState,
+  existingIds: Set<string>
+): AddFormQuickPickItem[] {
+  const items: AddFormQuickPickItem[] = [];
+
+  for (const meta of FIELD_METADATA) {
+    const value = state[meta.key as keyof AddFormState];
+    const hasValue = value !== undefined && value.trim() !== '';
+    const requiredMark = meta.required ? '*' : '';
+    const displayValue = hasValue
+      ? value
+      : vs.l10n.t('(none)');
+
+    // Check for ID duplicate (value is guaranteed to be defined when hasValue is true)
+    let detail: string | undefined;
+    if (meta.key === 'id' && hasValue && value && existingIds.has(value)) {
+      detail = vs.l10n.t('ID already exists');
+    }
+
+    items.push({
+      label: `$(${meta.icon}) ${vs.l10n.t(meta.labelKey)}${requiredMark}`,
+      description: displayValue,
+      detail,
+      field: meta.key,
+    });
+  }
+
+  // Separator
+  items.push({
+    label: '─────────────',
+    field: null,
+    _isDisabled: true,
+  });
+
+  // Save button (disabled until required fields are filled)
+  const canSave = areRequiredFieldsFilled(state) && !existingIds.has(state.id);
+  items.push({
+    label: canSave
+      ? `$(check) ${vs.l10n.t('Save')}`
+      : `$(circle-slash) ${vs.l10n.t('Save')}`,
+    description: canSave
+      ? undefined
+      : vs.l10n.t('(fill required fields)'),
+    field: 'save',
+    _isDisabled: !canSave,
+    _isSaveButton: true,
+  });
+
+  return items;
+}
+
+/**
+ * Prompt for field value input in add form.
+ *
+ * @param vs - VS Code API
+ * @param meta - Field metadata
+ * @param currentValue - Current field value
+ * @param existingIds - Set of existing identity IDs (for ID validation)
+ * @returns New value or undefined if cancelled
+ */
+async function promptAddFormFieldInput(
+  vs: VSCodeAPI,
+  meta: FieldMetadata,
+  currentValue: string,
+  existingIds: Set<string>
+): Promise<string | undefined> {
+  const isOptional = !meta.required;
+  const title = vs.l10n.t('New Profile: {0}', vs.l10n.t(meta.labelKey));
+
+  return vs.window.showInputBox({
+    title,
+    value: currentValue,
+    placeHolder: getPlaceholderForField(vs, meta.key),
+    prompt: isOptional ? vs.l10n.t('Leave empty to skip') : undefined,
+    validateInput: (value: string) => {
+      // ID field: check for duplicates
+      if (meta.key === 'id') {
+        return validateIdInput(vs, value, existingIds);
+      }
+      return validateFieldInput(vs, meta.key, value, isOptional);
+    },
+  });
+}
+
+/** QuickPick reference for add form */
+type AddFormQuickPick = ReturnType<VSCodeAPI['window']['createQuickPick']>;
+
+/**
+ * Wait for QuickPick selection or button press.
+ *
+ * @param vs - VS Code API
+ * @param quickPick - The QuickPick instance
+ * @returns Selected item, 'back' if back pressed, undefined if cancelled
+ */
+function waitForAddFormSelection(
+  vs: VSCodeAPI,
+  quickPick: AddFormQuickPick
+): Promise<AddFormQuickPickItem | 'back' | undefined> {
+  return new Promise(resolve => {
+    let resolved = false;
+
+    const cleanup = (disposables: { dispose(): void }[]): void => {
+      if (!resolved) {
+        resolved = true;
+        disposables.forEach(d => d.dispose());
+      }
+    };
+
+    const disposables: { dispose(): void }[] = [
+      quickPick.onDidAccept(() => {
+        cleanup(disposables);
+        resolve(quickPick.selectedItems[0] as AddFormQuickPickItem | undefined);
+      }),
+      quickPick.onDidTriggerButton(button => {
+        if (button === vs.QuickInputButtons.Back) {
+          cleanup(disposables);
+          resolve('back');
+        }
+      }),
+      quickPick.onDidHide(() => {
+        cleanup(disposables);
+        resolve(undefined);
+      }),
+    ];
+  });
+}
+
+/**
+ * Build Identity from add form state.
+ *
+ * @param state - Current form state
+ * @returns Identity object
+ */
+function buildIdentityFromState(state: AddFormState): Identity {
+  const identity: Identity = {
+    id: state.id,
+    name: state.name,
+    email: state.email,
+  };
+
+  if (state.service?.trim()) identity.service = state.service;
+  if (state.icon?.trim()) identity.icon = state.icon;
+  if (state.description?.trim()) identity.description = state.description;
+  if (state.sshKeyPath?.trim()) identity.sshKeyPath = state.sshKeyPath;
+  if (state.sshHost?.trim()) identity.sshHost = state.sshHost;
+  if (state.gpgKeyId?.trim()) identity.gpgKeyId = state.gpgKeyId;
+
+  return identity;
+}
+
+/**
+ * Handle field edit in add form.
+ *
+ * @param vs - VS Code API
+ * @param quickPick - The QuickPick instance
+ * @param state - Current form state
+ * @param fieldKey - Field to edit
+ * @param existingIds - Set of existing identity IDs
+ */
+async function handleAddFormFieldEdit(
+  vs: VSCodeAPI,
+  quickPick: AddFormQuickPick,
+  state: AddFormState,
+  fieldKey: keyof Identity,
+  existingIds: Set<string>
+): Promise<void> {
+  const meta = FIELD_METADATA.find(m => m.key === fieldKey);
+  if (!meta) return;
+
+  quickPick.hide();
+  const currentValue = state[fieldKey] ?? '';
+  const newValue = await promptAddFormFieldInput(vs, meta, currentValue, existingIds);
+
+  if (newValue !== undefined) {
+    (state as Record<string, string | undefined>)[fieldKey] = newValue.trim() || undefined;
+  }
+}
+
+/**
+ * Execute the add form loop.
  *
  * @param vs - VS Code API
  * @param existingIds - Set of existing identity IDs
- * @param currentValue - Current value (for back navigation)
- * @returns Entered ID or undefined if cancelled
+ * @returns Created identity, or undefined if cancelled
  */
-async function promptIdInput(
-  vs: VSCodeAPI,
-  existingIds: Set<string>,
-  currentValue: string
-): Promise<string | undefined> {
-  return vs.window.showInputBox({
-    title: vs.l10n.t('Add Identity (1/3): ID'),
-    placeHolder: vs.l10n.t('e.g., work-github, personal'),
-    value: currentValue,
-    validateInput: (value: string) => validateIdInput(vs, value, existingIds),
-  });
-}
-
-/**
- * Prompt for Name input in add wizard.
- *
- * @param vs - VS Code API
- * @param currentValue - Current value (for back navigation)
- * @returns Entered name or undefined if cancelled
- */
-async function promptNameInput(
-  vs: VSCodeAPI,
-  currentValue: string
-): Promise<string | undefined> {
-  return vs.window.showInputBox({
-    title: vs.l10n.t('Add Identity (2/3): Name'),
-    placeHolder: vs.l10n.t('Git user.name'),
-    value: currentValue,
-    validateInput: (value: string) => validateNameInput(vs, value),
-  });
-}
-
-/**
- * Prompt for Email input in add wizard.
- *
- * @param vs - VS Code API
- * @param currentValue - Current value (for back navigation)
- * @returns Entered email or undefined if cancelled
- */
-async function promptEmailInput(
-  vs: VSCodeAPI,
-  currentValue: string
-): Promise<string | undefined> {
-  return vs.window.showInputBox({
-    title: vs.l10n.t('Add Identity (3/3): Email'),
-    placeHolder: vs.l10n.t('Git user.email'),
-    value: currentValue,
-    validateInput: (value: string) => validateEmailInput(vs, value),
-  });
-}
-
-/** State for add identity wizard */
-interface AddWizardState {
-  idValue: string;
-  nameValue: string;
-  emailValue: string;
-  currentStep: number;
-}
-
-/**
- * Execute step 1 of add wizard (ID input).
- * @returns Updated state, or undefined if cancelled
- */
-async function executeAddStep1(
-  vs: VSCodeAPI,
-  existingIds: Set<string>,
-  state: AddWizardState
-): Promise<AddWizardState | undefined> {
-  const id = await promptIdInput(vs, existingIds, state.idValue);
-  if (id === undefined) {
-    return undefined; // Esc on step 1 → cancel wizard
-  }
-  return { ...state, idValue: id, currentStep: 2 };
-}
-
-/**
- * Execute step 2 of add wizard (Name input).
- * @returns Updated state (may go back to step 1)
- */
-async function executeAddStep2(
-  vs: VSCodeAPI,
-  state: AddWizardState
-): Promise<AddWizardState> {
-  const name = await promptNameInput(vs, state.nameValue);
-  if (name === undefined) {
-    return { ...state, currentStep: 1 }; // Esc → go back to step 1
-  }
-  return { ...state, nameValue: name, currentStep: 3 };
-}
-
-/**
- * Execute step 3 of add wizard (Email input).
- * @returns Updated state (may go back to step 2, or complete with step 4)
- */
-async function executeAddStep3(
-  vs: VSCodeAPI,
-  state: AddWizardState
-): Promise<AddWizardState> {
-  const email = await promptEmailInput(vs, state.emailValue);
-  if (email === undefined) {
-    return { ...state, currentStep: 2 }; // Esc → go back to step 2
-  }
-  return { ...state, emailValue: email, currentStep: 4 }; // Complete
-}
-
-/**
- * Execute the add identity wizard loop.
- * @returns Collected identity data, or undefined if cancelled
- */
-async function executeAddWizardLoop(
+async function executeAddFormLoop(
   vs: VSCodeAPI,
   existingIds: Set<string>
-): Promise<{ id: string; name: string; email: string } | undefined> {
-  let state: AddWizardState = {
-    idValue: '',
-    nameValue: '',
-    emailValue: '',
-    currentStep: 1,
+): Promise<Identity | undefined> {
+  const state: AddFormState = {
+    id: '',
+    name: '',
+    email: '',
   };
 
-  while (state.currentStep >= ADD_WIZARD_FIRST_STEP && state.currentStep <= ADD_WIZARD_LAST_STEP) {
-    if (state.currentStep === 1) {
-      const result = await executeAddStep1(vs, existingIds, state);
-      if (!result) return undefined;
-      state = result;
-    } else if (state.currentStep === 2) {
-      state = await executeAddStep2(vs, state);
-    } else {
-      state = await executeAddStep3(vs, state);
-    }
-  }
+  const quickPick = vs.window.createQuickPick<AddFormQuickPickItem>();
+  quickPick.title = vs.l10n.t('New Profile');
+  quickPick.placeholder = vs.l10n.t('Select a field to edit');
+  quickPick.buttons = [vs.QuickInputButtons.Back];
 
-  return { id: state.idValue, name: state.nameValue, email: state.emailValue };
+  try {
+    while (true) {
+      quickPick.items = buildAddFormItems(vs, state, existingIds);
+      quickPick.show();
+
+      const selection = await waitForAddFormSelection(vs, quickPick);
+
+      // User cancelled or pressed back
+      if (selection === undefined || selection === 'back') {
+        return undefined;
+      }
+
+      // Skip disabled items (separator)
+      if (selection._isDisabled && !selection._isSaveButton) {
+        continue;
+      }
+
+      // Handle save button
+      if (selection.field === 'save') {
+        if (!selection._isDisabled) {
+          return buildIdentityFromState(state);
+        }
+        continue;
+      }
+
+      // Handle field selection
+      if (selection.field) {
+        await handleAddFormFieldEdit(vs, quickPick, state, selection.field, existingIds);
+      }
+    }
+  } finally {
+    quickPick.dispose();
+  }
 }
 
 /**
- * Show the add identity wizard (3 steps: ID → Name → Email).
- * Supports Esc to go back to previous step.
+ * Show the add identity form (property list style).
+ * Displays all fields with Codicons, allows editing each field.
+ * Save is enabled only when all required fields are filled.
  *
- * @returns true if identity was created, false if cancelled
+ * @returns The created identity if saved, undefined if cancelled
  */
-export async function showAddIdentityWizard(): Promise<boolean> {
+export async function showAddIdentityForm(): Promise<Identity | undefined> {
   const vs = getVSCode();
   if (!vs) {
-    return false;
+    return undefined;
   }
 
   // SECURITY: Check maximum limit before starting (DoS protection)
@@ -589,18 +726,31 @@ export async function showAddIdentityWizard(): Promise<boolean> {
     vs.window.showWarningMessage(
       vs.l10n.t('Maximum number of identities reached ({0})', MAX_IDENTITIES)
     );
-    return false;
+    return undefined;
   }
 
   const existingIds = new Set(identities.map(i => i.id));
-  const result = await executeAddWizardLoop(vs, existingIds);
+  const newIdentity = await executeAddFormLoop(vs, existingIds);
 
-  if (!result) {
-    return false;
+  if (!newIdentity) {
+    return undefined;
   }
 
-  const newIdentity: Identity = { id: result.id, name: result.name, email: result.email };
-  return saveNewIdentity(vs, newIdentity);
+  const saved = await saveNewIdentity(vs, newIdentity);
+  if (saved) {
+    return newIdentity;
+  }
+  return undefined;
+}
+
+/**
+ * Show the add identity wizard (3 steps: ID → Name → Email).
+ * @deprecated Use showAddIdentityForm() instead
+ * @returns true if identity was created, false if cancelled
+ */
+export async function showAddIdentityWizard(): Promise<boolean> {
+  const result = await showAddIdentityForm();
+  return result !== undefined;
 }
 
 // ============================================================================

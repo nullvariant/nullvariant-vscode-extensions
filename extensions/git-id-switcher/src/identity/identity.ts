@@ -131,6 +131,9 @@ export interface FieldMetadata {
   /** Input type hint for UI */
   inputType: 'text' | 'file' | 'email';
 
+  /** VSCode Codicon name for UI display (e.g., 'lock', 'person', 'mail') */
+  icon: string;
+
   /** Maximum length for this field (if applicable) */
   maxLength?: number;
 
@@ -204,6 +207,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     required: true,
     editable: true, // Editable during creation, but changing ID requires special handling
     inputType: 'text',
+    icon: 'lock',
     maxLength: MAX_ID_LENGTH,
     validator: (value: string) =>
       isValidIdentityId(value, MAX_ID_LENGTH)
@@ -216,6 +220,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     required: true,
     editable: true,
     inputType: 'text',
+    icon: 'person',
     maxLength: MAX_NAME_LENGTH,
     validator: (value: string) =>
       hasDangerousChars(value) ? 'Name contains invalid characters' : undefined,
@@ -226,6 +231,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     required: true,
     editable: true,
     inputType: 'email',
+    icon: 'mail',
     maxLength: MAX_EMAIL_LENGTH,
     validator: (value: string) =>
       isValidEmail(value) ? undefined : 'Invalid email format',
@@ -236,6 +242,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     required: false,
     editable: true,
     inputType: 'text',
+    icon: 'server',
     maxLength: MAX_SERVICE_LENGTH,
     validator: (value: string) =>
       hasDangerousChars(value) ? 'Service contains invalid characters' : undefined,
@@ -246,6 +253,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     required: false,
     editable: true,
     inputType: 'text',
+    icon: 'symbol-color',
     // Icon validation is complex (grapheme clusters), handled by configSchema
   },
   {
@@ -254,6 +262,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     required: false,
     editable: true,
     inputType: 'text',
+    icon: 'note',
     maxLength: MAX_DESCRIPTION_LENGTH,
     validator: (value: string) =>
       hasDangerousChars(value)
@@ -266,6 +275,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     required: false,
     editable: true,
     inputType: 'file',
+    icon: 'key',
     validator: validateSshKeyPathForField,
   },
   {
@@ -274,6 +284,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     required: false,
     editable: true,
     inputType: 'text',
+    icon: 'globe',
     maxLength: MAX_SSH_HOST_LENGTH,
     validator: (value: string) =>
       isValidSshHost(value)
@@ -286,6 +297,7 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     required: false,
     editable: true,
     inputType: 'text',
+    icon: 'key',
     maxLength: MAX_GPG_KEY_LENGTH,
     validator: (value: string) =>
       isValidGpgKeyId(value) ? undefined : 'GPG key ID must be 8-40 hexadecimal characters',

@@ -25,7 +25,7 @@ import {
   showDeleteIdentityQuickPick,
 } from '../ui/identityPicker';
 import {
-  showAddIdentityWizard,
+  showAddIdentityForm,
   showEditIdentityWizard,
 } from '../ui/identityManager';
 import { securityLogger } from '../security/securityLogger';
@@ -235,7 +235,9 @@ export async function showWelcomeNotification(): Promise<void> {
  * Handle the add identity command.
  *
  * Uses vscodeLoader for testability (allows mocking in E2E tests).
- * The wizard handles validation, saving, and showing notifications.
+ * The form handles validation, saving, and showing notifications.
+ * After saving, opens the edit screen for the new identity to allow
+ * adding optional fields.
  *
  * @returns true if identity was created, false if cancelled or failed
  */
@@ -245,8 +247,23 @@ export async function handleAddIdentity(): Promise<boolean> {
     return false;
   }
 
-  // The wizard handles all steps including validation, saving, and notifications
-  return showAddIdentityWizard();
+  // Show the add form (property list style)
+  const newIdentity = await showAddIdentityForm();
+
+  if (!newIdentity) {
+    return false;
+  }
+
+  // Re-fetch the identity from config to ensure we have the saved version
+  // This provides defense-in-depth against any discrepancies
+  const savedIdentity = getIdentitiesWithValidation().find(i => i.id === newIdentity.id);
+
+  // After saving, open the edit screen for the new identity
+  // This allows users to add optional fields immediately
+  if (savedIdentity) {
+    await showEditIdentityWizard(savedIdentity);
+  }
+  return true;
 }
 
 /**

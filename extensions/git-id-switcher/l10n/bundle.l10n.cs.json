@@ -98,5 +98,9 @@
   "SSH host is too long (max {0} characters)": "SSH hostitel je příliš dlouhý (max. {0} znaků)",
   "e.g., ~/.ssh/id_ed25519_work": "např., ~/.ssh/id_ed25519_work",
   "e.g., github-work, gitlab-personal": "např., github-work, gitlab-personal",
-  "e.g., ABCD1234EF567890": "např., ABCD1234EF567890"
+  "e.g., ABCD1234EF567890": "např., ABCD1234EF567890",
+  "(fill required fields)": "(vyplňte povinná pole)",
+  "New Profile: {0}": "Nový profil: {0}",
+  "Leave empty to skip": "Ponechte prázdné pro přeskočení",
+  "Select a field to edit": "Vyberte pole k úpravě"
 }
