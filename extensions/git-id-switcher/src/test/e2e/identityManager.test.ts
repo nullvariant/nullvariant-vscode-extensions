@@ -23,8 +23,13 @@
  * - validateInput Integration: Security validator usage verification
  * - Security: Dangerous character detection, length limits
  * - Error Handling: getUserSafeMessage integration
+ * - InputBox Back Button: QuickInputButtons.Back configuration,
+ *   back button click behavior, value discard on back
+ * - File Picker Button: sshKeyPath-only visibility, InputBox value update,
+ *   validation after file selection
+ * - onDidChangeValue: Real-time validation, validationMessage behavior
  *
- * Test Count: 72 tests covering identityManager.ts functionality
+ * Test Count: 90 tests covering identityManager.ts functionality
  *
  * Note: These tests use mocked VS Code API via vscodeLoader since
  * UI interactions require VS Code window API.
@@ -70,6 +75,19 @@ const INPUT_BOX_BACK = Symbol('InputBox.Back');
 
 /** Special symbol to represent file picker button click */
 const FILE_PICKER_CLICK = Symbol('InputBox.FilePicker');
+
+/**
+ * Check if buttons array contains a file picker button (folder-opened icon)
+ */
+function hasFilePickerButtonInArray(buttons: unknown[]): boolean {
+  return buttons.some((btn: unknown) => {
+    if (typeof btn === 'object' && btn !== null && 'iconPath' in btn) {
+      const iconPath = (btn as { iconPath: { id?: string } }).iconPath;
+      return iconPath?.id === 'folder-opened';
+    }
+    return false;
+  });
+}
 
 /**
  * Create a mock VS Code API for identity manager tests
@@ -2092,6 +2110,463 @@ describe('identityManager E2E Test Suite', function () {
 
           assert.strictEqual(result, true, 'Clearing optional gpgKeyId should be allowed');
         });
+      });
+    });
+  });
+
+  // ===========================================================================
+  // InputBox Back Button, File Picker, onDidChangeValue Tests
+  // ===========================================================================
+
+  describe('InputBox Back Button Tests', () => {
+    describe('QuickInputButtons.Back in InputBox', () => {
+      it('should have QuickInputButtons.Back set in showFieldInputBox() for name field', async () => {
+        let capturedButtons: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'name' },
+            undefined,
+          ],
+          inputBoxSelections: [undefined], // Cancel InputBox
+          onInputBoxCreated: (inputBox) => {
+            capturedButtons = inputBox.buttons;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        // Should have Back button
+        assert.ok(capturedButtons.length >= 1, `Should have at least 1 button, got ${capturedButtons.length}`);
+        assert.ok(capturedButtons.includes(BACK_BUTTON), 'InputBox should have Back button');
+      });
+
+      it('should have QuickInputButtons.Back set in showFieldInputBox() for email field', async () => {
+        let capturedButtons: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'email' },
+            undefined,
+          ],
+          inputBoxSelections: [undefined],
+          onInputBoxCreated: (inputBox) => {
+            capturedButtons = inputBox.buttons;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        assert.ok(capturedButtons.includes(BACK_BUTTON), 'InputBox for email should have Back button');
+      });
+
+      it('should return "back" when back button clicked in InputBox', async () => {
+        // This tests that INPUT_BOX_BACK symbol triggers back navigation
+        let quickPickShowCount = 0;
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'name' },  // Select name field
+            undefined,          // Cancel at field selection (after back)
+          ],
+          inputBoxSelections: [INPUT_BOX_BACK], // Trigger back button
+          onQuickPickCreated: () => {
+            quickPickShowCount++;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        // QuickPick should be shown at least twice (initial + after back)
+        assert.ok(quickPickShowCount >= 2, `QuickPick should show at least twice due to back navigation, got ${quickPickShowCount}`);
+      });
+
+      it('should discard value when back button pressed (value not saved)', async () => {
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'name' },
+            undefined,
+          ],
+          inputBoxSelections: [INPUT_BOX_BACK], // Press back - value discarded
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        // Result should be false (cancelled without saving)
+        assert.strictEqual(result, false, 'Should return false when back pressed without saving');
+        // No config update should have occurred
+        const configUpdates = mockVSCode._getConfigUpdateCalls();
+        assert.strictEqual(configUpdates.length, 0, 'No config update should occur when back pressed');
+      });
+    });
+  });
+
+  describe('File Picker Button Tests (sshKeyPath only)', () => {
+    describe('File picker button visibility', () => {
+      it('should NOT show file picker button for name field', async () => {
+        let capturedButtons: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'name' },
+            undefined,
+          ],
+          inputBoxSelections: [undefined],
+          onInputBoxCreated: (inputBox) => {
+            capturedButtons = inputBox.buttons;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        // Should only have Back button, no file picker
+        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
+          'Name field should NOT have file picker button');
+      });
+
+      it('should NOT show file picker button for email field', async () => {
+        let capturedButtons: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'email' },
+            undefined,
+          ],
+          inputBoxSelections: [undefined],
+          onInputBoxCreated: (inputBox) => {
+            capturedButtons = inputBox.buttons;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
+          'Email field should NOT have file picker button');
+      });
+
+      it('should NOT show file picker button for service field', async () => {
+        let capturedButtons: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'service' },
+            undefined,
+          ],
+          inputBoxSelections: [undefined],
+          onInputBoxCreated: (inputBox) => {
+            capturedButtons = inputBox.buttons;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
+          'Service field should NOT have file picker button');
+      });
+
+      it('should NOT show file picker button for gpgKeyId field', async () => {
+        let capturedButtons: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'gpgKeyId' },
+            undefined,
+          ],
+          inputBoxSelections: [undefined],
+          onInputBoxCreated: (inputBox) => {
+            capturedButtons = inputBox.buttons;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
+          'GPG Key ID field should NOT have file picker button');
+      });
+
+      it('should NOT show file picker button for sshHost field', async () => {
+        let capturedButtons: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'sshHost' },
+            undefined,
+          ],
+          inputBoxSelections: [undefined],
+          onInputBoxCreated: (inputBox) => {
+            capturedButtons = inputBox.buttons;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
+          'SSH Host field should NOT have file picker button');
+      });
+
+      it('should show file picker button ONLY for sshKeyPath field', async () => {
+        let capturedButtons: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'sshKeyPath' },
+            undefined,
+          ],
+          inputBoxSelections: [undefined],
+          onInputBoxCreated: (inputBox) => {
+            capturedButtons = inputBox.buttons;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        assert.ok(hasFilePickerButtonInArray(capturedButtons),
+          'sshKeyPath field SHOULD have file picker button');
+      });
+    });
+
+    describe('File selection updates InputBox value', () => {
+      it('should update InputBox value after file selection', async () => {
+        // Save original env
+        const originalHome = process.env.HOME;
+        process.env.HOME = '/home/testuser';
+
+        let inputBoxValueAfterFilePick: string | undefined;
+
+        // Custom mock to capture the InputBox value after file pick
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'sshKeyPath' },
+            undefined,
+          ],
+          inputBoxSelections: [FILE_PICKER_CLICK, undefined], // Click file picker, then cancel
+          showOpenDialogResult: '/home/testuser/.ssh/selected_key',
+        });
+
+        // Intercept the createInputBox to track value changes
+        const originalCreateInputBox = mockVSCode.window.createInputBox;
+        mockVSCode.window.createInputBox = () => {
+          const inputBox = originalCreateInputBox();
+          const originalValueSetter = Object.getOwnPropertyDescriptor(inputBox, 'value')?.set;
+          let internalValue = '';
+
+          Object.defineProperty(inputBox, 'value', {
+            get: () => internalValue,
+            set: (v: string) => {
+              internalValue = v;
+              inputBoxValueAfterFilePick = v;
+              if (originalValueSetter) {
+                originalValueSetter.call(inputBox, v);
+              }
+            },
+          });
+          return inputBox;
+        };
+
+        _setMockVSCode(mockVSCode as never);
+
+        try {
+          await showEditIdentityWizard(TEST_IDENTITIES.work);
+          assert.strictEqual(inputBoxValueAfterFilePick, '/home/testuser/.ssh/selected_key',
+            'InputBox value should be updated to selected file path');
+        } finally {
+          process.env.HOME = originalHome;
+        }
+      });
+    });
+
+    describe('Validation after file selection', () => {
+      it('should run validation after file selection (valid path)', async () => {
+        const originalHome = process.env.HOME;
+        process.env.HOME = '/home/testuser';
+
+        let validationMessageAfterFilePick: string | undefined = 'not_set';
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'sshKeyPath' },
+            undefined,
+          ],
+          inputBoxSelections: [FILE_PICKER_CLICK, undefined],
+          showOpenDialogResult: '/home/testuser/.ssh/valid_key', // Valid path under .ssh
+        });
+
+        const originalCreateInputBox = mockVSCode.window.createInputBox;
+        mockVSCode.window.createInputBox = () => {
+          const inputBox = originalCreateInputBox();
+          const originalValidationSetter = Object.getOwnPropertyDescriptor(inputBox, 'validationMessage')?.set;
+          let internalValidation: string | undefined;
+
+          Object.defineProperty(inputBox, 'validationMessage', {
+            get: () => internalValidation,
+            set: (v: string | undefined) => {
+              internalValidation = v;
+              validationMessageAfterFilePick = v;
+              if (originalValidationSetter) {
+                originalValidationSetter.call(inputBox, v);
+              }
+            },
+          });
+          return inputBox;
+        };
+
+        _setMockVSCode(mockVSCode as never);
+
+        try {
+          await showEditIdentityWizard(TEST_IDENTITIES.work);
+          // For a valid path, validationMessage should be undefined (no error)
+          assert.strictEqual(validationMessageAfterFilePick, undefined,
+            'Validation should pass for valid path (validationMessage should be undefined)');
+        } finally {
+          process.env.HOME = originalHome;
+        }
+      });
+    });
+  });
+
+  describe('onDidChangeValue Tests', () => {
+    describe('Real-time validation on input change', () => {
+      it('should trigger validation when input value changes', async () => {
+        // This test verifies that onDidChangeValue is properly wired up
+        // The mock's createInputBox simulates value change and validation
+        let validationWasCalled = false;
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'name' },
+            undefined,
+          ],
+          inputBoxSelections: ['New Name'], // Entering a value triggers onDidChangeValue
+        });
+
+        const originalCreateInputBox = mockVSCode.window.createInputBox;
+        mockVSCode.window.createInputBox = () => {
+          const inputBox = originalCreateInputBox();
+          const originalOnDidChangeValue = inputBox.onDidChangeValue;
+
+          inputBox.onDidChangeValue = (callback: (value: string) => void) => {
+            validationWasCalled = true;
+            return originalOnDidChangeValue(callback);
+          };
+
+          return inputBox;
+        };
+
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        assert.ok(validationWasCalled, 'onDidChangeValue should be registered for validation');
+      });
+
+      it('should set validationMessage when validation error occurs', async () => {
+        // Test with invalid input that triggers validation error
+        // Using a name with dangerous characters ($ or backtick)
+        let capturedValidationMessage: string | undefined = 'not_set';
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'name' },
+            undefined, // Cancel after validation failure
+          ],
+          inputBoxSelections: ['User $HOME'], // Invalid name (contains $)
+        });
+
+        const originalCreateInputBox = mockVSCode.window.createInputBox;
+        mockVSCode.window.createInputBox = () => {
+          const inputBox = originalCreateInputBox();
+          const originalValidationSetter = Object.getOwnPropertyDescriptor(inputBox, 'validationMessage')?.set;
+          let internalValidation: string | undefined;
+
+          Object.defineProperty(inputBox, 'validationMessage', {
+            get: () => internalValidation,
+            set: (v: string | undefined) => {
+              internalValidation = v;
+              if (v !== undefined) {
+                capturedValidationMessage = v;
+              }
+              if (originalValidationSetter) {
+                originalValidationSetter.call(inputBox, v);
+              }
+            },
+          });
+          return inputBox;
+        };
+
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        // validationMessage should be set (not 'not_set' and not undefined)
+        assert.notStrictEqual(capturedValidationMessage, 'not_set',
+          'validationMessage should be set when validation error occurs');
+        assert.ok(capturedValidationMessage !== undefined,
+          'validationMessage should not be undefined for invalid input');
+      });
+
+      it('should set validationMessage to undefined when validation succeeds', async () => {
+        // Test with valid input
+        let lastValidationMessage: string | undefined = 'initial';
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'name' },
+            undefined,
+          ],
+          inputBoxSelections: ['Valid Name'], // Valid name
+        });
+
+        const originalCreateInputBox = mockVSCode.window.createInputBox;
+        mockVSCode.window.createInputBox = () => {
+          const inputBox = originalCreateInputBox();
+          const originalValidationSetter = Object.getOwnPropertyDescriptor(inputBox, 'validationMessage')?.set;
+          let internalValidation: string | undefined;
+
+          Object.defineProperty(inputBox, 'validationMessage', {
+            get: () => internalValidation,
+            set: (v: string | undefined) => {
+              internalValidation = v;
+              lastValidationMessage = v;
+              if (originalValidationSetter) {
+                originalValidationSetter.call(inputBox, v);
+              }
+            },
+          });
+          return inputBox;
+        };
+
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+        // For valid input, validationMessage should be undefined
+        assert.strictEqual(lastValidationMessage, undefined,
+          'validationMessage should be undefined for valid input');
       });
     });
   });
