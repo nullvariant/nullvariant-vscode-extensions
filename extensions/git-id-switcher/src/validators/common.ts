@@ -260,6 +260,33 @@ export function isValidSshHost(value: string): boolean {
 }
 
 // =============================================================================
+// Windows Path Validation
+// =============================================================================
+
+/**
+ * Windows drive letter pattern (e.g., C:, D:)
+ *
+ * Matches a single letter followed by a colon at the start of a string.
+ * Used to detect Windows absolute paths.
+ */
+export const WINDOWS_DRIVE_LETTER_PATTERN = '^[A-Za-z]:';
+
+/**
+ * Windows drive letter regex
+ */
+export const WINDOWS_DRIVE_LETTER_REGEX = new RegExp(WINDOWS_DRIVE_LETTER_PATTERN);
+
+/**
+ * Check if a path starts with a Windows drive letter (e.g., C:, D:)
+ *
+ * @param value - The path to check
+ * @returns true if path starts with a Windows drive letter
+ */
+export function isWindowsAbsolutePath(value: string): boolean {
+  return WINDOWS_DRIVE_LETTER_REGEX.test(value);
+}
+
+// =============================================================================
 // GPG Key ID Validation
 // =============================================================================
 

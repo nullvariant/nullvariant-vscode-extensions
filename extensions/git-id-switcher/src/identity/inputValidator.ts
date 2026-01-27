@@ -16,6 +16,7 @@ import {
   GPG_KEY_REGEX,
   SSH_HOST_REGEX,
   DANGEROUS_PATTERNS,
+  isWindowsAbsolutePath,
 } from '../validators/common';
 import {
   MAX_ID_LENGTH,
@@ -106,12 +107,10 @@ export function validateSshKeyPathFormat(
   }
 
   // Must start with /, ~, or Windows drive letter (C:\)
-  // Windows drive letter pattern: single letter followed by colon
   const isUnixAbsolute = sshKeyPath.startsWith('/');
   const isTildePath = sshKeyPath.startsWith('~');
-  const isWindowsAbsolute = /^[A-Za-z]:/.test(sshKeyPath);
 
-  if (!isUnixAbsolute && !isTildePath && !isWindowsAbsolute) {
+  if (!isUnixAbsolute && !isTildePath && !isWindowsAbsolutePath(sshKeyPath)) {
     errors.push('sshKeyPath: must be an absolute path or start with ~');
   }
 
