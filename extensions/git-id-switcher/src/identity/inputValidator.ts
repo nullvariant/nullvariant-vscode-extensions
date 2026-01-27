@@ -97,7 +97,7 @@ function validateEmail(email: string | undefined, errors: string[]): void {
  * - `valid`: Format/structure is correct (this function)
  * - `secure`: Resistant to security attacks (pathUtils.validateSshKeyPath)
  */
-function validateSshKeyPathFormat(
+export function validateSshKeyPathFormat(
   sshKeyPath: string | undefined,
   errors: string[]
 ): void {
@@ -122,7 +122,7 @@ function validateSshKeyPathFormat(
 /**
  * Validate GPG key ID
  */
-function validateGpgKeyId(gpgKeyId: string | undefined, errors: string[]): void {
+export function validateGpgKeyId(gpgKeyId: string | undefined, errors: string[]): void {
   if (!gpgKeyId) {
     return;
   }
@@ -135,7 +135,7 @@ function validateGpgKeyId(gpgKeyId: string | undefined, errors: string[]): void 
 /**
  * Validate SSH host alias
  */
-function validateSshHost(sshHost: string | undefined, errors: string[]): void {
+export function validateSshHost(sshHost: string | undefined, errors: string[]): void {
   if (!sshHost) {
     return;
   }

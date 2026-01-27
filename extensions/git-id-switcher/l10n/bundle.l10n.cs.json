@@ -91,5 +91,12 @@
   "Path must be under ~/.ssh/": "Cesta musí být ve složce .ssh vašeho domovského adresáře",
   "File not found": "Soubor nenalezen",
   "Saved": "Uloženo",
-  "Cannot be changed": "Nelze změnit"
+  "Cannot be changed": "Nelze změnit",
+  "Invalid SSH key path format": "Neplatný formát cesty k SSH klíči",
+  "GPG key ID must be 8-40 hexadecimal characters": "ID GPG klíče musí mít 8-40 hexadecimálních znaků",
+  "SSH host must contain only valid hostname characters": "SSH hostitel musí obsahovat pouze platné znaky názvu hostitele",
+  "SSH host is too long (max {0} characters)": "SSH hostitel je příliš dlouhý (max. {0} znaků)",
+  "e.g., ~/.ssh/id_ed25519_work": "např., ~/.ssh/id_ed25519_work",
+  "e.g., github-work, gitlab-personal": "např., github-work, gitlab-personal",
+  "e.g., ABCD1234EF567890": "např., ABCD1234EF567890"
 }

@@ -91,5 +91,12 @@
   "Path must be under ~/.ssh/": "路徑必須在家目錄的 .ssh 資料夾內",
   "File not found": "檔案未找到",
   "Saved": "已儲存",
-  "Cannot be changed": "無法變更"
+  "Cannot be changed": "無法變更",
+  "Invalid SSH key path format": "無效的SSH金鑰路徑格式",
+  "GPG key ID must be 8-40 hexadecimal characters": "GPG金鑰ID必須是8-40位十六進位字元",
+  "SSH host must contain only valid hostname characters": "SSH主機只能包含有效的主機名字元",
+  "SSH host is too long (max {0} characters)": "SSH主機過長（最多{0}個字元）",
+  "e.g., ~/.ssh/id_ed25519_work": "例如：~/.ssh/id_ed25519_work",
+  "e.g., github-work, gitlab-personal": "例如：github-work, gitlab-personal",
+  "e.g., ABCD1234EF567890": "例如：ABCD1234EF567890"
 }

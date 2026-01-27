@@ -91,5 +91,12 @@
   "Path must be under ~/.ssh/": "Az útvonalnak a saját .ssh mappájában kell lennie",
   "File not found": "Fájl nem található",
   "Saved": "Mentve",
-  "Cannot be changed": "Nem módosítható"
+  "Cannot be changed": "Nem módosítható",
+  "Invalid SSH key path format": "Érvénytelen SSH kulcs útvonal formátum",
+  "GPG key ID must be 8-40 hexadecimal characters": "A GPG kulcs ID-nek 8-40 hexadecimális karakternek kell lennie",
+  "SSH host must contain only valid hostname characters": "Az SSH gazdagép csak érvényes gazdagépnév karaktereket tartalmazhat",
+  "SSH host is too long (max {0} characters)": "Az SSH gazdagép túl hosszú (max. {0} karakter)",
+  "e.g., ~/.ssh/id_ed25519_work": "pl., ~/.ssh/id_ed25519_work",
+  "e.g., github-work, gitlab-personal": "pl., github-work, gitlab-personal",
+  "e.g., ABCD1234EF567890": "pl., ABCD1234EF567890"
 }

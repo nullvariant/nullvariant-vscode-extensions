@@ -91,5 +91,12 @@
   "Path must be under ~/.ssh/": "Yol, ana dizininizdeki .ssh klasöründe olmalıdır",
   "File not found": "Dosya bulunamadı",
   "Saved": "Kaydedildi",
-  "Cannot be changed": "Değiştirilemez"
+  "Cannot be changed": "Değiştirilemez",
+  "Invalid SSH key path format": "Geçersiz SSH anahtar yolu formatı",
+  "GPG key ID must be 8-40 hexadecimal characters": "GPG anahtar ID'si 8-40 onaltılık karakter olmalıdır",
+  "SSH host must contain only valid hostname characters": "SSH ana bilgisayar yalnızca geçerli ana bilgisayar adı karakterleri içermelidir",
+  "SSH host is too long (max {0} characters)": "SSH ana bilgisayar çok uzun (maks. {0} karakter)",
+  "e.g., ~/.ssh/id_ed25519_work": "örn., ~/.ssh/id_ed25519_work",
+  "e.g., github-work, gitlab-personal": "örn., github-work, gitlab-personal",
+  "e.g., ABCD1234EF567890": "örn., ABCD1234EF567890"
 }

@@ -91,5 +91,12 @@
   "Path must be under ~/.ssh/": "Ścieżka musi znajdować się w folderze .ssh katalogu domowego",
   "File not found": "Nie znaleziono pliku",
   "Saved": "Zapisano",
-  "Cannot be changed": "Nie można zmienić"
+  "Cannot be changed": "Nie można zmienić",
+  "Invalid SSH key path format": "Nieprawidłowy format ścieżki klucza SSH",
+  "GPG key ID must be 8-40 hexadecimal characters": "ID klucza GPG musi mieć 8-40 znaków szesnastkowych",
+  "SSH host must contain only valid hostname characters": "Host SSH może zawierać tylko prawidłowe znaki nazwy hosta",
+  "SSH host is too long (max {0} characters)": "Host SSH jest za długi (maks. {0} znaków)",
+  "e.g., ~/.ssh/id_ed25519_work": "np., ~/.ssh/id_ed25519_work",
+  "e.g., github-work, gitlab-personal": "np., github-work, gitlab-personal",
+  "e.g., ABCD1234EF567890": "np., ABCD1234EF567890"
 }

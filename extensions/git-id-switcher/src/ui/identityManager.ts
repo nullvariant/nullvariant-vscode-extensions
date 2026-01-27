@@ -19,8 +19,21 @@ import {
   updateIdentityInConfig,
   addIdentityToConfig,
 } from '../identity/identity';
-import { MAX_IDENTITIES, MAX_ID_LENGTH, MAX_NAME_LENGTH, MAX_EMAIL_LENGTH } from '../core/constants';
-import { isValidIdentityId, isValidEmail, hasDangerousChars } from '../validators/common';
+import {
+  MAX_IDENTITIES,
+  MAX_ID_LENGTH,
+  MAX_NAME_LENGTH,
+  MAX_EMAIL_LENGTH,
+  MAX_SSH_HOST_LENGTH,
+} from '../core/constants';
+import {
+  isValidIdentityId,
+  isValidEmail,
+  hasDangerousChars,
+  GPG_KEY_REGEX,
+  SSH_HOST_REGEX,
+} from '../validators/common';
+import { validateSshKeyPathFormat } from '../identity/inputValidator';
 import { getUserSafeMessage } from '../core/errors';
 import { securityLogger } from '../security/securityLogger';
 
@@ -51,7 +64,10 @@ interface IdentityQuickPickItem {
 type EditableField = Exclude<keyof Identity, 'id'>;
 
 /** Optional fields that can be cleared */
-const OPTIONAL_FIELDS: ReadonlySet<keyof Identity> = new Set(['service', 'icon', 'description']);
+const OPTIONAL_FIELDS: ReadonlySet<keyof Identity> = new Set([
+  'service', 'icon', 'description',
+  'sshKeyPath', 'sshHost', 'gpgKeyId',
+]);
 
 /** Add wizard step constants */
 const ADD_WIZARD_FIRST_STEP = 1;
@@ -150,6 +166,66 @@ function validateEmailInput(vs: VSCodeAPI, value: string): string | null {
 }
 
 /**
+ * Validate SSH key path input.
+ *
+ * SECURITY: Reuses validateSshKeyPathFormat from inputValidator.ts
+ * Defense-in-depth: identity.ts also validates on save.
+ *
+ * @param vs - VS Code API
+ * @param value - Input value
+ * @returns Error message or null if valid
+ */
+function validateSshKeyPathInput(vs: VSCodeAPI, value: string): string | null {
+  if (!value) return null; // Optional field
+  const errors: string[] = [];
+  // Reuse existing validator (Defense-in-depth)
+  validateSshKeyPathFormat(value, errors);
+  if (errors.length > 0) {
+    return vs.l10n.t('Invalid SSH key path format');
+  }
+  return null;
+}
+
+/**
+ * Validate GPG key ID input.
+ *
+ * SECURITY: Reuses GPG_KEY_REGEX from validators/common.ts
+ * Defense-in-depth: identity.ts also validates on save.
+ *
+ * @param vs - VS Code API
+ * @param value - Input value
+ * @returns Error message or null if valid
+ */
+function validateGpgKeyIdInput(vs: VSCodeAPI, value: string): string | null {
+  if (!value) return null; // Optional field
+  if (!GPG_KEY_REGEX.test(value)) {
+    return vs.l10n.t('GPG key ID must be 8-40 hexadecimal characters');
+  }
+  return null;
+}
+
+/**
+ * Validate SSH host input.
+ *
+ * SECURITY: Reuses SSH_HOST_REGEX from validators/common.ts
+ * Defense-in-depth: identity.ts also validates on save.
+ *
+ * @param vs - VS Code API
+ * @param value - Input value
+ * @returns Error message or null if valid
+ */
+function validateSshHostInput(vs: VSCodeAPI, value: string): string | null {
+  if (!value) return null; // Optional field
+  if (!SSH_HOST_REGEX.test(value)) {
+    return vs.l10n.t('SSH host must contain only valid hostname characters');
+  }
+  if (value.length > MAX_SSH_HOST_LENGTH) {
+    return vs.l10n.t('SSH host is too long (max {0} characters)', MAX_SSH_HOST_LENGTH);
+  }
+  return null;
+}
+
+/**
  * Validate field input based on field type.
  *
  * @param vs - VS Code API
@@ -169,15 +245,21 @@ function validateFieldInput(
     return null;
   }
 
-  if (field === 'name') {
-    return validateNameInput(vs, value);
+  switch (field) {
+    case 'name':
+      return validateNameInput(vs, value);
+    case 'email':
+      return validateEmailInput(vs, value);
+    case 'sshKeyPath':
+      return validateSshKeyPathInput(vs, value);
+    case 'gpgKeyId':
+      return validateGpgKeyIdInput(vs, value);
+    case 'sshHost':
+      return validateSshHostInput(vs, value);
+    default:
+      // Optional fields (service, icon, description) have no specific validation
+      return null;
   }
-  if (field === 'email') {
-    return validateEmailInput(vs, value);
-  }
-
-  // Optional fields (service, icon, description) have no specific validation
-  return null;
 }
 
 // ============================================================================
@@ -203,6 +285,12 @@ function getPlaceholderForField(vs: VSCodeAPI, field: keyof Identity): string {
       return vs.l10n.t('Emoji icon (e.g., 👤, 🏠)');
     case 'description':
       return vs.l10n.t('Short description');
+    case 'sshKeyPath':
+      return vs.l10n.t('e.g., ~/.ssh/id_ed25519_work');
+    case 'sshHost':
+      return vs.l10n.t('e.g., github-work, gitlab-personal');
+    case 'gpgKeyId':
+      return vs.l10n.t('e.g., ABCD1234EF567890');
     default:
       return '';
   }
@@ -248,6 +336,21 @@ function buildFieldItems(vs: VSCodeAPI, identity: Identity): FieldQuickPickItem[
       label: vs.l10n.t('Description'),
       description: identity.description || vs.l10n.t('(none)'),
       field: 'description',
+    },
+    {
+      label: '$(key) ' + vs.l10n.t('SSH Key Path'),
+      description: identity.sshKeyPath || vs.l10n.t('(none)'),
+      field: 'sshKeyPath',
+    },
+    {
+      label: '$(globe) ' + vs.l10n.t('SSH Host'),
+      description: identity.sshHost || vs.l10n.t('(none)'),
+      field: 'sshHost',
+    },
+    {
+      label: '$(shield) ' + vs.l10n.t('GPG Key ID'),
+      description: identity.gpgKeyId || vs.l10n.t('(none)'),
+      field: 'gpgKeyId',
     },
   ];
 }

@@ -91,5 +91,12 @@
   "Path must be under ~/.ssh/": "Пътят трябва да бъде в папката .ssh на вашата домашна директория",
   "File not found": "Файлът не е намерен",
   "Saved": "Запазено",
-  "Cannot be changed": "Не може да се промени"
+  "Cannot be changed": "Не може да се промени",
+  "Invalid SSH key path format": "Невалиден формат на път до SSH ключ",
+  "GPG key ID must be 8-40 hexadecimal characters": "ID на GPG ключ трябва да е 8-40 шестнадесетични символа",
+  "SSH host must contain only valid hostname characters": "SSH хостът трябва да съдържа само валидни символи за име на хост",
+  "SSH host is too long (max {0} characters)": "SSH хостът е твърде дълъг (макс. {0} символа)",
+  "e.g., ~/.ssh/id_ed25519_work": "напр., ~/.ssh/id_ed25519_work",
+  "e.g., github-work, gitlab-personal": "напр., github-work, gitlab-personal",
+  "e.g., ABCD1234EF567890": "напр., ABCD1234EF567890"
 }
