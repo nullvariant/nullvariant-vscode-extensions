@@ -69,5 +69,10 @@
   "Select an action": "Válasszon műveletet",
   "Select identity to edit": "Válassza ki a szerkesztendő identitást",
   "Failed to add identity: {0}": "Nem sikerült hozzáadni az identitást: {0}",
-  "Failed to edit identity: {0}": "Nem sikerült szerkeszteni az identitást: {0}"
+  "Failed to edit identity: {0}": "Nem sikerült szerkeszteni az identitást: {0}",
+  "Edit": "Szerkesztés",
+  "⚙️ Manage Identities": "⚙️ Identitások kezelése",
+  "(No identities)": "(Nincs identitás)",
+  "Name contains invalid characters": "A név érvénytelen karaktereket tartalmaz",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "Az ID-nak 1-{0} alfanumerikus karakterből, aláhúzásból vagy kötőjelből kell állnia"
 }

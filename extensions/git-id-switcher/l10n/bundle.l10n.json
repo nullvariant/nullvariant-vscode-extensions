@@ -69,5 +69,10 @@
   "Select an action": "Select an action",
   "Select identity to edit": "Select identity to edit",
   "Failed to add identity: {0}": "Failed to add identity: {0}",
-  "Failed to edit identity: {0}": "Failed to edit identity: {0}"
+  "Failed to edit identity: {0}": "Failed to edit identity: {0}",
+  "Edit": "Edit",
+  "⚙️ Manage Identities": "⚙️ Manage Identities",
+  "(No identities)": "(No identities)",
+  "Name contains invalid characters": "Name contains invalid characters",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID must be 1-{0} alphanumeric characters, underscores, or hyphens"
 }

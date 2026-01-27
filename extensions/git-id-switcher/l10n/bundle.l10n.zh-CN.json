@@ -69,5 +69,10 @@
   "Select an action": "选择操作",
   "Select identity to edit": "选择要编辑的身份",
   "Failed to add identity: {0}": "添加身份失败: {0}",
-  "Failed to edit identity: {0}": "编辑身份失败: {0}"
+  "Failed to edit identity: {0}": "编辑身份失败: {0}",
+  "Edit": "编辑",
+  "⚙️ Manage Identities": "⚙️ 管理身份",
+  "(No identities)": "(无身份)",
+  "Name contains invalid characters": "名称包含无效字符",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID必须是1-{0}个字母数字、下划线或连字符"
 }

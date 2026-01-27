@@ -69,5 +69,10 @@
   "Select an action": "Sélectionner une action",
   "Select identity to edit": "Sélectionner l'identité à modifier",
   "Failed to add identity: {0}": "Échec de l'ajout de l'identité: {0}",
-  "Failed to edit identity: {0}": "Échec de la modification de l'identité: {0}"
+  "Failed to edit identity: {0}": "Échec de la modification de l'identité: {0}",
+  "Edit": "Modifier",
+  "⚙️ Manage Identities": "⚙️ Gérer les identités",
+  "(No identities)": "(Aucune identité)",
+  "Name contains invalid characters": "Le nom contient des caractères non valides",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "L'ID doit contenir de 1 à {0} caractères alphanumériques, underscores ou tirets"
 }

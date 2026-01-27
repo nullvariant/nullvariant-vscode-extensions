@@ -69,5 +69,10 @@
   "Select an action": "Vyberte akci",
   "Select identity to edit": "Vyberte identitu k úpravě",
   "Failed to add identity: {0}": "Nepodařilo se přidat identitu: {0}",
-  "Failed to edit identity: {0}": "Nepodařilo se upravit identitu: {0}"
+  "Failed to edit identity: {0}": "Nepodařilo se upravit identitu: {0}",
+  "Edit": "Upravit",
+  "⚙️ Manage Identities": "⚙️ Spravovat identity",
+  "(No identities)": "(Žádné identity)",
+  "Name contains invalid characters": "Jméno obsahuje neplatné znaky",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID musí mít 1-{0} alfanumerických znaků, podtržítek nebo pomlček"
 }

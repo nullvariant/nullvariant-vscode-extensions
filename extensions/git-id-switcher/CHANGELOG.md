@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-01-27
+
+### Changed
+
+- **Identity Management UX Improvements**:
+  - Manage menu now shows profile list with inline edit/delete buttons
+  - Back button in title bar (standard VS Code pattern)
+  - Esc key now goes back one step instead of cancelling entire wizard
+  - Focus position preserved after edit/delete operations
+  - Empty state message when no profiles exist
+
 ## [0.15.0] - 2026-01-26
 
 ### Added

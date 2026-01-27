@@ -69,5 +69,10 @@
   "Select an action": "Wybierz akcję",
   "Select identity to edit": "Wybierz tożsamość do edycji",
   "Failed to add identity: {0}": "Nie udało się dodać tożsamości: {0}",
-  "Failed to edit identity: {0}": "Nie udało się edytować tożsamości: {0}"
+  "Failed to edit identity: {0}": "Nie udało się edytować tożsamości: {0}",
+  "Edit": "Edytuj",
+  "⚙️ Manage Identities": "⚙️ Zarządzaj tożsamościami",
+  "(No identities)": "(Brak tożsamości)",
+  "Name contains invalid characters": "Nazwa zawiera niedozwolone znaki",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID musi mieć od 1 do {0} znaków alfanumerycznych, podkreśleń lub myślników"
 }

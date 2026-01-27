@@ -69,5 +69,10 @@
   "Select an action": "Оберіть дію",
   "Select identity to edit": "Оберіть ідентифікатор для редагування",
   "Failed to add identity: {0}": "Не вдалося додати ідентифікатор: {0}",
-  "Failed to edit identity: {0}": "Не вдалося змінити ідентифікатор: {0}"
+  "Failed to edit identity: {0}": "Не вдалося змінити ідентифікатор: {0}",
+  "Edit": "Редагувати",
+  "⚙️ Manage Identities": "⚙️ Керування ідентифікаторами",
+  "(No identities)": "(Немає ідентифікаторів)",
+  "Name contains invalid characters": "Ім'я містить недопустимі символи",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID має містити від 1 до {0} буквено-цифрових символів, підкреслень або дефісів"
 }

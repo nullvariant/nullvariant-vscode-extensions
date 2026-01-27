@@ -17,18 +17,18 @@ import {
   getIdentityLabel,
   getIdentitiesWithValidation,
   deleteIdentityFromConfig,
-  addIdentityToConfig,
 } from '../identity/identity';
 import {
   showIdentityQuickPick,
-  showDeleteIdentityQuickPick,
   showErrorNotification,
+  showManageIdentitiesQuickPick,
+  showDeleteIdentityQuickPick,
 } from '../ui/identityPicker';
 import {
-  showManageMenu,
   showAddIdentityWizard,
   showEditIdentityWizard,
 } from '../ui/identityManager';
+import { securityLogger } from '../security/securityLogger';
 import { requireWorkspaceTrust } from '../core/workspaceTrust';
 import { getUserSafeMessage, isFatalError } from '../core/errors';
 import { IdentityStatusBar } from '../ui/identityStatusBar';
@@ -61,7 +61,7 @@ export async function selectIdentityCommand(
 
     // Handle manage option
     if (selectedIdentity === 'manage') {
-      await handleManageIdentities(context, statusBar);
+      await handleManageIdentities(context, statusBar, getCurrentIdentity, setCurrentIdentity);
       return;
     }
 
@@ -95,35 +95,105 @@ export async function selectIdentityCommand(
 }
 
 /**
- * Handle the manage identities submenu.
- *
- * @param context - VS Code extension context
- * @param statusBar - Identity status bar instance
+ * Handle add action in manage identities loop.
+ * @returns New lastIndex after add operation
  */
-async function handleManageIdentities(
+async function handleManageAdd(lastIndex: number): Promise<number> {
+  const success = await handleAddIdentity();
+  if (success) {
+    const newIdentities = getIdentitiesWithValidation();
+    return newIdentities.length - 1;
+  }
+  return lastIndex;
+}
+
+/**
+ * Handle edit action in manage identities loop.
+ */
+async function handleManageEdit(
+  identity: Identity,
   context: vscode.ExtensionContext,
   statusBar: IdentityStatusBar
 ): Promise<void> {
-  const identities = getIdentitiesWithValidation();
-  const hasIdentities = identities.length > 0;
+  await showEditIdentityWizard(identity);
+  // Refresh status bar if current identity was edited
+  const currentIdentityId = context.workspaceState.get<string>('currentIdentityId');
+  if (currentIdentityId === identity.id) {
+    const updatedIdentity = getIdentitiesWithValidation().find(
+      i => i.id === currentIdentityId
+    );
+    if (updatedIdentity) {
+      statusBar.setIdentity(updatedIdentity);
+    }
+  }
+}
 
-  const action = await showManageMenu(hasIdentities);
+/**
+ * Handle delete action in manage identities loop.
+ * @returns New lastIndex after delete operation
+ */
+async function handleManageDelete(
+  identity: Identity,
+  index: number,
+  context: vscode.ExtensionContext,
+  statusBar: IdentityStatusBar
+): Promise<number> {
+  const success = await handleDeleteIdentity(context, statusBar, identity);
+  if (success) {
+    const newIdentities = getIdentitiesWithValidation();
+    return Math.min(index, Math.max(0, newIdentities.length - 1));
+  }
+  return index;
+}
 
-  if (!action) {
-    return;
+/**
+ * Handle the manage identities submenu with loop structure.
+ *
+ * Displays the manage identities UI in a loop, allowing multiple operations
+ * without returning to the main picker. The loop exits when user presses
+ * back button or Esc.
+ *
+ * Note: After exiting, selectIdentityCommand is called which may result in
+ * re-entering this function. This recursion is bounded by user interaction
+ * (requires explicit selection of "Manage identities..." option).
+ *
+ * @param context - VS Code extension context
+ * @param statusBar - Identity status bar instance
+ * @param getCurrentIdentity - Function to get the current identity
+ * @param setCurrentIdentity - Function to set the current identity
+ */
+async function handleManageIdentities(
+  context: vscode.ExtensionContext,
+  statusBar: IdentityStatusBar,
+  getCurrentIdentity: () => Identity | undefined,
+  setCurrentIdentity: (identity: Identity) => void
+): Promise<void> {
+  let lastIndex = 0;
+
+  while (true) {
+    const identities = getIdentitiesWithValidation();
+    const result = await showManageIdentitiesQuickPick(identities, lastIndex);
+
+    if (!result || result.action === 'back') {
+      break; // Exit loop → return to main picker
+    }
+
+    switch (result.action) {
+      case 'add':
+        lastIndex = await handleManageAdd(lastIndex);
+        break;
+      case 'edit':
+        await handleManageEdit(result.identity, context, statusBar);
+        lastIndex = result.index;
+        break;
+      case 'delete':
+        lastIndex = await handleManageDelete(result.identity, result.index, context, statusBar);
+        break;
+    }
   }
 
-  switch (action) {
-    case 'add':
-      await handleAddIdentity();
-      break;
-    case 'edit':
-      await handleEditIdentity(statusBar, context);
-      break;
-    case 'delete':
-      await handleDeleteIdentity(context, statusBar);
-      break;
-  }
+  // After loop exits, return to main picker
+  await selectIdentityCommand(context, statusBar, getCurrentIdentity, setCurrentIdentity);
 }
 
 /**
@@ -165,46 +235,18 @@ export async function showWelcomeNotification(): Promise<void> {
  * Handle the add identity command.
  *
  * Uses vscodeLoader for testability (allows mocking in E2E tests).
+ * The wizard handles validation, saving, and showing notifications.
  *
- * Flow:
- * 1. Show add identity wizard
- * 2. Add identity to config
- * 3. Show success notification
+ * @returns true if identity was created, false if cancelled or failed
  */
-export async function handleAddIdentity(): Promise<void> {
-  const vs = getVSCode();
-  if (!vs) {
-    return;
-  }
-
+export async function handleAddIdentity(): Promise<boolean> {
   // SECURITY: Block command execution in untrusted workspaces
   if (!requireWorkspaceTrust()) {
-    return;
+    return false;
   }
 
-  try {
-    const newIdentity = await showAddIdentityWizard();
-
-    if (!newIdentity) {
-      // User cancelled
-      return;
-    }
-
-    await addIdentityToConfig(newIdentity);
-
-    vs.window.showInformationMessage(
-      vs.l10n.t("Identity '{0}' has been created.", newIdentity.id)
-    );
-  } catch (error) {
-    // SECURITY: Use getUserSafeMessage to prevent information leakage
-    const safeMessage = getUserSafeMessage(error);
-    showErrorNotification(vs.l10n.t('Failed to add identity: {0}', safeMessage));
-
-    // Propagate fatal errors (security violations)
-    if (isFatalError(error)) {
-      throw error;
-    }
-  }
+  // The wizard handles all steps including validation, saving, and notifications
+  return showAddIdentityWizard();
 }
 
 /**
@@ -265,7 +307,7 @@ export async function handleEditIdentity(
  * Uses vscodeLoader for testability (allows mocking in E2E tests).
  *
  * Flow:
- * 1. Show quick pick for selection (empty check handled by picker)
+ * 1. Show quick pick for selection (skipped if targetIdentity provided)
  * 2. Check if selected identity is current
  * 3. Show confirmation dialog (different message for current identity)
  * 4. Delete identity from config
@@ -275,31 +317,34 @@ export async function handleEditIdentity(
  *
  * @param context - VS Code extension context
  * @param statusBar - Identity status bar instance for UI update
+ * @param targetIdentity - Optional identity to delete (skips selection UI)
+ * @returns true if identity was deleted, false if cancelled or failed
  */
 export async function handleDeleteIdentity(
   context: vscode.ExtensionContext,
-  statusBar: IdentityStatusBar
-): Promise<void> {
+  statusBar: IdentityStatusBar,
+  targetIdentity?: Identity
+): Promise<boolean> {
   const vs = getVSCode();
   if (!vs) {
-    return;
+    return false;
   }
 
   // SECURITY: Block command execution in untrusted workspaces
   if (!requireWorkspaceTrust()) {
-    return;
+    return false;
   }
 
   // Get current identity ID from workspace state
   const currentIdentityId = context.workspaceState.get<string>('currentIdentityId');
 
   try {
-    // Show quick pick for selection
-    const selectedIdentity = await showDeleteIdentityQuickPick(currentIdentityId);
+    // Use target identity or show selection UI
+    const selectedIdentity = targetIdentity ?? await showDeleteIdentityQuickPick(currentIdentityId);
 
     if (!selectedIdentity) {
       // User cancelled
-      return;
+      return false;
     }
 
     const isCurrentIdentity = selectedIdentity.id === currentIdentityId;
@@ -319,11 +364,14 @@ export async function handleDeleteIdentity(
 
     if (confirmation !== deleteButton) {
       // User cancelled confirmation
-      return;
+      return false;
     }
 
     // Delete identity from config
     await deleteIdentityFromConfig(selectedIdentity.id);
+
+    // SECURITY: Log identity deletion as config change
+    securityLogger.logConfigChange('identities');
 
     // Clear workspace state and update status bar if current identity was deleted
     if (isCurrentIdentity) {
@@ -335,6 +383,8 @@ export async function handleDeleteIdentity(
     vs.window.showInformationMessage(
       vs.l10n.t("Identity '{0}' has been deleted.", identityLabel)
     );
+
+    return true;
   } catch (error) {
     // SECURITY: Use getUserSafeMessage to prevent information leakage
     const safeMessage = getUserSafeMessage(error);
@@ -344,5 +394,7 @@ export async function handleDeleteIdentity(
     if (isFatalError(error)) {
       throw error;
     }
+
+    return false;
   }
 }

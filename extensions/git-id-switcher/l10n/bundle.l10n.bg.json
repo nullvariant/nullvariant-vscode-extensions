@@ -69,5 +69,10 @@
   "Select an action": "Изберете действие",
   "Select identity to edit": "Изберете самоличност за редактиране",
   "Failed to add identity: {0}": "Неуспешно добавяне на самоличност: {0}",
-  "Failed to edit identity: {0}": "Неуспешно редактиране на самоличност: {0}"
+  "Failed to edit identity: {0}": "Неуспешно редактиране на самоличност: {0}",
+  "Edit": "Редактирай",
+  "⚙️ Manage Identities": "⚙️ Управление на самоличности",
+  "(No identities)": "(Няма самоличности)",
+  "Name contains invalid characters": "Името съдържа невалидни символи",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID трябва да съдържа от 1 до {0} буквено-цифрови символа, долни черти или тирета"
 }
