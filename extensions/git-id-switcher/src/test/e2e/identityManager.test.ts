@@ -3,28 +3,28 @@
  *
  * Tests for identityManager.ts UI functionality including:
  * - showAddIdentityWizard() multi-step input with Esc-back navigation
- * - showAddIdentityForm() property list style form (Step 9.3)
+ * - showAddIdentityForm() property list style form
  * - showEditIdentityWizard() field editing with targetIdentity support
- * - Edit identity form field selection (Step 9.4)
+ * - Edit identity form field selection
+ * - SSH/GPG field editing with security validation
  * - validateInput integration with security validators
  * - MAX_IDENTITIES limit enforcement
  * - getUserSafeMessage error handling
  *
  * Test Categories:
  * - Add Wizard Flow: 3-step wizard with Esc-back support
- * - Add Identity Form (Step 9.3): Property list display, required field validation,
+ * - Add Identity Form: Property list display, required field validation,
  *   duplicate ID check, back button
  * - Edit Wizard Flow: Field editing with optional identity selection skip
- * - Edit Identity Form (Step 9.4): Back button, ID field non-editable,
+ * - Edit Identity Form: Back button, ID field non-editable,
  *   edit loop continuation, placeholder
+ * - SSH/GPG Field Editing: sshKeyPath, sshHost, gpgKeyId validation,
+ *   file picker button, showOpenDialog integration
  * - validateInput Integration: Security validator usage verification
  * - Security: Dangerous character detection, length limits
  * - Error Handling: getUserSafeMessage integration
  *
- * Test Count: 41 tests covering identityManager.ts functionality
- * - Legacy tests: 19
- * - Step 9.3 (Add Form): 12
- * - Step 9.4 (Edit Form): 10
+ * Test Count: 72 tests covering identityManager.ts functionality
  *
  * Note: These tests use mocked VS Code API via vscodeLoader since
  * UI interactions require VS Code window API.
@@ -33,7 +33,7 @@
 import * as assert from 'node:assert';
 import { showAddIdentityWizard, showEditIdentityWizard, showAddIdentityForm } from '../../ui/identityManager';
 import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
-import { MAX_IDENTITIES, MAX_NAME_LENGTH, MAX_EMAIL_LENGTH } from '../../core/constants';
+import { MAX_IDENTITIES, MAX_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_SSH_HOST_LENGTH } from '../../core/constants';
 import type { Identity } from '../../identity/identity';
 
 /**
@@ -68,6 +68,9 @@ class MockThemeIcon {
 /** Special symbol to represent back button trigger in inputBox tests */
 const INPUT_BOX_BACK = Symbol('InputBox.Back');
 
+/** Special symbol to represent file picker button click */
+const FILE_PICKER_CLICK = Symbol('InputBox.FilePicker');
+
 /**
  * Create a mock VS Code API for identity manager tests
  *
@@ -82,8 +85,14 @@ function createMockVSCode(options: {
   showInputBoxResults?: (string | undefined)[];
   configUpdateError?: Error;
   quickPickSelections?: unknown[];
-  inputBoxSelections?: (string | typeof INPUT_BOX_BACK | undefined)[];
+  inputBoxSelections?: (string | typeof INPUT_BOX_BACK | typeof FILE_PICKER_CLICK | undefined)[];
   showOpenDialogResult?: string | undefined;
+  onShowOpenDialog?: (dialogOptions: {
+    canSelectFiles?: boolean;
+    canSelectFolders?: boolean;
+    defaultUri?: { fsPath: string } | undefined;
+    title?: string;
+  }) => void;
   onQuickPickCreated?: (quickPick: {
     items: unknown[];
     buttons: unknown[];
@@ -206,9 +215,18 @@ function createMockVSCode(options: {
             const selections = options.inputBoxSelections ?? options.showInputBoxResults ?? [];
             const selection = selections[inputBoxSelectionIndex];
             inputBoxSelectionIndex++;
-            setTimeout(() => {
+            setTimeout(async () => {
               if (selection === INPUT_BOX_BACK && buttonCallback) {
                 buttonCallback(BACK_BUTTON);
+              } else if (selection === FILE_PICKER_CLICK && buttonCallback) {
+                // Simulate file picker button click (non-back button)
+                // The button callback is async, so we need to wait for showOpenDialog to complete
+                const filePickerButton = { iconPath: { id: 'folder-opened' }, tooltip: 'Browse...' };
+                await Promise.resolve(buttonCallback(filePickerButton));
+                // After file picker completes, cancel the InputBox (test only needs to verify dialog options)
+                setTimeout(() => {
+                  if (hideCallback) hideCallback();
+                }, 10);
               } else if (selection === undefined && hideCallback) {
                 hideCallback();
               } else if (typeof selection === 'string' && acceptCallback) {
@@ -251,12 +269,16 @@ function createMockVSCode(options: {
 
         return inputBox;
       },
-      showOpenDialog: async (_dialogOptions?: {
+      showOpenDialog: async (dialogOptions?: {
         canSelectFiles?: boolean;
         canSelectFolders?: boolean;
-        defaultUri?: unknown;
+        defaultUri?: { fsPath: string };
         title?: string;
       }) => {
+        // Capture dialog options for testing
+        if (options.onShowOpenDialog && dialogOptions) {
+          options.onShowOpenDialog(dialogOptions);
+        }
         const result = options.showOpenDialogResult;
         if (result) {
           return [{ fsPath: result }];
@@ -628,10 +650,10 @@ describe('identityManager E2E Test Suite', function () {
       assert.strictEqual(result, false, 'Invalid ID should cause validation failure');
     });
 
-    it('should show duplicate ID error in detail (tested in Step 9.3)', async () => {
-      // This is already covered by 'Duplicate ID Check' tests in Step 9.3
+    it('should show duplicate ID error in detail', async () => {
+      // This is already covered by 'Duplicate ID Check' tests in Add Identity Form section
       // Duplicate ID shows "ID already exists" in detail and keeps save button disabled
-      assert.ok(true, 'Duplicate ID check covered in Step 9.3 tests');
+      assert.ok(true, 'Duplicate ID check covered in Add Identity Form tests');
     });
   });
 
@@ -783,10 +805,10 @@ describe('identityManager E2E Test Suite', function () {
   });
 
   // ===========================================================================
-  // Step 9.3: Add Identity Form (Property List Style) Tests
+  // Add Identity Form (Property List Style) Tests
   // ===========================================================================
 
-  describe('Add Identity Form: Property List Style (Step 9.3)', () => {
+  describe('Add Identity Form: Property List Style', () => {
     describe('Property List Display', () => {
       it('should show QuickPick with all 9 FIELD_METADATA fields', async () => {
         let capturedItems: unknown[] = [];
@@ -1131,10 +1153,10 @@ describe('identityManager E2E Test Suite', function () {
   });
 
   // ===========================================================================
-  // Step 9.4: Edit Identity Form Tests
+  // Edit Identity Form Tests
   // ===========================================================================
 
-  describe('Edit Identity Form (Step 9.4)', () => {
+  describe('Edit Identity Form', () => {
     describe('Back Button (Field Selection)', () => {
       it('should have QuickInputButtons.Back in field selection', async () => {
         let capturedButtons: unknown[] = [];
@@ -1356,6 +1378,720 @@ describe('identityManager E2E Test Suite', function () {
         await showEditIdentityWizard(TEST_IDENTITIES.work);
 
         assert.strictEqual(capturedPlaceholder, 'Filter...', 'Placeholder should be "Filter..."');
+      });
+    });
+  });
+
+  // ===========================================================================
+  // SSH/GPG Field Editing Tests
+  //
+  // Tests for SSH/GPG field editing requirements:
+  // - sshKeyPath: validateSshKeyPathFormat(), isUnderSshDirectory(),
+  //   path traversal, dangerous chars
+  // - sshHost: SSH_HOST_REGEX validation, MAX_SSH_HOST_LENGTH
+  // - gpgKeyId: GPG_KEY_REGEX validation (8-40 hex chars)
+  // - File picker button ($(folder-opened)) and showOpenDialog integration
+  // ===========================================================================
+
+  describe('SSH/GPG Field Editing', () => {
+    /**
+     * Test identity fixture with SSH/GPG fields
+     */
+    const TEST_IDENTITY_WITH_SSH: Identity = {
+      id: 'ssh-test',
+      name: 'SSH Test User',
+      email: 'ssh@example.com',
+      sshKeyPath: '~/.ssh/id_rsa',
+      sshHost: 'github-work',
+      gpgKeyId: 'ABCD1234',
+    };
+
+    // =========================================================================
+    // sshKeyPath Field Editing Tests
+    // =========================================================================
+
+    describe('sshKeyPath Field Editing', () => {
+      describe('Validation', () => {
+        it('should accept valid SSH key path (~/.ssh/id_rsa)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined, // Cancel after save
+            ],
+            inputBoxSelections: ['~/.ssh/id_rsa'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, true, 'Valid SSH key path should be accepted');
+        });
+
+        it('should accept SSH key path in subdirectory (~/.ssh/keys/work_key)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: ['~/.ssh/keys/work_key'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, true, 'SSH key path in subdirectory should be accepted');
+        });
+
+        // SSH directory restriction tests (isUnderSshDirectory)
+        it('should reject path outside .ssh directory (~/documents/key)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: ['~/documents/key'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'Path outside .ssh directory should be rejected');
+        });
+
+        it('should reject path in .ssh_backup directory (~/.ssh_backup/key)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: ['~/.ssh_backup/key'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'Path in .ssh_backup (not .ssh) should be rejected');
+        });
+
+        it('should reject path with traversal (~/.ssh/../../../etc/passwd)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined, // Cancel after validation failure
+            ],
+            inputBoxSelections: ['~/.ssh/../../../etc/passwd'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          // Validation error causes flow to cancel
+          assert.strictEqual(result, false, 'Path traversal should cause validation failure');
+        });
+
+        it('should allow single dot in path (~/.ssh/./id_rsa)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: ['~/.ssh/./id_rsa'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          // Single dot is harmless, should be accepted
+          assert.strictEqual(result, true, 'Single dot in path should be allowed');
+        });
+
+        it('should reject backtick command substitution (`whoami`)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: ['~/.ssh/`whoami`'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'Backtick command should cause validation failure');
+        });
+
+        it('should reject dollar command substitution ($(command))', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: ['~/.ssh/$(whoami)'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'Dollar command substitution should cause validation failure');
+        });
+
+        it('should reject semicolon in path (key;rm -rf /)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: ['~/.ssh/key;rm -rf /'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'Semicolon in path should cause validation failure');
+        });
+
+        it('should reject path not starting with / or ~', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: ['relative/path/key'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'Relative path should cause validation failure');
+        });
+
+        it('should allow clearing sshKeyPath (empty string for optional field)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITY_WITH_SSH],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: [''], // Clear the field
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITY_WITH_SSH);
+
+          assert.strictEqual(result, true, 'Clearing optional sshKeyPath should be allowed');
+        });
+      });
+
+      describe('File Picker Button', () => {
+        it('should show file picker button ($(folder-opened)) in InputBox', async () => {
+          let capturedButtons: unknown[] = [];
+
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: [undefined], // Cancel at InputBox
+            onInputBoxCreated: (inputBox) => {
+              capturedButtons = inputBox.buttons;
+            },
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          // Should have Back button and file picker button
+          assert.ok(capturedButtons.length >= 2, `Should have at least 2 buttons, got ${capturedButtons.length}`);
+
+          // Find file picker button (has ThemeIcon with 'folder-opened')
+          const hasFilePickerButton = capturedButtons.some((btn: unknown) => {
+            if (typeof btn === 'object' && btn !== null && 'iconPath' in btn) {
+              const iconPath = (btn as { iconPath: { id?: string } }).iconPath;
+              return iconPath?.id === 'folder-opened';
+            }
+            return false;
+          });
+          assert.ok(hasFilePickerButton, 'Should have file picker button with $(folder-opened) icon');
+        });
+
+        it('should have showOpenDialog available for file picker', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: ['~/.ssh/selected_key'],
+            showOpenDialogResult: '/home/user/.ssh/selected_key',
+          });
+
+          _setMockVSCode(mockVSCode as never);
+
+          await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          // Verify showOpenDialog is available in the mock
+          // The actual file picker button click is handled by the mock infrastructure
+          assert.strictEqual(typeof mockVSCode.window.showOpenDialog, 'function',
+            'showOpenDialog should be available');
+        });
+
+        it('should have file picker button tooltip "Browse..."', async () => {
+          let capturedButtons: unknown[] = [];
+
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: [undefined],
+            onInputBoxCreated: (inputBox) => {
+              capturedButtons = inputBox.buttons;
+            },
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          // Find file picker button and verify tooltip
+          const filePickerButton = capturedButtons.find((btn: unknown) => {
+            if (typeof btn === 'object' && btn !== null && 'iconPath' in btn) {
+              const iconPath = (btn as { iconPath: { id?: string } }).iconPath;
+              return iconPath?.id === 'folder-opened';
+            }
+            return false;
+          });
+
+          if (filePickerButton && typeof filePickerButton === 'object' && 'tooltip' in filePickerButton) {
+            const tooltip = (filePickerButton as { tooltip?: string }).tooltip;
+            assert.ok(tooltip?.includes('Browse'), `File picker button should have Browse tooltip, got: ${tooltip}`);
+          }
+        });
+      });
+
+      describe('showOpenDialog default path', () => {
+        it('should use HOME/.ssh as defaultUri on Unix', async () => {
+          // Save original env
+          const originalHome = process.env.HOME;
+          const originalUserProfile = process.env.USERPROFILE;
+
+          // Set up Unix environment
+          process.env.HOME = '/home/testuser';
+          delete process.env.USERPROFILE;
+
+          let capturedDefaultUri: { fsPath: string } | undefined;
+
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: [FILE_PICKER_CLICK, undefined],
+            showOpenDialogResult: '/home/testuser/.ssh/id_rsa',
+            onShowOpenDialog: (dialogOptions) => {
+              capturedDefaultUri = dialogOptions.defaultUri;
+            },
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          try {
+            await showEditIdentityWizard(TEST_IDENTITIES.work);
+            assert.ok(capturedDefaultUri, 'showOpenDialog should have been called');
+            assert.strictEqual(capturedDefaultUri?.fsPath, '/home/testuser/.ssh',
+              'defaultUri should be HOME/.ssh');
+          } finally {
+            // Restore original env
+            process.env.HOME = originalHome;
+            if (originalUserProfile !== undefined) {
+              process.env.USERPROFILE = originalUserProfile;
+            }
+          }
+        });
+
+        it('should use USERPROFILE/.ssh as defaultUri on Windows', async () => {
+          // Save original env
+          const originalHome = process.env.HOME;
+          const originalUserProfile = process.env.USERPROFILE;
+
+          // Set up Windows environment
+          delete process.env.HOME;
+          process.env.USERPROFILE = 'C:\\Users\\testuser';
+
+          let capturedDefaultUri: { fsPath: string } | undefined;
+
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: [FILE_PICKER_CLICK, undefined],
+            showOpenDialogResult: 'C:\\Users\\testuser\\.ssh\\id_rsa',
+            onShowOpenDialog: (dialogOptions) => {
+              capturedDefaultUri = dialogOptions.defaultUri;
+            },
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          try {
+            await showEditIdentityWizard(TEST_IDENTITIES.work);
+            assert.ok(capturedDefaultUri, 'showOpenDialog should have been called');
+            assert.strictEqual(capturedDefaultUri?.fsPath, 'C:\\Users\\testuser/.ssh',
+              'defaultUri should be USERPROFILE/.ssh');
+          } finally {
+            // Restore original env
+            if (originalHome !== undefined) {
+              process.env.HOME = originalHome;
+            }
+            process.env.USERPROFILE = originalUserProfile;
+          }
+        });
+
+        it('should use undefined defaultUri when both HOME and USERPROFILE are undefined', async () => {
+          // Save original env
+          const originalHome = process.env.HOME;
+          const originalUserProfile = process.env.USERPROFILE;
+
+          // Clear both env vars
+          delete process.env.HOME;
+          delete process.env.USERPROFILE;
+
+          let capturedDefaultUri: { fsPath: string } | undefined = { fsPath: 'sentinel' };
+          let dialogWasCalled = false;
+
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshKeyPath' },
+              undefined,
+            ],
+            inputBoxSelections: [FILE_PICKER_CLICK, undefined],
+            showOpenDialogResult: undefined,
+            onShowOpenDialog: (dialogOptions) => {
+              dialogWasCalled = true;
+              capturedDefaultUri = dialogOptions.defaultUri;
+            },
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          try {
+            await showEditIdentityWizard(TEST_IDENTITIES.work);
+            assert.ok(dialogWasCalled, 'showOpenDialog should have been called');
+            assert.strictEqual(capturedDefaultUri, undefined,
+              'defaultUri should be undefined when HOME and USERPROFILE are both undefined');
+          } finally {
+            // Restore original env
+            if (originalHome !== undefined) {
+              process.env.HOME = originalHome;
+            }
+            if (originalUserProfile !== undefined) {
+              process.env.USERPROFILE = originalUserProfile;
+            }
+          }
+        });
+      });
+    });
+
+    // =========================================================================
+    // sshHost Field Editing Tests
+    // =========================================================================
+
+    describe('sshHost Field Editing', () => {
+      describe('Validation with SSH_HOST_REGEX', () => {
+        it('should accept valid hostname (github-work)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshHost' },
+              undefined,
+            ],
+            inputBoxSelections: ['github-work'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, true, 'Valid SSH host should be accepted');
+        });
+
+        it('should accept hostname with dot (gitlab.personal)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshHost' },
+              undefined,
+            ],
+            inputBoxSelections: ['gitlab.personal'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, true, 'SSH host with dot should be accepted');
+        });
+
+        it('should accept hostname with underscore (my_server)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshHost' },
+              undefined,
+            ],
+            inputBoxSelections: ['my_server'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, true, 'SSH host with underscore should be accepted');
+        });
+
+        it('should reject hostname with space', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshHost' },
+              undefined,
+            ],
+            inputBoxSelections: ['invalid host'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'SSH host with space should be rejected');
+        });
+
+        it('should reject hostname with special characters (!@#)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshHost' },
+              undefined,
+            ],
+            inputBoxSelections: ['invalid!@#host'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'SSH host with special characters should be rejected');
+        });
+
+        it('should reject hostname starting with hyphen', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshHost' },
+              undefined,
+            ],
+            inputBoxSelections: ['-invalid-start'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'SSH host starting with hyphen should be rejected');
+        });
+
+        it('should reject hostname exceeding MAX_SSH_HOST_LENGTH', async () => {
+          const longHost = 'a'.repeat(MAX_SSH_HOST_LENGTH + 1);
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'sshHost' },
+              undefined,
+            ],
+            inputBoxSelections: [longHost],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'SSH host exceeding max length should be rejected');
+        });
+
+        it('should allow clearing sshHost (empty string for optional field)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITY_WITH_SSH],
+            quickPickSelections: [
+              { field: 'sshHost' },
+              undefined,
+            ],
+            inputBoxSelections: [''],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITY_WITH_SSH);
+
+          assert.strictEqual(result, true, 'Clearing optional sshHost should be allowed');
+        });
+      });
+    });
+
+    // =========================================================================
+    // gpgKeyId Field Editing Tests
+    // =========================================================================
+
+    describe('gpgKeyId Field Editing', () => {
+      describe('Validation with GPG_KEY_REGEX', () => {
+        it('should accept valid 8-character hex key ID (ABCD1234)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'gpgKeyId' },
+              undefined,
+            ],
+            inputBoxSelections: ['ABCD1234'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, true, 'Valid 8-char GPG key ID should be accepted');
+        });
+
+        it('should accept valid 16-character hex key ID', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'gpgKeyId' },
+              undefined,
+            ],
+            inputBoxSelections: ['ABCD1234ABCD1234'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, true, 'Valid 16-char GPG key ID should be accepted');
+        });
+
+        it('should accept valid 40-character hex fingerprint', async () => {
+          const fullFingerprint = 'ABCD1234ABCD1234ABCD1234ABCD1234ABCD1234';
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'gpgKeyId' },
+              undefined,
+            ],
+            inputBoxSelections: [fullFingerprint],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, true, 'Valid 40-char GPG fingerprint should be accepted');
+        });
+
+        it('should accept lowercase hex characters', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'gpgKeyId' },
+              undefined,
+            ],
+            inputBoxSelections: ['abcdef12'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, true, 'Lowercase hex GPG key ID should be accepted');
+        });
+
+        it('should reject key ID with less than 8 characters (7 chars)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'gpgKeyId' },
+              undefined,
+            ],
+            inputBoxSelections: ['ABCD123'], // 7 characters
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'GPG key ID with 7 chars should be rejected');
+        });
+
+        it('should reject key ID with more than 40 characters (41 chars)', async () => {
+          const tooLong = 'A'.repeat(41);
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'gpgKeyId' },
+              undefined,
+            ],
+            inputBoxSelections: [tooLong],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'GPG key ID with 41 chars should be rejected');
+        });
+
+        it('should reject non-hex characters (GHIJKLMN)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'gpgKeyId' },
+              undefined,
+            ],
+            inputBoxSelections: ['GHIJKLMN'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'GPG key ID with non-hex chars should be rejected');
+        });
+
+        it('should reject key ID with spaces', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITIES.work],
+            quickPickSelections: [
+              { field: 'gpgKeyId' },
+              undefined,
+            ],
+            inputBoxSelections: ['ABCD 1234'],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITIES.work);
+
+          assert.strictEqual(result, false, 'GPG key ID with spaces should be rejected');
+        });
+
+        it('should allow clearing gpgKeyId (empty string for optional field)', async () => {
+          const mockVSCode = createMockVSCode({
+            identities: [TEST_IDENTITY_WITH_SSH],
+            quickPickSelections: [
+              { field: 'gpgKeyId' },
+              undefined,
+            ],
+            inputBoxSelections: [''],
+          });
+          _setMockVSCode(mockVSCode as never);
+
+          const result = await showEditIdentityWizard(TEST_IDENTITY_WITH_SSH);
+
+          assert.strictEqual(result, true, 'Clearing optional gpgKeyId should be allowed');
+        });
       });
     });
   });

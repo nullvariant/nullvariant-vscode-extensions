@@ -156,6 +156,214 @@ function createMockVSCode(options: {
   };
 }
 
+/** Symbol for Back button (used by createAddMockVSCode) */
+const ADD_MOCK_BACK_BUTTON = Symbol('QuickInputButtons.Back');
+
+/**
+ * Create a mock VS Code API for add identity tests
+ *
+ * Uses createQuickPick and createInputBox to match the actual implementation:
+ * 1. QuickPick shows form with fields (id, name, email) and Save button
+ * 2. When field is selected, InputBox opens for value input
+ * 3. After all required fields filled, Save button becomes enabled
+ * 4. Selecting Save completes the form
+ *
+ * quickPickSelections: sequence of selections (field names or 'save' or undefined for cancel)
+ * inputBoxValues: sequence of values for InputBox (strings or undefined for cancel)
+ */
+function createAddMockVSCode(options: {
+  isTrusted?: boolean;
+  identities?: Identity[];
+  quickPickSelections?: (string | undefined)[];
+  inputBoxValues?: (string | undefined)[];
+  configUpdateError?: Error;
+}) {
+  const showWarningMessageCalls: string[] = [];
+  const showInformationMessageCalls: string[] = [];
+  const showErrorMessageCalls: string[] = [];
+  const configUpdateCalls: { key: string; value: unknown }[] = [];
+  let quickPickSelectionIndex = 0;
+  let inputBoxValueIndex = 0;
+
+  return {
+    workspace: {
+      isTrusted: options.isTrusted ?? true,
+      getConfiguration: () => ({
+        get: (key: string) => {
+          if (key === 'identities') {
+            return options.identities ?? [];
+          }
+          return undefined;
+        },
+        update: async (key: string, value: unknown) => {
+          if (options.configUpdateError) {
+            throw options.configUpdateError;
+          }
+          configUpdateCalls.push({ key, value });
+        },
+      }),
+      onDidGrantWorkspaceTrust: () => ({ dispose: () => {} }),
+    },
+    window: {
+      showWarningMessage: async (message: string) => {
+        showWarningMessageCalls.push(message);
+        return undefined;
+      },
+      showInformationMessage: async (message: string) => {
+        showInformationMessageCalls.push(message);
+        return undefined;
+      },
+      showErrorMessage: async (message: string) => {
+        showErrorMessageCalls.push(message);
+        return undefined;
+      },
+      createQuickPick: <T extends { field?: string | null; _isDisabled?: boolean; _isSaveButton?: boolean }>() => {
+        let acceptCallback: (() => void) | undefined;
+        let hideCallback: (() => void) | undefined;
+        let _items: T[] = [];
+        let _selectedItems: T[] = [];
+
+        const quickPick = {
+          get items() { return _items; },
+          set items(value: T[]) { _items = value; },
+          get selectedItems() { return _selectedItems; },
+          set selectedItems(value: T[]) { _selectedItems = value; },
+          title: '',
+          placeholder: '',
+          buttons: [] as unknown[],
+          onDidAccept: (callback: () => void) => {
+            acceptCallback = callback;
+            return { dispose: () => {} };
+          },
+          onDidTriggerButton: () => {
+            return { dispose: () => {} };
+          },
+          onDidHide: (callback: () => void) => {
+            hideCallback = callback;
+            return { dispose: () => {} };
+          },
+          show: () => {
+            const selections = options.quickPickSelections ?? [];
+            const selection = selections[quickPickSelectionIndex];
+            quickPickSelectionIndex++;
+
+            setTimeout(() => {
+              if (selection === undefined) {
+                // Cancel
+                if (hideCallback) hideCallback();
+              } else {
+                // Find and select the item
+                const item = _items.find(i => i.field === selection || (selection === 'save' && i._isSaveButton));
+                if (item) {
+                  _selectedItems = [item];
+                  if (acceptCallback) acceptCallback();
+                } else if (hideCallback) {
+                  hideCallback();
+                }
+              }
+            }, 0);
+          },
+          hide: () => {
+            if (hideCallback) hideCallback();
+          },
+          dispose: () => {},
+        };
+        return quickPick;
+      },
+      createInputBox: () => {
+        let acceptCallback: (() => void) | undefined;
+        let hideCallback: (() => void) | undefined;
+        let changeCallback: ((value: string) => void) | undefined;
+        let _value = '';
+        let _validationMessage: string | undefined;
+
+        const inputBox = {
+          get value() { return _value; },
+          set value(v: string) {
+            _value = v;
+            if (changeCallback) changeCallback(v);
+          },
+          get validationMessage() { return _validationMessage; },
+          set validationMessage(v: string | undefined) { _validationMessage = v; },
+          placeholder: '',
+          prompt: '',
+          title: '',
+          buttons: [] as unknown[],
+          show: () => {
+            const values = options.inputBoxValues ?? [];
+            const inputValue = values[inputBoxValueIndex];
+            inputBoxValueIndex++;
+
+            setTimeout(() => {
+              if (inputValue === undefined) {
+                // Cancel
+                if (hideCallback) hideCallback();
+              } else {
+                // Enter value
+                _value = inputValue;
+                if (changeCallback) changeCallback(inputValue);
+                // Accept if no validation error
+                if (!_validationMessage && acceptCallback) {
+                  acceptCallback();
+                } else if (hideCallback) {
+                  hideCallback();
+                }
+              }
+            }, 0);
+          },
+          hide: () => {
+            if (hideCallback) hideCallback();
+          },
+          dispose: () => {},
+          onDidAccept: (callback: () => void) => {
+            acceptCallback = callback;
+            return { dispose: () => {} };
+          },
+          onDidTriggerButton: () => {
+            return { dispose: () => {} };
+          },
+          onDidHide: (callback: () => void) => {
+            hideCallback = callback;
+            return { dispose: () => {} };
+          },
+          onDidChangeValue: (callback: (value: string) => void) => {
+            changeCallback = callback;
+            return { dispose: () => {} };
+          },
+        };
+        return inputBox;
+      },
+      showQuickPick: async <T>(): Promise<T | undefined> => {
+        // For edit wizard identity selection (after add completes)
+        // Return undefined to skip edit
+        return undefined;
+      },
+    },
+    QuickInputButtons: {
+      Back: ADD_MOCK_BACK_BUTTON,
+    },
+    l10n: {
+      t: (message: string, ...args: unknown[]) => {
+        let result = message;
+        args.forEach((arg, index) => {
+          result = result.replace(`{${index}}`, String(arg));
+        });
+        return result;
+      },
+    },
+    ConfigurationTarget: {
+      Global: 1,
+      Workspace: 2,
+      WorkspaceFolder: 3,
+    },
+    // Test inspection helpers
+    _getShowWarningMessageCalls: () => showWarningMessageCalls,
+    _getShowInformationMessageCalls: () => showInformationMessageCalls,
+    _getShowErrorMessageCalls: () => showErrorMessageCalls,
+    _getConfigUpdateCalls: () => configUpdateCalls,
+  };
+}
+
 /**
  * Create a mock ExtensionContext
  */
@@ -474,125 +682,11 @@ describe('handleAddIdentity E2E Test Suite', function () {
     _resetCache();
   });
 
-  /**
-   * Create a mock VS Code API for add identity tests
-   */
-  function createAddMockVSCode(options: {
-    isTrusted?: boolean;
-    identities?: Identity[];
-    showInputBoxResults?: (string | undefined)[];
-    configUpdateError?: Error;
-  }) {
-    const showWarningMessageCalls: string[] = [];
-    const showInformationMessageCalls: string[] = [];
-    const showErrorMessageCalls: string[] = [];
-    const configUpdateCalls: { key: string; value: unknown }[] = [];
-    let inputBoxCallIndex = 0;
-
-    return {
-      workspace: {
-        isTrusted: options.isTrusted ?? true,
-        getConfiguration: () => ({
-          get: (key: string) => {
-            if (key === 'identities') {
-              return options.identities ?? [];
-            }
-            return undefined;
-          },
-          update: async (key: string, value: unknown) => {
-            if (options.configUpdateError) {
-              throw options.configUpdateError;
-            }
-            configUpdateCalls.push({ key, value });
-          },
-        }),
-        onDidGrantWorkspaceTrust: () => ({ dispose: () => {} }),
-      },
-      window: {
-        showWarningMessage: async (message: string) => {
-          showWarningMessageCalls.push(message);
-          return undefined;
-        },
-        showInformationMessage: async (message: string) => {
-          showInformationMessageCalls.push(message);
-          return undefined;
-        },
-        showErrorMessage: async (message: string) => {
-          showErrorMessageCalls.push(message);
-          return undefined;
-        },
-        showInputBox: async () => {
-          const results = options.showInputBoxResults ?? [];
-          const result = results[inputBoxCallIndex];
-          inputBoxCallIndex++;
-          return result;
-        },
-        createQuickPick: <T>() => {
-          const callbacks: {
-            accept?: () => void;
-            hide?: () => void;
-            button?: (button: unknown) => void;
-          } = {};
-          let _items: T[] = [];
-
-          return {
-            get items() { return _items; },
-            set items(value: T[]) { _items = value; },
-            title: '',
-            placeholder: '',
-            buttons: [],
-            selectedItems: [] as T[],
-            onDidAccept: (callback: () => void) => {
-              callbacks.accept = callback;
-              return { dispose: () => {} };
-            },
-            onDidTriggerButton: (callback: (button: unknown) => void) => {
-              callbacks.button = callback;
-              return { dispose: () => {} };
-            },
-            onDidHide: (callback: () => void) => {
-              callbacks.hide = callback;
-              return { dispose: () => {} };
-            },
-            show: () => {
-              // Simulate cancel (hide)
-              setTimeout(() => callbacks.hide?.(), 0);
-            },
-            hide: () => {},
-            dispose: () => {},
-          };
-        },
-      },
-      QuickInputButtons: {
-        Back: Symbol('QuickInputButtons.Back'),
-      },
-      l10n: {
-        t: (message: string, ...args: unknown[]) => {
-          let result = message;
-          args.forEach((arg, index) => {
-            result = result.replace(`{${index}}`, String(arg));
-          });
-          return result;
-        },
-      },
-      ConfigurationTarget: {
-        Global: 1,
-        Workspace: 2,
-        WorkspaceFolder: 3,
-      },
-      // Test inspection helpers
-      _getShowWarningMessageCalls: () => showWarningMessageCalls,
-      _getShowInformationMessageCalls: () => showInformationMessageCalls,
-      _getShowErrorMessageCalls: () => showErrorMessageCalls,
-      _getConfigUpdateCalls: () => configUpdateCalls,
-    };
-  }
-
   describe('Cancel Flow', () => {
     it('should return false when user cancels add wizard', async () => {
       const mockVSCode = createAddMockVSCode({
         identities: [],
-        showInputBoxResults: [undefined], // Cancel at first step
+        quickPickSelections: [undefined], // Cancel at QuickPick
       });
       _setMockVSCode(mockVSCode as never);
 
@@ -606,15 +700,17 @@ describe('handleAddIdentity E2E Test Suite', function () {
     it('should return true when identity is added successfully', async () => {
       const mockVSCode = createAddMockVSCode({
         identities: [],
-        showInputBoxResults: ['new-id', 'New User', 'new@example.com'],
+        // Flow: select id field → enter id → select name field → enter name → select email field → enter email → save
+        quickPickSelections: ['id', 'name', 'email', 'save', undefined], // Last undefined for edit wizard skip
+        inputBoxValues: ['new-id', 'New User', 'new@example.com'],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await handleAddIdentity();
 
       assert.strictEqual(result, true, 'Should return true on success');
-      const infoCalls = mockVSCode._getShowInformationMessageCalls();
-      assert.ok(infoCalls.length >= 1, 'Should show success message');
+      const configCalls = mockVSCode._getConfigUpdateCalls();
+      assert.ok(configCalls.length >= 1, 'Should save identity to config');
     });
   });
 
@@ -676,16 +772,12 @@ describe('Security Logger Integration E2E Test Suite', function () {
 
   describe('Add Operation Logging', () => {
     it('should complete successfully (securityLogger called internally)', async () => {
-      const mockVSCode = createMockVSCode({
+      const mockVSCode = createAddMockVSCode({
         identities: [],
+        // Flow: select id field → enter id → select name field → enter name → select email field → enter email → save
+        quickPickSelections: ['id', 'name', 'email', 'save', undefined], // Last undefined for edit wizard skip
+        inputBoxValues: ['log-test-id', 'Log Test User', 'logtest@example.com'],
       });
-
-      // Add showInputBox support for add wizard
-      let inputIndex = 0;
-      const inputs = ['log-test-id', 'Log Test User', 'logtest@example.com'];
-      (mockVSCode.window as Record<string, unknown>).showInputBox = async () => {
-        return inputs[inputIndex++];
-      };
 
       _setMockVSCode(mockVSCode as never);
 

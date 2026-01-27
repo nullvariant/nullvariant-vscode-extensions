@@ -36,6 +36,7 @@ import {
   SSH_HOST_REGEX,
 } from '../validators/common';
 import { validateSshKeyPathFormat } from '../identity/inputValidator';
+import { isUnderSshDirectory } from '../security/pathUtils';
 import { getUserSafeMessage } from '../core/errors';
 import { securityLogger } from '../security/securityLogger';
 
@@ -180,6 +181,10 @@ function validateSshKeyPathInput(vs: VSCodeAPI, value: string): string | null {
   validateSshKeyPathFormat(value, errors);
   if (errors.length > 0) {
     return vs.l10n.t('Invalid SSH key path format');
+  }
+  // Safety First: Also check that path is under ~/.ssh directory
+  if (!isUnderSshDirectory(value)) {
+    return vs.l10n.t('SSH key path must be under ~/.ssh/ directory');
   }
   return null;
 }
