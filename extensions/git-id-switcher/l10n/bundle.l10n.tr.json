@@ -69,5 +69,10 @@
   "Select an action": "Bir eylem seçin",
   "Select identity to edit": "Düzenlenecek kimliği seçin",
   "Failed to add identity: {0}": "Kimlik eklenemedi: {0}",
-  "Failed to edit identity: {0}": "Kimlik düzenlenemedi: {0}"
+  "Failed to edit identity: {0}": "Kimlik düzenlenemedi: {0}",
+  "Edit": "Düzenle",
+  "⚙️ Manage Identities": "⚙️ Kimlikleri yönet",
+  "(No identities)": "(Kimlik yok)",
+  "Name contains invalid characters": "Ad geçersiz karakterler içeriyor",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "Kimlik 1-{0} arasında alfanümerik karakter, alt çizgi veya tire olmalıdır"
 }

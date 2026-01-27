@@ -69,5 +69,10 @@
   "Select an action": "Выберите действие",
   "Select identity to edit": "Выберите идентификатор для редактирования",
   "Failed to add identity: {0}": "Не удалось добавить идентификатор: {0}",
-  "Failed to edit identity: {0}": "Не удалось изменить идентификатор: {0}"
+  "Failed to edit identity: {0}": "Не удалось изменить идентификатор: {0}",
+  "Edit": "Редактировать",
+  "⚙️ Manage Identities": "⚙️ Управление идентификаторами",
+  "(No identities)": "(Нет идентификаторов)",
+  "Name contains invalid characters": "Имя содержит недопустимые символы",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "ID должен содержать от 1 до {0} буквенно-цифровых символов, подчёркиваний или дефисов"
 }

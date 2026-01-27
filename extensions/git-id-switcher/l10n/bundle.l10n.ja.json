@@ -69,5 +69,10 @@
   "Select an action": "操作を選択",
   "Select identity to edit": "編集するプロフィールを選択",
   "Failed to add identity: {0}": "プロフィールの追加に失敗しました: {0}",
-  "Failed to edit identity: {0}": "プロフィールの編集に失敗しました: {0}"
+  "Failed to edit identity: {0}": "プロフィールの編集に失敗しました: {0}",
+  "Edit": "編集",
+  "⚙️ Manage Identities": "⚙️ プロフィール管理",
+  "(No identities)": "(プロフィールがありません)",
+  "Name contains invalid characters": "名前に無効な文字が含まれています",
+  "ID must be 1-{0} alphanumeric characters, underscores, or hyphens": "IDは1〜{0}文字の英数字、アンダースコア、ハイフンで入力してください"
 }
