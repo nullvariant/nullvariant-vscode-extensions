@@ -38,6 +38,7 @@
  */
 
 import * as assert from 'node:assert';
+import * as path from 'node:path';
 import { showEditProfileFlow, showAddIdentityForm } from '../../ui/identityManager';
 import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
 import { MAX_IDENTITIES, MAX_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_SSH_HOST_LENGTH } from '../../core/constants';
@@ -2544,8 +2545,9 @@ describe('identityManager E2E Test Suite', function () {
 
       it('should accept absolute path under user home .ssh/', async () => {
         // Use actual home directory for cross-platform compatibility
+        // Use path.join to ensure correct path separators on Windows
         const homeDir = process.env.HOME ?? process.env.USERPROFILE ?? '';
-        const absoluteSshPath = homeDir ? `${homeDir}/.ssh/id_rsa` : '~/.ssh/id_rsa';
+        const absoluteSshPath = homeDir ? path.join(homeDir, '.ssh', 'id_rsa') : '~/.ssh/id_rsa';
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
