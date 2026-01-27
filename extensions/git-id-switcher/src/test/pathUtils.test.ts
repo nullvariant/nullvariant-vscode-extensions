@@ -1066,6 +1066,39 @@ function testIsUnderSshDirectory(): void {
     );
   }
 
+  // Test when HOME and USERPROFILE are both undefined
+  {
+    const originalHome = process.env.HOME;
+    const originalUserProfile = process.env.USERPROFILE;
+
+    delete process.env.HOME;
+    delete process.env.USERPROFILE;
+
+    try {
+      // ~/.ssh/ format should still work (accepted without expansion)
+      assert.strictEqual(
+        isUnderSshDirectory('~/.ssh/id_rsa'),
+        true,
+        '~/.ssh/id_rsa should be valid even without HOME'
+      );
+
+      // Expanded path format should be rejected (cannot verify against home)
+      assert.strictEqual(
+        isUnderSshDirectory('/home/user/.ssh/id_rsa'),
+        false,
+        'Expanded path should be invalid when HOME is undefined'
+      );
+    } finally {
+      // Restore environment
+      if (originalHome !== undefined) {
+        process.env.HOME = originalHome;
+      }
+      if (originalUserProfile !== undefined) {
+        process.env.USERPROFILE = originalUserProfile;
+      }
+    }
+  }
+
   console.log('✅ isUnderSshDirectory tests passed!');
 }
 

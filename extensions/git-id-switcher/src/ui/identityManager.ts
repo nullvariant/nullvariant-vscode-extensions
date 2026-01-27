@@ -20,6 +20,7 @@ import {
   addIdentityToConfig,
   FIELD_METADATA,
   FieldMetadata,
+  getFieldMetadata,
 } from '../identity/identity';
 import {
   MAX_IDENTITIES,
@@ -259,9 +260,17 @@ function validateFieldInput(
       return validateGpgKeyIdInput(vs, value);
     case 'sshHost':
       return validateSshHostInput(vs, value);
-    default:
-      // Optional fields (service, icon, description) have no specific validation
+    default: {
+      // Use FIELD_METADATA validator for other fields (service, icon, description)
+      const meta = getFieldMetadata(field);
+      if (meta?.validator) {
+        const error = meta.validator(value);
+        if (error) {
+          return vs.l10n.t(error);
+        }
+      }
       return null;
+    }
   }
 }
 
@@ -566,6 +575,28 @@ type GenericInputBox = ReturnType<VSCodeAPI['window']['createInputBox']>;
 type QuickInputResult<T> = T | 'back' | undefined;
 
 /**
+ * Create a disposable cleanup function with resolved state tracking.
+ * Used by QuickPick and InputBox wait helpers to prevent double-resolution.
+ *
+ * @returns Object with cleanup function and isResolved checker
+ */
+function createDisposableCleanup(): {
+  cleanup: (disposables: { dispose(): void }[]) => void;
+  isResolved: () => boolean;
+} {
+  let resolved = false;
+  return {
+    cleanup: (disposables: { dispose(): void }[]): void => {
+      if (!resolved) {
+        resolved = true;
+        disposables.forEach(d => d.dispose());
+      }
+    },
+    isResolved: (): boolean => resolved,
+  };
+}
+
+/**
  * Wait for QuickPick selection or button press.
  * Generic helper used by both Add Form and Field Selection.
  *
@@ -578,14 +609,7 @@ function waitForQuickPickSelection<T>(
   quickPick: GenericQuickPick<T>
 ): Promise<T | 'back' | undefined> {
   return new Promise(resolve => {
-    let resolved = false;
-
-    const cleanup = (disposables: { dispose(): void }[]): void => {
-      if (!resolved) {
-        resolved = true;
-        disposables.forEach(d => d.dispose());
-      }
-    };
+    const { cleanup } = createDisposableCleanup();
 
     const disposables: { dispose(): void }[] = [
       quickPick.onDidAccept(() => {
@@ -624,14 +648,7 @@ function waitForInputBoxValue(
   onCustomButton?: () => Promise<string | undefined>
 ): Promise<QuickInputResult<string>> {
   return new Promise(resolve => {
-    let resolved = false;
-
-    const cleanup = (disposables: { dispose(): void }[]): void => {
-      if (!resolved) {
-        resolved = true;
-        disposables.forEach(d => d.dispose());
-      }
-    };
+    const { cleanup } = createDisposableCleanup();
 
     const disposables: { dispose(): void }[] = [
       inputBox.onDidChangeValue(value => {

@@ -2535,14 +2535,18 @@ describe('identityManager E2E Test Suite', function () {
         assert.strictEqual(result, true, 'Path under ~/.ssh/ should be accepted');
       });
 
-      it('should accept absolute path under /home/user/.ssh/', async () => {
+      it('should accept absolute path under user home .ssh/', async () => {
+        // Use actual home directory for cross-platform compatibility
+        const homeDir = process.env.HOME ?? process.env.USERPROFILE ?? '';
+        const absoluteSshPath = homeDir ? `${homeDir}/.ssh/id_rsa` : '~/.ssh/id_rsa';
+
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
             { field: 'sshKeyPath' },
             undefined,
           ],
-          inputBoxSelections: ['/home/testuser/.ssh/id_rsa'],
+          inputBoxSelections: [absoluteSshPath],
         });
         _setMockVSCode(mockVSCode as never);
 

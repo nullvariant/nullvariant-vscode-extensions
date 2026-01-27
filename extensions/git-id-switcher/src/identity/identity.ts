@@ -256,7 +256,10 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     editable: true,
     inputType: 'text',
     icon: 'symbol-color',
-    // Icon validation is complex (grapheme clusters), handled by configSchema
+    // Note: Grapheme cluster validation is handled by configSchema
+    // Here we only check for dangerous characters (command injection prevention)
+    validator: (value: string) =>
+      hasDangerousCharsForText(value) ? 'Icon contains invalid characters' : undefined,
   },
   {
     key: 'description',
