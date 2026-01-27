@@ -25,7 +25,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'AGENTS.md': '54f16b767e57686b3eb46a2b4aa02b378554cc492c32c49ed96588f6d184b6b8',
   'CODE_OF_CONDUCT.md': 'a5eb286c902437bbe0f6d409894f20e51c172fa869fe2f151bfa388f9d911b54',
   'CONTRIBUTING.md': '4150f8810aec7b2e8eff9f3c69ee1bae1374843f50a812efa6778cba27a833cd',
-  'extensions/git-id-switcher/CHANGELOG.md': 'abbc7ed2bcaf75bcbe7c12c18b60504b2895002f01f7443bf36a7d683f6f0f61',
+  'extensions/git-id-switcher/CHANGELOG.md': '67138fd1c11b7d4d6b7094e86ba29f5705241609f3512ce4a2be9f3e5aa7e52a',
   'extensions/git-id-switcher/docs/ARCHITECTURE.md': 'a12dd717f83b28b648972a826701a29fcfd575e351c487f8c421402f80ac3d25',
   'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
   'extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md': 'f9718b61ac161cb466dbc76845688e7acacf4e5fdc4b8b9553269dba4a094f6b',

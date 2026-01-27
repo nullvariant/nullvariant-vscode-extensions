@@ -53,6 +53,10 @@ type EditableField = Exclude<keyof Identity, 'id'>;
 /** Optional fields that can be cleared */
 const OPTIONAL_FIELDS: ReadonlySet<keyof Identity> = new Set(['service', 'icon', 'description']);
 
+/** Add wizard step constants */
+const ADD_WIZARD_FIRST_STEP = 1;
+const ADD_WIZARD_LAST_STEP = 3;
+
 // ============================================================================
 // Validation Utilities
 // ============================================================================
@@ -449,7 +453,7 @@ async function executeAddWizardLoop(
     currentStep: 1,
   };
 
-  while (state.currentStep >= 1 && state.currentStep <= 3) {
+  while (state.currentStep >= ADD_WIZARD_FIRST_STEP && state.currentStep <= ADD_WIZARD_LAST_STEP) {
     if (state.currentStep === 1) {
       const result = await executeAddStep1(vs, existingIds, state);
       if (!result) return undefined;
