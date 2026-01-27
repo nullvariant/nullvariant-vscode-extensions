@@ -766,7 +766,7 @@ describe('Security Logger Integration E2E Test Suite', function () {
    *
    * The actual logging calls are:
    * - handleAddIdentity: calls securityLogger.logConfigChange('identities') on success
-   * - showEditIdentityWizard: calls securityLogger.logConfigChange('identities') on success
+   * - showEditProfileFlow: calls securityLogger.logConfigChange('identities') on success
    * - handleDeleteIdentity: calls securityLogger.logConfigChange('identities') on success
    */
 
@@ -808,13 +808,13 @@ describe('Security Logger Integration E2E Test Suite', function () {
   });
 
   describe('Edit Operation Logging', () => {
-    it('should complete successfully (securityLogger called internally via showEditIdentityWizard)', async () => {
+    it('should complete successfully (securityLogger called internally via showEditProfileFlow)', async () => {
       // Note: Edit logging is tested via identityManager.test.ts
       // This test documents that handlers.ts relies on identityManager for edit logging
       // The securityLogger.logConfigChange call is in identityManager.ts saveEditedField()
 
       // This is a documentation test - edit operations through handlers
-      // delegate to showEditIdentityWizard which handles logging
+      // delegate to showEditProfileFlow which handles logging
       assert.ok(true, 'Edit logging is handled by identityManager module');
     });
   });

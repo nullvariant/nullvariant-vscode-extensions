@@ -258,16 +258,18 @@ function testMaliciousValueRejection(): void {
     assert.strictEqual(result.valid, false, 'Command substitution in service should fail');
   }
 
-  // Test 5: Shell metacharacters in description should fail
+  // Test 5: Ampersand in description should PASS (display-only field, never passed to shell)
+  // Security analysis: description is only used for UI display, not shell commands
+  // Therefore, shell metacharacters like & are safe and allowed for usability (e.g., "AT&T")
   {
     const identity = {
       id: 'test',
       name: 'Test User',
       email: 'test@example.com',
-      description: 'Test & echo attack',
+      description: 'Test & description with ampersand',
     };
     const result = validateIdentitySchema(identity);
-    assert.strictEqual(result.valid, false, 'Shell metacharacters in description should fail');
+    assert.strictEqual(result.valid, true, 'Ampersand in description should pass (display-only field)');
   }
 
   // Test 6: Path traversal in sshKeyPath

@@ -26,7 +26,7 @@ import {
 } from '../ui/identityPicker';
 import {
   showAddIdentityForm,
-  showEditIdentityWizard,
+  showEditProfileFlow,
 } from '../ui/identityManager';
 import { securityLogger } from '../security/securityLogger';
 import { requireWorkspaceTrust } from '../core/workspaceTrust';
@@ -115,7 +115,7 @@ async function handleManageEdit(
   context: vscode.ExtensionContext,
   statusBar: IdentityStatusBar
 ): Promise<void> {
-  await showEditIdentityWizard(identity);
+  await showEditProfileFlow(identity);
   // Refresh status bar if current identity was edited
   const currentIdentityId = context.workspaceState.get<string>('currentIdentityId');
   if (currentIdentityId === identity.id) {
@@ -261,7 +261,7 @@ export async function handleAddIdentity(): Promise<boolean> {
   // After saving, open the edit screen for the new identity
   // This allows users to add optional fields immediately
   if (savedIdentity) {
-    await showEditIdentityWizard(savedIdentity);
+    await showEditProfileFlow(savedIdentity);
   }
   return true;
 }
@@ -294,7 +294,7 @@ export async function handleEditIdentity(
 
   try {
     // The wizard handles all steps and updates internally
-    await showEditIdentityWizard();
+    await showEditProfileFlow();
 
     // Refresh status bar to reflect any changes to current identity
     const currentIdentityId = context.workspaceState.get<string>('currentIdentityId');

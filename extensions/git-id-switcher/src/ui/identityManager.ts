@@ -886,18 +886,9 @@ export async function showAddIdentityForm(): Promise<Identity | undefined> {
   return undefined;
 }
 
-/**
- * Show the add identity wizard (3 steps: ID → Name → Email).
- * @deprecated Use showAddIdentityForm() instead
- * @returns true if identity was created, false if cancelled
- */
-export async function showAddIdentityWizard(): Promise<boolean> {
-  const result = await showAddIdentityForm();
-  return result !== undefined;
-}
 
 // ============================================================================
-// Edit Identity Wizard
+// Edit Profile Flow
 // ============================================================================
 
 /**
@@ -1098,7 +1089,7 @@ async function executeFieldEditLoop(vs: VSCodeAPI, identity: Identity): Promise<
  * @param targetIdentity - Optional identity to edit (skips selection step)
  * @returns true if identity was updated, false if cancelled
  */
-export async function showEditIdentityWizard(
+export async function showEditProfileFlow(
   targetIdentity?: Identity
 ): Promise<boolean> {
   const vs = getVSCode();
