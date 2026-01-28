@@ -286,7 +286,12 @@ function validateFieldInput(
  * @returns Localized placeholder text
  */
 function getPlaceholderForField(vs: VSCodeAPI, field: keyof Identity): string {
+  // Placeholders are unified with package.nls.json descriptions for DRY principle (logical unity)
+  // Note: Complete DRY is technically impossible due to VS Code l10n architecture
+  // (package.nls.json for contributes, bundle.l10n.json for code)
   switch (field) {
+    case 'id':
+      return vs.l10n.t('Unique ID (alphanumeric, hyphens, underscores only; must not duplicate; required)');
     case 'name':
       return vs.l10n.t('Git user.name');
     case 'email':
@@ -298,11 +303,11 @@ function getPlaceholderForField(vs: VSCodeAPI, field: keyof Identity): string {
     case 'description':
       return vs.l10n.t('Short description');
     case 'sshKeyPath':
-      return vs.l10n.t('e.g., ~/.ssh/id_ed25519_work');
+      return vs.l10n.t('Path to SSH private key (e.g., ~/.ssh/id_ed25519_work)');
     case 'sshHost':
       return vs.l10n.t('e.g., github-work, gitlab-personal');
     case 'gpgKeyId':
-      return vs.l10n.t('e.g., ABCD1234EF567890');
+      return vs.l10n.t('GPG key ID for commit signing (e.g., ABCD1234EF567890)');
     default:
       return '';
   }
@@ -515,7 +520,7 @@ function buildAddFormItems(
   items.push({
     label: canSave
       ? `$(check) ${vs.l10n.t('Save')}`
-      : `$(circle-slash) ${vs.l10n.t('Save')}`,
+      : `$(loading~spin) ${vs.l10n.t('Save')}`,
     description: canSave
       ? undefined
       : vs.l10n.t('(fill required fields)'),
