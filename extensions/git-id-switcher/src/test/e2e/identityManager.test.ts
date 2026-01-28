@@ -256,6 +256,14 @@ function createMockVSCode(options: {
                 if (changeCallback) {
                   changeCallback(selection);
                 }
+                // DEBUG: Log validation result
+                if (process.env.DEBUG_SSH_PATH === '1') {
+                  console.log('[DEBUG MOCK] After changeCallback:', {
+                    selection,
+                    _validationMessage,
+                    willAccept: !_validationMessage,
+                  });
+                }
                 // Accept only if no validation error
                 if (!_validationMessage) {
                   acceptCallback();

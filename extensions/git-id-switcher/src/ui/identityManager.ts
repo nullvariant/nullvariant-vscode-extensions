@@ -180,6 +180,14 @@ function validateSshKeyPathInput(vs: VSCodeAPI, value: string): string | null {
   const errors: string[] = [];
   // Reuse existing validator (Defense-in-depth)
   validateSshKeyPathFormat(value, errors);
+  /* c8 ignore start */
+  if (process.env.DEBUG_SSH_PATH === '1') {
+    console.log('[DEBUG validateSshKeyPathInput] validateSshKeyPathFormat result:', {
+      value,
+      errors,
+    });
+  }
+  /* c8 ignore stop */
   if (errors.length > 0) {
     return vs.l10n.t('Invalid SSH key path format');
   }
