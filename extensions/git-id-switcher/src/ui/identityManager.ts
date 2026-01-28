@@ -281,13 +281,13 @@ function validateFieldInput(
 /** Placeholder keys for each field (unified with package.nls.json for logical DRY) */
 const FIELD_PLACEHOLDER_KEYS: Partial<Record<keyof Identity, string>> = {
   id: 'Unique ID (alphanumeric, hyphens, underscores only; must not duplicate; required)',
-  name: 'Git user.name',
-  email: 'Git user.email',
-  service: 'e.g., GitHub, GitLab, Bitbucket',
-  icon: 'Emoji icon (e.g., 👤, 🏠)',
-  description: 'Short description',
+  name: 'Git user.name (required)',
+  email: 'Git user.email (required)',
+  service: 'Git hosting service (e.g., GitHub, GitLab, Bitbucket)',
+  icon: 'Emoji to display in status bar (e.g., 🏠, 💼)',
+  description: 'Note for this identity (e.g., Work, Personal)',
   sshKeyPath: 'Path to SSH private key (e.g., ~/.ssh/id_ed25519_work)',
-  sshHost: 'e.g., github-work, gitlab-personal',
+  sshHost: 'SSH config host alias (e.g., github-work, gitlab-personal)',
   gpgKeyId: 'GPG key ID for commit signing (e.g., ABCD1234EF567890)',
 };
 
