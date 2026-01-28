@@ -520,7 +520,7 @@ function buildAddFormItems(
   items.push({
     label: canSave
       ? `$(check) ${vs.l10n.t('Save')}`
-      : `$(loading~spin) ${vs.l10n.t('Save')}`,
+      : `$(session-in-progress) ${vs.l10n.t('Save')}`,
     description: canSave
       ? undefined
       : vs.l10n.t('(fill required fields)'),

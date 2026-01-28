@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.2] - 2026-01-28
+
+### Fixed
+
+- **Manage Profiles icon not visible without hover**:
+  - Use Codicon in label `$(gear)` instead of iconPath for consistent display
+- **Save button disabled state icon**:
+  - Changed from `$(loading~spin)` to `$(session-in-progress)` (static icon)
+
 ## [0.16.1] - 2026-01-28
 
 ### Fixed

@@ -292,8 +292,7 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
       const manageItem = items.find(item => item._isManageOption === true);
       assert.ok(manageItem, 'Should have manage option');
       assert.ok(manageItem.label.includes('Manage'), 'Manage label should mention Manage');
-      assert.ok(manageItem.iconPath, 'Manage option should have iconPath');
-      assert.strictEqual(manageItem.iconPath?.id, 'gear', 'Manage option should have gear icon');
+      assert.ok(manageItem.label.includes('$(gear)'), 'Manage label should include gear icon codicon');
     });
   });
 
