@@ -314,6 +314,23 @@ function getPlaceholderForField(vs: VSCodeAPI, field: keyof Identity): string {
 }
 
 /**
+ * Get prompt text for InputBox based on field optionality and mode.
+ *
+ * @param vs - VS Code API
+ * @param isOptional - Whether the field is optional
+ * @param mode - 'add' for new profile, 'edit' for editing existing
+ * @returns Localized prompt text
+ */
+function getInputBoxPrompt(vs: VSCodeAPI, isOptional: boolean, mode: 'add' | 'edit'): string {
+  if (!isOptional) {
+    return vs.l10n.t("Press 'Enter' to save");
+  }
+  return mode === 'add'
+    ? vs.l10n.t("Press 'Enter' to save (leave empty to skip)")
+    : vs.l10n.t("Press 'Enter' to save (leave empty to clear)");
+}
+
+/**
  * Build field items for edit wizard using FIELD_METADATA.
  * Unified with Step 6 (showAddIdentityForm) for consistent UI.
  *
@@ -554,9 +571,7 @@ async function promptAddFormFieldInput(
     title: vs.l10n.t('New Profile: {0}', vs.l10n.t(meta.labelKey)),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, meta.key),
-    prompt: isOptional
-      ? vs.l10n.t("Press 'Enter' to save (leave empty to skip)")
-      : vs.l10n.t("Press 'Enter' to save"),
+    prompt: getInputBoxPrompt(vs, isOptional, 'add'),
     field: meta.key,
     validateInput: (value: string) => {
       if (meta.key === 'id') {
@@ -993,9 +1008,7 @@ async function promptFieldValueInput(
     title: vs.l10n.t('Edit Identity: {0}', fieldItem.label),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, field),
-    prompt: optional
-      ? vs.l10n.t("Press 'Enter' to save (leave empty to clear)")
-      : vs.l10n.t("Press 'Enter' to save"),
+    prompt: getInputBoxPrompt(vs, optional, 'edit'),
     field,
     validateInput: (value: string) => validateFieldInput(vs, field, value, optional),
   });
