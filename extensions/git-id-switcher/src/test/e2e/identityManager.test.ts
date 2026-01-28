@@ -1019,7 +1019,7 @@ describe('identityManager E2E Test Suite', function () {
         );
         assert.ok(saveButton, 'Save button should be present');
         const label = (saveButton as { label: string }).label;
-        assert.ok(label.includes('$(loading~spin)'), `Save button should show $(loading~spin) when disabled, got: ${label}`);
+        assert.ok(label.includes('$(session-in-progress)'), `Save button should show $(session-in-progress) when disabled, got: ${label}`);
         assert.strictEqual((saveButton as { _isDisabled?: boolean })._isDisabled, true, 'Save button should be disabled');
       });
 

@@ -103,8 +103,7 @@ export async function showIdentityQuickPick(
   } as IdentityQuickPickItem;
 
   const manageItem: IdentityQuickPickItem = {
-    label: vs.l10n.t('Manage Profiles'),
-    iconPath: new vs.ThemeIcon('gear'),
+    label: `$(gear) ${vs.l10n.t('Manage Profiles')}`,
     identity: null as unknown as Identity,
     _isManageOption: true,
   };
