@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.3] - 2026-01-28
+
+### Changed
+
+- **i18n: Unified InputBox placeholders with settings.json descriptions**:
+  - Updated `FIELD_PLACEHOLDER_KEYS` in identityManager.ts to match package.nls.json
+  - Added Bitbucket to service field examples (17 languages)
+  - Added concrete sshHost examples: `github-work`, `gitlab-personal` (17 languages)
+  - Added 6 new translation keys to bundle.l10n files (17 languages):
+    - `Git user.name (required)`
+    - `Git user.email (required)`
+    - `Git hosting service (e.g., GitHub, GitLab, Bitbucket)`
+    - `Emoji to display in status bar (e.g., 🏠, 💼)`
+    - `Note for this identity (e.g., Work, Personal)`
+    - `SSH config host alias (e.g., github-work, gitlab-personal)`
+
 ## [0.16.2] - 2026-01-28
 
 ### Fixed
