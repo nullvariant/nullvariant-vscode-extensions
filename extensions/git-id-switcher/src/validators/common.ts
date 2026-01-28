@@ -260,6 +260,33 @@ export function isValidSshHost(value: string): boolean {
 }
 
 // =============================================================================
+// Windows Path Validation
+// =============================================================================
+
+/**
+ * Windows drive letter pattern (e.g., C:, D:)
+ *
+ * Matches a single letter followed by a colon at the start of a string.
+ * Used to detect Windows absolute paths.
+ */
+export const WINDOWS_DRIVE_LETTER_PATTERN = '^[A-Za-z]:';
+
+/**
+ * Windows drive letter regex
+ */
+export const WINDOWS_DRIVE_LETTER_REGEX = new RegExp(WINDOWS_DRIVE_LETTER_PATTERN);
+
+/**
+ * Check if a path starts with a Windows drive letter (e.g., C:, D:)
+ *
+ * @param value - The path to check
+ * @returns true if path starts with a Windows drive letter
+ */
+export function isWindowsAbsolutePath(value: string): boolean {
+  return WINDOWS_DRIVE_LETTER_REGEX.test(value);
+}
+
+// =============================================================================
 // GPG Key ID Validation
 // =============================================================================
 
@@ -381,4 +408,66 @@ export const DANGEROUS_PATTERNS: ReadonlyArray<{ pattern: RegExp; description: s
  */
 export function hasDangerousChars(text: string): boolean {
   return !SAFE_TEXT_REGEX.test(text);
+}
+
+// =============================================================================
+// Field-specific Dangerous Character Detection
+// =============================================================================
+
+/**
+ * Pattern for dangerous characters in file paths (strict mode)
+ *
+ * Blocks shell metacharacters that could enable command injection:
+ * - Backtick (`): Command substitution
+ * - Dollar sign ($): Variable expansion / command substitution
+ * - Pipe (|): Pipeline
+ * - Semicolon (;): Command separator
+ * - Ampersand (&): Background execution / logical AND
+ * - Angle brackets (<>): Redirection
+ *
+ * Note: This is stricter than text fields because paths are more likely
+ * to be used in shell contexts (e.g., ssh -i <path>).
+ */
+export const DANGEROUS_CHARS_FOR_PATH_REGEX = /[`$|;&<>]/;
+
+/**
+ * Pattern for dangerous characters in text fields (relaxed mode)
+ *
+ * Only blocks command substitution characters:
+ * - Backtick (`): Command substitution
+ * - Dollar sign ($): Variable expansion / command substitution
+ *
+ * Allows:
+ * - Semicolon (;): Valid in names like "Null;Variant"
+ * - Pipe (|): May appear in descriptions
+ * - Ampersand (&): May appear in company names like "AT&T"
+ * - Angle brackets (<>): May appear in descriptions
+ */
+export const DANGEROUS_CHARS_FOR_TEXT_REGEX = /[`$]/;
+
+/**
+ * Check for dangerous characters in file paths (strict mode)
+ *
+ * Blocks shell metacharacters that could enable command injection.
+ * Use this for sshKeyPath and other path-related fields.
+ *
+ * @param value - The path string to check
+ * @returns true if path contains dangerous characters
+ */
+export function hasDangerousCharsForPath(value: string): boolean {
+  return DANGEROUS_CHARS_FOR_PATH_REGEX.test(value);
+}
+
+/**
+ * Check for dangerous characters in text fields (relaxed mode)
+ *
+ * Only blocks command substitution characters, allows semicolons and other
+ * characters that may legitimately appear in names and descriptions.
+ * Use this for name, service, description, and icon fields.
+ *
+ * @param value - The text string to check
+ * @returns true if text contains dangerous characters
+ */
+export function hasDangerousCharsForText(value: string): boolean {
+  return DANGEROUS_CHARS_FOR_TEXT_REGEX.test(value);
 }

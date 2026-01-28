@@ -65,16 +65,25 @@ interface CapturedQuickPickItem {
 }
 
 /**
+ * Mock ThemeIcon class for identity picker tests
+ */
+class IdentityPickerMockThemeIcon {
+  constructor(public readonly id: string) {}
+}
+
+/**
  * Create a mock VS Code API for identity picker tests
  */
 function createMockVSCode(options: {
   identities?: Identity[];
   selectedIdentity?: Identity | undefined;
   selectManageOption?: boolean;
+  triggerManageButton?: boolean;
 }) {
   let capturedItems: CapturedQuickPickItem[] = [];
   let capturedPlaceholder = '';
   let capturedTitle = '';
+  let capturedButtons: unknown[] = [];
   const showWarningMessageCalls: string[] = [];
 
   return {
@@ -97,6 +106,7 @@ function createMockVSCode(options: {
       createQuickPick: <T extends { identity: unknown; _isManageOption?: boolean }>() => {
         let acceptCallback: (() => void) | undefined;
         let hideCallback: (() => void) | undefined;
+        let buttonCallback: ((button: unknown) => void) | undefined;
 
         return {
           set items(value: T[]) {
@@ -110,6 +120,12 @@ function createMockVSCode(options: {
           },
           set placeholder(value: string) {
             capturedPlaceholder = value;
+          },
+          set buttons(value: unknown[]) {
+            capturedButtons = value;
+          },
+          get buttons(): unknown[] {
+            return capturedButtons;
           },
           set activeItems(_value: T[]) {
             // Capture but don't need to track for tests
@@ -139,9 +155,19 @@ function createMockVSCode(options: {
           onDidHide: (callback: () => void) => {
             hideCallback = callback;
           },
+          onDidTriggerButton: (callback: (button: unknown) => void) => {
+            buttonCallback = callback;
+          },
           show: () => {
-            // Simulate user selection
-            if (options.selectedIdentity !== undefined || options.selectManageOption) {
+            // Simulate user selection or button trigger
+            if (options.triggerManageButton) {
+              // Trigger the manage button (gear icon in title bar)
+              setTimeout(() => {
+                if (buttonCallback && capturedButtons.length > 0) {
+                  buttonCallback(capturedButtons[0]);
+                }
+              }, 0);
+            } else if (options.selectedIdentity !== undefined || options.selectManageOption) {
               setTimeout(() => acceptCallback?.(), 0);
             } else {
               setTimeout(() => hideCallback?.(), 0);
@@ -165,10 +191,12 @@ function createMockVSCode(options: {
       Separator: -1,
       Default: 0,
     },
+    ThemeIcon: IdentityPickerMockThemeIcon,
     // Test inspection helpers
     _getCapturedItems: () => capturedItems,
     _getCapturedPlaceholder: () => capturedPlaceholder,
     _getCapturedTitle: () => capturedTitle,
+    _getCapturedButtons: () => capturedButtons,
     _getShowWarningMessageCalls: () => showWarningMessageCalls,
   };
 }
@@ -332,7 +360,7 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
   });
 
   describe('Title and Placeholder', () => {
-    it('should set correct title and placeholder', async () => {
+    it('should set title to Select Profile', async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
         selectedIdentity: TEST_IDENTITIES.work,
@@ -342,10 +370,53 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
       await showIdentityQuickPick();
 
       const title = mockVSCode._getCapturedTitle();
-      const placeholder = mockVSCode._getCapturedPlaceholder();
+      assert.ok(title.includes('Select Profile'), 'Title should be "Select Profile"');
+    });
 
-      assert.ok(title.includes('Select') || title.includes('Identity'), 'Title should mention Select or Identity');
-      assert.ok(placeholder.includes('Search') || placeholder.includes('identit'), 'Placeholder should mention Search or identities');
+    it('should set correct placeholder', async () => {
+      const mockVSCode = createMockVSCode({
+        identities: [TEST_IDENTITIES.work],
+        selectedIdentity: TEST_IDENTITIES.work,
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      await showIdentityQuickPick();
+
+      const placeholder = mockVSCode._getCapturedPlaceholder();
+      assert.ok(placeholder.includes('Search') || placeholder.includes('profile'), 'Placeholder should mention Search or profiles');
+    });
+  });
+
+  describe('Title Bar Manage Button (Gear)', () => {
+    it('should have gear button in title bar', async () => {
+      const mockVSCode = createMockVSCode({
+        identities: [TEST_IDENTITIES.work],
+        selectedIdentity: TEST_IDENTITIES.work,
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      await showIdentityQuickPick();
+
+      const buttons = mockVSCode._getCapturedButtons();
+      assert.ok(buttons.length >= 1, 'Should have at least one button');
+      // Check that button has gear icon
+      const gearButton = buttons.find((btn: unknown) => {
+        const b = btn as { iconPath?: { id?: string }; tooltip?: string };
+        return b.iconPath?.id === 'gear' || b.tooltip?.includes('Manage');
+      });
+      assert.ok(gearButton, 'Should have gear button for managing profiles');
+    });
+
+    it('should return "manage" when gear button is clicked', async () => {
+      const mockVSCode = createMockVSCode({
+        identities: [TEST_IDENTITIES.work],
+        triggerManageButton: true,
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showIdentityQuickPick();
+
+      assert.strictEqual(result, 'manage', 'Should return "manage" when gear button clicked');
     });
   });
 });
@@ -380,7 +451,7 @@ class MockThemeIcon {
  */
 function createManageMockVSCode(options: {
   identities?: Identity[];
-  triggerAction?: 'back' | 'add' | 'edit' | 'delete' | 'selectIdentity' | 'selectPlaceholder' | 'hide';
+  triggerAction?: 'back' | 'add' | 'addButton' | 'edit' | 'delete' | 'selectIdentity' | 'selectPlaceholder' | 'hide';
   actionIndex?: number;
 }) {
   let capturedItems: CapturedManageQuickPickItem[] = [];
@@ -467,6 +538,11 @@ function createManageMockVSCode(options: {
               if (options.triggerAction === 'back') {
                 // Trigger back button
                 buttonCallback?.(capturedButtons[0]); // QuickInputButtons.Back
+              } else if (options.triggerAction === 'addButton') {
+                // Trigger add button in title bar (second button after Back)
+                if (buttonCallback && capturedButtons.length >= 2) {
+                  buttonCallback(capturedButtons[1]); // Add button
+                }
               } else if (options.triggerAction === 'edit' || options.triggerAction === 'delete') {
                 // Trigger item button
                 const idx = options.actionIndex ?? 0;
@@ -552,7 +628,7 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       assert.strictEqual(identityItems.length, 2, 'Should have 2 identity items');
     });
 
-    it('should set correct title with gear emoji', async () => {
+    it('should set title to Manage Profiles', async () => {
       const mockVSCode = createManageMockVSCode({
         identities: [TEST_IDENTITIES.work],
         triggerAction: 'hide',
@@ -562,7 +638,7 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       await showManageIdentitiesQuickPick([TEST_IDENTITIES.work]);
 
       const title = mockVSCode._getCapturedTitle();
-      assert.ok(title.includes('⚙️') || title.includes('Manage'), 'Title should include gear emoji or Manage');
+      assert.ok(title.includes('Manage Profiles'), 'Title should be "Manage Profiles"');
     });
 
     it('should have back button in title bar', async () => {
@@ -594,6 +670,38 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       assert.ok(identityItem, 'Should have identity item');
       assert.ok(identityItem?.buttons, 'Identity item should have buttons');
       assert.strictEqual(identityItem?.buttons?.length, 2, 'Should have 2 buttons (edit, delete)');
+    });
+
+    it('should have add button in title bar', async () => {
+      const mockVSCode = createManageMockVSCode({
+        identities: [TEST_IDENTITIES.work],
+        triggerAction: 'hide',
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      await showManageIdentitiesQuickPick([TEST_IDENTITIES.work]);
+
+      const buttons = mockVSCode._getCapturedButtons();
+      assert.ok(buttons.length >= 2, 'Should have at least 2 buttons (back and add)');
+      // Check that second button is add button
+      const addButton = buttons[1] as { iconPath?: { id?: string }; tooltip?: string };
+      assert.ok(
+        addButton?.iconPath?.id === 'add' || addButton?.tooltip?.includes('New'),
+        'Second button should be add button'
+      );
+    });
+
+    it('should return add action when add button in title bar is clicked', async () => {
+      const mockVSCode = createManageMockVSCode({
+        identities: [TEST_IDENTITIES.work],
+        triggerAction: 'addButton',
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showManageIdentitiesQuickPick([TEST_IDENTITIES.work]);
+
+      assert.ok(result, 'Should return result');
+      assert.strictEqual(result?.action, 'add', 'Action should be add');
     });
   });
 

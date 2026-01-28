@@ -90,6 +90,7 @@ import {
   validateWorkspacePath,
   expandTilde,
   containsSymlinks,
+  isUnderSshDirectory,
 } from '../security/pathUtils';
 
 /**
@@ -990,6 +991,140 @@ function testValidateWorkspacePath(): void {
 }
 
 /**
+ * Test isUnderSshDirectory function
+ */
+function testIsUnderSshDirectory(): void {
+  console.log('Testing isUnderSshDirectory...');
+
+  const homeDir = os.homedir();
+
+  // Valid paths under ~/.ssh/
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/.ssh/id_rsa'),
+      true,
+      '~/.ssh/id_rsa should be valid'
+    );
+  }
+
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/.ssh/keys/work_key'),
+      true,
+      '~/.ssh/keys/work_key should be valid (subdirectory)'
+    );
+  }
+
+  // Expanded path format (both Unix and Windows)
+  {
+    assert.strictEqual(
+      isUnderSshDirectory(path.join(homeDir, '.ssh', 'id_rsa')),
+      true,
+      'Expanded path should be valid'
+    );
+  }
+
+  // Windows case-insensitivity test (only runs on actual Windows)
+  // Note: Cannot mock process.platform effectively because Node.js path module
+  // behavior is determined at module load time, not by process.platform value.
+  // Windows CI will test this code path.
+  if (process.platform === 'win32') {
+    const userProfile = process.env.USERPROFILE ?? '';
+    if (userProfile && userProfile.length > 0) {
+      // Test case insensitivity by toggling drive letter case
+      const firstChar = userProfile.charAt(0);
+      const altCase = firstChar === firstChar.toUpperCase()
+        ? firstChar.toLowerCase()
+        : firstChar.toUpperCase();
+      const altCasePath = altCase + userProfile.slice(1);
+
+      assert.strictEqual(
+        isUnderSshDirectory(path.join(altCasePath, '.ssh', 'id_rsa')),
+        true,
+        'Windows path with different case drive letter should be valid'
+      );
+    }
+  }
+
+  // Invalid paths
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/documents/key'),
+      false,
+      '~/documents/key should be invalid'
+    );
+  }
+
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/.ssh_backup/key'),
+      false,
+      '~/.ssh_backup/key should be invalid (not .ssh directory)'
+    );
+  }
+
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('/etc/passwd'),
+      false,
+      '/etc/passwd should be invalid'
+    );
+  }
+
+  // Edge cases
+  {
+    assert.strictEqual(
+      isUnderSshDirectory(''),
+      false,
+      'Empty string should be invalid'
+    );
+  }
+
+  {
+    assert.strictEqual(
+      isUnderSshDirectory('~/.ssh'),
+      false,
+      '~/.ssh without trailing component should be invalid'
+    );
+  }
+
+  // Test when HOME and USERPROFILE are both undefined
+  {
+    const originalHome = process.env.HOME;
+    const originalUserProfile = process.env.USERPROFILE;
+
+    delete process.env.HOME;
+    delete process.env.USERPROFILE;
+
+    try {
+      // ~/.ssh/ format should still work (accepted without expansion)
+      assert.strictEqual(
+        isUnderSshDirectory('~/.ssh/id_rsa'),
+        true,
+        '~/.ssh/id_rsa should be valid even without HOME'
+      );
+
+      // Expanded path format should be rejected (cannot verify against home)
+      assert.strictEqual(
+        isUnderSshDirectory('/home/user/.ssh/id_rsa'),
+        false,
+        'Expanded path should be invalid when HOME is undefined'
+      );
+    } finally {
+      // Restore environment
+      if (originalHome !== undefined) {
+        process.env.HOME = originalHome;
+      }
+      if (originalUserProfile !== undefined) {
+        process.env.USERPROFILE = originalUserProfile;
+      }
+    }
+  }
+
+  console.log('✅ isUnderSshDirectory tests passed!');
+}
+
+/**
  * Run all path utils tests
  */
 export async function runPathUtilsTests(): Promise<void> {
@@ -1019,6 +1154,7 @@ export async function runPathUtilsTests(): Promise<void> {
     testExpandTildeEdgeCases();
     testControlCharacterPrevention();
     testValidateWorkspacePath();
+    testIsUnderSshDirectory();
 
     console.log('\n✅ All path utils tests passed!\n');
   } catch (error) {

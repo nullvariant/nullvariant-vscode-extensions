@@ -16,6 +16,7 @@ import {
   GPG_KEY_REGEX,
   SSH_HOST_REGEX,
   DANGEROUS_PATTERNS,
+  isWindowsAbsolutePath,
 } from '../validators/common';
 import {
   MAX_ID_LENGTH,
@@ -97,7 +98,7 @@ function validateEmail(email: string | undefined, errors: string[]): void {
  * - `valid`: Format/structure is correct (this function)
  * - `secure`: Resistant to security attacks (pathUtils.validateSshKeyPath)
  */
-function validateSshKeyPathFormat(
+export function validateSshKeyPathFormat(
   sshKeyPath: string | undefined,
   errors: string[]
 ): void {
@@ -105,8 +106,11 @@ function validateSshKeyPathFormat(
     return;
   }
 
-  // Must start with / or ~
-  if (!sshKeyPath.startsWith('/') && !sshKeyPath.startsWith('~')) {
+  // Must start with /, ~, or Windows drive letter (C:\)
+  const isUnixAbsolute = sshKeyPath.startsWith('/');
+  const isTildePath = sshKeyPath.startsWith('~');
+
+  if (!isUnixAbsolute && !isTildePath && !isWindowsAbsolutePath(sshKeyPath)) {
     errors.push('sshKeyPath: must be an absolute path or start with ~');
   }
 
@@ -122,7 +126,7 @@ function validateSshKeyPathFormat(
 /**
  * Validate GPG key ID
  */
-function validateGpgKeyId(gpgKeyId: string | undefined, errors: string[]): void {
+export function validateGpgKeyId(gpgKeyId: string | undefined, errors: string[]): void {
   if (!gpgKeyId) {
     return;
   }
@@ -135,7 +139,7 @@ function validateGpgKeyId(gpgKeyId: string | undefined, errors: string[]): void 
 /**
  * Validate SSH host alias
  */
-function validateSshHost(sshHost: string | undefined, errors: string[]): void {
+export function validateSshHost(sshHost: string | undefined, errors: string[]): void {
   if (!sshHost) {
     return;
   }

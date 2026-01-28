@@ -258,16 +258,18 @@ function testMaliciousValueRejection(): void {
     assert.strictEqual(result.valid, false, 'Command substitution in service should fail');
   }
 
-  // Test 5: Shell metacharacters in description should fail
+  // Test 5: Ampersand in description should PASS (display-only field, never passed to shell)
+  // Security analysis: description is only used for UI display, not shell commands
+  // Therefore, shell metacharacters like & are safe and allowed for usability (e.g., "AT&T")
   {
     const identity = {
       id: 'test',
       name: 'Test User',
       email: 'test@example.com',
-      description: 'Test & echo attack',
+      description: 'Test & description with ampersand',
     };
     const result = validateIdentitySchema(identity);
-    assert.strictEqual(result.valid, false, 'Shell metacharacters in description should fail');
+    assert.strictEqual(result.valid, true, 'Ampersand in description should pass (display-only field)');
   }
 
   // Test 6: Path traversal in sshKeyPath
@@ -297,6 +299,30 @@ function testMaliciousValueRejection(): void {
     };
     const result = validateIdentitySchema(identity);
     assert.strictEqual(result.valid, false, 'Relative path in sshKeyPath should fail');
+  }
+
+  // Test 7.1: Windows absolute path in sshKeyPath should pass
+  {
+    const identity = {
+      id: 'test',
+      name: 'Test User',
+      email: 'test@example.com',
+      sshKeyPath: String.raw`C:\Users\test\.ssh\id_rsa`,
+    };
+    const result = validateIdentitySchema(identity);
+    assert.strictEqual(result.valid, true, 'Windows absolute path in sshKeyPath should pass');
+  }
+
+  // Test 7.2: Windows lowercase drive letter should pass
+  {
+    const identity = {
+      id: 'test',
+      name: 'Test User',
+      email: 'test@example.com',
+      sshKeyPath: String.raw`d:\keys\work_key`,
+    };
+    const result = validateIdentitySchema(identity);
+    assert.strictEqual(result.valid, true, 'Windows lowercase drive letter should pass');
   }
 
   // Test 8: Invalid sshHost format should fail

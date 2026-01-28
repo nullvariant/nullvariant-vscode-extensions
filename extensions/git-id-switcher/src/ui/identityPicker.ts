@@ -103,17 +103,24 @@ export async function showIdentityQuickPick(
   } as IdentityQuickPickItem;
 
   const manageItem: IdentityQuickPickItem = {
-    label: '$(gear) ' + vs.l10n.t('Manage identities...'),
+    label: '$(gear) ' + vs.l10n.t('Manage Profiles'),
     identity: null as unknown as Identity,
     _isManageOption: true,
   };
 
   const allItems = [...items, separatorItem, manageItem];
 
+  // Manage button for title bar
+  const manageButton: vscodeTypes.QuickInputButton = {
+    iconPath: new vs.ThemeIcon('gear'),
+    tooltip: vs.l10n.t('Manage Profiles'),
+  };
+
   const quickPick = vs.window.createQuickPick<IdentityQuickPickItem>();
   quickPick.items = allItems;
-  quickPick.title = vs.l10n.t('Select Git Identity');
-  quickPick.placeholder = vs.l10n.t('Search identities...');
+  quickPick.title = vs.l10n.t('Select Profile');
+  quickPick.placeholder = vs.l10n.t('Search profiles...');
+  quickPick.buttons = [manageButton];
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
 
@@ -128,8 +135,20 @@ export async function showIdentityQuickPick(
   }
 
   return new Promise<Identity | 'manage' | undefined>(resolve => {
+    let resolved = false;
+
+    // Handle title bar manage button
+    quickPick.onDidTriggerButton(button => {
+      if (button === manageButton) {
+        resolved = true;
+        quickPick.hide();
+        resolve('manage');
+      }
+    });
+
     quickPick.onDidAccept(() => {
       const selected = quickPick.selectedItems[0];
+      resolved = true;
       quickPick.hide();
       if (selected?._isManageOption) {
         resolve('manage');
@@ -140,7 +159,9 @@ export async function showIdentityQuickPick(
 
     quickPick.onDidHide(() => {
       quickPick.dispose();
-      resolve(undefined);
+      if (!resolved) {
+        resolve(undefined);
+      }
     });
 
     quickPick.show();
@@ -273,6 +294,12 @@ export async function showManageIdentitiesQuickPick(
     tooltip: vs.l10n.t('Delete'),
   };
 
+  // Add button for title bar
+  const addButton: vscodeTypes.QuickInputButton = {
+    iconPath: new vs.ThemeIcon('add'),
+    tooltip: vs.l10n.t('New Profile'),
+  };
+
   if (identities.length === 0) {
     // Show placeholder when no identities
     items.push({
@@ -292,22 +319,22 @@ export async function showManageIdentitiesQuickPick(
     });
   }
 
-  // Add separator and "Add new identity" option
+  // Add separator and "New Profile" option
   items.push(
     {
       label: '',
       kind: vs.QuickPickItemKind.Separator,
     } as ManageIdentityQuickPickItem,
     {
-      label: '$(add) ' + vs.l10n.t('Add new identity'),
+      label: '$(add) ' + vs.l10n.t('New Profile'),
       _isAddOption: true,
     }
   );
 
   const quickPick = vs.window.createQuickPick<ManageIdentityQuickPickItem>();
   quickPick.items = items;
-  quickPick.title = vs.l10n.t('⚙️ Manage Identities');
-  quickPick.buttons = [vs.QuickInputButtons.Back];
+  quickPick.title = vs.l10n.t('Manage Profiles');
+  quickPick.buttons = [vs.QuickInputButtons.Back, addButton];
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
 
@@ -322,12 +349,16 @@ export async function showManageIdentitiesQuickPick(
   return new Promise<ManageIdentitiesResult | undefined>(resolve => {
     let resolved = false;
 
-    // Handle title bar back button
+    // Handle title bar buttons (back and add)
     quickPick.onDidTriggerButton(button => {
       if (button === vs.QuickInputButtons.Back) {
         resolved = true;
         quickPick.hide();
         resolve({ action: 'back' });
+      } else if (button === addButton) {
+        resolved = true;
+        quickPick.hide();
+        resolve({ action: 'add' });
       }
     });
 

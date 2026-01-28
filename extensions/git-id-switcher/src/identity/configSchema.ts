@@ -71,9 +71,10 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     type: 'string',
     description: 'Git hosting service (e.g., GitHub, GitLab, Bitbucket)',
     maxLength: MAX_SERVICE_LENGTH,
-    // Allow Unicode (for i18n) but block control characters and shell metacharacters
-    // Same pattern as 'name' field for consistency
-    pattern: '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$',
+    // Allow Unicode (for i18n) but block control characters and command substitution
+    // Only block backtick (`) and dollar sign ($) for command injection prevention
+    // Allow ampersand (&) for company names like "AT&T"
+    pattern: '^[^\\x00-\\x1f\\x7f`$]+$',
   },
   email: {
     type: 'string',
@@ -86,16 +87,18 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     type: 'string',
     description: 'Optional description of this identity',
     maxLength: MAX_DESCRIPTION_LENGTH,
-    // Allow Unicode (for i18n) but block control characters and shell metacharacters
-    // Same pattern as 'name' field for consistency
-    pattern: '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$',
+    // Allow Unicode (for i18n) but block control characters and command substitution
+    // Only block backtick (`) and dollar sign ($) for command injection prevention
+    // Allow angle brackets (<>) for display formatting like "<main>"
+    pattern: '^[^\\x00-\\x1f\\x7f`$]+$',
   },
   sshKeyPath: {
     type: 'string',
     description: 'Path to SSH private key',
     maxLength: PATH_MAX, // PATH_MAX on most systems
-    // Must be absolute path or start with ~, no dangerous chars
-    pattern: '^[~/][^\\x00-\\x1f\\x7f`$(){}|;&<>]*$',
+    // Must be absolute path (Unix: /, ~) or Windows drive letter (C:), no dangerous chars
+    // Backslash (\) is allowed for Windows paths
+    pattern: '^([~/]|[A-Za-z]:)[^\\x00-\\x1f\\x7f`$(){}|;&<>]*$',
   },
   sshHost: {
     type: 'string',
