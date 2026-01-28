@@ -256,14 +256,6 @@ function createMockVSCode(options: {
                 if (changeCallback) {
                   changeCallback(selection);
                 }
-                // DEBUG: Log validation result
-                if (process.env.DEBUG_SSH_PATH === '1') {
-                  console.log('[DEBUG MOCK] After changeCallback:', {
-                    selection,
-                    _validationMessage,
-                    willAccept: !_validationMessage,
-                  });
-                }
                 // Accept only if no validation error
                 if (!_validationMessage) {
                   acceptCallback();
@@ -2557,12 +2549,6 @@ describe('identityManager E2E Test Suite', function () {
         const homeDir = process.env.HOME ?? process.env.USERPROFILE ?? '';
         const absoluteSshPath = homeDir ? path.join(homeDir, '.ssh', 'id_rsa') : '~/.ssh/id_rsa';
 
-        // DEBUG: Enable debug logging for this test
-        process.env.DEBUG_SSH_PATH = '1';
-        console.log('[DEBUG TEST] homeDir:', homeDir);
-        console.log('[DEBUG TEST] absoluteSshPath:', absoluteSshPath);
-        console.log('[DEBUG TEST] platform:', process.platform);
-
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
@@ -2574,9 +2560,6 @@ describe('identityManager E2E Test Suite', function () {
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
-
-        // Disable debug logging
-        delete process.env.DEBUG_SSH_PATH;
 
         assert.strictEqual(result, true, 'Absolute path under .ssh/ should be accepted');
       });

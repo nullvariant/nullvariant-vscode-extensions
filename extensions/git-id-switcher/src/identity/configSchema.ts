@@ -96,8 +96,9 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     type: 'string',
     description: 'Path to SSH private key',
     maxLength: PATH_MAX, // PATH_MAX on most systems
-    // Must be absolute path or start with ~, no dangerous chars
-    pattern: '^[~/][^\\x00-\\x1f\\x7f`$(){}|;&<>]*$',
+    // Must be absolute path (Unix: /, ~) or Windows drive letter (C:), no dangerous chars
+    // Backslash (\) is allowed for Windows paths
+    pattern: '^([~/]|[A-Za-z]:)[^\\x00-\\x1f\\x7f`$(){}|;&<>]*$',
   },
   sshHost: {
     type: 'string',

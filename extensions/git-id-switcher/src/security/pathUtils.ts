@@ -490,35 +490,10 @@ export function isUnderSshDirectory(value: string): boolean {
   // Must include path separator to prevent matching ~/.ssh_backup/
   const sshDirWithSep = sshDir + path.sep;
 
-  // DEBUG: Log values for troubleshooting Windows CI failure
-  /* c8 ignore start */
-  if (process.env.DEBUG_SSH_PATH === '1') {
-    console.log('[DEBUG isUnderSshDirectory]', {
-      value,
-      normalizedValue,
-      homeDir,
-      sshDir,
-      sshDirWithSep,
-      platform: process.platform,
-      pathSep: path.sep,
-    });
-  }
-  /* c8 ignore stop */
-
   // Windows paths are case-insensitive, use lowercase comparison
   /* c8 ignore start - Windows-only code path, tested on Windows CI */
   if (process.platform === 'win32') {
-    const result = normalizedValue.toLowerCase().startsWith(sshDirWithSep.toLowerCase());
-    /* c8 ignore start */
-    if (process.env.DEBUG_SSH_PATH === '1') {
-      console.log('[DEBUG isUnderSshDirectory Windows]', {
-        normalizedLower: normalizedValue.toLowerCase(),
-        sshDirWithSepLower: sshDirWithSep.toLowerCase(),
-        result,
-      });
-    }
-    /* c8 ignore stop */
-    return result;
+    return normalizedValue.toLowerCase().startsWith(sshDirWithSep.toLowerCase());
   }
   /* c8 ignore stop */
 
