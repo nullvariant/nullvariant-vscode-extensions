@@ -99,7 +99,7 @@
   "(fill required fields)": "(заповніть поля, позначені *)",
   "New Profile: {0}": "Новий профіль: {0}",
   "Filter...": "Filter...",
-  "Browse...": "Огляд...",
+  "Browse for SSH key path...": "Огляд шляху до SSH-ключа...",
   "Select SSH Key": "Вибрати SSH-ключ",
   "Press 'Enter' to save": "Натисніть 'Enter' для збереження",
   "Press 'Enter' to save (leave empty to skip)": "Натисніть 'Enter' для збереження (залиште порожнім, щоб пропустити)",

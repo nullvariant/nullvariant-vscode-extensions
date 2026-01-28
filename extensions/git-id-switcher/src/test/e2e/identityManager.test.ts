@@ -242,7 +242,7 @@ function createMockVSCode(options: {
               } else if (selection === FILE_PICKER_CLICK && buttonCallback) {
                 // Simulate file picker button click (non-back button)
                 // The button callback is async, so we need to wait for showOpenDialog to complete
-                const filePickerButton = { iconPath: { id: 'folder-opened' }, tooltip: 'Browse...' };
+                const filePickerButton = { iconPath: { id: 'folder-opened' }, tooltip: 'Browse for SSH key path...' };
                 await Promise.resolve(buttonCallback(filePickerButton));
                 // After file picker completes, cancel the InputBox (test only needs to verify dialog options)
                 setTimeout(() => {
@@ -1674,7 +1674,7 @@ describe('identityManager E2E Test Suite', function () {
             'showOpenDialog should be available');
         });
 
-        it('should have file picker button tooltip "Browse..."', async () => {
+        it('should have file picker button tooltip "Browse for SSH key path..."', async () => {
           let capturedButtons: unknown[] = [];
 
           const mockVSCode = createMockVSCode({
@@ -1703,7 +1703,7 @@ describe('identityManager E2E Test Suite', function () {
 
           if (filePickerButton && typeof filePickerButton === 'object' && 'tooltip' in filePickerButton) {
             const tooltip = (filePickerButton as { tooltip?: string }).tooltip;
-            assert.ok(tooltip?.includes('Browse'), `File picker button should have Browse tooltip, got: ${tooltip}`);
+            assert.ok(tooltip?.includes('Browse for SSH key path'), `File picker button should have 'Browse for SSH key path' tooltip, got: ${tooltip}`);
           }
         });
       });

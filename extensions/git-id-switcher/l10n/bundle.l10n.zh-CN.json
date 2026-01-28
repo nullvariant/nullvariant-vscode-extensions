@@ -99,7 +99,7 @@
   "(fill required fields)": "（请填写带*的必填项）",
   "New Profile: {0}": "新建配置文件：{0}",
   "Filter...": "Filter...",
-  "Browse...": "浏览...",
+  "Browse for SSH key path...": "浏览SSH密钥路径...",
   "Select SSH Key": "选择SSH密钥",
   "Press 'Enter' to save": "按'Enter'保存",
   "Press 'Enter' to save (leave empty to skip)": "按'Enter'保存（留空以跳过）",

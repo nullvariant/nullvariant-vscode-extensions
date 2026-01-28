@@ -99,7 +99,7 @@
   "(fill required fields)": "(* ile işaretli alanları doldurun)",
   "New Profile: {0}": "Yeni Profil: {0}",
   "Filter...": "Filter...",
-  "Browse...": "Gözat...",
+  "Browse for SSH key path...": "SSH anahtarı yoluna göz at...",
   "Select SSH Key": "SSH Anahtarı Seç",
   "Press 'Enter' to save": "Kaydetmek için 'Enter'a basın",
   "Press 'Enter' to save (leave empty to skip)": "Kaydetmek için 'Enter'a basın (atlamak için boş bırakın)",

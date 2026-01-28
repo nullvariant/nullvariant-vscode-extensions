@@ -99,7 +99,7 @@
   "(fill required fields)": "(попълнете полетата, маркирани с *)",
   "New Profile: {0}": "Нов профил: {0}",
   "Filter...": "Filter...",
-  "Browse...": "Преглед...",
+  "Browse for SSH key path...": "Преглед за път до SSH ключ...",
   "Select SSH Key": "Изберете SSH ключ",
   "Press 'Enter' to save": "Натиснете 'Enter' за запазване",
   "Press 'Enter' to save (leave empty to skip)": "Натиснете 'Enter' за запазване (оставете празно за пропускане)",

@@ -99,7 +99,7 @@
   "(fill required fields)": "（*マークの必須項目を入力してください）",
   "New Profile: {0}": "新しいプロフィール: {0}",
   "Filter...": "Filter...",
-  "Browse...": "参照...",
+  "Browse for SSH key path...": "SSH鍵ファイルパスを参照...",
   "Select SSH Key": "SSH鍵を選択",
   "Press 'Enter' to save": "'Enter'で保存",
   "Press 'Enter' to save (leave empty to skip)": "'Enter'で保存（空のままでスキップ）",

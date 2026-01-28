@@ -99,7 +99,7 @@
   "(fill required fields)": "(töltse ki a *-gal jelölt mezőket)",
   "New Profile: {0}": "Új profil: {0}",
   "Filter...": "Filter...",
-  "Browse...": "Tallózás...",
+  "Browse for SSH key path...": "SSH kulcs elérési út tallózása...",
   "Select SSH Key": "SSH kulcs kiválasztása",
   "Press 'Enter' to save": "Mentéshez nyomja meg az 'Enter'-t",
   "Press 'Enter' to save (leave empty to skip)": "Mentéshez nyomja meg az 'Enter'-t (hagyja üresen a kihagyáshoz)",

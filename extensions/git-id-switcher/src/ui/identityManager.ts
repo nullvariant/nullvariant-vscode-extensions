@@ -711,6 +711,7 @@ async function showFieldInputBox(
   options: FieldInputBoxOptions
 ): Promise<QuickInputResult<string>> {
   const inputBox = vs.window.createInputBox();
+  inputBox.ignoreFocusOut = true;
   inputBox.title = options.title;
   inputBox.value = options.value;
   inputBox.placeholder = options.placeholder;
@@ -722,7 +723,7 @@ async function showFieldInputBox(
   if (options.field === 'sshKeyPath') {
     inputBox.buttons = [
       vs.QuickInputButtons.Back,
-      { iconPath: new vs.ThemeIcon('folder-opened'), tooltip: vs.l10n.t('Browse...') },
+      { iconPath: new vs.ThemeIcon('folder-opened'), tooltip: vs.l10n.t('Browse for SSH key path...') },
     ];
     onCustomButton = async (): Promise<string | undefined> => {
       // Default to ~/.ssh - use HOME (Unix) or USERPROFILE (Windows)

@@ -99,7 +99,7 @@
   "(fill required fields)": "(*가 표시된 필수 항목을 입력하세요)",
   "New Profile: {0}": "새 프로필: {0}",
   "Filter...": "Filter...",
-  "Browse...": "찾아보기...",
+  "Browse for SSH key path...": "SSH 키 경로 찾아보기...",
   "Select SSH Key": "SSH 키 선택",
   "Press 'Enter' to save": "'Enter'를 눌러 저장",
   "Press 'Enter' to save (leave empty to skip)": "'Enter'를 눌러 저장 (비워두면 건너뜀)",

@@ -99,7 +99,7 @@
   "(fill required fields)": "(vyplňte pole označená *)",
   "New Profile: {0}": "Nový profil: {0}",
   "Filter...": "Filter...",
-  "Browse...": "Procházet...",
+  "Browse for SSH key path...": "Procházet cestu ke klíči SSH...",
   "Select SSH Key": "Vybrat SSH klíč",
   "Press 'Enter' to save": "Uložte stisknutím 'Enter'",
   "Press 'Enter' to save (leave empty to skip)": "Uložte stisknutím 'Enter' (ponechte prázdné pro přeskočení)",

@@ -99,7 +99,7 @@
   "(fill required fields)": "(Felder mit * ausfüllen)",
   "New Profile: {0}": "Neues Profil: {0}",
   "Filter...": "Filter...",
-  "Browse...": "Durchsuchen...",
+  "Browse for SSH key path...": "SSH-Schlüsselpfad durchsuchen...",
   "Select SSH Key": "SSH-Schlüssel auswählen",
   "Press 'Enter' to save": "'Enter' zum Speichern",
   "Press 'Enter' to save (leave empty to skip)": "'Enter' zum Speichern (leer lassen zum Überspringen)",
