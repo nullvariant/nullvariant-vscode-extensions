@@ -795,8 +795,8 @@ async function handleAddFormFieldEdit(
   const result = await promptAddFormFieldInput(vs, meta, currentValue, existingIds);
 
   // 'back' or undefined: return to form without changes
-  // string: update state with new value
-  if (typeof result === 'string') {
+  // string (but not 'back'): update state with new value
+  if (typeof result === 'string' && result !== 'back') {
     (state as Record<string, string | undefined>)[fieldKey] = result.trim() || undefined;
   }
 }
