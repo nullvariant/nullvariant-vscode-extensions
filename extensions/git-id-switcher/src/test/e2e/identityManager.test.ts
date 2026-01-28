@@ -242,7 +242,7 @@ function createMockVSCode(options: {
               } else if (selection === FILE_PICKER_CLICK && buttonCallback) {
                 // Simulate file picker button click (non-back button)
                 // The button callback is async, so we need to wait for showOpenDialog to complete
-                const filePickerButton = { iconPath: { id: 'folder-opened' }, tooltip: 'Browse...' };
+                const filePickerButton = { iconPath: { id: 'folder-opened' }, tooltip: 'Browse for SSH key path...' };
                 await Promise.resolve(buttonCallback(filePickerButton));
                 // After file picker completes, cancel the InputBox (test only needs to verify dialog options)
                 setTimeout(() => {
@@ -528,6 +528,38 @@ describe('identityManager E2E Test Suite', function () {
 
       assert.ok(result !== undefined, 'Should complete successfully after back-navigation');
       assert.strictEqual(result?.name, 'My Name', 'Should preserve Name value');
+    });
+
+    it('should NOT set "back" as field value when back button pressed (required and optional fields)', async () => {
+      // Bug: When back button is pressed, 'back' string was being set as the field value
+      // Fix: handleAddFormFieldEdit() now checks `result !== 'back'` before updating state
+      // This test covers both required (name) and optional (service) fields
+      const mockVSCode = createMockVSCode({
+        identities: [],
+        quickPickSelections: [
+          { field: 'id' },
+          { field: 'name' },      // Select required name field
+          { field: 'name' },      // Re-select after back
+          { field: 'email' },
+          { field: 'service' },   // Select optional service field
+          { _isSaveButton: true },
+        ],
+        inputBoxSelections: [
+          'test-id',
+          INPUT_BOX_BACK,         // Press back at required name field
+          'Valid Name',           // Enter name value after back
+          'test@test.com',
+          INPUT_BOX_BACK,         // Press back at optional service field
+        ],
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showAddIdentityForm();
+
+      assert.ok(result !== undefined, 'Should complete successfully');
+      assert.strictEqual(result?.id, 'test-id', 'ID should be preserved');
+      assert.strictEqual(result?.name, 'Valid Name', 'Required field should have entered value, not "back"');
+      assert.strictEqual(result?.service, undefined, 'Optional field should remain undefined after back');
     });
   });
 
@@ -987,7 +1019,7 @@ describe('identityManager E2E Test Suite', function () {
         );
         assert.ok(saveButton, 'Save button should be present');
         const label = (saveButton as { label: string }).label;
-        assert.ok(label.includes('$(circle-slash)'), `Save button should show $(circle-slash) when disabled, got: ${label}`);
+        assert.ok(label.includes('$(loading~spin)'), `Save button should show $(loading~spin) when disabled, got: ${label}`);
         assert.strictEqual((saveButton as { _isDisabled?: boolean })._isDisabled, true, 'Save button should be disabled');
       });
 
@@ -1674,7 +1706,7 @@ describe('identityManager E2E Test Suite', function () {
             'showOpenDialog should be available');
         });
 
-        it('should have file picker button tooltip "Browse..."', async () => {
+        it('should have file picker button tooltip "Browse for SSH key path..."', async () => {
           let capturedButtons: unknown[] = [];
 
           const mockVSCode = createMockVSCode({
@@ -1703,7 +1735,7 @@ describe('identityManager E2E Test Suite', function () {
 
           if (filePickerButton && typeof filePickerButton === 'object' && 'tooltip' in filePickerButton) {
             const tooltip = (filePickerButton as { tooltip?: string }).tooltip;
-            assert.ok(tooltip?.includes('Browse'), `File picker button should have Browse tooltip, got: ${tooltip}`);
+            assert.ok(tooltip?.includes('Browse for SSH key path'), `File picker button should have 'Browse for SSH key path' tooltip, got: ${tooltip}`);
           }
         });
       });

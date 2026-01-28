@@ -278,34 +278,39 @@ function validateFieldInput(
 // UI Utilities
 // ============================================================================
 
+/** Placeholder keys for each field (unified with package.nls.json for logical DRY) */
+const FIELD_PLACEHOLDER_KEYS: Partial<Record<keyof Identity, string>> = {
+  id: 'Unique ID (alphanumeric, hyphens, underscores only; must not duplicate; required)',
+  name: 'Git user.name',
+  email: 'Git user.email',
+  service: 'e.g., GitHub, GitLab, Bitbucket',
+  icon: 'Emoji icon (e.g., 👤, 🏠)',
+  description: 'Short description',
+  sshKeyPath: 'Path to SSH private key (e.g., ~/.ssh/id_ed25519_work)',
+  sshHost: 'e.g., github-work, gitlab-personal',
+  gpgKeyId: 'GPG key ID for commit signing (e.g., ABCD1234EF567890)',
+};
+
+/** Prompt keys for InputBox based on mode */
+const INPUT_BOX_PROMPT_KEYS = {
+  required: "Press 'Enter' to save",
+  optionalAdd: "Press 'Enter' to save (leave empty to skip)",
+  optionalEdit: "Press 'Enter' to save (leave empty to clear)",
+} as const;
+
 /**
  * Get placeholder text for a field.
- *
- * @param vs - VS Code API
- * @param field - Field name
- * @returns Localized placeholder text
+ * Note: Complete DRY with package.nls.json is technically impossible due to VS Code l10n architecture.
  */
 function getPlaceholderForField(vs: VSCodeAPI, field: keyof Identity): string {
-  switch (field) {
-    case 'name':
-      return vs.l10n.t('Git user.name');
-    case 'email':
-      return vs.l10n.t('Git user.email');
-    case 'service':
-      return vs.l10n.t('e.g., GitHub, GitLab, Bitbucket');
-    case 'icon':
-      return vs.l10n.t('Emoji icon (e.g., 👤, 🏠)');
-    case 'description':
-      return vs.l10n.t('Short description');
-    case 'sshKeyPath':
-      return vs.l10n.t('e.g., ~/.ssh/id_ed25519_work');
-    case 'sshHost':
-      return vs.l10n.t('e.g., github-work, gitlab-personal');
-    case 'gpgKeyId':
-      return vs.l10n.t('e.g., ABCD1234EF567890');
-    default:
-      return '';
-  }
+  const key = FIELD_PLACEHOLDER_KEYS[field];
+  return key ? vs.l10n.t(key) : '';
+}
+
+/** Get prompt text for InputBox based on field optionality and mode. */
+function getInputBoxPrompt(vs: VSCodeAPI, isOptional: boolean, mode: 'add' | 'edit'): string {
+  if (!isOptional) return vs.l10n.t(INPUT_BOX_PROMPT_KEYS.required);
+  return vs.l10n.t(mode === 'add' ? INPUT_BOX_PROMPT_KEYS.optionalAdd : INPUT_BOX_PROMPT_KEYS.optionalEdit);
 }
 
 /**
@@ -515,7 +520,7 @@ function buildAddFormItems(
   items.push({
     label: canSave
       ? `$(check) ${vs.l10n.t('Save')}`
-      : `$(circle-slash) ${vs.l10n.t('Save')}`,
+      : `$(loading~spin) ${vs.l10n.t('Save')}`,
     description: canSave
       ? undefined
       : vs.l10n.t('(fill required fields)'),
@@ -549,7 +554,7 @@ async function promptAddFormFieldInput(
     title: vs.l10n.t('New Profile: {0}', vs.l10n.t(meta.labelKey)),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, meta.key),
-    prompt: isOptional ? vs.l10n.t('Leave empty to skip') : undefined,
+    prompt: getInputBoxPrompt(vs, isOptional, 'add'),
     field: meta.key,
     validateInput: (value: string) => {
       if (meta.key === 'id') {
@@ -704,6 +709,7 @@ async function showFieldInputBox(
   options: FieldInputBoxOptions
 ): Promise<QuickInputResult<string>> {
   const inputBox = vs.window.createInputBox();
+  inputBox.ignoreFocusOut = true;
   inputBox.title = options.title;
   inputBox.value = options.value;
   inputBox.placeholder = options.placeholder;
@@ -715,7 +721,7 @@ async function showFieldInputBox(
   if (options.field === 'sshKeyPath') {
     inputBox.buttons = [
       vs.QuickInputButtons.Back,
-      { iconPath: new vs.ThemeIcon('folder-opened'), tooltip: vs.l10n.t('Browse...') },
+      { iconPath: new vs.ThemeIcon('folder-opened'), tooltip: vs.l10n.t('Browse for SSH key path...') },
     ];
     onCustomButton = async (): Promise<string | undefined> => {
       // Default to ~/.ssh - use HOME (Unix) or USERPROFILE (Windows)
@@ -787,8 +793,8 @@ async function handleAddFormFieldEdit(
   const result = await promptAddFormFieldInput(vs, meta, currentValue, existingIds);
 
   // 'back' or undefined: return to form without changes
-  // string: update state with new value
-  if (typeof result === 'string') {
+  // string (but not 'back'): update state with new value
+  if (typeof result === 'string' && result !== 'back') {
     (state as Record<string, string | undefined>)[fieldKey] = result.trim() || undefined;
   }
 }
@@ -985,7 +991,7 @@ async function promptFieldValueInput(
     title: vs.l10n.t('Edit Identity: {0}', fieldItem.label),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, field),
-    prompt: optional ? vs.l10n.t('Leave empty to clear') : undefined,
+    prompt: getInputBoxPrompt(vs, optional, 'edit'),
     field,
     validateInput: (value: string) => validateFieldInput(vs, field, value, optional),
   });

@@ -103,7 +103,8 @@ export async function showIdentityQuickPick(
   } as IdentityQuickPickItem;
 
   const manageItem: IdentityQuickPickItem = {
-    label: '$(gear) ' + vs.l10n.t('Manage Profiles'),
+    label: vs.l10n.t('Manage Profiles'),
+    iconPath: new vs.ThemeIcon('gear'),
     identity: null as unknown as Identity,
     _isManageOption: true,
   };
@@ -326,7 +327,8 @@ export async function showManageIdentitiesQuickPick(
       kind: vs.QuickPickItemKind.Separator,
     } as ManageIdentityQuickPickItem,
     {
-      label: '$(add) ' + vs.l10n.t('New Profile'),
+      label: vs.l10n.t('New Profile'),
+      iconPath: new vs.ThemeIcon('add'),
       _isAddOption: true,
     }
   );

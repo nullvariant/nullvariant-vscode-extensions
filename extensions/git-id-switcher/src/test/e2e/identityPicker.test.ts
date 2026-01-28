@@ -60,6 +60,7 @@ interface CapturedQuickPickItem {
   label: string;
   description?: string;
   detail?: string;
+  iconPath?: { id: string };
   _isManageOption?: boolean;
   kind?: number;
 }
@@ -291,6 +292,8 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
       const manageItem = items.find(item => item._isManageOption === true);
       assert.ok(manageItem, 'Should have manage option');
       assert.ok(manageItem.label.includes('Manage'), 'Manage label should mention Manage');
+      assert.ok(manageItem.iconPath, 'Manage option should have iconPath');
+      assert.strictEqual(manageItem.iconPath?.id, 'gear', 'Manage option should have gear icon');
     });
   });
 
@@ -431,6 +434,7 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
 interface CapturedManageQuickPickItem {
   label: string;
   detail?: string;
+  iconPath?: { id: string };
   identity?: Identity;
   index?: number;
   buttons?: Array<{ iconPath: unknown; tooltip: string }>;
@@ -626,6 +630,12 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
 
       const identityItems = items.filter(item => item.identity);
       assert.strictEqual(identityItems.length, 2, 'Should have 2 identity items');
+
+      // Check for add option with icon
+      const addOption = items.find(item => item._isAddOption === true);
+      assert.ok(addOption, 'Should have add option');
+      assert.ok(addOption.iconPath, 'Add option should have iconPath');
+      assert.strictEqual(addOption.iconPath?.id, 'add', 'Add option should have add icon');
     });
 
     it('should set title to Manage Profiles', async () => {
