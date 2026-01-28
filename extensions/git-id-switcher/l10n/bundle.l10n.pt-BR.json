@@ -61,7 +61,6 @@
   "Name is too long (max {0} characters)": "O nome é muito longo (máx. {0} caracteres)",
   "Email is too long (max {0} characters)": "O e-mail é muito longo (máx. {0} caracteres)",
   "Email cannot be empty": "O e-mail não pode estar vazio",
-  "Leave empty to clear": "Deixe vazio para limpar",
   "Emoji icon (e.g., 👤, 🏠)": "Ícone emoji (ex: 👤, 🏠)",
   "Short description": "Descrição breve",
   "Select identity to edit": "Selecionar identidade para editar",
@@ -99,8 +98,10 @@
   "GPG key ID for commit signing (e.g., ABCD1234EF567890)": "ID da chave GPG para assinatura de commits (ex. ABCD1234EF567890)",
   "(fill required fields)": "(preencha os campos marcados com *)",
   "New Profile: {0}": "Novo perfil: {0}",
-  "Leave empty to skip": "Deixe vazio para pular",
   "Filter...": "Filter...",
   "Browse...": "Procurar...",
-  "Select SSH Key": "Selecionar chave SSH"
+  "Select SSH Key": "Selecionar chave SSH",
+  "Press 'Enter' to save": "Pressione 'Enter' para salvar",
+  "Press 'Enter' to save (leave empty to skip)": "Pressione 'Enter' para salvar (deixe vazio para pular)",
+  "Press 'Enter' to save (leave empty to clear)": "Pressione 'Enter' para salvar (deixe vazio para limpar)"
 }

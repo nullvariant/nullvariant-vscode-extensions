@@ -61,7 +61,6 @@
   "Name is too long (max {0} characters)": "Jméno je příliš dlouhé (max {0} znaků)",
   "Email is too long (max {0} characters)": "E-mail je příliš dlouhý (max {0} znaků)",
   "Email cannot be empty": "E-mail nemůže být prázdný",
-  "Leave empty to clear": "Ponechte prázdné pro vymazání",
   "Emoji icon (e.g., 👤, 🏠)": "Ikona emoji (např. 👤, 🏠)",
   "Short description": "Krátký popis",
   "Select identity to edit": "Vyberte identitu k úpravě",
@@ -99,8 +98,10 @@
   "GPG key ID for commit signing (e.g., ABCD1234EF567890)": "ID GPG klíče pro podepisování commitů (např. ABCD1234EF567890)",
   "(fill required fields)": "(vyplňte pole označená *)",
   "New Profile: {0}": "Nový profil: {0}",
-  "Leave empty to skip": "Ponechte prázdné pro přeskočení",
   "Filter...": "Filter...",
   "Browse...": "Procházet...",
-  "Select SSH Key": "Vybrat SSH klíč"
+  "Select SSH Key": "Vybrat SSH klíč",
+  "Press 'Enter' to save": "Uložte stisknutím 'Enter'",
+  "Press 'Enter' to save (leave empty to skip)": "Uložte stisknutím 'Enter' (ponechte prázdné pro přeskočení)",
+  "Press 'Enter' to save (leave empty to clear)": "Uložte stisknutím 'Enter' (ponechte prázdné pro vymazání)"
 }

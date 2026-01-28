@@ -61,7 +61,6 @@
   "Name is too long (max {0} characters)": "名稱過長（最多{0}個字元）",
   "Email is too long (max {0} characters)": "電子郵件過長（最多{0}個字元）",
   "Email cannot be empty": "電子郵件不能為空",
-  "Leave empty to clear": "留空以清除",
   "Emoji icon (e.g., 👤, 🏠)": "表情圖示（例如：👤, 🏠）",
   "Short description": "簡短描述",
   "Select identity to edit": "選擇要編輯的身分",
@@ -99,8 +98,10 @@
   "GPG key ID for commit signing (e.g., ABCD1234EF567890)": "用於提交簽署的 GPG 金鑰 ID（例：ABCD1234EF567890）",
   "(fill required fields)": "（請填寫帶*的必填項）",
   "New Profile: {0}": "新建設定檔：{0}",
-  "Leave empty to skip": "留空以跳過",
   "Filter...": "Filter...",
   "Browse...": "瀏覽...",
-  "Select SSH Key": "選擇SSH金鑰"
+  "Select SSH Key": "選擇SSH金鑰",
+  "Press 'Enter' to save": "按'Enter'儲存",
+  "Press 'Enter' to save (leave empty to skip)": "按'Enter'儲存（留空以跳過）",
+  "Press 'Enter' to save (leave empty to clear)": "按'Enter'儲存（留空以清除）"
 }

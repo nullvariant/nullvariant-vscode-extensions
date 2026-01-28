@@ -61,7 +61,6 @@
   "Name is too long (max {0} characters)": "名前が長すぎます（最大{0}文字）",
   "Email is too long (max {0} characters)": "メールアドレスが長すぎます（最大{0}文字）",
   "Email cannot be empty": "メールアドレスを入力してください",
-  "Leave empty to clear": "空にするとクリアされます",
   "Emoji icon (e.g., 👤, 🏠)": "絵文字アイコン（例: 👤, 🏠）",
   "Short description": "簡単な説明",
   "Select identity to edit": "編集するプロフィールを選択",
@@ -99,8 +98,10 @@
   "GPG key ID for commit signing (e.g., ABCD1234EF567890)": "コミット署名用のGPG鍵ID（例: ABCD1234EF567890）",
   "(fill required fields)": "（*マークの必須項目を入力してください）",
   "New Profile: {0}": "新しいプロフィール: {0}",
-  "Leave empty to skip": "空のままにするとスキップします",
   "Filter...": "Filter...",
   "Browse...": "参照...",
-  "Select SSH Key": "SSH鍵を選択"
+  "Select SSH Key": "SSH鍵を選択",
+  "Press 'Enter' to save": "'Enter'で保存",
+  "Press 'Enter' to save (leave empty to skip)": "'Enter'で保存（空のままでスキップ）",
+  "Press 'Enter' to save (leave empty to clear)": "'Enter'で保存（空のままでクリア）"
 }

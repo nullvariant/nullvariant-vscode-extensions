@@ -61,7 +61,6 @@
   "Name is too long (max {0} characters)": "이름이 너무 깁니다 (최대 {0}자)",
   "Email is too long (max {0} characters)": "이메일이 너무 깁니다 (최대 {0}자)",
   "Email cannot be empty": "이메일은 비어 있을 수 없습니다",
-  "Leave empty to clear": "비우려면 빈칸으로 두세요",
   "Emoji icon (e.g., 👤, 🏠)": "이모지 아이콘 (예: 👤, 🏠)",
   "Short description": "간단한 설명",
   "Select identity to edit": "편집할 ID 선택",
@@ -99,8 +98,10 @@
   "GPG key ID for commit signing (e.g., ABCD1234EF567890)": "커밋 서명을 위한 GPG 키 ID (예: ABCD1234EF567890)",
   "(fill required fields)": "(*가 표시된 필수 항목을 입력하세요)",
   "New Profile: {0}": "새 프로필: {0}",
-  "Leave empty to skip": "건너뛰려면 비워두세요",
   "Filter...": "Filter...",
   "Browse...": "찾아보기...",
-  "Select SSH Key": "SSH 키 선택"
+  "Select SSH Key": "SSH 키 선택",
+  "Press 'Enter' to save": "'Enter'를 눌러 저장",
+  "Press 'Enter' to save (leave empty to skip)": "'Enter'를 눌러 저장 (비워두면 건너뜀)",
+  "Press 'Enter' to save (leave empty to clear)": "'Enter'를 눌러 저장 (비워두면 지움)"
 }

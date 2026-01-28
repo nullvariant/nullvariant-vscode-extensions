@@ -61,7 +61,6 @@
   "Name is too long (max {0} characters)": "Ad çok uzun (maks. {0} karakter)",
   "Email is too long (max {0} characters)": "E-posta çok uzun (maks. {0} karakter)",
   "Email cannot be empty": "E-posta boş olamaz",
-  "Leave empty to clear": "Temizlemek için boş bırakın",
   "Emoji icon (e.g., 👤, 🏠)": "Emoji simgesi (örn. 👤, 🏠)",
   "Short description": "Kısa açıklama",
   "Select identity to edit": "Düzenlenecek kimliği seçin",
@@ -99,8 +98,10 @@
   "GPG key ID for commit signing (e.g., ABCD1234EF567890)": "Commit imzalama için GPG anahtar ID'si (örn. ABCD1234EF567890)",
   "(fill required fields)": "(* ile işaretli alanları doldurun)",
   "New Profile: {0}": "Yeni Profil: {0}",
-  "Leave empty to skip": "Atlamak için boş bırakın",
   "Filter...": "Filter...",
   "Browse...": "Gözat...",
-  "Select SSH Key": "SSH Anahtarı Seç"
+  "Select SSH Key": "SSH Anahtarı Seç",
+  "Press 'Enter' to save": "Kaydetmek için 'Enter'a basın",
+  "Press 'Enter' to save (leave empty to skip)": "Kaydetmek için 'Enter'a basın (atlamak için boş bırakın)",
+  "Press 'Enter' to save (leave empty to clear)": "Kaydetmek için 'Enter'a basın (temizlemek için boş bırakın)"
 }

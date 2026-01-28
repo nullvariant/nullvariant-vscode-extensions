@@ -554,7 +554,9 @@ async function promptAddFormFieldInput(
     title: vs.l10n.t('New Profile: {0}', vs.l10n.t(meta.labelKey)),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, meta.key),
-    prompt: isOptional ? vs.l10n.t('Leave empty to skip') : undefined,
+    prompt: isOptional
+      ? vs.l10n.t("Press 'Enter' to save (leave empty to skip)")
+      : vs.l10n.t("Press 'Enter' to save"),
     field: meta.key,
     validateInput: (value: string) => {
       if (meta.key === 'id') {
@@ -990,7 +992,9 @@ async function promptFieldValueInput(
     title: vs.l10n.t('Edit Identity: {0}', fieldItem.label),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, field),
-    prompt: optional ? vs.l10n.t('Leave empty to clear') : undefined,
+    prompt: optional
+      ? vs.l10n.t("Press 'Enter' to save (leave empty to clear)")
+      : vs.l10n.t("Press 'Enter' to save"),
     field,
     validateInput: (value: string) => validateFieldInput(vs, field, value, optional),
   });

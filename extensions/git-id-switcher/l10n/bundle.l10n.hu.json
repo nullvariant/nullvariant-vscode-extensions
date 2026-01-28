@@ -61,7 +61,6 @@
   "Name is too long (max {0} characters)": "A név túl hosszú (max {0} karakter)",
   "Email is too long (max {0} characters)": "Az e-mail túl hosszú (max {0} karakter)",
   "Email cannot be empty": "Az e-mail nem lehet üres",
-  "Leave empty to clear": "Hagyja üresen a törléshez",
   "Emoji icon (e.g., 👤, 🏠)": "Emoji ikon (pl. 👤, 🏠)",
   "Short description": "Rövid leírás",
   "Select identity to edit": "Válassza ki a szerkesztendő identitást",
@@ -99,8 +98,10 @@
   "GPG key ID for commit signing (e.g., ABCD1234EF567890)": "GPG kulcs azonosító commit aláíráshoz (pl. ABCD1234EF567890)",
   "(fill required fields)": "(töltse ki a *-gal jelölt mezőket)",
   "New Profile: {0}": "Új profil: {0}",
-  "Leave empty to skip": "Hagyja üresen a kihagyáshoz",
   "Filter...": "Filter...",
   "Browse...": "Tallózás...",
-  "Select SSH Key": "SSH kulcs kiválasztása"
+  "Select SSH Key": "SSH kulcs kiválasztása",
+  "Press 'Enter' to save": "Mentéshez nyomja meg az 'Enter'-t",
+  "Press 'Enter' to save (leave empty to skip)": "Mentéshez nyomja meg az 'Enter'-t (hagyja üresen a kihagyáshoz)",
+  "Press 'Enter' to save (leave empty to clear)": "Mentéshez nyomja meg az 'Enter'-t (hagyja üresen a törléshez)"
 }
