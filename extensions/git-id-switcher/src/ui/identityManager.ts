@@ -278,56 +278,39 @@ function validateFieldInput(
 // UI Utilities
 // ============================================================================
 
-/**
- * Get placeholder text for a field.
- *
- * @param vs - VS Code API
- * @param field - Field name
- * @returns Localized placeholder text
- */
-function getPlaceholderForField(vs: VSCodeAPI, field: keyof Identity): string {
-  // Placeholders are unified with package.nls.json descriptions for DRY principle (logical unity)
-  // Note: Complete DRY is technically impossible due to VS Code l10n architecture
-  // (package.nls.json for contributes, bundle.l10n.json for code)
-  switch (field) {
-    case 'id':
-      return vs.l10n.t('Unique ID (alphanumeric, hyphens, underscores only; must not duplicate; required)');
-    case 'name':
-      return vs.l10n.t('Git user.name');
-    case 'email':
-      return vs.l10n.t('Git user.email');
-    case 'service':
-      return vs.l10n.t('e.g., GitHub, GitLab, Bitbucket');
-    case 'icon':
-      return vs.l10n.t('Emoji icon (e.g., 👤, 🏠)');
-    case 'description':
-      return vs.l10n.t('Short description');
-    case 'sshKeyPath':
-      return vs.l10n.t('Path to SSH private key (e.g., ~/.ssh/id_ed25519_work)');
-    case 'sshHost':
-      return vs.l10n.t('e.g., github-work, gitlab-personal');
-    case 'gpgKeyId':
-      return vs.l10n.t('GPG key ID for commit signing (e.g., ABCD1234EF567890)');
-    default:
-      return '';
-  }
-}
+/** Placeholder keys for each field (unified with package.nls.json for logical DRY) */
+const FIELD_PLACEHOLDER_KEYS: Partial<Record<keyof Identity, string>> = {
+  id: 'Unique ID (alphanumeric, hyphens, underscores only; must not duplicate; required)',
+  name: 'Git user.name',
+  email: 'Git user.email',
+  service: 'e.g., GitHub, GitLab, Bitbucket',
+  icon: 'Emoji icon (e.g., 👤, 🏠)',
+  description: 'Short description',
+  sshKeyPath: 'Path to SSH private key (e.g., ~/.ssh/id_ed25519_work)',
+  sshHost: 'e.g., github-work, gitlab-personal',
+  gpgKeyId: 'GPG key ID for commit signing (e.g., ABCD1234EF567890)',
+};
+
+/** Prompt keys for InputBox based on mode */
+const INPUT_BOX_PROMPT_KEYS = {
+  required: "Press 'Enter' to save",
+  optionalAdd: "Press 'Enter' to save (leave empty to skip)",
+  optionalEdit: "Press 'Enter' to save (leave empty to clear)",
+} as const;
 
 /**
- * Get prompt text for InputBox based on field optionality and mode.
- *
- * @param vs - VS Code API
- * @param isOptional - Whether the field is optional
- * @param mode - 'add' for new profile, 'edit' for editing existing
- * @returns Localized prompt text
+ * Get placeholder text for a field.
+ * Note: Complete DRY with package.nls.json is technically impossible due to VS Code l10n architecture.
  */
+function getPlaceholderForField(vs: VSCodeAPI, field: keyof Identity): string {
+  const key = FIELD_PLACEHOLDER_KEYS[field];
+  return key ? vs.l10n.t(key) : '';
+}
+
+/** Get prompt text for InputBox based on field optionality and mode. */
 function getInputBoxPrompt(vs: VSCodeAPI, isOptional: boolean, mode: 'add' | 'edit'): string {
-  if (!isOptional) {
-    return vs.l10n.t("Press 'Enter' to save");
-  }
-  return mode === 'add'
-    ? vs.l10n.t("Press 'Enter' to save (leave empty to skip)")
-    : vs.l10n.t("Press 'Enter' to save (leave empty to clear)");
+  if (!isOptional) return vs.l10n.t(INPUT_BOX_PROMPT_KEYS.required);
+  return vs.l10n.t(mode === 'add' ? INPUT_BOX_PROMPT_KEYS.optionalAdd : INPUT_BOX_PROMPT_KEYS.optionalEdit);
 }
 
 /**
