@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Japanese "New Profile" Label**:
   - Changed "新しいプロフィール" to "プロフィールを新規作成" for clarity
 - **Required Field Hint**:
-  - Updated "(fill in required fields)" to "(fill in fields marked with *)" (17 languages)
+  - Updated "(fill in required fields)" to "(fill in fields marked with \*)" (17 languages)
 - **Save Button Disabled State Icon**:
   - Changed disabled icon from `$(circle-slash)` to `$(loading~spin)` (less negative connotation)
 - **InputBox Field Descriptions**:

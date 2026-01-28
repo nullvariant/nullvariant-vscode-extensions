@@ -530,24 +530,26 @@ describe('identityManager E2E Test Suite', function () {
       assert.strictEqual(result?.name, 'My Name', 'Should preserve Name value');
     });
 
-    it('should NOT set "back" as field value when back button pressed', async () => {
+    it('should NOT set "back" as field value when back button pressed (required and optional fields)', async () => {
       // Bug: When back button is pressed, 'back' string was being set as the field value
       // Fix: handleAddFormFieldEdit() now checks `result !== 'back'` before updating state
+      // This test covers both required (name) and optional (service) fields
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },     // Select id field
-          { field: 'name' },   // Select name field
-          // After back from InputBox, QuickPick shows again
-          { field: 'name' },   // Select name field again
-          { field: 'email' },  // Select email field
-          { _isSaveButton: true }, // Click save
+          { field: 'id' },
+          { field: 'name' },      // Select required name field
+          { field: 'name' },      // Re-select after back
+          { field: 'email' },
+          { field: 'service' },   // Select optional service field
+          { _isSaveButton: true },
         ],
         inputBoxSelections: [
-          'test-id',        // Enter id value
-          INPUT_BOX_BACK,   // Press back at name input (BUG: this was setting 'back' as name)
-          'Valid Name',     // Enter name value (after back)
-          'test@test.com',  // Enter email value
+          'test-id',
+          INPUT_BOX_BACK,         // Press back at required name field
+          'Valid Name',           // Enter name value after back
+          'test@test.com',
+          INPUT_BOX_BACK,         // Press back at optional service field
         ],
       });
       _setMockVSCode(mockVSCode as never);
@@ -556,36 +558,7 @@ describe('identityManager E2E Test Suite', function () {
 
       assert.ok(result !== undefined, 'Should complete successfully');
       assert.strictEqual(result?.id, 'test-id', 'ID should be preserved');
-      assert.strictEqual(result?.name, 'Valid Name', 'Name should be the entered value, not "back"');
-      assert.notStrictEqual(result?.name, 'back', 'Name should NOT be "back" string');
-    });
-
-    it('should NOT set optional field to "back" when back pressed without entering value', async () => {
-      // When back is pressed at an optional field without entering any value,
-      // the field should remain undefined, not be set to 'back'
-      const mockVSCode = createMockVSCode({
-        identities: [],
-        quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },
-          { field: 'email' },
-          { field: 'service' }, // Select optional service field
-          // After back from InputBox, QuickPick shows again
-          { _isSaveButton: true }, // Save without entering service
-        ],
-        inputBoxSelections: [
-          'my-id',
-          'My Name',
-          'my@test.com',
-          INPUT_BOX_BACK,   // Press back at service input without entering value
-        ],
-      });
-      _setMockVSCode(mockVSCode as never);
-
-      const result = await showAddIdentityForm();
-
-      assert.ok(result !== undefined, 'Should complete successfully');
-      // service should be undefined (not set), NOT 'back'
+      assert.strictEqual(result?.name, 'Valid Name', 'Required field should have entered value, not "back"');
       assert.strictEqual(result?.service, undefined, 'Optional field should remain undefined after back');
     });
   });
