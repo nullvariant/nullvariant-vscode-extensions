@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.1] - 2026-01-28
+
+### Fixed
+
+- **Critical Bug: Back button inserting "back" string**:
+  - Fixed bug where pressing back button in InputBox set "back" as the field value
+  - Added `result !== 'back'` check in `handleAddFormFieldEdit()`
+- **SSH Key Path Browse Button UX**:
+  - Fixed file picker not transferring selected path due to InputBox losing focus
+  - Added `ignoreFocusOut: true` to prevent InputBox from closing during file selection
+  - Updated tooltip from "Browse..." to "Browse for SSH key path..." (17 languages)
+
+### Changed
+
+- **Japanese "New Profile" Label**:
+  - Changed "新しいプロフィール" to "プロフィールを新規作成" for clarity
+- **Required Field Hint**:
+  - Updated "(fill in required fields)" to "(fill in fields marked with *)" (17 languages)
+- **Save Button Disabled State Icon**:
+  - Changed disabled icon from `$(circle-slash)` to `$(loading~spin)` (less negative connotation)
+- **InputBox Field Descriptions**:
+  - Added concrete examples to id, sshKeyPath, gpgKeyId placeholders (17 languages)
+- **InputBox Prompt Wording**:
+  - Changed "Press 'Enter' to confirm" to "Press 'Enter' to save" (17 languages)
+  - Added skip/clear hints for optional fields
+
+### Removed
+
+- **Dead Code Cleanup**:
+  - Removed 7 obsolete translation keys from wizard-style UI (17 languages)
+
 ## [0.16.0] - 2026-01-27
 
 ### Changed
