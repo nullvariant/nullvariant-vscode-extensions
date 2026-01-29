@@ -12,7 +12,7 @@
   "config.category.logging": "Git ID Switcher: Debugging",
   "config.category.advanced": "Git ID Switcher: Other",
   "config.identities": "List of Git identities to switch between",
-  "config.identities.markdown": "List of Git profiles. Each identity can have:\n- `id`: Unique ID (must not duplicate, required)\n- `name`: Git user.name (required)\n- `service`: Git hosting service (e.g., GitHub, GitLab)\n- `email`: Git user.email (required)\n- `icon`: Emoji to display in status bar (e.g., 🏠, 💼)\n- `description`: Note for this identity (e.g., Work, Personal)\n- `sshKeyPath`: Path to SSH private key\n- `sshHost`: SSH config host alias (for multi-account setups)\n- `gpgKeyId`: GPG key ID for commit signing",
+  "config.identities.markdown": "List of Git profiles. Each identity can have:\n- `id`: Unique ID (alphanumeric, hyphens, underscores only; must not duplicate; required)\n- `name`: Git user.name (required)\n- `service`: Git hosting service (e.g., GitHub, GitLab, Bitbucket)\n- `email`: Git user.email (required)\n- `icon`: Emoji to display in status bar (e.g., 🏠, 💼)\n- `description`: Note for this identity (e.g., Work, Personal)\n- `sshKeyPath`: Path to SSH private key (e.g., ~/.ssh/id_ed25519_work)\n- `sshHost`: SSH config host alias (e.g., github-work, gitlab-personal)\n- `gpgKeyId`: GPG key ID for commit signing (e.g., ABCD1234EF567890)",
   "config.identities.id": "Unique ID (alphanumeric, hyphens, underscores only; must not duplicate; required)",
   "config.identities.name": "Git user.name (required)",
   "config.identities.service": "Git hosting service (e.g., GitHub, GitLab, Bitbucket)",

@@ -12,7 +12,7 @@
   "config.category.logging": "Git ID Switcher: 디버깅",
   "config.category.advanced": "Git ID Switcher: 기타",
   "config.identities": "전환할 Git ID 목록",
-  "config.identities.markdown": "Git ID(프로필) 목록. 각 ID에 다음을 설정할 수 있습니다:\n- `id`: 고유 식별자 (중복 불가・필수)\n- `name`: Git user.name (필수)\n- `service`: Git 호스팅 서비스 (예: GitHub, GitLab 등)\n- `email`: Git user.email (필수)\n- `icon`: 상태 표시줄에 표시할 이모지 (예: 🏠, 💼)\n- `description`: 이 ID의 메모 (예: 회사용, 개인용)\n- `sshKeyPath`: SSH 개인 키 경로\n- `sshHost`: SSH 구성 호스트 별칭 (다중 계정 설정용)\n- `gpgKeyId`: 커밋 서명을 위한 GPG 키 ID",
+  "config.identities.markdown": "Git ID(프로필) 목록. 각 ID에 다음을 설정할 수 있습니다:\n- `id`: 고유 식별자 (영숫자, 하이픈, 밑줄만 가능; 중복 불가; 필수)\n- `name`: Git user.name (필수)\n- `service`: Git 호스팅 서비스 (예: GitHub, GitLab, Bitbucket)\n- `email`: Git user.email (필수)\n- `icon`: 상태 표시줄에 표시할 이모지 (예: 🏠, 💼)\n- `description`: 이 ID의 메모 (예: 회사용, 개인용)\n- `sshKeyPath`: SSH 개인 키 경로 (예: ~/.ssh/id_ed25519_work)\n- `sshHost`: SSH 구성 호스트 별칭 (예: github-work, gitlab-personal)\n- `gpgKeyId`: 커밋 서명을 위한 GPG 키 ID (예: ABCD1234EF567890)",
   "config.identities.id": "고유 식별자 (영숫자, 하이픈, 밑줄만 가능; 중복 불가; 필수)",
   "config.identities.name": "Git user.name (필수)",
   "config.identities.service": "Git 호스팅 서비스 (예: GitHub, GitLab, Bitbucket)",

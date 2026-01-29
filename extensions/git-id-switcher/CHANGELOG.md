@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.5] - 2026-01-29
+
+### Fixed
+
+- **Unified `config.identities.markdown` descriptions across all 17 languages**:
+  - Aligned markdown overview descriptions with individual field descriptions (the more specific variants)
+  - Fixed 5 fields per language: `id` (added character restrictions), `service` (added Bitbucket), `sshKeyPath` (added example), `sshHost` (replaced explanation with examples), `gpgKeyId` (added example)
+  - Ensures VS Code Settings UI overview matches InputBox placeholders exactly
+
 ## [0.16.4] - 2026-01-29
 
 ### Added
