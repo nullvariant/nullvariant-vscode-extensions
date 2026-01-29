@@ -664,7 +664,7 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       assert.ok(buttons[0] === (mockVSCode as never as { QuickInputButtons: { Back: unknown } }).QuickInputButtons.Back, 'First button should be Back');
     });
 
-    it('should have inline edit and delete buttons on each identity item', async () => {
+    it('should have inline move up, move down, edit, and delete buttons on each identity item', async () => {
       const mockVSCode = createManageMockVSCode({
         identities: [TEST_IDENTITIES.work],
         triggerAction: 'hide',
@@ -678,7 +678,7 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
 
       assert.ok(identityItem, 'Should have identity item');
       assert.ok(identityItem?.buttons, 'Identity item should have buttons');
-      assert.strictEqual(identityItem?.buttons?.length, 2, 'Should have 2 buttons (edit, delete)');
+      assert.strictEqual(identityItem?.buttons?.length, 4, 'Should have 4 buttons (move up, move down, edit, delete)');
     });
 
     it('should have add button in title bar', async () => {

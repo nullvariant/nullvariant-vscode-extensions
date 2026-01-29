@@ -43,7 +43,9 @@ export type ManageIdentitiesResult =
   | { action: 'back' }
   | { action: 'add' }
   | { action: 'edit'; identity: Identity; index: number }
-  | { action: 'delete'; identity: Identity; index: number };
+  | { action: 'delete'; identity: Identity; index: number }
+  | { action: 'moveUp'; identity: Identity; index: number }
+  | { action: 'moveDown'; identity: Identity; index: number };
 
 /**
  * Create quick pick items from identities
@@ -263,7 +265,7 @@ export async function showDeleteIdentityQuickPick(
 /**
  * Show manage identities quick pick
  *
- * Displays a list of identities with inline edit/delete buttons.
+ * Displays a list of identities with inline move up/down, edit, and delete buttons.
  * Uses createQuickPick for item button support.
  *
  * @param identities - List of configured identities
@@ -281,6 +283,18 @@ export async function showManageIdentitiesQuickPick(
 
   // Build items
   const items: ManageIdentityQuickPickItem[] = [];
+
+  // Move up button (arrow-up icon)
+  const moveUpButton: vscodeTypes.QuickInputButton = {
+    iconPath: new vs.ThemeIcon('arrow-up'),
+    tooltip: vs.l10n.t('Move up'),
+  };
+
+  // Move down button (arrow-down icon)
+  const moveDownButton: vscodeTypes.QuickInputButton = {
+    iconPath: new vs.ThemeIcon('arrow-down'),
+    tooltip: vs.l10n.t('Move down'),
+  };
 
   // Edit button (pencil icon)
   const editButton: vscodeTypes.QuickInputButton = {
@@ -314,7 +328,7 @@ export async function showManageIdentitiesQuickPick(
         detail: getIdentityDetail(identity),
         identity,
         index,
-        buttons: [editButton, deleteButton],
+        buttons: [moveUpButton, moveDownButton, editButton, deleteButton],
       });
     });
   }
@@ -363,7 +377,7 @@ export async function showManageIdentitiesQuickPick(
       }
     });
 
-    // Handle inline item buttons (edit/delete)
+    // Handle inline item buttons (move up/down, edit, delete)
     quickPick.onDidTriggerItemButton(e => {
       const item = e.item;
       if (!item.identity || item.index === undefined) {
@@ -373,7 +387,11 @@ export async function showManageIdentitiesQuickPick(
       resolved = true;
       quickPick.hide();
 
-      if (e.button === editButton) {
+      if (e.button === moveUpButton) {
+        resolve({ action: 'moveUp', identity: item.identity, index: item.index });
+      } else if (e.button === moveDownButton) {
+        resolve({ action: 'moveDown', identity: item.identity, index: item.index });
+      } else if (e.button === editButton) {
         resolve({ action: 'edit', identity: item.identity, index: item.index });
       } else if (e.button === deleteButton) {
         resolve({ action: 'delete', identity: item.identity, index: item.index });

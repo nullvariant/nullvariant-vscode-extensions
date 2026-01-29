@@ -5,7 +5,7 @@
  * - Selecting identity
  * - Showing current identity
  * - Welcome notification
- * - Managing identities (Add/Edit/Delete)
+ * - Managing identities (Add/Edit/Delete/Reorder)
  *
  * @module commands/handlers
  */
@@ -17,6 +17,7 @@ import {
   getIdentityLabel,
   getIdentitiesWithValidation,
   deleteIdentityFromConfig,
+  moveIdentityInConfig,
 } from '../identity/identity';
 import {
   showIdentityQuickPick,
@@ -147,6 +148,34 @@ async function handleManageDelete(
 }
 
 /**
+ * Handle move action in manage identities loop.
+ * Moves an identity up or down in the list.
+ *
+ * @param identity - The identity to move
+ * @param index - Current index of the identity
+ * @param direction - Direction to move ('up' or 'down')
+ * @returns New lastIndex after move operation
+ */
+async function handleManageMove(
+  identity: Identity,
+  index: number,
+  direction: 'up' | 'down'
+): Promise<number> {
+  try {
+    const moved = await moveIdentityInConfig(identity.id, direction);
+    if (moved) {
+      return direction === 'up' ? index - 1 : index + 1;
+    }
+    return index;
+  } catch (error) {
+    // SECURITY: Use getUserSafeMessage to prevent information leakage
+    const safeMessage = getUserSafeMessage(error);
+    showErrorNotification(vscode.l10n.t('Failed to reorder identity: {0}', safeMessage));
+    return index;
+  }
+}
+
+/**
  * Handle the manage identities submenu with loop structure.
  *
  * Displays the manage identities UI in a loop, allowing multiple operations
@@ -188,6 +217,12 @@ async function handleManageIdentities(
         break;
       case 'delete':
         lastIndex = await handleManageDelete(result.identity, result.index, context, statusBar);
+        break;
+      case 'moveUp':
+        lastIndex = await handleManageMove(result.identity, result.index, 'up');
+        break;
+      case 'moveDown':
+        lastIndex = await handleManageMove(result.identity, result.index, 'down');
         break;
     }
   }
