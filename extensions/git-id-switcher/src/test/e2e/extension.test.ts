@@ -24,6 +24,7 @@ const EXTENSION_COMMANDS = [
   'git-id-switcher.selectIdentity',
   'git-id-switcher.showCurrentIdentity',
   'git-id-switcher.showDocumentation',
+  'git-id-switcher.deleteIdentity',
 ] as const;
 
 const VALID_LOG_LEVELS = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'SECURITY'] as const;

@@ -109,5 +109,8 @@
   "Select SSH Key": "SSH kulcs kiválasztása",
   "Press 'Enter' to save": "Mentéshez nyomja meg az 'Enter'-t",
   "Press 'Enter' to save (leave empty to skip)": "Mentéshez nyomja meg az 'Enter'-t (hagyja üresen a kihagyáshoz)",
-  "Press 'Enter' to save (leave empty to clear)": "Mentéshez nyomja meg az 'Enter'-t (hagyja üresen a törléshez)"
+  "Press 'Enter' to save (leave empty to clear)": "Mentéshez nyomja meg az 'Enter'-t (hagyja üresen a törléshez)",
+  "Move up": "Mozgatás felfelé",
+  "Move down": "Mozgatás lefelé",
+  "Failed to reorder identity: {0}": "Nem sikerült átrendezni az identitást: {0}"
 }

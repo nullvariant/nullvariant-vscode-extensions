@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.4] - 2026-01-29
+
+### Added
+
+- **Profile reorder (Move up / Move down) feature**:
+  - Added `moveIdentityInConfig()` function to reorder identity profiles
+  - Added inline move up / move down buttons in Manage Profiles UI
+  - Added `handleManageMove()` command handler with focus management
+  - Boundary handling: first item cannot move up, last item cannot move down
+  - Security: ID format validation and audit logging for config changes
+  - i18n: Move up / Move down / Failed to reorder tooltips (17 languages)
+  - Allow ID editing when only one profile exists (`EditableFieldOrId` type)
+  - Fix Codicon display in Edit Identity title
+
+### Tests
+
+- Added 9 E2E tests for `moveIdentityInConfig()`: normal move, boundary, single-element, error, and persistence
+- Added 2 E2E tests for moveUp/moveDown button actions in `showManageIdentitiesQuickPick()`
+
 ## [0.16.3] - 2026-01-28
 
 ### Changed

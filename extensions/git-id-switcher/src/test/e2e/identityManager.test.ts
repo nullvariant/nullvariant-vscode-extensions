@@ -41,7 +41,7 @@ import * as assert from 'node:assert';
 import * as path from 'node:path';
 import { showEditProfileFlow, showAddIdentityForm } from '../../ui/identityManager';
 import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
-import { MAX_IDENTITIES, MAX_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_SSH_HOST_LENGTH } from '../../core/constants';
+import { MAX_IDENTITIES, MAX_ID_LENGTH, MAX_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_SSH_HOST_LENGTH } from '../../core/constants';
 import type { Identity } from '../../identity/identity';
 
 /**
@@ -1248,12 +1248,12 @@ describe('identityManager E2E Test Suite', function () {
       });
     });
 
-    describe('ID Field Non-Editable', () => {
-      it('should have ID field with field: null', async () => {
+    describe('ID Field Non-Editable (Multiple Profiles)', () => {
+      it('should have ID field with field: null when 2+ profiles exist', async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
-          identities: [TEST_IDENTITIES.work],
+          identities: [TEST_IDENTITIES.work, TEST_IDENTITIES.personal],
           quickPickSelections: [undefined],
           onQuickPickCreated: (quickPick) => {
             capturedItems = quickPick.items;
@@ -1273,11 +1273,11 @@ describe('identityManager E2E Test Suite', function () {
         assert.strictEqual((idItem as { field: unknown }).field, null, 'ID field should be null');
       });
 
-      it('should have ID field with _isDisabled: true', async () => {
+      it('should have ID field with _isDisabled: true when 2+ profiles exist', async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
-          identities: [TEST_IDENTITIES.work],
+          identities: [TEST_IDENTITIES.work, TEST_IDENTITIES.personal],
           quickPickSelections: [undefined],
           onQuickPickCreated: (quickPick) => {
             capturedItems = quickPick.items;
@@ -1296,11 +1296,11 @@ describe('identityManager E2E Test Suite', function () {
         assert.strictEqual((idItem as { _isDisabled?: boolean })._isDisabled, true, 'ID field should be disabled');
       });
 
-      it('should have ID field with $(lock) icon', async () => {
+      it('should have ID field with $(lock) icon when 2+ profiles exist', async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
-          identities: [TEST_IDENTITIES.work],
+          identities: [TEST_IDENTITIES.work, TEST_IDENTITIES.personal],
           quickPickSelections: [undefined],
           onQuickPickCreated: (quickPick) => {
             capturedItems = quickPick.items;
@@ -1322,7 +1322,7 @@ describe('identityManager E2E Test Suite', function () {
         let quickPickShowCount = 0;
 
         const mockVSCode = createMockVSCode({
-          identities: [TEST_IDENTITIES.work],
+          identities: [TEST_IDENTITIES.work, TEST_IDENTITIES.personal],
           quickPickSelections: [
             { field: null }, // Click ID field (disabled)
             undefined,       // Cancel after
@@ -1341,6 +1341,174 @@ describe('identityManager E2E Test Suite', function () {
         // QuickPick should be shown at least once
         assert.ok(quickPickShowCount >= 1, 'QuickPick should be shown');
       });
+    });
+
+    describe('ID Field Editable (Single Profile)', () => {
+      it('should have ID field with field: "id" when only 1 profile exists', async () => {
+        let capturedItems: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [undefined],
+          onQuickPickCreated: (quickPick) => {
+            capturedItems = quickPick.items;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        const idItem = capturedItems.find((i: unknown) => {
+          if (typeof i !== 'object' || i === null) return false;
+          const item = i as { field?: string | null };
+          return item.field === 'id';
+        });
+        assert.ok(idItem, 'ID item with field: "id" should be present');
+        assert.strictEqual((idItem as { _isDisabled?: boolean })._isDisabled, undefined, 'ID field should not be disabled');
+      });
+
+      it('should have ID field with $(pencil) icon when only 1 profile exists', async () => {
+        let capturedItems: unknown[] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [undefined],
+          onQuickPickCreated: (quickPick) => {
+            capturedItems = quickPick.items;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        const idItem = capturedItems.find((i: unknown) => {
+          if (typeof i !== 'object' || i === null) return false;
+          const item = i as { label?: string };
+          return item.label?.includes('$(pencil)');
+        });
+        assert.ok(idItem, 'ID item with $(pencil) icon should be present when single profile');
+      });
+
+      it('should show $(check) Saved for ID field after saving', async () => {
+        const capturedItemsHistory: unknown[][] = [];
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'id' },  // Select ID field
+            undefined,        // Cancel after returning
+          ],
+          inputBoxSelections: ['new-id'],
+          onQuickPickCreated: (quickPick) => {
+            capturedItemsHistory.push([...quickPick.items]);
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        // After saving, the ID field should show "Saved" feedback
+        if (capturedItemsHistory.length >= 2) {
+          const itemsAfterSave = capturedItemsHistory[1];
+          const idItem = itemsAfterSave.find((i: unknown) => {
+            if (typeof i !== 'object' || i === null) return false;
+            return (i as { field?: string | null }).field === 'id';
+          });
+          if (idItem) {
+            const description = (idItem as { description?: string }).description;
+            assert.ok(description?.includes('Saved'), `ID field should show 'Saved' feedback, got: ${description}`);
+          }
+        }
+      });
+
+      it('should accept valid new ID and save successfully', async () => {
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'id' },
+            undefined,
+          ],
+          inputBoxSelections: ['my-new-id'],
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        assert.strictEqual(result, true, 'Editing ID with valid value should succeed');
+        const configUpdates = mockVSCode._getConfigUpdateCalls();
+        assert.ok(configUpdates.length > 0, 'Config should be updated');
+      });
+
+      it('should reject empty ID input', async () => {
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'id' },
+            undefined,
+          ],
+          inputBoxSelections: [''], // Empty input
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        assert.strictEqual(result, false, 'Empty ID should be rejected');
+      });
+
+      it('should reject ID with invalid characters (@#$)', async () => {
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'id' },
+            undefined,
+          ],
+          inputBoxSelections: ['invalid@#$'],
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        assert.strictEqual(result, false, 'ID with invalid characters should be rejected');
+      });
+
+      it('should reject ID exceeding max length (65 chars)', async () => {
+        const tooLong = 'a'.repeat(MAX_ID_LENGTH + 1); // 65 chars
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'id' },
+            undefined,
+          ],
+          inputBoxSelections: [tooLong],
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        assert.strictEqual(result, false, 'ID exceeding max length should be rejected');
+      });
+
+      it('should allow current ID value (self-exclusion in duplicate check)', async () => {
+        // When editing ID, entering the same ID as current should be allowed
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'id' },
+            undefined,
+          ],
+          inputBoxSelections: ['work'], // Same as current ID
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        assert.strictEqual(result, true, 'Current ID value should be allowed (self-exclusion)');
+      });
+
+      // Note: QuickPick title update after ID change cannot be tested with current mock
+      // infrastructure because mock getConfiguration() returns initial identities data.
+      // In real VS Code, updateIdentityInConfig writes to actual config, so refreshIdentity()
+      // correctly finds the identity with the new ID. This is verified by manual testing.
     });
 
     describe('Edit Loop Continuation', () => {

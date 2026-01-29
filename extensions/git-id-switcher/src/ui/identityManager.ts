@@ -13,6 +13,7 @@
 import { getVSCode } from '../core/vscodeLoader';
 import {
   Identity,
+  getIdentities,
   getIdentitiesWithValidation,
   getIdentityLabel,
   getIdentityDetail,
@@ -66,6 +67,9 @@ interface IdentityQuickPickItem {
 
 /** Editable fields (excludes 'id' which is immutable) */
 type EditableField = Exclude<keyof Identity, 'id'>;
+
+/** EditableField + 'id' (used for ID editing when only one profile exists) */
+type EditableFieldOrId = EditableField | 'id';
 
 /** Optional fields that can be cleared */
 const OPTIONAL_FIELDS: ReadonlySet<keyof Identity> = new Set([
@@ -236,13 +240,15 @@ function validateSshHostInput(vs: VSCodeAPI, value: string): string | null {
  * @param field - Field being edited
  * @param value - Input value
  * @param isOptional - Whether the field is optional
+ * @param currentIdentityId - Current identity ID (for self-exclusion in duplicate check when editing 'id')
  * @returns Error message or null if valid
  */
 function validateFieldInput(
   vs: VSCodeAPI,
   field: keyof Identity,
   value: string,
-  isOptional: boolean
+  isOptional: boolean,
+  currentIdentityId?: string
 ): string | null {
   // Optional fields can be empty
   if (isOptional && value.trim() === '') {
@@ -250,6 +256,15 @@ function validateFieldInput(
   }
 
   switch (field) {
+    case 'id': {
+      const identities = getIdentities();
+      const existingIds = new Set(
+        identities
+          .filter(i => i.id !== currentIdentityId)
+          .map(i => i.id)
+      );
+      return validateIdInput(vs, value, existingIds);
+    }
     case 'name':
       return validateNameInput(vs, value);
     case 'email':
@@ -314,18 +329,58 @@ function getInputBoxPrompt(vs: VSCodeAPI, isOptional: boolean, mode: 'add' | 'ed
 }
 
 /**
+ * Build the ID field item based on identity count.
+ * Single profile: ID is editable (initial setup scenario).
+ * Multiple profiles: ID is locked (reference integrity).
+ *
+ * @param vs - VS Code API
+ * @param meta - Field metadata for ID
+ * @param displayValue - Formatted display value
+ * @param savedField - Field that was just saved (for visual feedback)
+ * @param identityCount - Total number of identities
+ * @returns Field item for the ID field
+ */
+function buildIdFieldItem(
+  vs: VSCodeAPI,
+  meta: FieldMetadata,
+  displayValue: string,
+  savedField: keyof Identity | undefined,
+  identityCount: number | undefined
+): FieldQuickPickItem {
+  if (identityCount === 1) {
+    const description = savedField === meta.key
+      ? `$(check) ${vs.l10n.t('Saved')}`
+      : displayValue;
+    return {
+      label: `$(pencil) ${vs.l10n.t(meta.labelKey)}`,
+      description,
+      field: 'id',
+    };
+  }
+  return {
+    label: `$(${meta.icon}) ${vs.l10n.t(meta.labelKey)}`,
+    description: displayValue,
+    detail: vs.l10n.t('(cannot be changed)'),
+    field: null,
+    _isDisabled: true,
+  };
+}
+
+/**
  * Build field items for edit wizard using FIELD_METADATA.
  * Unified with Step 6 (showAddIdentityForm) for consistent UI.
  *
  * @param vs - VS Code API
  * @param identity - Identity being edited
  * @param savedField - Field that was just saved (for visual feedback)
+ * @param identityCount - Total number of identities (1 = allow ID editing)
  * @returns Array of field items for QuickPick
  */
 function buildFieldItems(
   vs: VSCodeAPI,
   identity: Identity,
-  savedField?: keyof Identity
+  savedField?: keyof Identity,
+  identityCount?: number
 ): FieldQuickPickItem[] {
   const items: FieldQuickPickItem[] = [];
 
@@ -334,16 +389,8 @@ function buildFieldItems(
     const hasValue = value !== undefined && String(value).trim() !== '';
     const displayValue = hasValue ? String(value) : vs.l10n.t('(none)');
 
-    // ID field is not editable (locked)
-    // Using $(lock) icon in label (from FIELD_METADATA), value in description
     if (meta.key === 'id') {
-      items.push({
-        label: `$(${meta.icon}) ${vs.l10n.t(meta.labelKey)}`,
-        description: displayValue,
-        detail: vs.l10n.t('(cannot be changed)'),
-        field: null,
-        _isDisabled: true,
-      });
+      items.push(buildIdFieldItem(vs, meta, displayValue, savedField, identityCount));
       continue;
     }
 
@@ -939,12 +986,15 @@ async function showFieldSelectionQuickPick(
   vs: VSCodeAPI,
   identity: Identity,
   savedField?: keyof Identity
-): Promise<{ item: FieldQuickPickItem; field: EditableField } | 'back' | undefined> {
+): Promise<{ item: FieldQuickPickItem; field: EditableFieldOrId } | 'back' | undefined> {
+  const identities = getIdentities();
+  const identityCount = identities.length;
+
   const quickPick = vs.window.createQuickPick<FieldQuickPickItem>();
   quickPick.title = vs.l10n.t('Edit Identity: {0}', identity.id);
   quickPick.placeholder = vs.l10n.t('Filter...');
   quickPick.buttons = [vs.QuickInputButtons.Back];
-  quickPick.items = buildFieldItems(vs, identity, savedField);
+  quickPick.items = buildFieldItems(vs, identity, savedField, identityCount);
 
   try {
     quickPick.show();
@@ -955,14 +1005,14 @@ async function showFieldSelectionQuickPick(
       return selection;
     }
 
-    // Skip disabled items (ID field)
+    // Skip disabled items (ID field locked when multiple profiles)
     if (selection._isDisabled || selection.field === null) {
       return undefined;
     }
 
     return {
       item: selection,
-      field: selection.field as EditableField,
+      field: selection.field as EditableFieldOrId,
     };
   } finally {
     quickPick.dispose();
@@ -974,26 +1024,26 @@ async function showFieldSelectionQuickPick(
  * Uses showFieldInputBox for back button and file picker support.
  *
  * @param vs - VS Code API
- * @param fieldItem - Field being edited
  * @param field - Field name (guaranteed non-null)
  * @param currentValue - Current field value
+ * @param currentIdentityId - Current identity ID (for ID self-exclusion in duplicate check)
  * @returns New value, 'back' if back pressed, undefined if cancelled
  */
 async function promptFieldValueInput(
   vs: VSCodeAPI,
-  fieldItem: FieldQuickPickItem,
-  field: EditableField,
-  currentValue: string
+  field: EditableFieldOrId,
+  currentValue: string,
+  currentIdentityId?: string
 ): Promise<QuickInputResult<string>> {
   const optional = isOptionalField(field);
 
   return showFieldInputBox(vs, {
-    title: vs.l10n.t('Edit Identity: {0}', fieldItem.label),
+    title: vs.l10n.t('Edit Identity: {0}', vs.l10n.t(getFieldMetadata(field)?.labelKey ?? field)),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, field),
     prompt: getInputBoxPrompt(vs, optional, 'edit'),
     field,
-    validateInput: (value: string) => validateFieldInput(vs, field, value, optional),
+    validateInput: (value: string) => validateFieldInput(vs, field, value, optional, currentIdentityId),
   });
 }
 
@@ -1027,11 +1077,11 @@ function refreshIdentity(identityId: string): Identity | undefined {
 async function processFieldValueInput(
   vs: VSCodeAPI,
   state: EditLoopState,
-  selection: { item: FieldQuickPickItem; field: EditableField },
+  selection: { field: EditableFieldOrId },
   inputValue: string
 ): Promise<'saved' | 'back' | 'error'> {
-  const { item, field } = selection;
-  const result = await promptFieldValueInput(vs, item, field, inputValue);
+  const { field } = selection;
+  const result = await promptFieldValueInput(vs, field, inputValue, state.identity.id);
 
   // 'back' or undefined: return to field selection
   if (result === undefined || result === 'back') {
@@ -1048,7 +1098,9 @@ async function processFieldValueInput(
 
   state.hasUpdated = true;
   state.savedField = field;
-  const refreshed = refreshIdentity(state.identity.id);
+  // ID change: refresh with new ID (old ID no longer exists in config)
+  const refreshId = (field === 'id' && finalValue) ? finalValue : state.identity.id;
+  const refreshed = refreshIdentity(refreshId);
   if (refreshed) {
     state.identity = refreshed;
   }

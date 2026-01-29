@@ -705,3 +705,65 @@ export async function updateIdentityInConfig(
   // Log security event
   securityLogger.logConfigChange('identities');
 }
+
+/**
+ * Move an identity up or down in the configuration array.
+ *
+ * @param id - The identity ID to move (must pass isValidIdentityId validation)
+ * @param direction - 'up' to move towards index 0, 'down' to move towards end
+ * @returns Promise that resolves to true if moved, false if at boundary
+ * @throws Error if identity ID format is invalid
+ * @throws Error if identity with given ID is not found
+ * @throws Error if configuration update fails
+ * @throws Error if VS Code API is not available
+ *
+ * @example
+ * // Move identity up (towards beginning of list)
+ * const moved = await moveIdentityInConfig('work-github', 'up');
+ * if (!moved) {
+ *   // Identity was already at the top
+ * }
+ */
+export async function moveIdentityInConfig(
+  id: string,
+  direction: 'up' | 'down'
+): Promise<boolean> {
+  const vs = getVSCode();
+  if (!vs) {
+    throw new Error('VS Code API not available');
+  }
+
+  // Validate ID format
+  if (!isValidIdentityId(id, MAX_ID_LENGTH)) {
+    throw new Error(`Invalid identity ID format: ${id}`);
+  }
+
+  const config = vs.workspace.getConfiguration('gitIdSwitcher');
+  const identities = [...(config.get<Identity[]>('identities') ?? [])];
+
+  // Find the identity to move
+  const currentIndex = identities.findIndex(i => i.id === id);
+  if (currentIndex === -1) {
+    throw new Error(`Identity not found: ${id}`);
+  }
+
+  // Calculate new index
+  const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+  // Boundary check: return false if cannot move
+  if (newIndex < 0 || newIndex >= identities.length) {
+    return false;
+  }
+
+  // Swap identities
+  [identities[currentIndex], identities[newIndex]] =
+    [identities[newIndex], identities[currentIndex]];
+
+  // Update configuration
+  await config.update('identities', identities, vs.ConfigurationTarget.Global);
+
+  // Log security event
+  securityLogger.logConfigChange('identities');
+
+  return true;
+}

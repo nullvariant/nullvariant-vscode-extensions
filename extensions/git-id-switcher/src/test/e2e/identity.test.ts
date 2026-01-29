@@ -15,8 +15,9 @@
  * - deleteIdentityFromConfig: deletion and validation tests
  * - addIdentityToConfig: security validation and business logic tests
  * - updateIdentityInConfig: security validation and business logic tests
+ * - moveIdentityInConfig: reorder, boundary, single-element, and persistence tests
  *
- * Test Count: 48 tests covering identity.ts related functionality
+ * Test Count: 57 tests covering identity.ts related functionality
  *
  * Note: These tests use the real VS Code API (no mocks) to ensure actual behavior.
  * Each test restores original configuration values after execution.
@@ -28,6 +29,7 @@ import {
   deleteIdentityFromConfig,
   addIdentityToConfig,
   updateIdentityInConfig,
+  moveIdentityInConfig,
 } from '../../identity/identity';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';
@@ -1229,6 +1231,264 @@ describe('Identity E2E Test Suite', function () {
         // Restore original state
         await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
       });
+    });
+  });
+
+  // ===========================================================================
+  // 5.7.14-18 moveIdentityInConfig() Tests
+  // ===========================================================================
+
+  describe('moveIdentityInConfig', () => {
+    it('should move identity down successfully', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set up three identities
+      const testIdentities: TestIdentity[] = [
+        { id: 'move-a', name: 'User A', email: 'a@example.com' },
+        { id: 'move-b', name: 'User B', email: 'b@example.com' },
+        { id: 'move-c', name: 'User C', email: 'c@example.com' },
+      ];
+      await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
+
+      // Move first identity down
+      const result = await moveIdentityInConfig('move-a', 'down');
+
+      assert.strictEqual(result, true, 'Should return true for successful move');
+
+      // Verify new order: B, A, C
+      const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const afterMove = freshConfig.get<TestIdentity[]>('identities', []);
+      assert.strictEqual(afterMove[0].id, 'move-b', 'First should be B');
+      assert.strictEqual(afterMove[1].id, 'move-a', 'Second should be A');
+      assert.strictEqual(afterMove[2].id, 'move-c', 'Third should be C');
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should move identity up successfully', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set up three identities
+      const testIdentities: TestIdentity[] = [
+        { id: 'move-a', name: 'User A', email: 'a@example.com' },
+        { id: 'move-b', name: 'User B', email: 'b@example.com' },
+        { id: 'move-c', name: 'User C', email: 'c@example.com' },
+      ];
+      await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
+
+      // Move last identity up
+      const result = await moveIdentityInConfig('move-c', 'up');
+
+      assert.strictEqual(result, true, 'Should return true for successful move');
+
+      // Verify new order: A, C, B
+      const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const afterMove = freshConfig.get<TestIdentity[]>('identities', []);
+      assert.strictEqual(afterMove[0].id, 'move-a', 'First should be A');
+      assert.strictEqual(afterMove[1].id, 'move-c', 'Second should be C');
+      assert.strictEqual(afterMove[2].id, 'move-b', 'Third should be B');
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should return false when moving first item up (boundary)', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set up two identities
+      const testIdentities: TestIdentity[] = [
+        { id: 'first-item', name: 'First User', email: 'first@example.com' },
+        { id: 'second-item', name: 'Second User', email: 'second@example.com' },
+      ];
+      await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
+
+      // Try to move first item up
+      const result = await moveIdentityInConfig('first-item', 'up');
+
+      assert.strictEqual(result, false, 'Should return false for boundary move');
+
+      // Verify order unchanged
+      const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const afterMove = freshConfig.get<TestIdentity[]>('identities', []);
+      assert.strictEqual(afterMove[0].id, 'first-item', 'First should remain first');
+      assert.strictEqual(afterMove[1].id, 'second-item', 'Second should remain second');
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should return false when moving last item down (boundary)', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set up two identities
+      const testIdentities: TestIdentity[] = [
+        { id: 'first-item', name: 'First User', email: 'first@example.com' },
+        { id: 'last-item', name: 'Last User', email: 'last@example.com' },
+      ];
+      await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
+
+      // Try to move last item down
+      const result = await moveIdentityInConfig('last-item', 'down');
+
+      assert.strictEqual(result, false, 'Should return false for boundary move');
+
+      // Verify order unchanged
+      const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const afterMove = freshConfig.get<TestIdentity[]>('identities', []);
+      assert.strictEqual(afterMove[0].id, 'first-item', 'First should remain first');
+      assert.strictEqual(afterMove[1].id, 'last-item', 'Last should remain last');
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should return false when array has single element (move up)', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set up single identity
+      const testIdentities: TestIdentity[] = [
+        { id: 'only-item', name: 'Only User', email: 'only@example.com' },
+      ];
+      await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
+
+      // Try to move single item up
+      const result = await moveIdentityInConfig('only-item', 'up');
+
+      assert.strictEqual(result, false, 'Should return false for single element move up');
+
+      // Verify unchanged
+      const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const afterMove = freshConfig.get<TestIdentity[]>('identities', []);
+      assert.strictEqual(afterMove.length, 1, 'Should still have 1 identity');
+      assert.strictEqual(afterMove[0].id, 'only-item', 'Identity should be unchanged');
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should return false when array has single element (move down)', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set up single identity
+      const testIdentities: TestIdentity[] = [
+        { id: 'only-item', name: 'Only User', email: 'only@example.com' },
+      ];
+      await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
+
+      // Try to move single item down
+      const result = await moveIdentityInConfig('only-item', 'down');
+
+      assert.strictEqual(result, false, 'Should return false for single element move down');
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should throw error for non-existent identity ID', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set up known state
+      const testIdentities: TestIdentity[] = [
+        { id: 'existing-move', name: 'Existing User', email: 'existing@example.com' },
+      ];
+      await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
+
+      try {
+        await moveIdentityInConfig('non-existent-id', 'up');
+        assert.fail('Should have thrown an error');
+      } catch (error) {
+        assert.ok(error instanceof Error, 'Should throw an Error');
+        assert.ok(
+          error.message.includes('not found'),
+          `Error message should indicate identity not found, got: ${error.message}`
+        );
+      }
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
+    });
+
+    it('should throw error for invalid ID format', async () => {
+      const invalidIds = [
+        '',
+        'id with spaces',
+        'id@with@symbols',
+        'id/with/slashes',
+      ];
+
+      for (const invalidId of invalidIds) {
+        try {
+          await moveIdentityInConfig(invalidId, 'up');
+          assert.fail(`Should have thrown an error for invalid ID: ${invalidId}`);
+        } catch (error) {
+          assert.ok(error instanceof Error, 'Should throw an Error');
+          assert.ok(
+            error.message.includes('Invalid'),
+            `Error message should indicate invalid ID format for "${invalidId}", got: ${error.message}`
+          );
+        }
+      }
+    });
+
+    it('should persist reorder to VS Code configuration (E2E)', async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const currentIdentities = config.get<TestIdentity[]>('identities', []);
+
+      // Set up identities with all fields to verify full data preservation
+      const testIdentities: TestIdentity[] = [
+        {
+          id: 'persist-a',
+          name: 'User A',
+          email: 'a@example.com',
+          icon: '🅰️',
+          service: 'GitHub',
+        },
+        {
+          id: 'persist-b',
+          name: 'User B',
+          email: 'b@example.com',
+          icon: '🅱️',
+          service: 'GitLab',
+        },
+        {
+          id: 'persist-c',
+          name: 'User C',
+          email: 'c@example.com',
+        },
+      ];
+      await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
+
+      // Move B up (swap A and B)
+      await moveIdentityInConfig('persist-b', 'up');
+
+      // Re-read configuration fresh to verify persistence
+      const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const persisted = freshConfig.get<TestIdentity[]>('identities', []);
+
+      // Verify order: B, A, C
+      assert.strictEqual(persisted.length, 3, 'Should still have 3 identities');
+      assert.strictEqual(persisted[0].id, 'persist-b', 'First should be B');
+      assert.strictEqual(persisted[1].id, 'persist-a', 'Second should be A');
+      assert.strictEqual(persisted[2].id, 'persist-c', 'Third should be C');
+
+      // Verify all data preserved after move
+      assert.strictEqual(persisted[0].name, 'User B', 'B name should be preserved');
+      assert.strictEqual(persisted[0].email, 'b@example.com', 'B email should be preserved');
+      assert.strictEqual(persisted[0].icon, '🅱️', 'B icon should be preserved');
+      assert.strictEqual(persisted[0].service, 'GitLab', 'B service should be preserved');
+      assert.strictEqual(persisted[1].name, 'User A', 'A name should be preserved');
+      assert.strictEqual(persisted[1].icon, '🅰️', 'A icon should be preserved');
+
+      // Restore original state
+      await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
     });
   });
 });

@@ -109,5 +109,8 @@
   "Select SSH Key": "SSH鍵を選択",
   "Press 'Enter' to save": "'Enter'で保存",
   "Press 'Enter' to save (leave empty to skip)": "'Enter'で保存（空のままでスキップ）",
-  "Press 'Enter' to save (leave empty to clear)": "'Enter'で保存（空のままでクリア）"
+  "Press 'Enter' to save (leave empty to clear)": "'Enter'で保存（空のままでクリア）",
+  "Move up": "上に移動",
+  "Move down": "下に移動",
+  "Failed to reorder identity: {0}": "プロフィールの並べ替えに失敗しました: {0}"
 }

@@ -109,5 +109,8 @@
   "Select SSH Key": "Select SSH Key",
   "Press 'Enter' to save": "Press 'Enter' to save",
   "Press 'Enter' to save (leave empty to skip)": "Press 'Enter' to save (leave empty to skip)",
-  "Press 'Enter' to save (leave empty to clear)": "Press 'Enter' to save (leave empty to clear)"
+  "Press 'Enter' to save (leave empty to clear)": "Press 'Enter' to save (leave empty to clear)",
+  "Move up": "Move up",
+  "Move down": "Move down",
+  "Failed to reorder identity: {0}": "Failed to reorder identity: {0}"
 }

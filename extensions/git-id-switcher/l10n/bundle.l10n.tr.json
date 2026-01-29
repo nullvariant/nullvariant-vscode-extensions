@@ -109,5 +109,8 @@
   "Select SSH Key": "SSH Anahtarı Seç",
   "Press 'Enter' to save": "Kaydetmek için 'Enter'a basın",
   "Press 'Enter' to save (leave empty to skip)": "Kaydetmek için 'Enter'a basın (atlamak için boş bırakın)",
-  "Press 'Enter' to save (leave empty to clear)": "Kaydetmek için 'Enter'a basın (temizlemek için boş bırakın)"
+  "Press 'Enter' to save (leave empty to clear)": "Kaydetmek için 'Enter'a basın (temizlemek için boş bırakın)",
+  "Move up": "Yukarı taşı",
+  "Move down": "Aşağı taşı",
+  "Failed to reorder identity: {0}": "Kimlik yeniden sıralanamadı: {0}"
 }
