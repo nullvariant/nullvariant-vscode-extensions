@@ -17,7 +17,7 @@
  * - User Interaction: Selection, manage option, and cancellation
  * - Manage Identities UI: Inline buttons, back button, add option
  *
- * Test Count: 23 tests (9 for showIdentityQuickPick + 14 for showManageIdentitiesQuickPick)
+ * Test Count: 25 tests (9 for showIdentityQuickPick + 16 for showManageIdentitiesQuickPick)
  *
  * Note: These tests use mocked VS Code API via vscodeLoader since quick pick
  * interactions require VS Code window API.
@@ -454,7 +454,7 @@ class MockThemeIcon {
  */
 function createManageMockVSCode(options: {
   identities?: Identity[];
-  triggerAction?: 'back' | 'add' | 'addButton' | 'edit' | 'delete' | 'selectIdentity' | 'selectPlaceholder' | 'hide';
+  triggerAction?: 'back' | 'add' | 'addButton' | 'edit' | 'delete' | 'moveUp' | 'moveDown' | 'selectIdentity' | 'selectPlaceholder' | 'hide';
   actionIndex?: number;
 }) {
   let capturedItems: CapturedManageQuickPickItem[] = [];
@@ -546,13 +546,18 @@ function createManageMockVSCode(options: {
                 if (buttonCallback && capturedButtons.length >= 2) {
                   buttonCallback(capturedButtons[1]); // Add button
                 }
-              } else if (options.triggerAction === 'edit' || options.triggerAction === 'delete') {
+              } else if (options.triggerAction === 'edit' || options.triggerAction === 'delete'
+                || options.triggerAction === 'moveUp' || options.triggerAction === 'moveDown') {
                 // Trigger item button
                 const idx = options.actionIndex ?? 0;
                 const item = capturedItems.find(i => i.index === idx);
                 if (item && item.buttons && itemButtonCallback) {
                   // Find button by icon id
-                  const targetIconId = options.triggerAction === 'edit' ? 'pencil' : 'trash';
+                  const iconMap: Record<string, string> = {
+                    edit: 'pencil', delete: 'trash',
+                    moveUp: 'arrow-up', moveDown: 'arrow-down',
+                  };
+                  const targetIconId = iconMap[options.triggerAction];
                   const button = item.buttons.find(
                     b => (b.iconPath as MockThemeIcon)?.id === targetIconId
                   );
@@ -793,6 +798,42 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       assert.ok(result, 'Should return result');
       assert.strictEqual(result?.action, 'delete', 'Action should be delete');
       if (result?.action === 'delete') {
+        assert.strictEqual(result.identity.id, 'work', 'Should return correct identity');
+        assert.strictEqual(result.index, 0, 'Should return correct index');
+      }
+    });
+
+    it('should return moveUp action when move up button clicked', async () => {
+      const mockVSCode = createManageMockVSCode({
+        identities: [TEST_IDENTITIES.work, TEST_IDENTITIES.personal],
+        triggerAction: 'moveUp',
+        actionIndex: 1,
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showManageIdentitiesQuickPick([TEST_IDENTITIES.work, TEST_IDENTITIES.personal]);
+
+      assert.ok(result, 'Should return result');
+      assert.strictEqual(result?.action, 'moveUp', 'Action should be moveUp');
+      if (result?.action === 'moveUp') {
+        assert.strictEqual(result.identity.id, 'personal', 'Should return correct identity');
+        assert.strictEqual(result.index, 1, 'Should return correct index');
+      }
+    });
+
+    it('should return moveDown action when move down button clicked', async () => {
+      const mockVSCode = createManageMockVSCode({
+        identities: [TEST_IDENTITIES.work, TEST_IDENTITIES.personal],
+        triggerAction: 'moveDown',
+        actionIndex: 0,
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showManageIdentitiesQuickPick([TEST_IDENTITIES.work, TEST_IDENTITIES.personal]);
+
+      assert.ok(result, 'Should return result');
+      assert.strictEqual(result?.action, 'moveDown', 'Action should be moveDown');
+      if (result?.action === 'moveDown') {
         assert.strictEqual(result.identity.id, 'work', 'Should return correct identity');
         assert.strictEqual(result.index, 0, 'Should return correct index');
       }
