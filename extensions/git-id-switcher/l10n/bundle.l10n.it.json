@@ -109,5 +109,8 @@
   "Select SSH Key": "Seleziona chiave SSH",
   "Press 'Enter' to save": "Premi 'Invio' per salvare",
   "Press 'Enter' to save (leave empty to skip)": "Premi 'Invio' per salvare (lasciare vuoto per saltare)",
-  "Press 'Enter' to save (leave empty to clear)": "Premi 'Invio' per salvare (lasciare vuoto per cancellare)"
+  "Press 'Enter' to save (leave empty to clear)": "Premi 'Invio' per salvare (lasciare vuoto per cancellare)",
+  "Move up": "Sposta su",
+  "Move down": "Sposta giù",
+  "Failed to reorder identity: {0}": "Riordinamento identità fallito: {0}"
 }

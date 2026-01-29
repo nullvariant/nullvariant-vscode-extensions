@@ -109,5 +109,8 @@
   "Select SSH Key": "SSH-Schlüssel auswählen",
   "Press 'Enter' to save": "'Enter' zum Speichern",
   "Press 'Enter' to save (leave empty to skip)": "'Enter' zum Speichern (leer lassen zum Überspringen)",
-  "Press 'Enter' to save (leave empty to clear)": "'Enter' zum Speichern (leer lassen zum Löschen)"
+  "Press 'Enter' to save (leave empty to clear)": "'Enter' zum Speichern (leer lassen zum Löschen)",
+  "Move up": "Nach oben verschieben",
+  "Move down": "Nach unten verschieben",
+  "Failed to reorder identity: {0}": "Identität konnte nicht neu angeordnet werden: {0}"
 }

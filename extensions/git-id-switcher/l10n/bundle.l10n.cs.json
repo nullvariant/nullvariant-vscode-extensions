@@ -109,5 +109,8 @@
   "Select SSH Key": "Vybrat SSH klíč",
   "Press 'Enter' to save": "Uložte stisknutím 'Enter'",
   "Press 'Enter' to save (leave empty to skip)": "Uložte stisknutím 'Enter' (ponechte prázdné pro přeskočení)",
-  "Press 'Enter' to save (leave empty to clear)": "Uložte stisknutím 'Enter' (ponechte prázdné pro vymazání)"
+  "Press 'Enter' to save (leave empty to clear)": "Uložte stisknutím 'Enter' (ponechte prázdné pro vymazání)",
+  "Move up": "Přesunout nahoru",
+  "Move down": "Přesunout dolů",
+  "Failed to reorder identity: {0}": "Nepodařilo se změnit pořadí identity: {0}"
 }

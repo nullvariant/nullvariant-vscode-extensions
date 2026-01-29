@@ -109,5 +109,8 @@
   "Select SSH Key": "Изберете SSH ключ",
   "Press 'Enter' to save": "Натиснете 'Enter' за запазване",
   "Press 'Enter' to save (leave empty to skip)": "Натиснете 'Enter' за запазване (оставете празно за пропускане)",
-  "Press 'Enter' to save (leave empty to clear)": "Натиснете 'Enter' за запазване (оставете празно за изчистване)"
+  "Press 'Enter' to save (leave empty to clear)": "Натиснете 'Enter' за запазване (оставете празно за изчистване)",
+  "Move up": "Преместване нагоре",
+  "Move down": "Преместване надолу",
+  "Failed to reorder identity: {0}": "Неуспешно пренареждане на самоличност: {0}"
 }

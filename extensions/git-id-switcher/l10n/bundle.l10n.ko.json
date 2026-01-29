@@ -109,5 +109,8 @@
   "Select SSH Key": "SSH 키 선택",
   "Press 'Enter' to save": "'Enter'를 눌러 저장",
   "Press 'Enter' to save (leave empty to skip)": "'Enter'를 눌러 저장 (비워두면 건너뜀)",
-  "Press 'Enter' to save (leave empty to clear)": "'Enter'를 눌러 저장 (비워두면 지움)"
+  "Press 'Enter' to save (leave empty to clear)": "'Enter'를 눌러 저장 (비워두면 지움)",
+  "Move up": "위로 이동",
+  "Move down": "아래로 이동",
+  "Failed to reorder identity: {0}": "ID 순서 변경 실패: {0}"
 }

@@ -974,21 +974,19 @@ async function showFieldSelectionQuickPick(
  * Uses showFieldInputBox for back button and file picker support.
  *
  * @param vs - VS Code API
- * @param fieldItem - Field being edited
  * @param field - Field name (guaranteed non-null)
  * @param currentValue - Current field value
  * @returns New value, 'back' if back pressed, undefined if cancelled
  */
 async function promptFieldValueInput(
   vs: VSCodeAPI,
-  fieldItem: FieldQuickPickItem,
   field: EditableField,
   currentValue: string
 ): Promise<QuickInputResult<string>> {
   const optional = isOptionalField(field);
 
   return showFieldInputBox(vs, {
-    title: vs.l10n.t('Edit Identity: {0}', fieldItem.label),
+    title: vs.l10n.t('Edit Identity: {0}', vs.l10n.t(getFieldMetadata(field)?.labelKey ?? field)),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, field),
     prompt: getInputBoxPrompt(vs, optional, 'edit'),
@@ -1027,11 +1025,11 @@ function refreshIdentity(identityId: string): Identity | undefined {
 async function processFieldValueInput(
   vs: VSCodeAPI,
   state: EditLoopState,
-  selection: { item: FieldQuickPickItem; field: EditableField },
+  selection: { field: EditableField },
   inputValue: string
 ): Promise<'saved' | 'back' | 'error'> {
-  const { item, field } = selection;
-  const result = await promptFieldValueInput(vs, item, field, inputValue);
+  const { field } = selection;
+  const result = await promptFieldValueInput(vs, field, inputValue);
 
   // 'back' or undefined: return to field selection
   if (result === undefined || result === 'back') {

@@ -109,5 +109,8 @@
   "Select SSH Key": "Вибрати SSH-ключ",
   "Press 'Enter' to save": "Натисніть 'Enter' для збереження",
   "Press 'Enter' to save (leave empty to skip)": "Натисніть 'Enter' для збереження (залиште порожнім, щоб пропустити)",
-  "Press 'Enter' to save (leave empty to clear)": "Натисніть 'Enter' для збереження (залиште порожнім для очищення)"
+  "Press 'Enter' to save (leave empty to clear)": "Натисніть 'Enter' для збереження (залиште порожнім для очищення)",
+  "Move up": "Перемістити вгору",
+  "Move down": "Перемістити вниз",
+  "Failed to reorder identity: {0}": "Не вдалося змінити порядок ідентифікатора: {0}"
 }

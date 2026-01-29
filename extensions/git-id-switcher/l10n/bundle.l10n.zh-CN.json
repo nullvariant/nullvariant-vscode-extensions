@@ -109,5 +109,8 @@
   "Select SSH Key": "选择SSH密钥",
   "Press 'Enter' to save": "按'Enter'保存",
   "Press 'Enter' to save (leave empty to skip)": "按'Enter'保存（留空以跳过）",
-  "Press 'Enter' to save (leave empty to clear)": "按'Enter'保存（留空以清除）"
+  "Press 'Enter' to save (leave empty to clear)": "按'Enter'保存（留空以清除）",
+  "Move up": "上移",
+  "Move down": "下移",
+  "Failed to reorder identity: {0}": "重新排序身份失败: {0}"
 }
