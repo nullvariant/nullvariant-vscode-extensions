@@ -35,14 +35,14 @@ export class IdentityStatusBar implements vscode.Disposable {
 
   /**
    * Update status bar with current identity
-   * Shows emoji icon if configured, otherwise uses default 👤
+   * Shows emoji icon only if configured
    */
   setIdentity(identity: Identity): void {
     this.currentIdentity = identity;
-    // Use identity's icon if available, otherwise default emoji
-    const icon = identity.icon || '👤';
     // Truncate for status bar to avoid taking too much horizontal space
-    const displayText = truncateForStatusBar(`${icon} ${identity.name}`);
+    const displayText = truncateForStatusBar(
+      identity.icon ? `${identity.icon} ${identity.name}` : identity.name
+    );
     this.statusBarItem.text = displayText;
     this.statusBarItem.tooltip = new vscode.MarkdownString(
       this.buildTooltip(identity)

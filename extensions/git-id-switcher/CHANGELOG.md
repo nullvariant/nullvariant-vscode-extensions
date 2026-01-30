@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.7] - 2026-01-30
+
+### Fixed
+
+- **Remove forced default icon (👤) for identities without an icon configured**:
+  - Status bar now shows only the identity name when no icon is set
+  - Previously, identities created without an icon always displayed 👤 in the status bar
+  - The default preset profile still shows 👤 as it has `"icon": "👤"` explicitly configured
+
 ## [0.16.6] - 2026-01-30
 
 ### Fixed
