@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.16.5",
+  "version": "0.16.6",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -82,10 +82,10 @@
             "default": [
               {
                 "id": "example",
-                "icon": "👤",
                 "name": "Your Name",
-                "service": "",
                 "email": "you@example.com",
+                "service": "",
+                "icon": "👤",
                 "description": "Edit this or add your own identity",
                 "sshKeyPath": "",
                 "sshHost": "",
@@ -100,21 +100,21 @@
                   "type": "string",
                   "description": "%config.identities.id%"
                 },
-                "icon": {
-                  "type": "string",
-                  "description": "%config.identities.icon%"
-                },
                 "name": {
                   "type": "string",
                   "description": "%config.identities.name%"
+                },
+                "email": {
+                  "type": "string",
+                  "description": "%config.identities.email%"
                 },
                 "service": {
                   "type": "string",
                   "description": "%config.identities.service%"
                 },
-                "email": {
+                "icon": {
                   "type": "string",
-                  "description": "%config.identities.email%"
+                  "description": "%config.identities.icon%"
                 },
                 "description": {
                   "type": "string",
