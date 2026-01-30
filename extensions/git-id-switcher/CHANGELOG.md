@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.6] - 2026-01-30
+
+### Fixed
+
+- **Reorder settings fields to group required fields first (id, name, email)**:
+  - Changed field order from `id, name, service, email, ...` to `id, name, email, service, ...` across all 17 language files
+  - Updated `config.identities.markdown` descriptions, individual field key order, and `package.json` schema/default order
+  - Required fields (id, name, email) now appear as the first three items, matching the UI edit form order
+
 ## [0.16.5] - 2026-01-29
 
 ### Fixed
