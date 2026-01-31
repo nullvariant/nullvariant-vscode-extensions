@@ -499,3 +499,35 @@ export function isUnderSshDirectory(value: string): boolean {
 
   return normalizedValue.startsWith(sshDirWithSep);
 }
+
+/**
+ * Replace home directory prefix with ~ for privacy and portability.
+ *
+ * Normalizes path separators to forward slashes so the result is always
+ * in `~/...` form regardless of platform. Returns null if the path is
+ * not under the home directory.
+ *
+ * @param absolutePath - Absolute path (may contain backslashes on Windows)
+ * @param homeDir - Home directory path
+ * @returns Path with ~ prefix, or null if not under home directory
+ *
+ * @example
+ * replaceHomeWithTilde('/Users/me/.ssh/key', '/Users/me')   // '~/.ssh/key'
+ * replaceHomeWithTilde('C:\\Users\\me\\.ssh\\key', 'C:\\Users\\me') // '~/.ssh/key'
+ * replaceHomeWithTilde('/other/path', '/Users/me')           // null
+ */
+export function replaceHomeWithTilde(absolutePath: string, homeDir: string): string | null {
+  if (!homeDir) {
+    return null;
+  }
+  const normalizedPath = absolutePath.replaceAll('\\', '/');
+  const normalizedHome = homeDir.replaceAll('\\', '/');
+  // SECURITY: Ensure we match at path component boundary
+  if (normalizedPath === normalizedHome) {
+    return '~';
+  }
+  if (normalizedPath.startsWith(normalizedHome + '/')) {
+    return '~' + normalizedPath.slice(normalizedHome.length);
+  }
+  return null;
+}

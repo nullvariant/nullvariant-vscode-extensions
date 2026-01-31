@@ -91,6 +91,7 @@ import {
   expandTilde,
   containsSymlinks,
   isUnderSshDirectory,
+  replaceHomeWithTilde,
 } from '../security/pathUtils';
 
 /**
@@ -1125,6 +1126,57 @@ function testIsUnderSshDirectory(): void {
 }
 
 /**
+ * Test replaceHomeWithTilde
+ */
+function testReplaceHomeWithTilde(): void {
+  console.log('Testing replaceHomeWithTilde...');
+
+  // Unix: basic compression
+  assert.strictEqual(
+    replaceHomeWithTilde('/Users/me/.ssh/id_ed25519', '/Users/me'),
+    '~/.ssh/id_ed25519',
+    'Unix path should be compressed to ~/'
+  );
+
+  // Windows: backslashes normalized to forward slashes
+  assert.strictEqual(
+    replaceHomeWithTilde(String.raw`C:\Users\me\.ssh\id_rsa`, String.raw`C:\Users\me`),
+    '~/.ssh/id_rsa',
+    'Windows backslashes should be normalized to forward slashes'
+  );
+
+  // Path component boundary: /home/test must NOT match /home/testuser
+  assert.strictEqual(
+    replaceHomeWithTilde('/home/testuser/.ssh/key', '/home/test'),
+    null,
+    'Partial prefix match must not compress'
+  );
+
+  // Path outside home directory
+  assert.strictEqual(
+    replaceHomeWithTilde('/other/path/file', '/Users/me'),
+    null,
+    'Path outside home should return null'
+  );
+
+  // Empty homeDir
+  assert.strictEqual(
+    replaceHomeWithTilde('/Users/me/.ssh/key', ''),
+    null,
+    'Empty homeDir should return null'
+  );
+
+  // Exact home directory match
+  assert.strictEqual(
+    replaceHomeWithTilde('/Users/me', '/Users/me'),
+    '~',
+    'Exact home directory should return ~'
+  );
+
+  console.log('✅ replaceHomeWithTilde tests passed!');
+}
+
+/**
  * Run all path utils tests
  */
 export async function runPathUtilsTests(): Promise<void> {
@@ -1155,6 +1207,7 @@ export async function runPathUtilsTests(): Promise<void> {
     testControlCharacterPrevention();
     testValidateWorkspacePath();
     testIsUnderSshDirectory();
+    testReplaceHomeWithTilde();
 
     console.log('\n✅ All path utils tests passed!\n');
   } catch (error) {

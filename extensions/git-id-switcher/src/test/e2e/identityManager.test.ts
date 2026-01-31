@@ -2556,7 +2556,7 @@ describe('identityManager E2E Test Suite', function () {
     });
 
     describe('File selection updates InputBox value', () => {
-      it('should update InputBox value after file selection', async () => {
+      it('should update InputBox value after file selection (Unix)', async () => {
         // Save original env
         const originalHome = process.env.HOME;
         process.env.HOME = '/home/testuser';
@@ -2598,10 +2598,66 @@ describe('identityManager E2E Test Suite', function () {
 
         try {
           await showEditProfileFlow(TEST_IDENTITIES.work);
-          assert.strictEqual(inputBoxValueAfterFilePick, '/home/testuser/.ssh/selected_key',
-            'InputBox value should be updated to selected file path');
+          assert.strictEqual(inputBoxValueAfterFilePick, '~/.ssh/selected_key',
+            'InputBox value should be updated to selected file path with ~ prefix');
         } finally {
           process.env.HOME = originalHome;
+        }
+      });
+
+      it('should normalize Windows backslashes to forward slashes after tilde compression', async () => {
+        // Save original env
+        const originalHome = process.env.HOME;
+        const originalUserProfile = process.env.USERPROFILE;
+
+        // Simulate Windows environment
+        delete process.env.HOME;
+        process.env.USERPROFILE = 'C:\\Users\\testuser';
+
+        let inputBoxValueAfterFilePick: string | undefined;
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [
+            { field: 'sshKeyPath' },
+            undefined,
+          ],
+          inputBoxSelections: [FILE_PICKER_CLICK, undefined],
+          showOpenDialogResult: 'C:\\Users\\testuser\\.ssh\\selected_key',
+        });
+
+        const originalCreateInputBox = mockVSCode.window.createInputBox;
+        mockVSCode.window.createInputBox = () => {
+          const inputBox = originalCreateInputBox();
+          const originalValueSetter = Object.getOwnPropertyDescriptor(inputBox, 'value')?.set;
+          let internalValue = '';
+
+          Object.defineProperty(inputBox, 'value', {
+            get: () => internalValue,
+            set: (v: string) => {
+              internalValue = v;
+              inputBoxValueAfterFilePick = v;
+              if (originalValueSetter) {
+                originalValueSetter.call(inputBox, v);
+              }
+            },
+          });
+          return inputBox;
+        };
+
+        _setMockVSCode(mockVSCode as never);
+
+        try {
+          await showEditProfileFlow(TEST_IDENTITIES.work);
+          assert.strictEqual(inputBoxValueAfterFilePick, '~/.ssh/selected_key',
+            'Windows backslashes should be normalized to forward slashes after ~ compression');
+        } finally {
+          if (originalHome !== undefined) {
+            process.env.HOME = originalHome;
+          }
+          if (originalUserProfile !== undefined) {
+            process.env.USERPROFILE = originalUserProfile;
+          }
         }
       });
     });

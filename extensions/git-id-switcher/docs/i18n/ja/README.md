@@ -330,7 +330,7 @@ SSH鍵パスの入力は、この拡張機能の設定で最も手間のかか�
 2. 入力欄の右側に「📁」（Browse for SSH key path...）ボタンが表示される
 3. ボタンをクリックすると、OSのファイルダイアログが `~/.ssh/` を初期表示して開く
 4. 使用したいSSH秘密鍵ファイルを選択（例: `id_ed25519_work`）
-5. 選択したファイルのフルパスが入力欄に自動入力される
+5. 選択したファイルのパスが `~/.ssh/...` 形式で入力欄に自動入力される
 6. パスのバリデーションが即座に実行される
 
 <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ssh-key-dialog-ja.png" width="600" alt="SSH鍵ファイルダイアログ">
