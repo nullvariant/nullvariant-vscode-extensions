@@ -38,7 +38,7 @@ import {
   SSH_HOST_REGEX,
 } from '../validators/common';
 import { validateSshKeyPathFormat } from '../identity/inputValidator';
-import { isUnderSshDirectory } from '../security/pathUtils';
+import { isUnderSshDirectory, replaceHomeWithTilde } from '../security/pathUtils';
 import { getUserSafeMessage } from '../core/errors';
 import { securityLogger } from '../security/securityLogger';
 
@@ -781,7 +781,8 @@ async function showFieldInputBox(
         defaultUri: defaultPath ? vs.Uri.file(defaultPath) : undefined,
         title: vs.l10n.t('Select SSH Key'),
       });
-      return fileUri?.[0]?.fsPath;
+      const selected = fileUri?.[0]?.fsPath;
+      return (selected && homeDir && replaceHomeWithTilde(selected, homeDir)) ?? selected;
     };
   }
 

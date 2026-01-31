@@ -10,6 +10,7 @@
 import * as path from 'node:path';
 import { PATH_MAX, MAX_PATTERN_CHECK_LENGTH } from '../core/constants';
 import { CONTROL_CHAR_REGEX_ALL } from '../validators/common';
+import { replaceHomeWithTilde } from './pathUtils';
 
 /**
  * Platform-specific sensitive directory patterns
@@ -214,23 +215,6 @@ function tryRedactUncPath(normalizedPath: string): string | null {
     return `//[REDACTED]${uncMatch[2] ?? ''}`;
   }
   /* c8 ignore next: edge case - malformed UNC path that passes prefix but not regex */
-  return null;
-}
-
-/**
- * Replace home directory with ~ for privacy.
- *
- * @internal
- */
-function replaceHomeWithTilde(normalizedPath: string, home: string): string | null {
-  if (!home) {
-    return null;
-  }
-  const normalizedHome = home.replaceAll('\\', '/');
-  // SECURITY: Ensure we match at path component boundary
-  if (normalizedPath === normalizedHome || normalizedPath.startsWith(normalizedHome + '/')) {
-    return '~' + normalizedPath.slice(normalizedHome.length);
-  }
   return null;
 }
 

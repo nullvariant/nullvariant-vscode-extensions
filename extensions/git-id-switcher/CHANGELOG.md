@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.8] - 2026-01-31
+
+### Changed
+
+- **SSH key file picker now stores paths in `~/` format instead of absolute paths**:
+  - Selecting a key via the 📁 browse button now produces `~/.ssh/id_ed25519` instead of `/Users/name/.ssh/id_ed25519`
+  - Improves privacy (no OS username in settings.json) and portability across machines
+  - Works on both Unix and Windows (backslashes normalized to forward slashes)
+  - Extracted shared `replaceHomeWithTilde()` utility to `pathUtils.ts`, removing duplicate from `pathSanitizer.ts`
+
+### Documentation
+
+- **Updated Japanese README for identity management UI**:
+  - Added "Profile Management UI" as first item in Features section
+  - Rewrote Quick Start Step 3 from settings.json-first to UI-first approach
+  - Added new "Profile Management" section (add/edit/delete/reorder/SSH key path)
+  - Added Delete Identity command to Commands table
+  - Removed "Note: Basic Setup (No SSH)" section
+
 ## [0.16.7] - 2026-01-30
 
 ### Fixed
