@@ -119,6 +119,7 @@ function createMockVSCode(options: {
     buttons: unknown[];
     title: string;
     placeholder: string;
+    ignoreFocusOut: boolean;
   }) => void;
   onInputBoxCreated?: (inputBox: {
     buttons: unknown[];
@@ -317,6 +318,7 @@ function createMockVSCode(options: {
         let _title = '';
         let _placeholder = '';
         let _buttons: unknown[] = [];
+        let _ignoreFocusOut = false;
 
         const quickPick = {
           get title() { return _title; },
@@ -325,6 +327,8 @@ function createMockVSCode(options: {
           set placeholder(value: string) { _placeholder = value; },
           get buttons() { return _buttons; },
           set buttons(value: unknown[]) { _buttons = value; },
+          get ignoreFocusOut() { return _ignoreFocusOut; },
+          set ignoreFocusOut(value: boolean) { _ignoreFocusOut = value; },
           get items() { return _items; },
           set items(value: T[]) { _items = value; },
           get selectedItems() { return _selectedItems; },
@@ -338,6 +342,7 @@ function createMockVSCode(options: {
                 buttons: _buttons,
                 title: _title,
                 placeholder: _placeholder,
+                ignoreFocusOut: _ignoreFocusOut,
               });
             }
             // Auto-trigger selection based on test configuration
@@ -911,6 +916,23 @@ describe('identityManager E2E Test Suite', function () {
         }
       });
 
+      it('should set ignoreFocusOut to prevent data loss on focus change', async () => {
+        let capturedIgnoreFocusOut = false;
+
+        const mockVSCode = createMockVSCode({
+          identities: [],
+          quickPickSelections: [undefined],
+          onQuickPickCreated: (quickPick) => {
+            capturedIgnoreFocusOut = quickPick.ignoreFocusOut;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showAddIdentityForm();
+
+        assert.strictEqual(capturedIgnoreFocusOut, true, 'Add form QuickPick should have ignoreFocusOut=true');
+      });
+
       it('should mark required fields (id, name, email) with asterisk', async () => {
         let capturedItems: unknown[] = [];
 
@@ -1217,6 +1239,25 @@ describe('identityManager E2E Test Suite', function () {
   // ===========================================================================
 
   describe('Edit Identity Form', () => {
+    describe('Focus Retention', () => {
+      it('should set ignoreFocusOut to prevent data loss on focus change', async () => {
+        let capturedIgnoreFocusOut = false;
+
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [undefined],
+          onQuickPickCreated: (quickPick) => {
+            capturedIgnoreFocusOut = quickPick.ignoreFocusOut;
+          },
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        assert.strictEqual(capturedIgnoreFocusOut, true, 'Edit form QuickPick should have ignoreFocusOut=true');
+      });
+    });
+
     describe('Back Button (Field Selection)', () => {
       it('should have QuickInputButtons.Back in field selection', async () => {
         let capturedButtons: unknown[] = [];

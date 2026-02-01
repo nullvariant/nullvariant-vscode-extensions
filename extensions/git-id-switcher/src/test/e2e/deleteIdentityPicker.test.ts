@@ -65,6 +65,7 @@ function createMockVSCode(options: {
 }) {
   let capturedItems: CapturedQuickPickItem[] = [];
   let capturedPlaceholder = '';
+  let capturedIgnoreFocusOut = false;
   let capturedTitle = '';
   const showWarningMessageCalls: string[] = [];
 
@@ -102,6 +103,8 @@ function createMockVSCode(options: {
           set placeholder(value: string) {
             capturedPlaceholder = value;
           },
+          get ignoreFocusOut() { return capturedIgnoreFocusOut; },
+          set ignoreFocusOut(value: boolean) { capturedIgnoreFocusOut = value; },
           matchOnDescription: false,
           matchOnDetail: false,
           get selectedItems(): T[] {
@@ -145,6 +148,7 @@ function createMockVSCode(options: {
     _getCapturedItems: () => capturedItems,
     _getCapturedPlaceholder: () => capturedPlaceholder,
     _getCapturedTitle: () => capturedTitle,
+    _getCapturedIgnoreFocusOut: () => capturedIgnoreFocusOut,
     _getShowWarningMessageCalls: () => showWarningMessageCalls,
   };
 }
@@ -177,6 +181,20 @@ describe('showDeleteIdentityQuickPick E2E Test Suite', function () {
         warnings[0].includes('No identities configured'),
         'Warning should mention no identities'
       );
+    });
+  });
+
+  describe('Focus Retention', () => {
+    it('should set ignoreFocusOut to prevent dismissal on focus change', async () => {
+      const mockVSCode = createMockVSCode({
+        identities: [TEST_IDENTITIES.work],
+        selectedIdentity: TEST_IDENTITIES.work,
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      await showDeleteIdentityQuickPick();
+
+      assert.strictEqual(mockVSCode._getCapturedIgnoreFocusOut(), true, 'Delete identity QuickPick should have ignoreFocusOut=true');
     });
   });
 

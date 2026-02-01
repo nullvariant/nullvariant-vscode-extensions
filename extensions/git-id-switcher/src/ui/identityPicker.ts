@@ -122,6 +122,7 @@ export async function showIdentityQuickPick(
   quickPick.items = allItems;
   quickPick.title = vs.l10n.t('Select Profile');
   quickPick.placeholder = vs.l10n.t('Search profiles...');
+  quickPick.ignoreFocusOut = true;
   quickPick.buttons = [manageButton];
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
@@ -243,6 +244,7 @@ export async function showDeleteIdentityQuickPick(
   quickPick.items = items;
   quickPick.title = vs.l10n.t('Delete Identity');
   quickPick.placeholder = vs.l10n.t('Select identity to delete');
+  quickPick.ignoreFocusOut = true;
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
 
@@ -349,6 +351,7 @@ export async function showManageIdentitiesQuickPick(
   const quickPick = vs.window.createQuickPick<ManageIdentityQuickPickItem>();
   quickPick.items = items;
   quickPick.title = vs.l10n.t('Manage Profiles');
+  quickPick.ignoreFocusOut = true;
   quickPick.buttons = [vs.QuickInputButtons.Back, addButton];
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
