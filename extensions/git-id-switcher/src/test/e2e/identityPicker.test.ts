@@ -85,6 +85,7 @@ function createMockVSCode(options: {
   let capturedPlaceholder = '';
   let capturedTitle = '';
   let capturedButtons: unknown[] = [];
+  let capturedIgnoreFocusOut = false;
   const showWarningMessageCalls: string[] = [];
 
   return {
@@ -131,6 +132,8 @@ function createMockVSCode(options: {
           set activeItems(_value: T[]) {
             // Capture but don't need to track for tests
           },
+          get ignoreFocusOut() { return capturedIgnoreFocusOut; },
+          set ignoreFocusOut(value: boolean) { capturedIgnoreFocusOut = value; },
           matchOnDescription: false,
           matchOnDetail: false,
           get selectedItems(): T[] {
@@ -198,6 +201,7 @@ function createMockVSCode(options: {
     _getCapturedPlaceholder: () => capturedPlaceholder,
     _getCapturedTitle: () => capturedTitle,
     _getCapturedButtons: () => capturedButtons,
+    _getCapturedIgnoreFocusOut: () => capturedIgnoreFocusOut,
     _getShowWarningMessageCalls: () => showWarningMessageCalls,
   };
 }
@@ -230,6 +234,20 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
         warnings[0].includes('No identities configured'),
         'Warning should mention no identities'
       );
+    });
+  });
+
+  describe('Focus Retention', () => {
+    it('should set ignoreFocusOut to prevent dismissal on focus change', async () => {
+      const mockVSCode = createMockVSCode({
+        identities: [TEST_IDENTITIES.work],
+        selectedIdentity: TEST_IDENTITIES.work,
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      await showIdentityQuickPick();
+
+      assert.strictEqual(mockVSCode._getCapturedIgnoreFocusOut(), true, 'Select profile QuickPick should have ignoreFocusOut=true');
     });
   });
 
@@ -461,6 +479,7 @@ function createManageMockVSCode(options: {
   let capturedTitle = '';
   let capturedButtons: unknown[] = [];
   let capturedActiveItems: CapturedManageQuickPickItem[] = [];
+  let capturedIgnoreFocusOut = false;
 
   return {
     workspace: {
@@ -503,6 +522,8 @@ function createManageMockVSCode(options: {
           get activeItems(): T[] {
             return capturedActiveItems as unknown as T[];
           },
+          get ignoreFocusOut() { return capturedIgnoreFocusOut; },
+          set ignoreFocusOut(value: boolean) { capturedIgnoreFocusOut = value; },
           matchOnDescription: false,
           matchOnDetail: false,
           get selectedItems(): T[] {
@@ -604,6 +625,7 @@ function createManageMockVSCode(options: {
     _getCapturedTitle: () => capturedTitle,
     _getCapturedButtons: () => capturedButtons,
     _getCapturedActiveItems: () => capturedActiveItems,
+    _getCapturedIgnoreFocusOut: () => capturedIgnoreFocusOut,
   };
 }
 
@@ -616,6 +638,20 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
 
   afterEach(() => {
     _resetCache();
+  });
+
+  describe('Focus Retention', () => {
+    it('should set ignoreFocusOut to prevent dismissal on focus change', async () => {
+      const mockVSCode = createManageMockVSCode({
+        identities: [TEST_IDENTITIES.work],
+        triggerAction: 'hide',
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      await showManageIdentitiesQuickPick([TEST_IDENTITIES.work]);
+
+      assert.strictEqual(mockVSCode._getCapturedIgnoreFocusOut(), true, 'Manage profiles QuickPick should have ignoreFocusOut=true');
+    });
   });
 
   describe('Basic UI', () => {

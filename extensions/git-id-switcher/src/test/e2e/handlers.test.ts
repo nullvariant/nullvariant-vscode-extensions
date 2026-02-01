@@ -102,6 +102,7 @@ function createMockVSCode(options: {
           title: '',
           placeholder: '',
           buttons: [],
+          ignoreFocusOut: false,
           matchOnDescription: false,
           matchOnDetail: false,
           selectedItems: options.showQuickPickResult ? [{ identity: options.showQuickPickResult }] : [],
@@ -231,6 +232,7 @@ function createAddMockVSCode(options: {
           title: '',
           placeholder: '',
           buttons: [] as unknown[],
+          ignoreFocusOut: false,
           onDidAccept: (callback: () => void) => {
             acceptCallback = callback;
             return { dispose: () => {} };

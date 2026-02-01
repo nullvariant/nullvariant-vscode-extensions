@@ -867,6 +867,7 @@ async function executeAddFormLoop(
   const quickPick = vs.window.createQuickPick<AddFormQuickPickItem>();
   quickPick.title = vs.l10n.t('New Profile');
   quickPick.placeholder = vs.l10n.t('Filter...');
+  quickPick.ignoreFocusOut = true;
   quickPick.buttons = [vs.QuickInputButtons.Back];
 
   try {
@@ -994,6 +995,7 @@ async function showFieldSelectionQuickPick(
   const quickPick = vs.window.createQuickPick<FieldQuickPickItem>();
   quickPick.title = vs.l10n.t('Edit Identity: {0}', identity.id);
   quickPick.placeholder = vs.l10n.t('Filter...');
+  quickPick.ignoreFocusOut = true;
   quickPick.buttons = [vs.QuickInputButtons.Back];
   quickPick.items = buildFieldItems(vs, identity, savedField, identityCount);
 
