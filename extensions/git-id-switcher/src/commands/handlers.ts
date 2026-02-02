@@ -271,8 +271,6 @@ export async function showWelcomeNotification(): Promise<void> {
  *
  * Uses vscodeLoader for testability (allows mocking in E2E tests).
  * The form handles validation, saving, and showing notifications.
- * After saving, opens the edit screen for the new identity to allow
- * adding optional fields.
  *
  * @returns true if identity was created, false if cancelled or failed
  */
@@ -289,15 +287,6 @@ export async function handleAddIdentity(): Promise<boolean> {
     return false;
   }
 
-  // Re-fetch the identity from config to ensure we have the saved version
-  // This provides defense-in-depth against any discrepancies
-  const savedIdentity = getIdentitiesWithValidation().find(i => i.id === newIdentity.id);
-
-  // After saving, open the edit screen for the new identity
-  // This allows users to add optional fields immediately
-  if (savedIdentity) {
-    await showEditProfileFlow(savedIdentity);
-  }
   return true;
 }
 

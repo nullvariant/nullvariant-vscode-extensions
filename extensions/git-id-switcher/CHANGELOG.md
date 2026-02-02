@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.11] - 2026-02-02
+
+### Changed
+
+- **New profile creation now returns to the management screen (profile list)** instead of opening the edit screen for the newly created profile
+
 ## [0.16.10] - 2026-02-02
 
 ### Fixed

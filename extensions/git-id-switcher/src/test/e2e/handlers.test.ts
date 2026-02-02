@@ -703,7 +703,7 @@ describe('handleAddIdentity E2E Test Suite', function () {
       const mockVSCode = createAddMockVSCode({
         identities: [],
         // Flow: select id field → enter id → select name field → enter name → select email field → enter email → save
-        quickPickSelections: ['id', 'name', 'email', 'save', undefined], // Last undefined for edit wizard skip
+        quickPickSelections: ['id', 'name', 'email', 'save'],
         inputBoxValues: ['new-id', 'New User', 'new@example.com'],
       });
       _setMockVSCode(mockVSCode as never);
@@ -777,7 +777,7 @@ describe('Security Logger Integration E2E Test Suite', function () {
       const mockVSCode = createAddMockVSCode({
         identities: [],
         // Flow: select id field → enter id → select name field → enter name → select email field → enter email → save
-        quickPickSelections: ['id', 'name', 'email', 'save', undefined], // Last undefined for edit wizard skip
+        quickPickSelections: ['id', 'name', 'email', 'save'],
         inputBoxValues: ['log-test-id', 'Log Test User', 'logtest@example.com'],
       });
 
