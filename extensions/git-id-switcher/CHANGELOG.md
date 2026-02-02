@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.10] - 2026-02-02
+
+### Fixed
+
+- **Profile selector and delete picker now dismiss normally on focus loss**:
+  - v0.16.9 applied `ignoreFocusOut` to all QuickPick dialogs, which prevented simple pickers from being dismissed by clicking outside
+  - Now only form-style dialogs (new profile, edit, manage) retain focus; simple pickers follow standard VS Code behavior
+
 ## [0.16.9] - 2026-02-01
 
 ### Fixed
