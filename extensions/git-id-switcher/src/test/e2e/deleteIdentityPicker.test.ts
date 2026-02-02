@@ -184,8 +184,8 @@ describe('showDeleteIdentityQuickPick E2E Test Suite', function () {
     });
   });
 
-  describe('Focus Retention', () => {
-    it('should set ignoreFocusOut to prevent dismissal on focus change', async () => {
+  describe('Focus Behavior', () => {
+    it('should not set ignoreFocusOut (simple picker dismisses on focus loss)', async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
         selectedIdentity: TEST_IDENTITIES.work,
@@ -194,7 +194,7 @@ describe('showDeleteIdentityQuickPick E2E Test Suite', function () {
 
       await showDeleteIdentityQuickPick();
 
-      assert.strictEqual(mockVSCode._getCapturedIgnoreFocusOut(), true, 'Delete identity QuickPick should have ignoreFocusOut=true');
+      assert.strictEqual(mockVSCode._getCapturedIgnoreFocusOut(), false, 'Delete identity QuickPick should not set ignoreFocusOut');
     });
   });
 
