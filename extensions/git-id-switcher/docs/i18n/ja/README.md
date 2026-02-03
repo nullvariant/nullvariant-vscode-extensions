@@ -115,14 +115,6 @@ Host github-work
 > 拡張機能の設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 →「settings.jsonで編集」をクリック。
 > JSON形式での設定例は「[フル設定例](#フル設定例-4アカウントとssh--gpg)」を参照してください。
 
-### ステップ 4: 使ってみる
-
-1. ステータスバー（右下）のプロフィールアイコンをクリック
-2. プロフィールを選択
-3. 完了！Git configとSSH鍵が切り替わりました。
-
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-ja.png" width="600" alt="Quick Pick">
-
 ### SSHホストエイリアスの使い方
 
 リポジトリをクローンする際、プロフィールに対応したホストを使用します：
