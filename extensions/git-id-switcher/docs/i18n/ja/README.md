@@ -118,18 +118,6 @@ Host github-work
 > 拡張機能の設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 →「settings.jsonで編集」をクリック。
 > JSON形式での設定例は「[フル設定例](#フル設定例-4アカウントとssh--gpg)」を参照してください。
 
-### SSHホストエイリアスの使い方
-
-リポジトリをクローンする際、プロフィールに対応したホストを使用します：
-
-```bash
-# 仕事用プロフィール（github-workエイリアスを使用）
-git clone git@github-work:company/repo.git
-
-# 個人用プロフィール（デフォルトのgithub.comを使用）
-git clone git@github.com:kaoru/repo.git
-```
-
 ---
 
 ## フル設定例: 4アカウントとSSH + GPG
@@ -418,6 +406,20 @@ Gitサブモジュールを使用する複雑なリポジトリでは、プロ�
    ```
 
 ### プッシュ時に間違ったプロフィール？
+
+**新規クローン時:**
+
+仕事用リポジトリをクローンする際は、SSH configで設定したホストエイリアスを使用します：
+
+```bash
+# 仕事用（github-workエイリアスを使用）
+git clone git@github-work:company/repo.git
+
+# 個人用（デフォルトのgithub.comを使用）
+git clone git@github.com:yourname/repo.git
+```
+
+**既存リポジトリの場合:**
 
 1. リモートURLが正しいホストエイリアスを使用しているか確認：
 
