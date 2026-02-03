@@ -217,6 +217,17 @@ Host bitbucket.org
 
 ---
 
+## コマンド
+
+| コマンド                                 | 説明                         |
+| ---------------------------------------- | ---------------------------- |
+| `Git ID Switcher: Select Identity`       | プロフィールピッカーを開く   |
+| `Git ID Switcher: Delete Identity`       | プロフィールを削除           |
+| `Git ID Switcher: Show Current Identity` | 現在のプロフィール情報を表示 |
+| `Git ID Switcher: Show Documentation`    | ドキュメントを表示           |
+
+---
+
 ## 設定リファレンス
 
 ### プロフィールのプロパティ
@@ -492,17 +503,6 @@ VS Codeなどのエディタは設定スキーマをメモリにキャッシュ�
 1. 設定画面で該当の設定項目を見つける
 2. 歯車アイコン → 「設定をリセット」を選択
 3. Settings Syncで同期（古い設定がクラウドから削除される）
-
----
-
-## コマンド
-
-| コマンド                                 | 説明                         |
-| ---------------------------------------- | ---------------------------- |
-| `Git ID Switcher: Select Identity`       | プロフィールピッカーを開く   |
-| `Git ID Switcher: Delete Identity`       | プロフィールを削除           |
-| `Git ID Switcher: Show Current Identity` | 現在のプロフィール情報を表示 |
-| `Git ID Switcher: Show Documentation`    | ドキュメントを表示           |
 
 ---
 
