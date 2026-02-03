@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.12] - 2026-02-03
+
+### Documentation
+
+- **Added WebP format test image to README**: Verifies VS Code Marketplace rendering support before using WebP for actual documentation screenshots
+
 ## [0.16.11] - 2026-02-02
 
 ### Changed

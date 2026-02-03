@@ -616,3 +616,11 @@ MIT License - see [LICENSE](https://github.com/nullvariant/nullvariant-vscode-ex
 ## Credits
 
 Created by [Null;Variant](https://github.com/nullvariant)
+
+---
+
+## WebP Support Test
+
+This image tests WebP format support in VS Code Marketplace:
+
+![WebP Test Image](https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/slow.webp)
