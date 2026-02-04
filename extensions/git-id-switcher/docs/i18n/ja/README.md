@@ -29,7 +29,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-ja.png" width="600" alt="デモ">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-ja.png" width="600" alt="デモ" loading="lazy">
 
 ## 🎯 なぜ Git ID Switcher？
 
@@ -107,7 +107,7 @@ Host github-work
 インストール直後はサンプルプロフィールが用意されています。
 以下のガイドに沿って、これを自分用に編集しましょう。
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/first-ux.webp" width="600" alt="初回セットアップ手順（13ステップ）：ステータスバーからプロフィール管理を開き、編集・新規作成を行う流れ">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/first-ux.webp" width="600" alt="初回セットアップ手順（13ステップ）：ステータスバーからプロフィール管理を開き、編集・新規作成を行う流れ" loading="lazy">
 
 > **鍵ファイルは送信されません**: SSH鍵パスの設定で記録されるのは鍵ファイルのパス（場所）だけです。鍵ファイルの中身がアップロードされたり外部に送信されることはありません。
 
@@ -209,7 +209,7 @@ Host bitbucket.org
 ステータスバーをクリック → 一覧下部の「プロフィール管理」で管理画面を開きます。
 プロフィールの追加・編集・削除・並び替えはすべてUIから直接操作できます。
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/profile-management.webp" width="600" alt="プロフィール管理：追加・編集・削除・並び替え・SSH鍵パス設定の操作ガイド">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/profile-management.webp" width="600" alt="プロフィール管理：追加・編集・削除・並び替え・SSH鍵パス設定の操作ガイド" loading="lazy">
 
 > **鍵ファイルは送信されません**: SSH鍵パスの設定で記録されるのは鍵ファイルのパス（場所）だけです。鍵ファイルの中身がアップロードされたり外部に送信されることはありません。
 
