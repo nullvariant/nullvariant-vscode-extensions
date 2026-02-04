@@ -105,7 +105,7 @@ export async function showIdentityQuickPick(
   } as IdentityQuickPickItem;
 
   const manageItem: IdentityQuickPickItem = {
-    label: `$(gear) ${vs.l10n.t('Manage Profiles')}`,
+    label: `$(gear) ${vs.l10n.t('Manage Identities')}`,
     identity: null as unknown as Identity,
     _isManageOption: true,
   };
@@ -115,13 +115,13 @@ export async function showIdentityQuickPick(
   // Manage button for title bar
   const manageButton: vscodeTypes.QuickInputButton = {
     iconPath: new vs.ThemeIcon('gear'),
-    tooltip: vs.l10n.t('Manage Profiles'),
+    tooltip: vs.l10n.t('Manage Identities'),
   };
 
   const quickPick = vs.window.createQuickPick<IdentityQuickPickItem>();
   quickPick.items = allItems;
-  quickPick.title = vs.l10n.t('Select Profile');
-  quickPick.placeholder = vs.l10n.t('Search profiles...');
+  quickPick.title = vs.l10n.t('Select Identity');
+  quickPick.placeholder = vs.l10n.t('Search identities...');
   quickPick.buttons = [manageButton];
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
@@ -311,7 +311,7 @@ export async function showManageIdentitiesQuickPick(
   // Add button for title bar
   const addButton: vscodeTypes.QuickInputButton = {
     iconPath: new vs.ThemeIcon('add'),
-    tooltip: vs.l10n.t('New Profile'),
+    tooltip: vs.l10n.t('New Identity'),
   };
 
   if (identities.length === 0) {
@@ -333,14 +333,14 @@ export async function showManageIdentitiesQuickPick(
     });
   }
 
-  // Add separator and "New Profile" option
+  // Add separator and "New Identity" option
   items.push(
     {
       label: '',
       kind: vs.QuickPickItemKind.Separator,
     } as ManageIdentityQuickPickItem,
     {
-      label: vs.l10n.t('New Profile'),
+      label: vs.l10n.t('New Identity'),
       iconPath: new vs.ThemeIcon('add'),
       _isAddOption: true,
     }
@@ -348,7 +348,7 @@ export async function showManageIdentitiesQuickPick(
 
   const quickPick = vs.window.createQuickPick<ManageIdentityQuickPickItem>();
   quickPick.items = items;
-  quickPick.title = vs.l10n.t('Manage Profiles');
+  quickPick.title = vs.l10n.t('Manage Identities');
   quickPick.ignoreFocusOut = true;
   quickPick.buttons = [vs.QuickInputButtons.Back, addButton];
   quickPick.matchOnDescription = true;

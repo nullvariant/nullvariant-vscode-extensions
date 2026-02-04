@@ -206,7 +206,7 @@ Note: The last identity (`freelance`) has no SSH. Git config-only switching is a
 
 ## Identity Management
 
-Click the status bar → select "Manage Profiles" at the bottom of the list to open the management screen.
+Click the status bar → select "Manage Identities" at the bottom of the list to open the management screen.
 You can add, edit, delete, and reorder identities directly from the UI.
 
 <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/en/profile-management.webp" width="600" alt="Identity Management: Guide for delete and reorder operations" loading="lazy">

@@ -598,7 +598,7 @@ async function promptAddFormFieldInput(
   const isOptional = !meta.required;
 
   return showFieldInputBox(vs, {
-    title: vs.l10n.t('New Profile: {0}', vs.l10n.t(meta.labelKey)),
+    title: vs.l10n.t('New Identity: {0}', vs.l10n.t(meta.labelKey)),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, meta.key),
     prompt: getInputBoxPrompt(vs, isOptional, 'add'),
@@ -865,7 +865,7 @@ async function executeAddFormLoop(
   };
 
   const quickPick = vs.window.createQuickPick<AddFormQuickPickItem>();
-  quickPick.title = vs.l10n.t('New Profile');
+  quickPick.title = vs.l10n.t('New Identity');
   quickPick.placeholder = vs.l10n.t('Filter...');
   quickPick.ignoreFocusOut = true;
   quickPick.buttons = [vs.QuickInputButtons.Back];
