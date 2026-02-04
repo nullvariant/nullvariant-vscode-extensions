@@ -29,7 +29,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-ja.png" width="600" alt="デモ">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/demo.webp" width="600" alt="デモ" loading="lazy">
 
 ## 🎯 なぜ Git ID Switcher？
 
@@ -104,94 +104,19 @@ Host github-work
 
 ### ステップ 3: 拡張機能を設定
 
-インストール直後はサンプルプロフィールが用意されています。これを自分用に編集しましょう。
+インストール直後はサンプルプロフィールが用意されています。
+以下のガイドに沿って、これを自分用に編集しましょう。
 
-1. ステータスバー（右下）のプロフィールアイコンをクリック
-2. 一覧下部の「プロフィール管理」を選択
-3. サンプルプロフィールの「✏️」をクリックして編集
-4. ID・名前・メールアドレスを自分の情報に変更
-5. 「SSH Key Path」を選択し、📁ボタンでSSH秘密鍵を参照選択（パスが自動入力される）
-6. SSHホスト・その他のオプション項目も必要に応じて設定
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/first-ux.webp" width="600" alt="初回セットアップ手順（13ステップ）：ステータスバーからプロフィール管理を開き、編集・新規作成を行う流れ" loading="lazy">
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/management-ui-ja.png" width="600" alt="プロフィール管理UI">
+> **鍵ファイルは送信されません**: SSH鍵パスの設定で記録されるのは鍵ファイルのパス（場所）だけです。鍵ファイルの中身がアップロードされたり外部に送信されることはありません。
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ssh-key-browse-ja.png" width="600" alt="SSH鍵パス参照ボタン">
-
-> **鍵ファイルは送信されません**: この操作で記録されるのは鍵ファイルのパス（場所）だけです。鍵ファイルの中身がアップロードされたり外部に送信されることはありません。
-
-2つ目のプロフィールは「＋」ボタンから新規追加してください。
+> **GPG署名を使う場合**: プロフィール編集画面で `gpgKeyId` も設定できます。
+> GPG鍵IDの確認方法は「[トラブルシューティング](#gpg署名が動作しない)」を参照してください。
 
 > **ヒント**: settings.jsonから直接設定することもできます。
 > 拡張機能の設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 →「settings.jsonで編集」をクリック。
 > JSON形式での設定例は「[フル設定例](#フル設定例-4アカウントとssh--gpg)」を参照してください。
-
-SSH鍵パスの詳細な設定手順・プロフィールの編集・削除・並び替えについては「[プロフィール管理](#プロフィール管理)」を参照してください。
-
-### ステップ 4: 使ってみる
-
-1. ステータスバー（右下）のプロフィールアイコンをクリック
-2. プロフィールを選択
-3. 完了！Git configとSSH鍵が切り替わりました。
-
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-ja.png" width="600" alt="Quick Pick">
-
-### SSHホストエイリアスの使い方
-
-リポジトリをクローンする際、プロフィールに対応したホストを使用します：
-
-```bash
-# 仕事用プロフィール（github-workエイリアスを使用）
-git clone git@github-work:company/repo.git
-
-# 個人用プロフィール（デフォルトのgithub.comを使用）
-git clone git@github.com:kaoru/repo.git
-```
-
----
-
-## オプション: GPG署名
-
-GPGでコミットに署名する場合：
-
-### ステップ 1: GPG鍵IDを確認
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-出力例：
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] 高橋カオル <kaoru@personal.example.com>
-```
-
-キーIDは`ABCD1234`です。
-
-### ステップ 2: プロフィールにGPG鍵を追加
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "icon": "🏠",
-      "name": "高橋カオル",
-      "service": "GitHub",
-      "email": "kaoru@personal.example.com",
-      "description": "個人プロジェクト",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-このプロフィールに切り替えると、拡張機能は以下を設定します：
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
 
 ---
 
@@ -284,68 +209,20 @@ Host bitbucket.org
 ステータスバーをクリック → 一覧下部の「プロフィール管理」で管理画面を開きます。
 プロフィールの追加・編集・削除・並び替えはすべてUIから直接操作できます。
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/management-ui-overview-ja.png" width="600" alt="プロフィール管理画面">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/profile-management.webp" width="600" alt="プロフィール管理：削除・並べ替えの操作ガイド" loading="lazy">
 
-### プロフィールの追加
+コマンドパレットから `Git ID Switcher: Delete Identity` でプロフィールを削除することもできます。
 
-1. 管理画面の「＋」ボタンをクリック
-2. 各フィールドを入力:
-   - **ID** (必須): 一意の識別子（例: `personal`, `work`）
-   - **名前** (必須): Git user.name
-   - **メール** (必須): Git user.email
-   - その他のオプション項目（アイコン、サービス名、説明、SSH鍵パス、SSHホスト、GPG鍵ID）
-3. 「保存」を選択
+---
 
-保存後、編集画面に遷移するので、オプション項目も続けて設定できます。
+## コマンド
 
-### プロフィールの編集
-
-1. 管理画面で対象プロフィールの「✏️」をクリック
-2. 編集したいフィールドを選択
-3. 新しい値を入力
-
-フィールドを保存すると編集画面に戻るので、他のフィールドも続けて編集できます。
-
-> **注意**: プロフィールIDは、プロフィールが1件のみの場合に限り変更可能です。
-> 2件以上の場合は参照整合性のためロックされます。
-
-### プロフィールの削除
-
-1. 管理画面で対象プロフィールの「🗑️」をクリック
-2. 確認ダイアログで「はい」を選択
-
-コマンドパレットから `Git ID Switcher: Delete Identity` でも実行できます。
-
-### プロフィールの並び替え
-
-管理画面で対象プロフィールの「⬆」「⬇」をクリックして順序を変更できます。
-この順序はsettings.json内の配列順と連動します。
-
-### SSH鍵パスの設定
-
-SSH鍵パスの入力は、この拡張機能の設定で最も手間のかかる項目です。
-管理UIにはファイル参照機能が組み込まれており、パスを手入力する必要がありません。
-
-1. プロフィールの編集画面で「SSH Key Path」を選択
-2. 入力欄の右側に「📁」（Browse for SSH key path...）ボタンが表示される
-3. ボタンをクリックすると、OSのファイルダイアログが `~/.ssh/` を初期表示して開く
-4. 使用したいSSH秘密鍵ファイルを選択（例: `id_ed25519_work`）
-5. 選択したファイルのパスが `~/.ssh/...` 形式で入力欄に自動入力される
-6. パスのバリデーションが即座に実行される
-
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ssh-key-dialog-ja.png" width="600" alt="SSH鍵ファイルダイアログ">
-
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ssh-key-autofill-ja.png" width="600" alt="SSH鍵パス自動入力後">
-
-> **鍵ファイルは送信されません**: この操作は鍵ファイルのパス（場所）を記録するだけです。鍵ファイルの中身がアップロードされたり外部に送信されることはありません。
-
-**パス入力のポイント:**
-
-- 📁ボタンで参照するのが最も確実（タイプミスの心配なし）
-- 手入力も可能（`~/.ssh/id_ed25519_work` のように `~` で始まるパスも使用可）
-- セキュリティ上、`~/.ssh/` ディレクトリ配下のファイルのみ指定可能
-
-> **ヒント**: SSH鍵ファイルが `~/.ssh/` にない場合は、先にファイルを移動またはシンボリックリンクを作成してください。
+| コマンド                                 | 説明                         |
+| ---------------------------------------- | ---------------------------- |
+| `Git ID Switcher: Select Identity`       | プロフィールピッカーを開く   |
+| `Git ID Switcher: Delete Identity`       | プロフィールを削除           |
+| `Git ID Switcher: Show Current Identity` | 現在のプロフィール情報を表示 |
+| `Git ID Switcher: Show Documentation`    | ドキュメントを表示           |
 
 ---
 
@@ -539,6 +416,20 @@ Gitサブモジュールを使用する複雑なリポジトリでは、プロ�
 
 ### プッシュ時に間違ったプロフィール？
 
+**新規クローン時:**
+
+仕事用リポジトリをクローンする際は、SSH configで設定したホストエイリアスを使用します：
+
+```bash
+# 仕事用（github-workエイリアスを使用）
+git clone git@github-work:company/repo.git
+
+# 個人用（デフォルトのgithub.comを使用）
+git clone git@github.com:yourname/repo.git
+```
+
+**既存リポジトリの場合:**
+
 1. リモートURLが正しいホストエイリアスを使用しているか確認：
 
    ```bash
@@ -610,17 +501,6 @@ VS Codeなどのエディタは設定スキーマをメモリにキャッシュ�
 1. 設定画面で該当の設定項目を見つける
 2. 歯車アイコン → 「設定をリセット」を選択
 3. Settings Syncで同期（古い設定がクラウドから削除される）
-
----
-
-## コマンド
-
-| コマンド                                 | 説明                         |
-| ---------------------------------------- | ---------------------------- |
-| `Git ID Switcher: Select Identity`       | プロフィールピッカーを開く   |
-| `Git ID Switcher: Delete Identity`       | プロフィールを削除           |
-| `Git ID Switcher: Show Current Identity` | 現在のプロフィール情報を表示 |
-| `Git ID Switcher: Show Documentation`    | ドキュメントを表示           |
 
 ---
 
