@@ -16,7 +16,8 @@
     "watch:all": "npm run watch --workspaces --if-present"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "prettier": "^3.8.1"
   },
   "overrides": {
     "diff": "^8.0.3"

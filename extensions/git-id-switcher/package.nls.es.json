@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Git ID Switcher",
-  "extension.description": "Cambie entre identidades Git (perfiles) con un clic. Claves SSH y firma GPG vinculadas, aplicable a submódulos.",
+  "extension.description": "Cambie entre perfiles Git con un clic. Claves SSH y firma GPG vinculadas, aplicable a submódulos.",
   "command.selectIdentity": "Seleccionar identidad",
   "command.showCurrentIdentity": "Mostrar identidad actual",
   "command.showDocumentation": "Mostrar documentación",
@@ -12,7 +12,7 @@
   "config.category.logging": "Git ID Switcher: Depuración",
   "config.category.advanced": "Git ID Switcher: Otros",
   "config.identities": "Lista de identidades de Git para cambiar",
-  "config.identities.markdown": "Lista de identidades Git (perfiles). Para cada identidad puede configurar:\n- `id`: Identificador único (alfanumérico, guiones, guiones bajos solo; sin duplicados; requerido)\n- `name`: Git user.name (requerido)\n- `email`: Git user.email (requerido)\n- `service`: Servicio de alojamiento Git (ej. GitHub, GitLab, Bitbucket)\n- `icon`: Emoji para mostrar en la barra de estado (ej. 🏠, 💼)\n- `description`: Nota para esta identidad (ej. Trabajo, Personal)\n- `sshKeyPath`: Ruta a la clave privada SSH (ej. ~/.ssh/id_ed25519_work)\n- `sshHost`: Alias de host de configuración SSH (ej. github-work, gitlab-personal)\n- `gpgKeyId`: ID de clave GPG para firma de commits (ej. ABCD1234EF567890)",
+  "config.identities.markdown": "Lista de perfiles Git. Para cada perfil puede configurar:\n- `id`: Identificador único (alfanumérico, guiones, guiones bajos solo; sin duplicados; requerido)\n- `name`: Git user.name (requerido)\n- `email`: Git user.email (requerido)\n- `service`: Servicio de alojamiento Git (ej. GitHub, GitLab, Bitbucket)\n- `icon`: Emoji para mostrar en la barra de estado (ej. 🏠, 💼)\n- `description`: Nota para esta identidad (ej. Trabajo, Personal)\n- `sshKeyPath`: Ruta a la clave privada SSH (ej. ~/.ssh/id_ed25519_work)\n- `sshHost`: Alias de host de configuración SSH (ej. github-work, gitlab-personal)\n- `gpgKeyId`: ID de clave GPG para firma de commits (ej. ABCD1234EF567890)",
   "config.identities.id": "Identificador único (alfanumérico, guiones, guiones bajos solo; sin duplicados; requerido)",
   "config.identities.name": "Git user.name (requerido)",
   "config.identities.email": "Git user.email (requerido)",
