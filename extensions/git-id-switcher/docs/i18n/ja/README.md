@@ -209,7 +209,7 @@ Host bitbucket.org
 ステータスバーをクリック → 一覧下部の「プロフィール管理」で管理画面を開きます。
 プロフィールの追加・編集・削除・並び替えはすべてUIから直接操作できます。
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/profile-management.webp" width="600" alt="プロフィール管理：削除・並べ替えの操作ガイド" loading="lazy">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/identity-management.webp" width="600" alt="プロフィール管理：削除・並べ替えの操作ガイド" loading="lazy">
 
 コマンドパレットから `Git ID Switcher: Delete Identity` でプロフィールを削除することもできます。
 

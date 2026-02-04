@@ -10,7 +10,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      Switch between multiple Git identities with one click. Manage multiple GitHub accounts, SSH keys, GPG signing, and <b>automatically apply identity to Git Submodules</b>.
+      Switch between multiple Git identities (profiles) with one click. Manage multiple GitHub accounts, SSH keys, GPG signing, and <b>automatically apply identity to Git Submodules</b>.
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -44,9 +44,9 @@ While many Git identity switchers exist, **Git ID Switcher** solves the complex 
 
 ## Features
 
-- **Identity Management UI**: Add, edit, delete, and reorder identities without editing settings.json
+- **Identity (Profile) Management UI**: Add, edit, delete, and reorder identities without editing settings.json
 - **One-Click Identity Switch**: Instantly change Git user.name and user.email
-- **Status Bar Integration**: Always see your current identity at a glance
+- **Status Bar Integration**: Always see your current identity (profile) at a glance
 - **Submodule Support**: Automatically propagate identity to Git submodules
 - **SSH Key Management**: Automatically switch SSH keys in ssh-agent
 - **GPG Signing Support**: Configure GPG key for commit signing (optional)
@@ -208,12 +208,12 @@ Note: The last identity (`freelance`) has no SSH. Git config-only switching is a
 
 ---
 
-## Identity Management
+## Identity (Profile) Management
 
 Click the status bar → select "Manage Identities" at the bottom of the list to open the management screen.
-You can add, edit, delete, and reorder identities directly from the UI.
+You can add, edit, delete, and reorder identities (profiles) directly from the UI.
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/en/profile-management.webp" width="600" alt="Identity Management: Guide for delete and reorder operations" loading="lazy">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/en/identity-management.webp" width="600" alt="Identity Management: Guide for delete and reorder operations" loading="lazy">
 
 You can also delete an identity from the command palette using `Git ID Switcher: Delete Identity`.
 
@@ -232,7 +232,7 @@ You can also delete an identity from the command palette using `Git ID Switcher:
 
 ## Configuration Reference
 
-### Identity Properties
+### Identity (Profile) Properties
 
 | Property      | Required | Description                                                      |
 | ------------- | -------- | ---------------------------------------------------------------- |
@@ -310,7 +310,7 @@ This means:
 - Different identities can be maintained per repository
 - Global settings (`~/.gitconfig`) are not modified
 
-### What Happens When Switching Identities
+### What Happens When Switching Identities (Profiles)
 
 When you switch identities, the extension does the following (in order):
 
@@ -376,9 +376,9 @@ With this configuration, connections to the `github-work` host will only use `~/
 
 ## Advanced: Submodule Support
 
-For complex repositories using Git Submodules, identity management is often troublesome. When you commit in a submodule, Git uses that submodule's local config, which may default to your global config (wrong email!) if not explicitly set.
+For complex repositories using Git Submodules, identity (profile) management is often troublesome. When you commit in a submodule, Git uses that submodule's local config, which may default to your global config (wrong email!) if not explicitly set.
 
-**Git ID Switcher** automatically detects submodules and applies the selected identity.
+**Git ID Switcher** automatically detects submodules and applies the selected identity (profile).
 
 ```json
 {
@@ -418,7 +418,7 @@ This ensures your identity is always correct, whether you commit in the main rep
    ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
-### Wrong identity on push?
+### Wrong identity (profile) on push?
 
 **For new clones:**
 
@@ -463,7 +463,7 @@ git clone git@github.com:yourname/repo.git
 
 3. Make sure the email in your identity matches the GPG key's email
 
-### Identity not detected?
+### Identity (profile) not detected?
 
 - Make sure you're in a Git repository
 - Check `settings.json` for syntax errors
