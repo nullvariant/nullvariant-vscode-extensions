@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Git ID Switcher",
-  "extension.description": "Váltás Git identitások (profilok) között egy kattintással. SSH kulcsok és GPG aláírás összekapcsolva, almodulokra alkalmazható.",
+  "extension.description": "Váltás Git profilok között egy kattintással. SSH kulcsok és GPG aláírás összekapcsolva, almodulokra alkalmazható.",
   "command.selectIdentity": "Identitás kiválasztása",
   "command.showCurrentIdentity": "Jelenlegi identitás megjelenítése",
   "command.showDocumentation": "Dokumentáció megjelenítése",
@@ -12,7 +12,7 @@
   "config.category.logging": "Git ID Switcher: Hibakeresés",
   "config.category.advanced": "Git ID Switcher: Egyéb",
   "config.identities": "A váltáshoz használható Git identitások listája",
-  "config.identities.markdown": "Git identitások (profilok) listája. Minden identitáshoz beállítható:\n- `id`: Egyedi azonosító (alfanumerikus, kötőjelek, aláhúzások csak; nem ismétlődhet; kötelező)\n- `name`: Git user.name (kötelező)\n- `email`: Git user.email (kötelező)\n- `service`: Git tárhelyszolgáltatás (pl. GitHub, GitLab, Bitbucket)\n- `icon`: Emoji az állapotsorhoz (pl. 🏠, 💼)\n- `description`: Megjegyzés ehhez az identitáshoz (pl. Munka, Személyes)\n- `sshKeyPath`: SSH privát kulcs elérési útja (pl. ~/.ssh/id_ed25519_work)\n- `sshHost`: SSH konfiguráció gazdagép-álnév (pl. github-work, gitlab-personal)\n- `gpgKeyId`: GPG kulcs azonosító commit aláíráshoz (pl. ABCD1234EF567890)",
+  "config.identities.markdown": "Git profilok listája. Minden profilhoz beállítható:\n- `id`: Egyedi azonosító (alfanumerikus, kötőjelek, aláhúzások csak; nem ismétlődhet; kötelező)\n- `name`: Git user.name (kötelező)\n- `email`: Git user.email (kötelező)\n- `service`: Git tárhelyszolgáltatás (pl. GitHub, GitLab, Bitbucket)\n- `icon`: Emoji az állapotsorhoz (pl. 🏠, 💼)\n- `description`: Megjegyzés ehhez az identitáshoz (pl. Munka, Személyes)\n- `sshKeyPath`: SSH privát kulcs elérési útja (pl. ~/.ssh/id_ed25519_work)\n- `sshHost`: SSH konfiguráció gazdagép-álnév (pl. github-work, gitlab-personal)\n- `gpgKeyId`: GPG kulcs azonosító commit aláíráshoz (pl. ABCD1234EF567890)",
   "config.identities.id": "Egyedi azonosító (alfanumerikus, kötőjelek, aláhúzások csak; nem ismétlődhet; kötelező)",
   "config.identities.name": "Git user.name (kötelező)",
   "config.identities.email": "Git user.email (kötelező)",

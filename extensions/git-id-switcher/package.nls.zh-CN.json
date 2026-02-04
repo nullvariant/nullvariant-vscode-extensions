@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Git ID Switcher",
-  "extension.description": "一键切换多个 Git 身份（配置文件）。SSH 密钥和 GPG 签名联动，支持子模块批量应用。",
+  "extension.description": "一键切换多个 Git 配置文件。SSH 密钥和 GPG 签名联动，支持子模块批量应用。",
   "command.selectIdentity": "选择身份",
   "command.showCurrentIdentity": "显示当前身份",
   "command.showDocumentation": "显示文档",
@@ -12,7 +12,7 @@
   "config.category.logging": "Git ID Switcher: 调试",
   "config.category.advanced": "Git ID Switcher: 其他",
   "config.identities": "要切换的 Git 身份列表",
-  "config.identities.markdown": "Git 身份（配置文件）列表。每个身份可以配置以下内容：\n- `id`: 唯一标识符（仅限字母数字、连字符、下划线；不可重复；必填）\n- `name`: Git user.name（必填）\n- `email`: Git user.email（必填）\n- `service`: Git 托管服务（如 GitHub、GitLab、Bitbucket）\n- `icon`: 状态栏显示的表情符号（例：🏠, 💼）\n- `description`: 此身份的备注（例：公司用、个人用）\n- `sshKeyPath`: SSH 私钥路径（例：~/.ssh/id_ed25519_work）\n- `sshHost`: SSH 配置主机别名（例：github-work、gitlab-personal）\n- `gpgKeyId`: 用于提交签名的 GPG 密钥 ID（例：ABCD1234EF567890）",
+  "config.identities.markdown": "Git 配置文件列表。每个配置文件可以设置以下内容：\n- `id`: 唯一标识符（仅限字母数字、连字符、下划线；不可重复；必填）\n- `name`: Git user.name（必填）\n- `email`: Git user.email（必填）\n- `service`: Git 托管服务（如 GitHub、GitLab、Bitbucket）\n- `icon`: 状态栏显示的表情符号（例：🏠, 💼）\n- `description`: 此身份的备注（例：公司用、个人用）\n- `sshKeyPath`: SSH 私钥路径（例：~/.ssh/id_ed25519_work）\n- `sshHost`: SSH 配置主机别名（例：github-work、gitlab-personal）\n- `gpgKeyId`: 用于提交签名的 GPG 密钥 ID（例：ABCD1234EF567890）",
   "config.identities.id": "唯一标识符（仅限字母数字、连字符、下划线；不可重复；必填）",
   "config.identities.name": "Git user.name（必填）",
   "config.identities.email": "Git user.email（必填）",

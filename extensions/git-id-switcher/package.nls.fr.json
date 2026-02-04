@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Git ID Switcher",
-  "extension.description": "Changez d'identités Git (profils) en un clic. Clés SSH et signature GPG liées, applicable aux sous-modules.",
+  "extension.description": "Changez de profils Git en un clic. Clés SSH et signature GPG liées, applicable aux sous-modules.",
   "command.selectIdentity": "Sélectionner l'identité",
   "command.showCurrentIdentity": "Afficher l'identité actuelle",
   "command.showDocumentation": "Afficher la documentation",
@@ -12,7 +12,7 @@
   "config.category.logging": "Git ID Switcher: Débogage",
   "config.category.advanced": "Git ID Switcher: Autre",
   "config.identities": "Liste des identités Git pour basculer",
-  "config.identities.markdown": "Liste des identités Git (profils). Pour chaque identité, vous pouvez configurer :\n- `id` : Identifiant unique (alphanumérique, tirets, underscores uniquement ; pas de doublons ; requis)\n- `name` : Git user.name (requis)\n- `email` : Git user.email (requis)\n- `service` : Service d'hébergement Git (ex. GitHub, GitLab, Bitbucket)\n- `icon` : Emoji à afficher dans la barre d'état (ex. 🏠, 💼)\n- `description` : Note pour cette identité (ex. Travail, Personnel)\n- `sshKeyPath` : Chemin vers la clé privée SSH (ex. ~/.ssh/id_ed25519_work)\n- `sshHost` : Alias d'hôte de configuration SSH (ex. github-work, gitlab-personal)\n- `gpgKeyId` : ID de clé GPG pour la signature des commits (ex. ABCD1234EF567890)",
+  "config.identities.markdown": "Liste des profils Git. Pour chaque profil, vous pouvez configurer :\n- `id` : Identifiant unique (alphanumérique, tirets, underscores uniquement ; pas de doublons ; requis)\n- `name` : Git user.name (requis)\n- `email` : Git user.email (requis)\n- `service` : Service d'hébergement Git (ex. GitHub, GitLab, Bitbucket)\n- `icon` : Emoji à afficher dans la barre d'état (ex. 🏠, 💼)\n- `description` : Note pour cette identité (ex. Travail, Personnel)\n- `sshKeyPath` : Chemin vers la clé privée SSH (ex. ~/.ssh/id_ed25519_work)\n- `sshHost` : Alias d'hôte de configuration SSH (ex. github-work, gitlab-personal)\n- `gpgKeyId` : ID de clé GPG pour la signature des commits (ex. ABCD1234EF567890)",
   "config.identities.id": "Identifiant unique (alphanumérique, tirets, underscores uniquement ; pas de doublons ; requis)",
   "config.identities.name": "Git user.name (requis)",
   "config.identities.email": "Git user.email (requis)",

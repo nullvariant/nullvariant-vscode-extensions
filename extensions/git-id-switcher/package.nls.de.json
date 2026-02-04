@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Git ID Switcher",
-  "extension.description": "Mehrere Git-Identitäten (Profile) mit einem Klick wechseln. SSH-Schlüssel und GPG-Signierung sind verknüpft, auch auf Submodule anwendbar.",
+  "extension.description": "Mehrere Git-Profile mit einem Klick wechseln. SSH-Schlüssel und GPG-Signierung sind verknüpft, auch auf Submodule anwendbar.",
   "command.selectIdentity": "Identität auswählen",
   "command.showCurrentIdentity": "Aktuelle Identität anzeigen",
   "command.showDocumentation": "Dokumentation anzeigen",
@@ -12,7 +12,7 @@
   "config.category.logging": "Git ID Switcher: Debugging",
   "config.category.advanced": "Git ID Switcher: Sonstiges",
   "config.identities": "Liste der Git-Identitäten zum Wechseln",
-  "config.identities.markdown": "Liste der Git-Identitäten (Profile). Für jede Identität können folgende Einstellungen vorgenommen werden:\n- `id`: Eindeutige Kennung (alphanumerisch, Bindestriche, Unterstriche nur; keine Duplikate; erforderlich)\n- `name`: Git user.name (erforderlich)\n- `email`: Git user.email (erforderlich)\n- `service`: Git-Hosting-Dienst (z.B. GitHub, GitLab, Bitbucket)\n- `icon`: Emoji zur Anzeige in der Statusleiste (z.B. 🏠, 💼)\n- `description`: Notiz für diese Identität (z.B. Arbeit, Privat)\n- `sshKeyPath`: Pfad zum privaten SSH-Schlüssel (z.B. ~/.ssh/id_ed25519_work)\n- `sshHost`: SSH-Konfiguration Host-Alias (z.B. github-work, gitlab-personal)\n- `gpgKeyId`: GPG-Schlüssel-ID für Commit-Signierung (z.B. ABCD1234EF567890)",
+  "config.identities.markdown": "Liste der Git-Profile. Für jedes Profil können folgende Einstellungen vorgenommen werden:\n- `id`: Eindeutige Kennung (alphanumerisch, Bindestriche, Unterstriche nur; keine Duplikate; erforderlich)\n- `name`: Git user.name (erforderlich)\n- `email`: Git user.email (erforderlich)\n- `service`: Git-Hosting-Dienst (z.B. GitHub, GitLab, Bitbucket)\n- `icon`: Emoji zur Anzeige in der Statusleiste (z.B. 🏠, 💼)\n- `description`: Notiz für diese Identität (z.B. Arbeit, Privat)\n- `sshKeyPath`: Pfad zum privaten SSH-Schlüssel (z.B. ~/.ssh/id_ed25519_work)\n- `sshHost`: SSH-Konfiguration Host-Alias (z.B. github-work, gitlab-personal)\n- `gpgKeyId`: GPG-Schlüssel-ID für Commit-Signierung (z.B. ABCD1234EF567890)",
   "config.identities.id": "Eindeutige Kennung (alphanumerisch, Bindestriche, Unterstriche nur; keine Duplikate; erforderlich)",
   "config.identities.name": "Git user.name (erforderlich)",
   "config.identities.email": "Git user.email (erforderlich)",
