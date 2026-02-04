@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.15] - 2026-02-05
+
+### Changed
+
+- **L10n bundle cleanup and key unification**:
+  - Removed ~24 unused keys from all 17 language files
+  - Added 6 missing keys (SSH/GPG validation messages)
+  - Unified all files to exactly 93 keys
+  - Fixed duplicate key issues (e.g., "Select Identity" appeared twice)
+  - Keys now use "Identity" terminology; localized values use appropriate "Profile" equivalents
+
 ## [0.16.14] - 2026-02-04
 
 ### Changed

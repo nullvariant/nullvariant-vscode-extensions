@@ -380,7 +380,7 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
   });
 
   describe('Title and Placeholder', () => {
-    it('should set title to Select Profile', async () => {
+    it('should set title to Select Identity', async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
         selectedIdentity: TEST_IDENTITIES.work,
@@ -390,7 +390,7 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
       await showIdentityQuickPick();
 
       const title = mockVSCode._getCapturedTitle();
-      assert.ok(title.includes('Select Profile'), 'Title should be "Select Profile"');
+      assert.ok(title.includes('Select Identity'), 'Title should be "Select Identity"');
     });
 
     it('should set correct placeholder', async () => {
@@ -678,7 +678,7 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       assert.strictEqual(addOption.iconPath?.id, 'add', 'Add option should have add icon');
     });
 
-    it('should set title to Manage Profiles', async () => {
+    it('should set title to Manage Identities', async () => {
       const mockVSCode = createManageMockVSCode({
         identities: [TEST_IDENTITIES.work],
         triggerAction: 'hide',
@@ -688,7 +688,7 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       await showManageIdentitiesQuickPick([TEST_IDENTITIES.work]);
 
       const title = mockVSCode._getCapturedTitle();
-      assert.ok(title.includes('Manage Profiles'), 'Title should be "Manage Profiles"');
+      assert.ok(title.includes('Manage Identities'), 'Title should be "Manage Identities"');
     });
 
     it('should have back button in title bar', async () => {
