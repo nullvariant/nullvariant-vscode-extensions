@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.14] - 2026-02-04
+
+### Changed
+
+- **L10n terminology unified to "profile" for better user comprehension**:
+  - Updated all 17 language bundle files (`bundle.l10n.*.json`)
+  - Changed "identity" → "profile" in user-facing UI text (status bar, QuickPick items, messages)
+  - Internal code and settings still use "identity" for backward compatibility
+
 ## [0.16.13] - 2026-02-03
 
 ### Documentation
