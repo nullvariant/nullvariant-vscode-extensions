@@ -29,7 +29,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-ja.png" width="600" alt="デモ" loading="lazy">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/demo.webp" width="600" alt="デモ" loading="lazy">
 
 ## 🎯 なぜ Git ID Switcher？
 
@@ -209,9 +209,7 @@ Host bitbucket.org
 ステータスバーをクリック → 一覧下部の「プロフィール管理」で管理画面を開きます。
 プロフィールの追加・編集・削除・並び替えはすべてUIから直接操作できます。
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/profile-management.webp" width="600" alt="プロフィール管理：追加・編集・削除・並び替え・SSH鍵パス設定の操作ガイド" loading="lazy">
-
-> **鍵ファイルは送信されません**: SSH鍵パスの設定で記録されるのは鍵ファイルのパス（場所）だけです。鍵ファイルの中身がアップロードされたり外部に送信されることはありません。
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ja/profile-management.webp" width="600" alt="プロフィール管理：削除・並べ替えの操作ガイド" loading="lazy">
 
 コマンドパレットから `Git ID Switcher: Delete Identity` でプロフィールを削除することもできます。
 
