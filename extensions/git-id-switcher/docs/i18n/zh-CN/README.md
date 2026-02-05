@@ -249,21 +249,21 @@ Host bitbucket.org
 
 ### 全局设置
 
-| 设置                                       | 默认值     | 描述                                                                               |
-| ------------------------------------------ | ---------- | ---------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | 见示例     | 身份配置列表                                                                       |
-| `gitIdSwitcher.defaultIdentity`            | 见示例     | 默认使用的身份 ID                                                                  |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | 切换身份时自动切换 SSH 密钥                                                        |
-| `gitIdSwitcher.showNotifications`          | `true`     | 切换身份时显示通知                                                                 |
-| `gitIdSwitcher.applyToSubmodules`          | `true`     | 将身份传播到 Git 子模块                                                            |
-| `gitIdSwitcher.submoduleDepth`             | `1`        | 嵌套子模块配置的最大深度（1-5）                                                    |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | 在 Git config `user.name` 中包含图标表情符号                                       |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`    | 将审计日志保存到文件（记录身份切换、SSH 密钥操作等）                               |
-| `gitIdSwitcher.logging.filePath`           | `""`       | 日志文件路径（如 `~/.git-id-switcher/security.log`）。空字符串使用默认路径         |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | 轮换前的最大文件大小（字节，1MB-100MB）                                            |
-| `gitIdSwitcher.logging.maxFiles`           | `5`        | 保留的轮换日志文件最大数量（1-20）                                                 |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | 启用时，日志中的所有值都会被掩码（最大隐私模式）                                   |
-| `gitIdSwitcher.logging.level`              | `"INFO"`   | 日志详细程度（`DEBUG`、`INFO`、`WARN`、`ERROR`、`SECURITY`）。记录选定级别及以上   |
+| 设置                                       | 默认值     | 描述                                                                                |
+| ------------------------------------------ | ---------- | ----------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | 见示例     | 身份配置列表                                                                        |
+| `gitIdSwitcher.defaultIdentity`            | 见示例     | 默认使用的身份 ID                                                                   |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | 切换身份时自动切换 SSH 密钥                                                         |
+| `gitIdSwitcher.showNotifications`          | `true`     | 切换身份时显示通知                                                                  |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | 将身份传播到 Git 子模块                                                             |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | 嵌套子模块配置的最大深度（1-5）                                                     |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | 在 Git config `user.name` 中包含图标表情符号                                        |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | 将审计日志保存到文件（记录身份切换、SSH 密钥操作等）                                |
+| `gitIdSwitcher.logging.filePath`           | `""`       | 日志文件路径（如 `~/.git-id-switcher/security.log`）。空字符串使用默认路径          |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | 轮换前的最大文件大小（字节，1MB-100MB）                                             |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | 保留的轮换日志文件最大数量（1-20）                                                  |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | 启用时，日志中的所有值都会被掩码（最大隐私模式）                                    |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | 日志详细程度（`DEBUG`、`INFO`、`WARN`、`ERROR`、`SECURITY`）。记录选定级别及以上    |
 | `gitIdSwitcher.commandTimeouts`            | `{}`       | 每个命令的自定义超时值（毫秒，1 秒-5 分钟）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### 关于 `includeIconInGitConfig`
@@ -336,12 +336,12 @@ Git ID Switcher 通过 `ssh-agent` 管理 SSH 密钥：
 
 如果您已有 SSH 配置，Git ID Switcher 会与其协同工作：
 
-| 您的设置                              | Git ID Switcher 的行为                               |
-| ------------------------------------- | ---------------------------------------------------- |
-| `~/.ssh/config` 中指定 `IdentityFile` | 两者都可使用；使用 `IdentitiesOnly yes` 防止冲突     |
-| 环境变量 `GIT_SSH_COMMAND`            | 使用您的自定义 SSH 命令；ssh-agent 仍然有效          |
-| `git config core.sshCommand`          | 同上                                                 |
-| direnv 设置 SSH 相关环境变量          | 可以共存；ssh-agent 独立运行                         |
+| 您的设置                              | Git ID Switcher 的行为                           |
+| ------------------------------------- | ------------------------------------------------ |
+| `~/.ssh/config` 中指定 `IdentityFile` | 两者都可使用；使用 `IdentitiesOnly yes` 防止冲突 |
+| 环境变量 `GIT_SSH_COMMAND`            | 使用您的自定义 SSH 命令；ssh-agent 仍然有效      |
+| `git config core.sshCommand`          | 同上                                             |
+| direnv 设置 SSH 相关环境变量          | 可以共存；ssh-agent 独立运行                     |
 
 **推荐:** 始终在 SSH 配置中使用 `IdentitiesOnly yes`。这可以防止 SSH 尝试多个密钥。
 
