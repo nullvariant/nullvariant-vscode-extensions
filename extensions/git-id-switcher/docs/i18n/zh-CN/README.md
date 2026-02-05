@@ -6,7 +6,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      一键切换多个Git身份。管理多个GitHub账户、SSH密钥、GPG签名，并<b>自动将身份应用到Git子模块</b>。
+      一键切换多个 Git 身份。管理多个 GitHub 账户、SSH 密钥、GPG 签名，并<b>自动将身份应用到 Git 子模块</b>。
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -29,7 +29,7 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-zh-CN.png" width="600" alt="演示">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/zh-CN/demo.webp" width="600" alt="演示" loading="lazy">
 
 ## 🎯 为什么选择 Git ID Switcher？
 
@@ -40,14 +40,15 @@
 
 ## 功能特性
 
-- **子模块支持**: 自动将身份传播到 Git 子模块
-- **SSH密钥管理**: 自动在 ssh-agent 中切换 SSH 密钥
-- **GPG签名支持**: 配置用于提交签名的 GPG 密钥（可选）
+- **身份管理 UI**: 无需编辑 settings.json，即可添加、编辑、删除和重新排序身份
 - **一键切换身份**: 即时更改 Git user.name 和 user.email
 - **状态栏集成**: 随时一目了然地查看当前身份
+- **子模块支持**: 自动将身份传播到 Git 子模块
+- **SSH 密钥管理**: 自动在 ssh-agent 中切换 SSH 密钥
+- **GPG 签名支持**: 配置用于提交签名的 GPG 密钥（可选）
 - **丰富的工具提示**: 包含描述和 SSH 主机的详细身份信息
 - **跨平台**: 支持 macOS、Linux 和 Windows
-- **多语言**: 支持17种语言
+- **多语言**: 支持 17 种语言
 
 ## 🌏 关于多语言支持的想法
 
@@ -55,7 +56,7 @@
 > 我不想仅仅因为他们人数少就将其抛弃。
 > 即使翻译不完美，我也希望您能感受到我们理解和尊重少数语言的意图。
 
-本扩展支持 VSCode 所支持的全部17种语言。此外，对于 README 文档，我们还在尝试翻译成少数民族语言甚至趣味语言。
+本扩展支持 VS Code 所支持的全部 17 种语言。此外，对于 README 文档，我们还在尝试翻译成少数民族语言甚至趣味语言。
 
 这不仅仅是"全球化支持"，而是"对语言多样性的尊重"。我希望这能成为一个基础设施，让来自世界各地的开发者跨越语言障碍，提交让世界变得更美好的代码。
 
@@ -103,106 +104,23 @@ Host github-work
 
 ### 步骤 3: 配置扩展
 
-打开扩展设置（`Cmd+,` / `Ctrl+,`）→ 搜索 "Git ID Switcher" → 点击 "在 settings.json 中编辑"：
+安装后会立即提供示例身份配置。
+按照以下指南，将其编辑为您自己的配置。
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "icon": "🏠",
-      "name": "张伟",
-      "service": "GitHub",
-      "email": "zhangwei@personal.example.com",
-      "description": "个人项目",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal"
-    },
-    {
-      "id": "work",
-      "icon": "💼",
-      "name": "张伟",
-      "service": "GitHub 公司",
-      "email": "zhangwei@company.example.com",
-      "description": "公司开发（企业托管用户）",
-      "sshKeyPath": "~/.ssh/id_ed25519_work",
-      "sshHost": "github-work"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "personal",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/zh-CN/first-ux.webp" width="600" alt="初始设置步骤（13 步）：从状态栏打开身份管理，进行编辑和新建" loading="lazy">
 
-### 步骤 4: 开始使用
+> **密钥文件不会被发送**: 设置 SSH 密钥路径时，只记录密钥文件的路径（位置）。密钥文件的内容永远不会被上传或发送到外部。
 
-1. 点击状态栏（右下角）的身份图标
-2. 选择一个身份
-3. 完成！Git 配置和 SSH 密钥已切换。
+> **如果使用 GPG 签名**: 您也可以在身份编辑界面设置 `gpgKeyId`。
+> 有关如何查找 GPG 密钥 ID，请参阅"[故障排除](#gpg-签名不工作)"。
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-zh-CN.png" width="600" alt="Quick Pick">
-
-### 使用 SSH 主机别名
-
-克隆仓库时，使用与您的身份对应的主机：
-
-```bash
-# 工作身份（使用 github-work 别名）
-git clone git@github-work:company/repo.git
-
-# 个人身份（使用默认的 github.com）
-git clone git@github.com:zhangwei/repo.git
-```
+> **提示**: 您也可以直接从 settings.json 进行配置。
+> 打开扩展设置（`Cmd+,` / `Ctrl+,`）→ 搜索 "Git ID Switcher" → 点击 "在 settings.json 中编辑"。
+> JSON 配置示例请参阅"[完整示例](#完整示例-4-个账户与-ssh--gpg)"。
 
 ---
 
-## 可选: GPG 签名
-
-如果您使用 GPG 签名提交：
-
-### 步骤 1: 查找您的 GPG 密钥 ID
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-输出示例：
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] 张伟 <zhangwei@personal.example.com>
-```
-
-密钥 ID 是 `ABCD1234`。
-
-### 步骤 2: 将 GPG 密钥添加到身份
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "icon": "🏠",
-      "name": "张伟",
-      "service": "GitHub",
-      "email": "zhangwei@personal.example.com",
-      "description": "个人项目",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-切换到此身份时，扩展会设置：
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
-
----
-
-## 完整示例: 4个账户 + SSH + GPG
+## 完整示例: 4 个账户与 SSH + GPG
 
 结合所有功能的完整示例：
 
@@ -286,17 +204,39 @@ Host bitbucket.org
 
 ---
 
+## 身份管理
+
+点击状态栏 → 在列表底部选择"身份管理"打开管理界面。
+您可以直接通过 UI 添加、编辑、删除和重新排序身份。
+
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/zh-CN/identity-management.webp" width="600" alt="身份管理：删除和重新排序操作指南" loading="lazy">
+
+您也可以通过命令面板使用 `Git ID Switcher: Delete Identity` 删除身份。
+
+---
+
+## 命令
+
+| 命令                                     | 描述             |
+| ---------------------------------------- | ---------------- |
+| `Git ID Switcher: Select Identity`       | 打开身份选择器   |
+| `Git ID Switcher: Delete Identity`       | 删除身份         |
+| `Git ID Switcher: Show Current Identity` | 显示当前身份信息 |
+| `Git ID Switcher: Show Documentation`    | 显示文档         |
+
+---
+
 ## 配置参考
 
 ### 身份属性
 
 | 属性          | 必需 | 描述                                                |
 | ------------- | ---- | --------------------------------------------------- |
-| `id`          | ✅   | 唯一标识符（如 `"work"`, `"personal"`）             |
+| `id`          | ✅   | 唯一标识符（如 `"personal"`、`"work"`）             |
 | `name`        | ✅   | Git user.name - 显示在提交中                        |
 | `email`       | ✅   | Git user.email - 显示在提交中                       |
-| `icon`        |      | 状态栏显示的表情符号（如 `"💼"`）。仅限单个表情符号 |
-| `service`     |      | 服务名称（如 `"GitHub"`, `"GitLab"`）。用于 UI 显示 |
+| `icon`        |      | 状态栏显示的表情符号（如 `"🏠"`）。仅限单个表情符号 |
+| `service`     |      | 服务名称（如 `"GitHub"`、`"GitLab"`）。用于 UI 显示 |
 | `description` |      | 在选择器和工具提示中显示的简短描述                  |
 | `sshKeyPath`  |      | SSH 私钥路径（如 `"~/.ssh/id_ed25519_work"`）       |
 | `sshHost`     |      | SSH 配置主机别名（如 `"github-work"`）              |
@@ -304,27 +244,27 @@ Host bitbucket.org
 
 #### 显示限制
 
-- **状态栏**: 超过约25个字符的文本将用 `...` 截断
+- **状态栏**: 超过约 25 个字符的文本将用 `...` 截断
 - **`icon`**: 仅允许单个表情符号（字素簇）。不支持多个表情符号或长字符串
 
 ### 全局设置
 
-| 设置                                       | 默认值     | 描述                                                                              |
-| ------------------------------------------ | ---------- | --------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | 见示例     | 身份配置列表                                                                      |
-| `gitIdSwitcher.defaultIdentity`            | 见示例     | 默认使用的身份 ID                                                                 |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | 切换身份时自动切换 SSH 密钥                                                       |
-| `gitIdSwitcher.showNotifications`          | `true`     | 切换身份时显示通知                                                                |
-| `gitIdSwitcher.applyToSubmodules`          | `true`     | 将身份传播到 Git 子模块                                                           |
-| `gitIdSwitcher.submoduleDepth`             | `1`        | 嵌套子模块配置的最大深度（1-5）                                                   |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | 在 Git config `user.name` 中包含图标表情符号                                      |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`    | 启用审计日志（身份切换、SSH 操作等记录）                                          |
-| `gitIdSwitcher.logging.filePath`           | `""`       | 日志文件路径（如：`~/.git-id-switcher/security.log`）。为空则使用默认位置         |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | 轮换前的最大文件大小（字节，1MB-100MB）                                           |
-| `gitIdSwitcher.logging.maxFiles`           | `5`        | 保留的轮换日志文件最大数量（1-20）                                                |
-| `gitIdSwitcher.logging.level`              | `"INFO"`   | 日志级别：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。记录选定级别及以上            |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | 启用时，日志中的所有值都会被掩码（最大隐私模式）                                  |
-| `gitIdSwitcher.commandTimeouts`            | `{}`       | 每个命令的自定义超时值（毫秒，1秒-5分钟）。例：`{"git": 15000, "ssh-add": 10000}` |
+| 设置                                       | 默认值     | 描述                                                                               |
+| ------------------------------------------ | ---------- | ---------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | 见示例     | 身份配置列表                                                                       |
+| `gitIdSwitcher.defaultIdentity`            | 见示例     | 默认使用的身份 ID                                                                  |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | 切换身份时自动切换 SSH 密钥                                                        |
+| `gitIdSwitcher.showNotifications`          | `true`     | 切换身份时显示通知                                                                 |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | 将身份传播到 Git 子模块                                                            |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | 嵌套子模块配置的最大深度（1-5）                                                    |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | 在 Git config `user.name` 中包含图标表情符号                                       |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | 将审计日志保存到文件（记录身份切换、SSH 密钥操作等）                               |
+| `gitIdSwitcher.logging.filePath`           | `""`       | 日志文件路径（如 `~/.git-id-switcher/security.log`）。空字符串使用默认路径         |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | 轮换前的最大文件大小（字节，1MB-100MB）                                            |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | 保留的轮换日志文件最大数量（1-20）                                                 |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | 启用时，日志中的所有值都会被掩码（最大隐私模式）                                   |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | 日志详细程度（`DEBUG`、`INFO`、`WARN`、`ERROR`、`SECURITY`）。记录选定级别及以上   |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | 每个命令的自定义超时值（毫秒，1 秒-5 分钟）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### 关于 `includeIconInGitConfig`
 
@@ -335,39 +275,12 @@ Host bitbucket.org
 | `false`（默认） | `icon` 仅显示在编辑器 UI 中。Git config 只写入 `name`     |
 | `true`          | Git config 写入 `icon + name`。表情符号会出现在提交历史中 |
 
-示例：`icon: "👤"`, `name: "张伟"` 的情况
+示例：`icon: "👤"`、`name: "张伟"` 的情况
 
 | includeIconInGitConfig | Git config `user.name` | 提交签名          |
 | ---------------------- | ---------------------- | ----------------- |
 | `false`                | `张伟`                 | `张伟 <email>`    |
 | `true`                 | `👤 张伟`              | `👤 张伟 <email>` |
-
-### 注意: 基本设置（无 SSH）
-
-如果不需要 SSH 密钥切换（例如，在单个 GitHub 账户上使用不同的提交者信息），可以使用最小配置：
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "icon": "🏠",
-      "name": "张伟",
-      "email": "zhangwei@personal.example.com",
-      "description": "个人项目"
-    },
-    {
-      "id": "work",
-      "icon": "💼",
-      "name": "张伟",
-      "email": "zhangwei@company.example.com",
-      "description": "工作开发"
-    }
-  ]
-}
-```
-
-此设置仅切换 `git config user.name` 和 `user.email`。
 
 ---
 
@@ -405,11 +318,59 @@ Git 配置有三个层次，下层的设置会覆盖上层：
 ### 子模块传播的工作原理
 
 本地设置是每个仓库独立的，因此不会自动应用到子模块。
-这就是本扩展提供子模块传播功能的原因（详见"高级: 子模块支持"部分）。
+这就是本扩展提供子模块传播功能的原因（详见"高级：子模块支持"部分）。
+
+### SSH 密钥管理详情
+
+Git ID Switcher 通过 `ssh-agent` 管理 SSH 密钥：
+
+| 操作     | 执行命令               |
+| -------- | ---------------------- |
+| 添加密钥 | `ssh-add <keyPath>`    |
+| 移除密钥 | `ssh-add -d <keyPath>` |
+| 列出密钥 | `ssh-add -l`           |
+
+**重要:** 此扩展**不会**修改 `~/.ssh/config`。SSH 配置需要手动完成（参见"快速开始"的步骤 2）。
+
+### 与现有 SSH 配置的交互
+
+如果您已有 SSH 配置，Git ID Switcher 会与其协同工作：
+
+| 您的设置                              | Git ID Switcher 的行为                               |
+| ------------------------------------- | ---------------------------------------------------- |
+| `~/.ssh/config` 中指定 `IdentityFile` | 两者都可使用；使用 `IdentitiesOnly yes` 防止冲突     |
+| 环境变量 `GIT_SSH_COMMAND`            | 使用您的自定义 SSH 命令；ssh-agent 仍然有效          |
+| `git config core.sshCommand`          | 同上                                                 |
+| direnv 设置 SSH 相关环境变量          | 可以共存；ssh-agent 独立运行                         |
+
+**推荐:** 始终在 SSH 配置中使用 `IdentitiesOnly yes`。这可以防止 SSH 尝试多个密钥。
+
+### 为什么需要 `IdentitiesOnly yes`？
+
+如果没有此设置，SSH 可能会按以下顺序尝试密钥：
+
+1. ssh-agent 中加载的密钥（由 Git ID Switcher 管理）
+2. `~/.ssh/config` 中指定的密钥
+3. 默认密钥（`~/.ssh/id_rsa`、`~/.ssh/id_ed25519` 等）
+
+这可能导致身份验证失败或使用非预期的密钥。
+
+使用 `IdentitiesOnly yes` 后，SSH 将**仅使用指定的密钥**。这确保了 Git ID Switcher 配置的密钥被可靠地使用。
+
+```ssh-config
+# 推荐的配置
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← 这一行很重要
+```
+
+通过此配置，连接到 `github-work` 主机时将仅使用 `~/.ssh/id_ed25519_work`，不会尝试其他密钥。
 
 ---
 
-## 高级: 子模块支持
+## 高级：子模块支持
 
 对于使用 Git 子模块的复杂仓库，身份管理通常很麻烦。如果在子模块中提交，Git 会使用该子模块的本地配置，如果未明确设置，可能会默认使用全局配置（错误的邮箱地址！）。
 
@@ -455,6 +416,20 @@ Git 配置有三个层次，下层的设置会覆盖上层：
 
 ### 推送时身份错误？
 
+**新克隆时:**
+
+克隆工作仓库时，使用 SSH 配置中设置的主机别名：
+
+```bash
+# 工作身份（使用 github-work 别名）
+git clone git@github-work:company/repo.git
+
+# 个人身份（使用默认的 github.com）
+git clone git@github.com:yourname/repo.git
+```
+
+**对于现有仓库:**
+
 1. 检查远程 URL 是否使用正确的主机别名：
 
    ```bash
@@ -499,10 +474,10 @@ Git 配置有三个层次，下层的设置会覆盖上层：
 如果要包含服务信息，请使用 `service` 字段。
 
 ```jsonc
-// NG
+// 错误
 "name": "张伟 (个人)"
 
-// OK
+// 正确
 "name": "张伟",
 "service": "GitHub"
 ```
@@ -515,7 +490,7 @@ Git 配置有三个层次，下层的设置会覆盖上层：
 
 VS Code 等编辑器会将设置架构缓存在内存中，"重新加载窗口"或重新安装扩展可能不足以刷新它。
 
-### 默认值为空？
+### 默认值（identities 等）为空？
 
 如果新安装后示例设置也没有出现，**Settings Sync** 可能是原因。
 
@@ -529,23 +504,13 @@ VS Code 等编辑器会将设置架构缓存在内存中，"重新加载窗口"�
 
 ---
 
-## 命令
-
-| 命令                                     | 描述             |
-| ---------------------------------------- | ---------------- |
-| `Git ID Switcher: Select Identity`       | 打开身份选择器   |
-| `Git ID Switcher: Show Current Identity` | 显示当前身份信息 |
-| `Git ID Switcher: Show Documentation`    | 显示文档         |
-
----
-
 ## 设计理念
 
-> "我是谁？" — 这是本扩展唯一回答的问题。
+> **"我是谁？"** — 这是本扩展唯一回答的问题
 
-基于**枯山水架构**构建：简单的核心（100行），
-被刻意的质量（90%覆盖率、日志、超时处理）
-和有意的约束（无GitHub API、无令牌管理）所包围。
+基于**枯山水架构**构建：简单的核心（100 行），
+被刻意的质量（90% 覆盖率、日志、超时处理）
+和有意的约束（无 GitHub API、无令牌管理）所包围。
 
 [![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
 

@@ -53,7 +53,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/docs/i18n/x-lolcat/README.md': 'c589c0469f376ea75ab93e945086f0f5a0b983a74600c4a9eb6f399710408faf',
   'extensions/git-id-switcher/docs/i18n/x-pirate/README.md': '2b38158e94bda57815dc39f271713186ad4e159665294bbbed090204dfe0fe10',
   'extensions/git-id-switcher/docs/i18n/x-shakespeare/README.md': '01df937e7785defb46087bace47b5b266794050e83c139c7fb1e17daf877c3b8',
-  'extensions/git-id-switcher/docs/i18n/zh-CN/README.md': '27ab71e887bfd89add94c61fe3b92ee18a4c7da71fbf07c0498a41b48c27a22d',
+  'extensions/git-id-switcher/docs/i18n/zh-CN/README.md': '5d0828fb8bca3c13640e1a880ce25b7cda9cdb2e9b4e1ef6597a7d8ee30af174',
   'extensions/git-id-switcher/docs/i18n/zh-TW/README.md': '5b6abf9f58aea42d4dab5d05fc484be45be1ee47ba7e1b59ab7cd86043902390',
   'extensions/git-id-switcher/docs/LANGUAGES.md': 'da50222843094479fd826837038dd62d619ecbc87d67f0b2c299973587abe8e9',
   'extensions/git-id-switcher/LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
