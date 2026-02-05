@@ -91,10 +91,10 @@ SSH キー エキ (アン ヤㇰカ エレㇷ゚):
 
 ```bash
 # ウタㇻ (Personal / 個人用)
-ssh-keygen -t ed25519 -C "kamuy@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "sisam@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # モノレ (Work / 仕事用)
-ssh-keygen -t ed25519 -C "kamuy@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "sisam@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 シネㇷ゚ シネㇷ゚ **公開鍵** (`.pub` ファイル) GitHub アカウント オロワ。
@@ -130,19 +130,19 @@ Extension 設定 (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" エヌカㇻ → "se
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "カムイ レㇻ",
+      "name": "シサㇺ",
+      "email": "sisam@personal.example.com",
       "service": "GitHub",
-      "email": "kamuy@personal.example.com",
+      "icon": "🏠",
       "description": "ウタㇻ プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "カムイ レㇻ",
+      "name": "シサㇺ",
+      "email": "sisam@company.example.com",
       "service": "GitHub モノレ",
-      "email": "kamuy@company.example.com",
+      "icon": "💼",
       "description": "モノレ",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -171,7 +171,7 @@ Repository クローン、ID オロワ Host エキ:
 git clone git@github-work:company/repo.git
 
 # ウタㇻ ID (github.com デフォルト)
-git clone git@github.com:kamuy/repo.git
+git clone git@github.com:sisam/repo.git
 ```
 
 ---
@@ -191,7 +191,7 @@ gpg --list-secret-keys --keyid-format SHORT
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] カムイ レㇻ <kamuy@personal.example.com>
+uid         [ultimate] シサㇺ <sisam@personal.example.com>
 ```
 
 キー ID `ABCD1234`。
@@ -203,10 +203,10 @@ uid         [ultimate] カムイ レㇻ <kamuy@personal.example.com>
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "カムイ レㇻ",
+      "name": "シサㇺ",
+      "email": "sisam@personal.example.com",
       "service": "GitHub",
-      "email": "kamuy@personal.example.com",
+      "icon": "🏠",
       "description": "ウタㇻ プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -258,20 +258,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "カムイ レㇻ",
+      "name": "シサㇺ",
+      "email": "sisam@personal.example.com",
       "service": "GitHub",
-      "email": "kamuy@personal.example.com",
+      "icon": "🏠",
       "description": "ウタㇻ プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSON12"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "カムイ レㇻ",
+      "name": "シサㇺ",
+      "email": "sisam@company.example.com",
       "service": "GitHub モノレ",
-      "email": "kamuy@company.example.com",
+      "icon": "💼",
       "description": "モノレ アカウント",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -279,20 +279,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "カムイ レㇻ",
+      "name": "シサㇺ",
+      "email": "sisam@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "kamuy@bitbucket.example.com",
+      "icon": "🪣",
       "description": "Bitbucket プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "sirokan",
-      "icon": "🎯",
-      "name": "カムイ レㇻ",
+      "name": "シサㇺ",
+      "email": "sisam@freelance.example.com",
       "service": "GitLab",
-      "email": "kamuy@freelance.example.com",
+      "icon": "🎯",
       "description": "シㇿカン プロジェクト"
     }
   ],
@@ -355,12 +355,12 @@ Host bitbucket.org
 | `false` (デフォルト) | `icon` エディタ UI ワノ。`name` ワノ Git config オロワ     |
 | `true`               | `icon + name` Git config オロワ。絵文字 commit 履歴 オロワ |
 
-例: `icon: "👤"`, `name: "カムイ レㇻ"`
+例: `icon: "👤"`, `name: "シサㇺ"`
 
-| includeIconInGitConfig | Git config `user.name` | Commit サイン            |
-| ---------------------- | ---------------------- | ------------------------ |
-| `false`                | `カムイ レㇻ`          | `カムイ レㇻ <email>`    |
-| `true`                 | `👤 カムイ レㇻ`       | `👤 カムイ レㇻ <email>` |
+| includeIconInGitConfig | Git config `user.name` | Commit サイン       |
+| ---------------------- | ---------------------- | ------------------- |
+| `false`                | `シサㇺ`               | `シサㇺ <email>`    |
+| `true`                 | `👤 シサㇺ`            | `👤 シサㇺ <email>` |
 
 ### ウタㇻ: 基本設定 (SSH ソモ)
 
@@ -371,16 +371,16 @@ SSH キー ウコイタㇰ ソモ (例、GitHub アカウント エネアン com
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
+      "name": "シサㇺ",
+      "email": "sisam@personal.example.com",
       "icon": "🏠",
-      "name": "カムイ レㇻ",
-      "email": "kamuy@personal.example.com",
       "description": "ウタㇻ プロジェクト"
     },
     {
       "id": "work",
+      "name": "シサㇺ",
+      "email": "sisam@company.example.com",
       "icon": "💼",
-      "name": "カムイ レㇻ",
-      "email": "kamuy@company.example.com",
       "description": "モノレ"
     }
   ]
@@ -520,10 +520,10 @@ Git submodule アン repository、ID ウコイタㇰ ピㇼカノ ソモ キ。S
 
 ```jsonc
 // ウェン
-"name": "カムイ レㇻ (ウタㇻ)"
+"name": "シサㇺ (ウタㇻ)"
 
 // ピㇼカ
-"name": "カムイ レㇻ",
+"name": "シサㇺ",
 "service": "GitHub"
 ```
 

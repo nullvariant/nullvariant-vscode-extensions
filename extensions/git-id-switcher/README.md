@@ -160,20 +160,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Smith",
-      "service": "GitHub",
       "email": "alex@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Personal projects",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Smith",
-      "service": "GitHub Work",
       "email": "alex.smith@company.example.com",
+      "service": "GitHub Work",
+      "icon": "💼",
       "description": "Work development",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -181,20 +181,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "Alex Smith",
-      "service": "Bitbucket",
       "email": "alex@bitbucket.example.com",
+      "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Bitbucket projects",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
       "name": "Alex Smith",
-      "service": "GitLab",
       "email": "alex@freelance.example.com",
+      "service": "GitLab",
+      "icon": "🎯",
       "description": "Freelance projects"
     }
   ],

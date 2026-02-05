@@ -71,10 +71,10 @@ Először hozzon létre SSH-kulcsokat minden fiókhoz (hagyja ki, ha már megvan
 
 ```bash
 # Személyes
-ssh-keygen -t ed25519 -C "alex.kovacs@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "alex.nagy@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Munkahelyi
-ssh-keygen -t ed25519 -C "alex.kovacs@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "alex.nagy@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Regisztrálja minden kulcs **nyilvános kulcsát** (`.pub` fájl) a megfelelő GitHub-fiókhoz.
@@ -110,19 +110,19 @@ Nyissa meg a bővítmény beállításait (`Cmd+,` / `Ctrl+,`) → keressen rá:
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Alex Kovács",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@personal.example.com",
       "service": "GitHub",
-      "email": "alex.kovacs@personal.example.com",
+      "icon": "🏠",
       "description": "Személyes projektek",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "Alex Kovács",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@company.example.com",
       "service": "GitHub Munkahelyi",
-      "email": "alex.kovacs@company.example.com",
+      "icon": "💼",
       "description": "Munkahelyi fiók",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -151,7 +151,7 @@ Tárolók klónozásakor használja az azonosítójának megfelelő hostot:
 git clone git@github-work:company/repo.git
 
 # Személyes azonosítóhoz (az alapértelmezett github.com-ot használja)
-git clone git@github.com:akovacs/repo.git
+git clone git@github.com:anagy/repo.git
 ```
 
 ---
@@ -171,7 +171,7 @@ Példa kimenet:
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] Alex Kovács <alex.kovacs@personal.example.com>
+uid         [ultimate] Nagy Alex <alex.nagy@personal.example.com>
 ```
 
 A kulcs ID: `ABCD1234`.
@@ -183,10 +183,10 @@ A kulcs ID: `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Alex Kovács",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@personal.example.com",
       "service": "GitHub",
-      "email": "alex.kovacs@personal.example.com",
+      "icon": "🏠",
       "description": "Személyes projektek",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Alex Kovács",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@personal.example.com",
       "service": "GitHub",
-      "email": "alex.kovacs@personal.example.com",
+      "icon": "🏠",
       "description": "Személyes projektek",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "Alex Kovács",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@company.example.com",
       "service": "GitHub Munkahelyi",
-      "email": "alex.kovacs@company.example.com",
+      "icon": "💼",
       "description": "Munkahelyi fiók",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "Alex Kovács",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "alex.kovacs@bitbucket.example.com",
+      "icon": "🪣",
       "description": "Bitbucket projektek",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
-      "name": "Alex Kovács",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@freelance.example.com",
       "service": "GitLab",
-      "email": "alex.kovacs@freelance.example.com",
+      "icon": "🎯",
       "description": "Szabadúszó projektek"
     }
   ],
@@ -335,12 +335,12 @@ Az `icon` mező beállítása esetén a viselkedést szabályozza:
 | `false` (alapértelmezett) | Az `icon` csak a szerkesztő UI-ban jelenik meg. A Git configba csak a `name` kerül    |
 | `true`                    | Az `icon + name` íródik a Git configba. Az emoji a commit-előzményekben is megjelenik |
 
-Példa: `icon: "👤"`, `name: "Alex Kovács"` esetén
+Példa: `icon: "👤"`, `name: "Nagy Alex"` esetén
 
-| includeIconInGitConfig | Git config `user.name` | Commit-aláírás           |
-| ---------------------- | ---------------------- | ------------------------ |
-| `false`                | `Alex Kovács`          | `Alex Kovács <email>`    |
-| `true`                 | `👤 Alex Kovács`       | `👤 Alex Kovács <email>` |
+| includeIconInGitConfig | Git config `user.name` | Commit-aláírás         |
+| ---------------------- | ---------------------- | ---------------------- |
+| `false`                | `Nagy Alex`            | `Nagy Alex <email>`    |
+| `true`                 | `👤 Nagy Alex`         | `👤 Nagy Alex <email>` |
 
 ### Megjegyzés: Alapbeállítás (SSH nélkül)
 
@@ -351,16 +351,16 @@ Ha nincs szükség SSH-kulcs váltásra (pl. különböző committer-informáci�
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@personal.example.com",
       "icon": "🏠",
-      "name": "Alex Kovács",
-      "email": "alex.kovacs@personal.example.com",
       "description": "Személyes projektek"
     },
     {
       "id": "work",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@company.example.com",
       "icon": "💼",
-      "name": "Alex Kovács",
-      "email": "alex.kovacs@company.example.com",
       "description": "Munkahelyi fiók"
     }
   ]
@@ -500,10 +500,10 @@ Ha szolgáltatásnevet szeretne hozzáadni, használja a `service` mezőt.
 
 ```jsonc
 // Helytelen
-"name": "Alex Kovács (személyes)"
+"name": "Nagy Alex (személyes)"
 
 // Helyes
-"name": "Alex Kovács",
+"name": "Nagy Alex",
 "service": "GitHub"
 ```
 

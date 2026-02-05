@@ -113,38 +113,38 @@ OPEN **EXTENSHUN SETTINGZ** AN CONFIGUR UR IDENTITIEZ IN `gitIdSwitcher.identiti
   "gitIdSwitcher.identities": [
     {
       "id": "ceiling-cat",
-      "icon": "😼",
       "name": "Ceiling Cat",
       "email": "ceiling@cat.example.com",
+      "service": "github",
+      "icon": "😼",
       "description": "WATCHIN U CODE",
-      "sshKeyPath": "~/.ssh/id_ed25519_ceiling",
-      "service": "github"
+      "sshKeyPath": "~/.ssh/id_ed25519_ceiling"
     },
     {
       "id": "keyboard-cat",
-      "icon": "🎹",
       "name": "Keyboard Cat",
       "email": "keyboard@cat.example.com",
+      "service": "github",
+      "icon": "🎹",
       "description": "PLAY HIM OFF",
       "sshKeyPath": "~/.ssh/id_ed25519_keyboard",
-      "sshHost": "github-keyboard",
-      "service": "github"
+      "sshHost": "github-keyboard"
     },
     {
       "id": "grumpy-cat",
-      "icon": "😾",
       "name": "Grumpy Cat",
       "email": "grumpy@cat.example.com",
-      "description": "I HAD FUN ONCE. IT WUZ AWFUL.",
-      "service": "gitlab"
+      "service": "gitlab",
+      "icon": "😾",
+      "description": "I HAD FUN ONCE. IT WUZ AWFUL."
     },
     {
       "id": "nyan",
-      "icon": "🌈",
       "name": "Nyan Cat",
       "email": "nyan@cat.example.com",
-      "description": "NYANYANYANYANYA",
-      "service": "bitbucket"
+      "service": "bitbucket",
+      "icon": "🌈",
+      "description": "NYANYANYANYANYA"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "ceiling-cat",
@@ -190,10 +190,10 @@ UR KEY ID IZ `ABCD1234`. REMEMBR IT!
   "gitIdSwitcher.identities": [
     {
       "id": "ceiling-cat",
-      "icon": "😼",
       "name": "Ceiling Cat",
-      "service": "GitHub",
       "email": "ceiling@cat.example.com",
+      "service": "GitHub",
+      "icon": "😼",
       "description": "WATCHIN U CODE",
       "sshKeyPath": "~/.ssh/id_ed25519_ceiling",
       "gpgKeyId": "ABCD1234"
@@ -247,20 +247,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "ceiling-cat",
-      "icon": "😼",
       "name": "Ceiling Cat",
-      "service": "GitHub",
       "email": "ceiling@cat.example.com",
+      "service": "GitHub",
+      "icon": "😼",
       "description": "PURSONAL - WATCHIN U CODE",
       "sshKeyPath": "~/.ssh/id_ed25519_ceiling",
       "gpgKeyId": "CEILING1"
     },
     {
       "id": "keyboard-cat",
-      "icon": "🎹",
       "name": "Keyboard Cat",
-      "service": "GitHub COMPANY",
       "email": "keyboard@company_ceiling-cat.example.com",
+      "service": "GitHub COMPANY",
+      "icon": "🎹",
       "description": "COMPANY (EMU) - PLAY HIM OFF",
       "sshKeyPath": "~/.ssh/id_ed25519_keyboard",
       "sshHost": "github-keyboard",
@@ -268,20 +268,20 @@ Host bitbucket.org
     },
     {
       "id": "nyan-cat",
-      "icon": "🪣",
       "name": "Nyan Cat",
-      "service": "Bitbucket",
       "email": "nyan@cat.example.com",
+      "service": "Bitbucket",
+      "icon": "🪣",
       "description": "BITBUCKET - NYANYANYA",
       "sshKeyPath": "~/.ssh/id_ed25519_nyan",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "grumpy-cat",
-      "icon": "😾",
       "name": "Grumpy Cat",
-      "service": "GitLab",
       "email": "grumpy@freelance.example.com",
+      "service": "GitLab",
+      "icon": "😾",
       "description": "FREELANS - I HAD FUN ONCE"
     }
   ],

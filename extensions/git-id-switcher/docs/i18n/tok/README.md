@@ -73,10 +73,10 @@ o pali e SSH key (o ante ala la, sina jo):
 
 ```bash
 # jan pona (personal)
-ssh-keygen -t ed25519 -C "janpona@pona.example.com" -f ~/.ssh/id_ed25519_pona
+ssh-keygen -t ed25519 -C "mun@pona.example.com" -f ~/.ssh/id_ed25519_pona
 
 # jan lawa (work)
-ssh-keygen -t ed25519 -C "janlawa@lawa.example.com" -f ~/.ssh/id_ed25519_lawa
+ssh-keygen -t ed25519 -C "mun@lawa.example.com" -f ~/.ssh/id_ed25519_lawa
 ```
 
 o pana e **key open** (`.pub` file) tawa GitHub account.
@@ -112,19 +112,19 @@ o open e settings (`Cmd+,` / `Ctrl+,`) → o alasa e "Git ID Switcher" → o luk
   "gitIdSwitcher.identities": [
     {
       "id": "jan-pona",
-      "icon": "😊",
-      "name": "jan pona",
+      "name": "jan Mun",
+      "email": "mun@pona.example.com",
       "service": "GitHub",
-      "email": "janpona@pona.example.com",
+      "icon": "😊",
       "description": "pali pona mi",
       "sshKeyPath": "~/.ssh/id_ed25519_pona"
     },
     {
       "id": "jan-lawa",
-      "icon": "👔",
-      "name": "jan lawa",
+      "name": "jan Mun",
+      "email": "mun@lawa.example.com",
       "service": "GitHub lawa",
-      "email": "janlawa@lawa.example.com",
+      "icon": "👔",
       "description": "pali lawa",
       "sshKeyPath": "~/.ssh/id_ed25519_lawa",
       "sshHost": "github-lawa"
@@ -153,7 +153,7 @@ sina kama jo e repo la, o kepeken host pona:
 git clone git@github-lawa:lawa/repo.git
 
 # jan pona ID (kepeken github.com)
-git clone git@github.com:janpona/repo.git
+git clone git@github.com:mun/repo.git
 ```
 
 ---
@@ -173,7 +173,7 @@ ni li pana:
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] jan pona <janpona@pona.example.com>
+uid         [ultimate] jan Mun <mun@pona.example.com>
 ```
 
 key ID li `ABCD1234`.
@@ -185,10 +185,10 @@ key ID li `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "jan-pona",
-      "icon": "😊",
-      "name": "jan pona",
+      "name": "jan Mun",
+      "email": "mun@pona.example.com",
       "service": "GitHub",
-      "email": "janpona@pona.example.com",
+      "icon": "😊",
       "description": "pali pona mi",
       "sshKeyPath": "~/.ssh/id_ed25519_pona",
       "gpgKeyId": "ABCD1234"
@@ -240,20 +240,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "jan-pona",
-      "icon": "😊",
-      "name": "jan pona",
+      "name": "jan Mun",
+      "email": "mun@pona.example.com",
       "service": "GitHub",
-      "email": "janpona@pona.example.com",
+      "icon": "😊",
       "description": "pali pona mi",
       "sshKeyPath": "~/.ssh/id_ed25519_pona",
       "gpgKeyId": "PONA1234"
     },
     {
       "id": "jan-lawa",
-      "icon": "👔",
-      "name": "jan lawa",
+      "name": "jan Mun",
+      "email": "mun@lawa.example.com",
       "service": "GitHub lawa",
-      "email": "janlawa@lawa.example.com",
+      "icon": "👔",
       "description": "pali lawa",
       "sshKeyPath": "~/.ssh/id_ed25519_lawa",
       "sshHost": "github-lawa",
@@ -261,20 +261,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "jan pona",
+      "name": "jan Mun",
+      "email": "mun@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "janpona@bitbucket.example.com",
+      "icon": "🪣",
       "description": "pali Bitbucket",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "jan-musi",
-      "icon": "🎮",
-      "name": "jan musi",
+      "name": "jan Mun",
+      "email": "mun@musi.example.com",
       "service": "GitLab",
-      "email": "janmusi@musi.example.com",
+      "icon": "🎮",
       "description": "musi pona"
     }
   ],
@@ -337,12 +337,12 @@ sona: pini ID (`jan-musi`) li jo ala e SSH—Git config taso li ante. GitLab acc
 | `false` (open) | `icon` li lon UI taso. `name` taso li tawa Git config   |
 | `true`         | `icon + name` li tawa Git config. sitelen li lon commit |
 
-example: `icon: "👤"`, `name: "jan pona"`
+example: `icon: "👤"`, `name: "jan Mun"`
 
-| includeIconInGitConfig | Git config `user.name` | commit sitelen        |
-| ---------------------- | ---------------------- | --------------------- |
-| `false`                | `jan pona`             | `jan pona <email>`    |
-| `true`                 | `👤 jan pona`          | `👤 jan pona <email>` |
+| includeIconInGitConfig | Git config `user.name` | commit sitelen       |
+| ---------------------- | ---------------------- | -------------------- |
+| `false`                | `jan Mun`              | `jan Mun <email>`    |
+| `true`                 | `👤 jan Mun`           | `👤 jan Mun <email>` |
 
 ### sona: nasin lili (SSH ala)
 
@@ -353,16 +353,16 @@ sina wile ala e SSH key ante la (example: GitHub account sama, commit nimi ante)
   "gitIdSwitcher.identities": [
     {
       "id": "jan-pona",
+      "name": "jan Mun",
+      "email": "mun@pona.example.com",
       "icon": "😊",
-      "name": "jan pona",
-      "email": "janpona@pona.example.com",
       "description": "pali pona mi"
     },
     {
       "id": "jan-lawa",
+      "name": "jan Mun",
+      "email": "mun@lawa.example.com",
       "icon": "👔",
-      "name": "jan lawa",
-      "email": "janlawa@lawa.example.com",
       "description": "pali lawa"
     }
   ]
@@ -502,10 +502,10 @@ sina wile e nimi ilo la, o kepeken `service` ijo.
 
 ```jsonc
 // IKE
-"name": "jan pona (pona)"
+"name": "jan Mun (pona)"
 
 // PONA
-"name": "jan pona",
+"name": "jan Mun",
 "service": "GitHub"
 ```
 

@@ -71,10 +71,10 @@
 
 ```bash
 # Личный
-ssh-keygen -t ed25519 -C "sasha.ivanov@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "sasha.petrov@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Рабочий
-ssh-keygen -t ed25519 -C "sasha.ivanov@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "sasha.petrov@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Зарегистрируйте **публичный ключ** (файл `.pub`) каждого ключа в соответствующем аккаунте GitHub.
@@ -110,19 +110,19 @@ Host github-work
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Саша Иванов",
-      "email": "sasha.ivanov@personal.example.com",
+      "name": "Саша Петров",
+      "email": "sasha.petrov@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Личные проекты",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "Саша Иванов",
-      "email": "sasha.ivanov@company.example.com",
+      "name": "Саша Петров",
+      "email": "sasha.petrov@company.example.com",
       "service": "GitHub Работа",
+      "icon": "💼",
       "description": "Рабочий аккаунт",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -151,7 +151,7 @@ Host github-work
 git clone git@github-work:company/repo.git
 
 # Для личного идентификатора (использует github.com по умолчанию)
-git clone git@github.com:sivanov/repo.git
+git clone git@github.com:spetrov/repo.git
 ```
 
 ---
@@ -171,7 +171,7 @@ gpg --list-secret-keys --keyid-format SHORT
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] Саша Иванов <sasha.ivanov@personal.example.com>
+uid         [ultimate] Саша Петров <sasha.petrov@personal.example.com>
 ```
 
 ID ключа — `ABCD1234`.
@@ -183,10 +183,10 @@ ID ключа — `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Саша Иванов",
-      "email": "sasha.ivanov@personal.example.com",
+      "name": "Саша Петров",
+      "email": "sasha.petrov@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Личные проекты",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Саша Иванов",
-      "email": "sasha.ivanov@personal.example.com",
+      "name": "Саша Петров",
+      "email": "sasha.petrov@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Личные проекты",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "Саша Иванов",
-      "email": "sasha.ivanov@company.example.com",
+      "name": "Саша Петров",
+      "email": "sasha.petrov@company.example.com",
       "service": "GitHub Работа",
+      "icon": "💼",
       "description": "Рабочий аккаунт",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "sivanov-bb",
-      "email": "sivanov.bb@example.com",
+      "name": "spetrov-bb",
+      "email": "spetrov.bb@example.com",
       "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Проекты Bitbucket",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
-      "name": "Саша Иванов",
-      "email": "sasha.ivanov@freelance.example.com",
+      "name": "Саша Петров",
+      "email": "sasha.petrov@freelance.example.com",
       "service": "GitLab",
+      "icon": "🎯",
       "description": "Фриланс-проекты"
     }
   ],
@@ -335,12 +335,12 @@ Host bitbucket.org
 | `false` (по умолчанию) | `icon` отображается только в интерфейсе редактора. Только `name` записывается в Git config |
 | `true`                 | `icon + name` записывается в Git config. Эмодзи появляется в истории коммитов              |
 
-Пример: `icon: "👤"`, `name: "Саша Иванов"`
+Пример: `icon: "👤"`, `name: "Саша Петров"`
 
 | includeIconInGitConfig | Git config `user.name` | Подпись коммита          |
 | ---------------------- | ---------------------- | ------------------------ |
-| `false`                | `Саша Иванов`          | `Саша Иванов <email>`    |
-| `true`                 | `👤 Саша Иванов`       | `👤 Саша Иванов <email>` |
+| `false`                | `Саша Петров`          | `Саша Петров <email>`    |
+| `true`                 | `👤 Саша Петров`       | `👤 Саша Петров <email>` |
 
 ### Примечание: Базовая настройка (без SSH)
 
@@ -351,16 +351,16 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
+      "name": "Саша Петров",
+      "email": "sasha.petrov@personal.example.com",
       "icon": "🏠",
-      "name": "Саша Иванов",
-      "email": "sasha.ivanov@personal.example.com",
       "description": "Личные проекты"
     },
     {
       "id": "work",
+      "name": "Саша Петров",
+      "email": "sasha.petrov@company.example.com",
       "icon": "💼",
-      "name": "Саша Иванов",
-      "email": "sasha.ivanov@company.example.com",
       "description": "Рабочий аккаунт"
     }
   ]
@@ -500,10 +500,10 @@ Host bitbucket.org
 
 ```jsonc
 // NG
-"name": "Саша Иванов (Личный)"
+"name": "Саша Петров (Личный)"
 
 // OK
-"name": "Саша Иванов",
+"name": "Саша Петров",
 "service": "GitHub"
 ```
 

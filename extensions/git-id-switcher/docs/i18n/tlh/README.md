@@ -73,10 +73,10 @@ First, SSH keys generate accounts (skip if already have):
 
 ```bash
 # warrior (personal)
-ssh-keygen -t ed25519 -C "worf@warrior.example.com" -f ~/.ssh/id_ed25519_warrior
+ssh-keygen -t ed25519 -C "qapla@personal.example.com" -f ~/.ssh/id_ed25519_warrior
 
 # captain (work)
-ssh-keygen -t ed25519 -C "martok@captain.example.com" -f ~/.ssh/id_ed25519_captain
+ssh-keygen -t ed25519 -C "qapla@company.example.com" -f ~/.ssh/id_ed25519_captain
 ```
 
 Each key **public key** (`.pub` file) GitHub account register.
@@ -112,19 +112,19 @@ Extension settings open (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" search → "E
   "gitIdSwitcher.identities": [
     {
       "id": "warrior",
-      "icon": "⚔️",
-      "name": "Worf, Son of Mogh",
+      "name": "Qapla'",
+      "email": "qapla@personal.example.com",
       "service": "GitHub",
-      "email": "worf@warrior.example.com",
+      "icon": "⚔️",
       "description": "batlh (honor) projects",
       "sshKeyPath": "~/.ssh/id_ed25519_warrior"
     },
     {
       "id": "captain",
-      "icon": "🖖",
-      "name": "General Martok",
+      "name": "Qapla'",
+      "email": "qapla@company.example.com",
       "service": "GitHub Fleet",
-      "email": "martok@captain.example.com",
+      "icon": "🖖",
       "description": "Fleet command",
       "sshKeyPath": "~/.ssh/id_ed25519_captain",
       "sshHost": "github-captain"
@@ -153,7 +153,7 @@ Repositories clone, ID corresponding host use:
 git clone git@github-captain:fleet/repo.git
 
 # Warrior ID (default github.com use)
-git clone git@github.com:worf/repo.git
+git clone git@github.com:qapla/repo.git
 ```
 
 ---
@@ -173,7 +173,7 @@ Example output:
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] Worf, Son of Mogh <worf@warrior.example.com>
+uid         [ultimate] Qapla' <qapla@personal.example.com>
 ```
 
 Key ID `ABCD1234`.
@@ -185,10 +185,10 @@ Key ID `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "warrior",
-      "icon": "⚔️",
-      "name": "Worf, Son of Mogh",
+      "name": "Qapla'",
+      "email": "qapla@personal.example.com",
       "service": "GitHub",
-      "email": "worf@warrior.example.com",
+      "icon": "⚔️",
       "description": "batlh (honor) projects",
       "sshKeyPath": "~/.ssh/id_ed25519_warrior",
       "gpgKeyId": "ABCD1234"
@@ -240,20 +240,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "warrior",
-      "icon": "⚔️",
-      "name": "Worf, Son of Mogh",
+      "name": "Qapla'",
+      "email": "qapla@personal.example.com",
       "service": "GitHub",
-      "email": "worf@warrior.example.com",
+      "icon": "⚔️",
       "description": "batlh (honor) projects",
       "sshKeyPath": "~/.ssh/id_ed25519_warrior",
       "gpgKeyId": "WARRIOR1"
     },
     {
       "id": "captain",
-      "icon": "🖖",
-      "name": "General Martok",
+      "name": "Qapla'",
+      "email": "qapla@company.example.com",
       "service": "GitHub Fleet",
-      "email": "martok@captain.example.com",
+      "icon": "🖖",
       "description": "Fleet command",
       "sshKeyPath": "~/.ssh/id_ed25519_captain",
       "sshHost": "github-captain",
@@ -261,20 +261,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "Worf, Son of Mogh",
+      "name": "Qapla'",
+      "email": "qapla@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "worf@bitbucket.example.com",
+      "icon": "🪣",
       "description": "Bitbucket projects",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "spy",
-      "icon": "🎭",
-      "name": "Operative",
+      "name": "Qapla'",
+      "email": "qapla@freelance.example.com",
       "service": "GitLab",
-      "email": "spy@intelligence.example.com",
+      "icon": "🎭",
       "description": "Covert operations"
     }
   ],
@@ -337,12 +337,12 @@ Note: Last ID (`spy`) no SSH—Git config only change. Same GitLab account diffe
 | `false` (default) | `icon` editor UI only show. `name` only Git config write    |
 | `true`            | `icon + name` Git config write. Emoji commit history remain |
 
-Example: `icon: "👤"`, `name: "Worf, Son of Mogh"`
+Example: `icon: "👤"`, `name: "Qapla'"`
 
-| includeIconInGitConfig | Git config `user.name` | Commit signature               |
-| ---------------------- | ---------------------- | ------------------------------ |
-| `false`                | `Worf, Son of Mogh`    | `Worf, Son of Mogh <email>`    |
-| `true`                 | `👤 Worf, Son of Mogh` | `👤 Worf, Son of Mogh <email>` |
+| includeIconInGitConfig | Git config `user.name` | Commit signature    |
+| ---------------------- | ---------------------- | ------------------- |
+| `false`                | `Qapla'`               | `Qapla' <email>`    |
+| `true`                 | `👤 Qapla'`            | `👤 Qapla' <email>` |
 
 ### Note: Basic Setup (No SSH)
 
@@ -353,16 +353,16 @@ SSH key switching not need (e.g., same GitHub account different committer info u
   "gitIdSwitcher.identities": [
     {
       "id": "warrior",
+      "name": "Qapla'",
+      "email": "qapla@personal.example.com",
       "icon": "⚔️",
-      "name": "Worf, Son of Mogh",
-      "email": "worf@warrior.example.com",
       "description": "batlh (honor) projects"
     },
     {
       "id": "captain",
+      "name": "Qapla'",
+      "email": "qapla@company.example.com",
       "icon": "🖖",
-      "name": "General Martok",
-      "email": "martok@captain.example.com",
       "description": "Fleet command"
     }
   ]
@@ -502,10 +502,10 @@ Service name include want, `service` field use.
 
 ```jsonc
 // WRONG
-"name": "Worf (Warrior)"
+"name": "Qapla' (Warrior)"
 
 // CORRECT
-"name": "Worf, Son of Mogh",
+"name": "Qapla'",
 "service": "GitHub"
 ```
 

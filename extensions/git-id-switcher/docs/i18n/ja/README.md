@@ -156,20 +156,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "高橋カオル",
-      "service": "GitHub",
       "email": "kaoru@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "高橋カオル",
-      "service": "GitHub 会社用",
       "email": "kaoru.takahashi@company.example.com",
+      "service": "GitHub 会社用",
+      "icon": "💼",
       "description": "会社の開発用",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -177,20 +177,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "高橋カオル",
-      "service": "Bitbucket",
       "email": "kaoru@bitbucket.example.com",
+      "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Bitbucketプロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
       "name": "高橋カオル",
-      "service": "GitLab",
       "email": "kaoru@freelance.example.com",
+      "service": "GitLab",
+      "icon": "🎯",
       "description": "フリーランス案件"
     }
   ],

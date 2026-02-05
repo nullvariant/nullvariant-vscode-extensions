@@ -72,10 +72,10 @@
 
 ```bash
 # 个人账户
-ssh-keygen -t ed25519 -C "zhangwei@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "zhangchen@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # 工作账户
-ssh-keygen -t ed25519 -C "zhangwei@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "zhangchen@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 将每个密钥的**公钥**（`.pub` 文件）注册到相应的 GitHub 账户。
@@ -156,20 +156,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "张伟",
+      "name": "张晨",
+      "email": "zhangchen@personal.example.com",
       "service": "GitHub",
-      "email": "zhangwei@personal.example.com",
+      "icon": "🏠",
       "description": "个人项目",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "张伟",
+      "name": "张晨",
+      "email": "zhangchen@company.example.com",
       "service": "GitHub 公司",
-      "email": "zhangwei@company.example.com",
+      "icon": "💼",
       "description": "公司开发（企业托管用户）",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -177,20 +177,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "张伟",
+      "name": "张晨",
+      "email": "zhangchen@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "zhangwei@bitbucket.example.com",
+      "icon": "🪣",
       "description": "Bitbucket 项目",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
-      "name": "张伟",
+      "name": "张晨",
+      "email": "zhangchen@freelance.example.com",
       "service": "GitLab",
-      "email": "zhangwei@freelance.example.com",
+      "icon": "🎯",
       "description": "自由职业项目"
     }
   ],
@@ -275,12 +275,12 @@ Host bitbucket.org
 | `false`（默认） | `icon` 仅显示在编辑器 UI 中。Git config 只写入 `name`     |
 | `true`          | Git config 写入 `icon + name`。表情符号会出现在提交历史中 |
 
-示例：`icon: "👤"`、`name: "张伟"` 的情况
+示例：`icon: "👤"`、`name: "张晨"` 的情况
 
 | includeIconInGitConfig | Git config `user.name` | 提交签名          |
 | ---------------------- | ---------------------- | ----------------- |
-| `false`                | `张伟`                 | `张伟 <email>`    |
-| `true`                 | `👤 张伟`              | `👤 张伟 <email>` |
+| `false`                | `张晨`                 | `张晨 <email>`    |
+| `true`                 | `👤 张晨`              | `👤 张晨 <email>` |
 
 ---
 
@@ -475,10 +475,10 @@ git clone git@github.com:yourname/repo.git
 
 ```jsonc
 // 错误
-"name": "张伟 (个人)"
+"name": "张晨 (个人)"
 
 // 正确
-"name": "张伟",
+"name": "张晨",
 "service": "GitHub"
 ```
 

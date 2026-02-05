@@ -110,19 +110,19 @@ Host github-work
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Müller",
-      "service": "GitHub",
       "email": "alex.mueller@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Persönliche Projekte",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Müller",
-      "service": "GitHub Arbeit",
       "email": "alex.mueller@company.example.com",
+      "service": "GitHub Arbeit",
+      "icon": "💼",
       "description": "Firmenkonto (Enterprise Managed User)",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -183,10 +183,10 @@ Die Schlüssel-ID ist `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Müller",
-      "service": "GitHub",
       "email": "alex.mueller@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Persönliche Projekte",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Müller",
-      "service": "GitHub",
       "email": "alex.mueller@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Persönliche Projekte",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Müller",
-      "service": "GitHub Arbeit",
       "email": "alex.mueller@company.example.com",
+      "service": "GitHub Arbeit",
+      "icon": "💼",
       "description": "Firmenkonto (Enterprise Managed User)",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "Alex Müller",
-      "service": "Bitbucket",
       "email": "amueller@bitbucket.example.com",
+      "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Bitbucket-Projekte",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
       "name": "Alex Müller",
-      "service": "GitLab",
       "email": "alex.mueller@freelance.example.com",
+      "service": "GitLab",
+      "icon": "🎯",
       "description": "Freiberufliche Projekte"
     }
   ],
@@ -351,16 +351,16 @@ Wenn Sie keinen SSH-Schlüsselwechsel benötigen (z.B. bei Verwendung verschiede
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Müller",
       "email": "alex.mueller@personal.example.com",
+      "icon": "🏠",
       "description": "Persönliche Projekte"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Müller",
       "email": "alex.mueller@company.example.com",
+      "icon": "💼",
       "description": "Arbeitskonto"
     }
   ]

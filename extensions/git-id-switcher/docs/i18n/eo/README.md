@@ -113,19 +113,19 @@ Malfermu etendo-agordojn (`Cmd+,` / `Ctrl+,`) → Serĉu "Git ID Switcher" → K
   "gitIdSwitcher.identities": [
     {
       "id": "persona",
-      "icon": "🏠",
       "name": "Ludoviko Zamenhof",
-      "service": "GitHub",
       "email": "zamenhof@persona.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Personaj projektoj",
       "sshKeyPath": "~/.ssh/id_ed25519_persona"
     },
     {
       "id": "laboro",
-      "icon": "💼",
       "name": "Ludoviko Zamenhof",
-      "service": "GitHub Laboro",
       "email": "zamenhof@laboro.example.com",
+      "service": "GitHub Laboro",
+      "icon": "💼",
       "description": "Labora evoluo",
       "sshKeyPath": "~/.ssh/id_ed25519_laboro",
       "sshHost": "github-laboro"
@@ -186,10 +186,10 @@ La ŝlosila ID estas `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "persona",
-      "icon": "🏠",
       "name": "Ludoviko Zamenhof",
-      "service": "GitHub",
       "email": "zamenhof@persona.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Personaj projektoj",
       "sshKeyPath": "~/.ssh/id_ed25519_persona",
       "gpgKeyId": "ABCD1234"
@@ -241,20 +241,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "persona",
-      "icon": "🏠",
       "name": "Ludoviko Zamenhof",
-      "service": "GitHub",
       "email": "zamenhof@persona.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Personaj projektoj",
       "sshKeyPath": "~/.ssh/id_ed25519_persona",
       "gpgKeyId": "PERSONA1"
     },
     {
       "id": "laboro",
-      "icon": "💼",
       "name": "Ludoviko Zamenhof",
-      "service": "GitHub Laboro",
       "email": "zamenhof@laboro.example.com",
+      "service": "GitHub Laboro",
+      "icon": "💼",
       "description": "Labora konto",
       "sshKeyPath": "~/.ssh/id_ed25519_laboro",
       "sshHost": "github-laboro",
@@ -262,20 +262,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "Ludoviko Zamenhof",
-      "service": "Bitbucket",
       "email": "zamenhof@bitbucket.example.com",
+      "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Bitbucket-projektoj",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "liberprofesia",
-      "icon": "🎯",
       "name": "Ludoviko Zamenhof",
-      "service": "GitLab",
       "email": "zamenhof@liberprofesia.example.com",
+      "service": "GitLab",
+      "icon": "🎯",
       "description": "Liberprofesiaj projektoj"
     }
   ],
@@ -354,16 +354,16 @@ Se vi ne bezonas SSH-ŝlosilan ŝanĝon (ekz., uzante la saman GitHub-konton kun
   "gitIdSwitcher.identities": [
     {
       "id": "persona",
-      "icon": "🏠",
       "name": "Ludoviko Zamenhof",
       "email": "zamenhof@persona.example.com",
+      "icon": "🏠",
       "description": "Personaj projektoj"
     },
     {
       "id": "laboro",
-      "icon": "💼",
       "name": "Ludoviko Zamenhof",
       "email": "zamenhof@laboro.example.com",
+      "icon": "💼",
       "description": "Labora konto"
     }
   ]

@@ -110,19 +110,19 @@ Eklenti ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın �
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Deniz Yılmaz",
-      "service": "GitHub",
       "email": "deniz.yilmaz@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Kişisel projeler",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Deniz Yılmaz",
-      "service": "GitHub İş",
       "email": "deniz.yilmaz@company.example.com",
+      "service": "GitHub İş",
+      "icon": "💼",
       "description": "İş hesabı",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -183,10 +183,10 @@ Anahtar ID'si `ABCD1234`'tür.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Deniz Yılmaz",
-      "service": "GitHub",
       "email": "deniz.yilmaz@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Kişisel projeler",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Deniz Yılmaz",
-      "service": "GitHub",
       "email": "deniz.yilmaz@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Kişisel projeler",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Deniz Yılmaz",
-      "service": "GitHub İş",
       "email": "deniz.yilmaz@company.example.com",
+      "service": "GitHub İş",
+      "icon": "💼",
       "description": "İş hesabı",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "Deniz Yılmaz",
-      "service": "Bitbucket",
       "email": "deniz.yilmaz@bitbucket.example.com",
+      "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Bitbucket projeleri",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
       "name": "Deniz Yılmaz",
-      "service": "GitLab",
       "email": "deniz.yilmaz@freelance.example.com",
+      "service": "GitLab",
+      "icon": "🎯",
       "description": "Serbest projeler"
     }
   ],
@@ -351,16 +351,16 @@ SSH anahtar değiştirmeye ihtiyacınız yoksa (örn., tek bir GitHub hesabıyla
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Deniz Yılmaz",
       "email": "deniz.yilmaz@personal.example.com",
+      "icon": "🏠",
       "description": "Kişisel projeler"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Deniz Yılmaz",
       "email": "deniz.yilmaz@company.example.com",
+      "icon": "💼",
       "description": "İş hesabı"
     }
   ]

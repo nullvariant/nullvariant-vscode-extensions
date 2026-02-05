@@ -91,10 +91,10 @@ E hana mua i nā kī SSH no kēlā me kēia moʻokāki (e lele inā loaʻa):
 
 ```bash
 # Pilikino (Personal)
-ssh-keygen -t ed25519 -C "keola@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "kai@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Hana (Work)
-ssh-keygen -t ed25519 -C "keola@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "kai@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 E hoʻopaʻa i ke **kī lehulehu** (`.pub` faila) o kēlā me kēia kī i ka moʻokāki GitHub pili.
@@ -130,19 +130,19 @@ E wehe i nā hoʻonohonoho extension (`Cmd+,` / `Ctrl+,`) → E huli "Git ID Swi
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Keola Mahina",
+      "name": "Kai Kalani",
+      "email": "kai@personal.example.com",
       "service": "GitHub",
-      "email": "keola@personal.example.com",
+      "icon": "🏠",
       "description": "Nā papahana pilikino",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "Keola Mahina",
+      "name": "Kai Kalani",
+      "email": "kai@company.example.com",
       "service": "GitHub Hana",
-      "email": "keola@company.example.com",
+      "icon": "💼",
       "description": "Hana hui",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -171,7 +171,7 @@ I ka clone ʻana i nā repository, e hoʻohana i ka host e pili ana i kou ID:
 git clone git@github-work:company/repo.git
 
 # No ka ID pilikino (hoʻohana i ka github.com maʻamau)
-git clone git@github.com:keola/repo.git
+git clone git@github.com:kai/repo.git
 ```
 
 ---
@@ -191,7 +191,7 @@ Laʻana hoʻopuka:
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] Keola Mahina <keola@personal.example.com>
+uid         [ultimate] Kai Kalani <kai@personal.example.com>
 ```
 
 ʻO ka key ID ʻo `ABCD1234`.
@@ -203,10 +203,10 @@ uid         [ultimate] Keola Mahina <keola@personal.example.com>
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Keola Mahina",
+      "name": "Kai Kalani",
+      "email": "kai@personal.example.com",
       "service": "GitHub",
-      "email": "keola@personal.example.com",
+      "icon": "🏠",
       "description": "Nā papahana pilikino",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -258,20 +258,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Keola Mahina",
+      "name": "Kai Kalani",
+      "email": "kai@personal.example.com",
       "service": "GitHub",
-      "email": "keola@personal.example.com",
+      "icon": "🏠",
       "description": "Nā papahana pilikino",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSON12"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "Keola Mahina",
+      "name": "Kai Kalani",
+      "email": "kai@company.example.com",
       "service": "GitHub Hana",
-      "email": "keola@company.example.com",
+      "icon": "💼",
       "description": "Moʻokāki hana",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -279,20 +279,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "Keola Mahina",
+      "name": "Kai Kalani",
+      "email": "kai@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "keola@bitbucket.example.com",
+      "icon": "🪣",
       "description": "Nā papahana Bitbucket",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "kūʻokoʻa",
-      "icon": "🎯",
-      "name": "Keola Mahina",
+      "name": "Kai Kalani",
+      "email": "kai@freelance.example.com",
       "service": "GitLab",
-      "email": "keola@freelance.example.com",
+      "icon": "🎯",
       "description": "Nā papahana kūʻokoʻa"
     }
   ],
@@ -355,12 +355,12 @@ Hoʻomalu i ka hana i ka wā e hoʻonohonoho ʻia ka `icon`:
 | `false` (paʻamau) | Hōʻike ʻia ka `icon` ma ka UI editor wale nō. Kākau ʻia ka `name` wale nō i ka Git config |
 | `true`            | Kākau ʻia ka `icon + name` i ka Git config. Noho ka emoji ma ka moʻolelo commit           |
 
-Laʻana: `icon: "👤"`, `name: "Keola Mahina"`
+Laʻana: `icon: "👤"`, `name: "Kai Kalani"`
 
-| includeIconInGitConfig | Git config `user.name` | Kākau inoa commit        |
-| ---------------------- | ---------------------- | ------------------------ |
-| `false`                | `Keola Mahina`         | `Keola Mahina <leka>`    |
-| `true`                 | `👤 Keola Mahina`      | `👤 Keola Mahina <leka>` |
+| includeIconInGitConfig | Git config `user.name` | Kākau inoa commit      |
+| ---------------------- | ---------------------- | ---------------------- |
+| `false`                | `Kai Kalani`           | `Kai Kalani <leka>`    |
+| `true`                 | `👤 Kai Kalani`        | `👤 Kai Kalani <leka>` |
 
 ### Palapala: Hoʻonohonoho Kumu (ʻAʻohe SSH)
 
@@ -371,16 +371,16 @@ Inā ʻaʻole pono ʻoe e hoʻololi i ke kī SSH (laʻa., hoʻohana i ka moʻok�
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
+      "name": "Kai Kalani",
+      "email": "kai@personal.example.com",
       "icon": "🏠",
-      "name": "Keola Mahina",
-      "email": "keola@personal.example.com",
       "description": "Nā papahana pilikino"
     },
     {
       "id": "work",
+      "name": "Kai Kalani",
+      "email": "kai@company.example.com",
       "icon": "💼",
-      "name": "Keola Mahina",
-      "email": "keola@company.example.com",
       "description": "Moʻokāki hana"
     }
   ]
@@ -520,10 +520,10 @@ Inā makemake ʻoe e hoʻokomo i ka inoa lawelawe, e hoʻohana i ka `service` ka
 
 ```jsonc
 // HEWA
-"name": "Keola Mahina (Pilikino)"
+"name": "Kai Kalani (Pilikino)"
 
 // PONO
-"name": "Keola Mahina",
+"name": "Kai Kalani",
 "service": "GitHub"
 ```
 
