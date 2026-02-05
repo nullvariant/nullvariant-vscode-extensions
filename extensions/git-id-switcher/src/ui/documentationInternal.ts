@@ -41,7 +41,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/docs/i18n/hu/README.md': '3edb83b8701b9f7f2db1624d264f34e51df6bd3a0f82ca723695b7e7f7ef9636',
   'extensions/git-id-switcher/docs/i18n/it/README.md': 'aca2e24767cda1e83a6d65ca4b853bf85a0cf4173b163a26e9c1f8ff5d636a91',
   'extensions/git-id-switcher/docs/i18n/ja/README.md': '9a9049fa7e144286b000b78368fbde541126a8a0ce16b610b6f9261ae4501e0a',
-  'extensions/git-id-switcher/docs/i18n/ko/README.md': '16437816f13f3a53eeca8132ecd9a76379a9c8cac210f195ceb840edede8294a',
+  'extensions/git-id-switcher/docs/i18n/ko/README.md': '407e97cac6b5e19f0b6f3f9d745e3d1444e0d3e570c5af5087ae3450c90f658b',
   'extensions/git-id-switcher/docs/i18n/pl/README.md': '632e109c44a6dea50cbc1cbe5079cf2636138c54e906e38f29cafa4a08fd2d37',
   'extensions/git-id-switcher/docs/i18n/pt-BR/README.md': '4b934c6442d93550f05cdff12115f79b0508c5b98ec04af890616baf0ac8aa29',
   'extensions/git-id-switcher/docs/i18n/ru/README.md': 'f77bdd045cb9ff32f7d4e9630a625d19c9b0664968a5eef4e12ee11154b8b759',
