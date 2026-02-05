@@ -110,19 +110,19 @@ Apri le impostazioni dell'estensione (`Cmd+,` / `Ctrl+,`) → cerca "Git ID Swit
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Andrea Rossi",
       "email": "andrea.rossi@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Progetti personali",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Andrea Rossi",
       "email": "andrea.rossi@company.example.com",
       "service": "GitHub Lavoro",
+      "icon": "💼",
       "description": "Account di lavoro",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -183,10 +183,10 @@ L'ID della chiave è `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Andrea Rossi",
       "email": "andrea.rossi@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Progetti personali",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Andrea Rossi",
       "email": "andrea.rossi@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Progetti personali",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Andrea Rossi",
       "email": "andrea.rossi@company.example.com",
       "service": "GitHub Lavoro",
+      "icon": "💼",
       "description": "Account di lavoro",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "arossi-bb",
       "email": "arossi.bb@example.com",
       "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Progetti Bitbucket",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
       "name": "Andrea Rossi",
       "email": "andrea.rossi@freelance.example.com",
       "service": "GitLab",
+      "icon": "🎯",
       "description": "Progetti freelance"
     }
   ],
@@ -351,16 +351,16 @@ Se non hai bisogno di cambiare chiavi SSH (es: usando informazioni committer div
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Andrea Rossi",
       "email": "andrea.rossi@personal.example.com",
+      "icon": "🏠",
       "description": "Progetti personali"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Andrea Rossi",
       "email": "andrea.rossi@company.example.com",
+      "icon": "💼",
       "description": "Account di lavoro"
     }
   ]

@@ -110,19 +110,19 @@ Ouvrez les paramètres de l'extension (`Cmd+,` / `Ctrl+,`) → recherchez "Git I
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Camille Dupont",
       "email": "camille.dupont@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Projets personnels",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Camille Dupont",
       "email": "camille.dupont@company.example.com",
       "service": "GitHub Pro",
+      "icon": "💼",
       "description": "Compte professionnel",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -183,10 +183,10 @@ L'ID de clé est `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Camille Dupont",
       "email": "camille.dupont@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Projets personnels",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Camille Dupont",
       "email": "camille.dupont@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Projets personnels",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Camille Dupont",
       "email": "camille.dupont@company.example.com",
       "service": "GitHub Pro",
+      "icon": "💼",
       "description": "Compte professionnel",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "cdupont-bb",
       "email": "cdupont.bb@example.com",
       "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Projets Bitbucket",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
       "name": "Camille Dupont",
       "email": "camille.dupont@freelance.example.com",
       "service": "GitLab",
+      "icon": "🎯",
       "description": "Projets freelance"
     }
   ],
@@ -351,16 +351,16 @@ Si vous n'avez pas besoin de changer de clé SSH (ex: utilisation de différente
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Camille Dupont",
       "email": "camille.dupont@personal.example.com",
+      "icon": "🏠",
       "description": "Projets personnels"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Camille Dupont",
       "email": "camille.dupont@company.example.com",
+      "icon": "💼",
       "description": "Compte professionnel"
     }
   ]

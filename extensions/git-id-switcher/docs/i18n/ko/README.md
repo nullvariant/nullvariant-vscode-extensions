@@ -71,10 +71,10 @@
 
 ```bash
 # 개인용
-ssh-keygen -t ed25519 -C "kim.min@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "haneul@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # 업무용
-ssh-keygen -t ed25519 -C "kim.min@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "haneul@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 각 키의 **공개 키**(`.pub` 파일)를 해당 GitHub 계정에 등록합니다.
@@ -110,19 +110,19 @@ Host github-work
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "김민",
+      "name": "김하늘",
+      "email": "haneul@personal.example.com",
       "service": "GitHub",
-      "email": "kim.min@personal.example.com",
+      "icon": "🏠",
       "description": "개인 프로젝트",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "김민",
+      "name": "김하늘",
+      "email": "haneul@company.example.com",
       "service": "GitHub 회사",
-      "email": "kim.min@company.example.com",
+      "icon": "💼",
       "description": "회사 개발 (Enterprise Managed User)",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -151,7 +151,7 @@ Host github-work
 git clone git@github-work:company/repo.git
 
 # 개인 ID (기본 github.com 사용)
-git clone git@github.com:kimmin/repo.git
+git clone git@github.com:haneul/repo.git
 ```
 
 ---
@@ -171,7 +171,7 @@ gpg --list-secret-keys --keyid-format SHORT
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] 김민 <kim.min@personal.example.com>
+uid         [ultimate] 김하늘 <haneul@personal.example.com>
 ```
 
 키 ID는 `ABCD1234`입니다.
@@ -183,10 +183,10 @@ uid         [ultimate] 김민 <kim.min@personal.example.com>
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "김민",
+      "name": "김하늘",
+      "email": "haneul@personal.example.com",
       "service": "GitHub",
-      "email": "kim.min@personal.example.com",
+      "icon": "🏠",
       "description": "개인 프로젝트",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "김민",
+      "name": "김하늘",
+      "email": "haneul@personal.example.com",
       "service": "GitHub",
-      "email": "kim.min@personal.example.com",
+      "icon": "🏠",
       "description": "개인 프로젝트",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "김민",
+      "name": "김하늘",
+      "email": "haneul@company.example.com",
       "service": "GitHub 회사",
-      "email": "kim.min@company.example.com",
+      "icon": "💼",
       "description": "회사 개발 (Enterprise Managed User)",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "김민",
+      "name": "김하늘",
+      "email": "haneul@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "kimmin@bitbucket.example.com",
+      "icon": "🪣",
       "description": "Bitbucket 프로젝트",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
-      "name": "김민",
+      "name": "김하늘",
+      "email": "haneul@freelance.example.com",
       "service": "GitLab",
-      "email": "kim.min@freelance.example.com",
+      "icon": "🎯",
       "description": "프리랜서 프로젝트"
     }
   ],
@@ -335,12 +335,12 @@ Host bitbucket.org
 | `false` (기본값) | `icon`은 에디터 UI에만 표시. Git config에는 `name`만 기록    |
 | `true`           | Git config에 `icon + name` 기록. 커밋 기록에 이모지가 표시됨 |
 
-예시: `icon: "👤"`, `name: "김민"`의 경우
+예시: `icon: "👤"`, `name: "김하늘"`의 경우
 
-| includeIconInGitConfig | Git config `user.name` | 커밋 서명         |
-| ---------------------- | ---------------------- | ----------------- |
-| `false`                | `김민`                 | `김민 <email>`    |
-| `true`                 | `👤 김민`              | `👤 김민 <email>` |
+| includeIconInGitConfig | Git config `user.name` | 커밋 서명           |
+| ---------------------- | ---------------------- | ------------------- |
+| `false`                | `김하늘`               | `김하늘 <email>`    |
+| `true`                 | `👤 김하늘`            | `👤 김하늘 <email>` |
 
 ### 참고: 기본 설정 (SSH 없음)
 
@@ -351,16 +351,16 @@ SSH 키 전환이 필요 없는 경우 (예: 단일 GitHub 계정에서 다른 �
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
+      "name": "김하늘",
+      "email": "haneul@personal.example.com",
       "icon": "🏠",
-      "name": "김민",
-      "email": "kim.min@personal.example.com",
       "description": "개인 프로젝트"
     },
     {
       "id": "work",
+      "name": "김하늘",
+      "email": "haneul@company.example.com",
       "icon": "💼",
-      "name": "김민",
-      "email": "kim.min@company.example.com",
       "description": "업무 개발"
     }
   ]
@@ -500,10 +500,10 @@ Git 서브모듈을 사용하는 복잡한 저장소의 경우, ID 관리는 종
 
 ```jsonc
 // NG
-"name": "김민 (개인)"
+"name": "김하늘 (개인)"
 
 // OK
-"name": "김민",
+"name": "김하늘",
 "service": "GitHub"
 ```
 

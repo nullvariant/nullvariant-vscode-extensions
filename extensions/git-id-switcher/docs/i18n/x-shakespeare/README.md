@@ -73,10 +73,10 @@ A typical arrangement for the management of one's personal account and enterpris
 
 ```bash
 # For the tragedy of personal projects
-ssh-keygen -t ed25519 -C "hamlet@elsinore.example.com" -f ~/.ssh/id_ed25519_hamlet
+ssh-keygen -t ed25519 -C "william@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # For the comedy of work
-ssh-keygen -t ed25519 -C "macbeth@glamis.example.com" -f ~/.ssh/id_ed25519_macbeth
+ssh-keygen -t ed25519 -C "william@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Upon generating thy keys, register the public keys (`.pub`) unto each service (GitHub, GitLab, Bitbucket, and so forth). This is most required!
@@ -86,25 +86,18 @@ Upon generating thy keys, register the public keys (`.pub`) unto each service (G
 Edit `~/.ssh/config`:
 
 ```ssh-config
-# The Prince of Denmark's Account (GitHub - default)
+# Personal Account (GitHub - default)
 Host github.com
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_hamlet
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# The Thane of Glamis's Account (GitHub)
-Host github-macbeth
+# Company Account (GitHub)
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_macbeth
-    IdentitiesOnly yes
-
-# Juliet's Account (Bitbucket)
-Host bitbucket.org
-    HostName bitbucket.org
-    User git
-    IdentityFile ~/.ssh/id_ed25519_juliet
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 ```
 
@@ -116,42 +109,26 @@ Open **Extension Settings** and configure thine identities within `gitIdSwitcher
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "hamlet",
-      "icon": "💀",
-      "name": "Hamlet, Prince of Denmark",
-      "email": "hamlet@elsinore.example.com",
+      "id": "personal",
+      "name": "William the Bard",
+      "email": "william@personal.example.com",
+      "service": "GitHub",
+      "icon": "🎭",
       "description": "To code, or not to code",
-      "sshKeyPath": "~/.ssh/id_ed25519_hamlet",
-      "service": "github"
+      "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
-      "id": "macbeth",
-      "icon": "🗡️",
-      "name": "Macbeth, Thane of Glamis",
-      "email": "macbeth@glamis.example.com",
+      "id": "work",
+      "name": "William the Bard",
+      "email": "william@company.example.com",
+      "service": "GitHub Company",
+      "icon": "👑",
       "description": "Is this a merge conflict I see before me?",
-      "sshKeyPath": "~/.ssh/id_ed25519_macbeth",
-      "sshHost": "github-macbeth",
-      "service": "github"
-    },
-    {
-      "id": "romeo",
-      "icon": "❤️",
-      "name": "Romeo Montague",
-      "email": "romeo@verona.example.com",
-      "description": "But soft, what code through yonder window breaks?",
-      "service": "gitlab"
-    },
-    {
-      "id": "juliet",
-      "icon": "🌹",
-      "name": "Juliet Capulet",
-      "email": "juliet@verona.example.com",
-      "description": "O Git, Git! Wherefore art thou Git?",
-      "service": "bitbucket"
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work"
     }
   ],
-  "gitIdSwitcher.defaultIdentity": "hamlet",
+  "gitIdSwitcher.defaultIdentity": "personal",
   "gitIdSwitcher.autoSwitchSshKey": true,
   "gitIdSwitcher.applyToSubmodules": true
 }
@@ -182,7 +159,7 @@ Example output:
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] Hamlet, Prince of Denmark <hamlet@elsinore.example.com>
+uid         [ultimate] William the Bard <william@personal.example.com>
 ```
 
 Thy key ID is `ABCD1234`. Remember it well!
@@ -193,13 +170,13 @@ Thy key ID is `ABCD1234`. Remember it well!
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "hamlet",
-      "icon": "💀",
-      "name": "Hamlet, Prince of Denmark",
+      "id": "personal",
+      "name": "William the Bard",
+      "email": "william@personal.example.com",
       "service": "GitHub",
-      "email": "hamlet@elsinore.example.com",
+      "icon": "🎭",
       "description": "To code, or not to code",
-      "sshKeyPath": "~/.ssh/id_ed25519_hamlet",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
     }
   ]
@@ -222,25 +199,25 @@ All the elements combined! Here doth follow the complete example:
 ### SSH Config (`~/.ssh/config`)
 
 ```ssh-config
-# Hamlet's Account (default)
+# Personal Account (default)
 Host github.com
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_hamlet
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Macbeth's Account (Company EMU)
-Host github-macbeth
+# Company Account (Company EMU)
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_macbeth
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Juliet's Account (Bitbucket)
+# Bitbucket Account
 Host bitbucket.org
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_juliet
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
     IdentitiesOnly yes
 ```
 
@@ -250,52 +227,52 @@ Host bitbucket.org
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "hamlet",
-      "icon": "💀",
-      "name": "Hamlet, Prince of Denmark",
+      "id": "personal",
+      "name": "William the Bard",
+      "email": "william@personal.example.com",
       "service": "GitHub",
-      "email": "hamlet@elsinore.example.com",
+      "icon": "🎭",
       "description": "Personal - To code, or not to code",
-      "sshKeyPath": "~/.ssh/id_ed25519_hamlet",
-      "gpgKeyId": "HAMLET01"
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
+      "gpgKeyId": "PERSON01"
     },
     {
-      "id": "macbeth",
-      "icon": "🗡️",
-      "name": "Macbeth, Thane of Glamis",
+      "id": "work",
+      "name": "William the Bard",
+      "email": "william@company.example.com",
       "service": "GitHub Company",
-      "email": "macbeth@company_hamlet.example.com",
-      "description": "Company (EMU) - Thane of commits",
-      "sshKeyPath": "~/.ssh/id_ed25519_macbeth",
-      "sshHost": "github-macbeth",
-      "gpgKeyId": "MACBETH1"
+      "icon": "👑",
+      "description": "Company (EMU) - All the world's a stage",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "gpgKeyId": "WORK0001"
     },
     {
-      "id": "juliet",
-      "icon": "🪣",
-      "name": "Juliet Capulet",
+      "id": "bitbucket",
+      "name": "William the Bard",
+      "email": "william@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "juliet@verona.example.com",
+      "icon": "🪣",
       "description": "Bitbucket - O happy dagger",
-      "sshKeyPath": "~/.ssh/id_ed25519_juliet",
+      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
-      "id": "romeo",
-      "icon": "❤️",
-      "name": "Romeo Montague",
+      "id": "freelance",
+      "name": "William the Bard",
+      "email": "william@freelance.example.com",
       "service": "GitLab",
-      "email": "romeo@freelance.example.com",
+      "icon": "🪶",
       "description": "Freelance - Wherefore art thou, code?"
     }
   ],
-  "gitIdSwitcher.defaultIdentity": "hamlet",
+  "gitIdSwitcher.defaultIdentity": "personal",
   "gitIdSwitcher.autoSwitchSshKey": true,
   "gitIdSwitcher.applyToSubmodules": true
 }
 ```
 
-Note: The final identity (`romeo`) hath no SSH. Thou canst use this for switching merely the Git config (such as different committer information upon the same account).
+Note: The final identity (`freelance`) hath no SSH. Thou canst use this for switching merely the Git config (such as different committer information upon the same account).
 
 ---
 
@@ -348,7 +325,7 @@ Note: The final identity (`romeo`) hath no SSH. Thou canst use this for switchin
 
 ## Display Limitations
 
-- **`icon` property**: A single emoji only! No text such as "💀 Hamlet". Simply "💀".
+- **`icon` property**: A single emoji only! No text such as "🎭 William". Simply "🎭".
 - **`includeIconInGitConfig`**: When disabled (default), emoji doth not appear in Git config user.name.
 
 ---
@@ -357,10 +334,10 @@ Note: The final identity (`romeo`) hath no SSH. Thou canst use this for switchin
 
 This setting doth control whether emoji be added to Git `user.name`.
 
-| Setting           | Behavior                                                                 |
-| ----------------- | ------------------------------------------------------------------------ |
-| `false` (default) | Git config: `user.name = Hamlet, Prince of Denmark` (no emoji in config) |
-| `true`            | Git config: `user.name = 💀 Hamlet, Prince of Denmark` (emoji in config) |
+| Setting           | Behavior                                                        |
+| ----------------- | --------------------------------------------------------------- |
+| `false` (default) | Git config: `user.name = William the Bard` (no emoji in config) |
+| `true`            | Git config: `user.name = 🎭 William the Bard` (emoji in config) |
 
 > **Note**: The emoji doth always appear in the status bar regardless of this setting! This affecteth only the Git config.
 
@@ -419,9 +396,9 @@ If thou dost encounter this error, examine thy settings:
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "hamlet",
-      "name": "Hamlet, Prince of Denmark", // ← This is required!
-      "email": "hamlet@elsinore.example.com" // ← This also!
+      "id": "personal",
+      "name": "William the Bard", // ← This is required!
+      "email": "william@personal.example.com" // ← This also!
     }
   ]
 }

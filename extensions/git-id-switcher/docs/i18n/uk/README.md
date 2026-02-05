@@ -71,10 +71,10 @@
 
 ```bash
 # Особистий
-ssh-keygen -t ed25519 -C "sasha.ivanenko@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "sasha.kovalenko@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Робочий
-ssh-keygen -t ed25519 -C "sasha.ivanenko@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "sasha.kovalenko@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Зареєструйте **публічний ключ** (файл `.pub`) кожного ключа у відповідному обліковому записі GitHub.
@@ -110,19 +110,19 @@ Host github-work
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Саша Іваненко",
+      "name": "Саша Коваленко",
+      "email": "sasha.kovalenko@personal.example.com",
       "service": "GitHub",
-      "email": "sasha.ivanenko@personal.example.com",
+      "icon": "🏠",
       "description": "Особисті проєкти",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "Саша Іваненко",
+      "name": "Саша Коваленко",
+      "email": "sasha.kovalenko@company.example.com",
       "service": "GitHub Робочий",
-      "email": "sasha.ivanenko@company.example.com",
+      "icon": "💼",
       "description": "Робочий обліковий запис",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -151,7 +151,7 @@ Host github-work
 git clone git@github-work:company/repo.git
 
 # Для особистого ідентифікатора (використовує github.com за замовчуванням)
-git clone git@github.com:sivanenko/repo.git
+git clone git@github.com:skovalenko/repo.git
 ```
 
 ---
@@ -171,7 +171,7 @@ gpg --list-secret-keys --keyid-format SHORT
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] Саша Іваненко <sasha.ivanenko@personal.example.com>
+uid         [ultimate] Саша Коваленко <sasha.kovalenko@personal.example.com>
 ```
 
 ID ключа — `ABCD1234`.
@@ -183,10 +183,10 @@ ID ключа — `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Саша Іваненко",
+      "name": "Саша Коваленко",
+      "email": "sasha.kovalenko@personal.example.com",
       "service": "GitHub",
-      "email": "sasha.ivanenko@personal.example.com",
+      "icon": "🏠",
       "description": "Особисті проєкти",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "Саша Іваненко",
+      "name": "Саша Коваленко",
+      "email": "sasha.kovalenko@personal.example.com",
       "service": "GitHub",
-      "email": "sasha.ivanenko@personal.example.com",
+      "icon": "🏠",
       "description": "Особисті проєкти",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "Саша Іваненко",
+      "name": "Саша Коваленко",
+      "email": "sasha.kovalenko@company.example.com",
       "service": "GitHub Робочий",
-      "email": "sasha.ivanenko@company.example.com",
+      "icon": "💼",
       "description": "Робочий обліковий запис",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "Саша Іваненко",
+      "name": "Саша Коваленко",
+      "email": "sasha.kovalenko@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "sasha.ivanenko@bitbucket.example.com",
+      "icon": "🪣",
       "description": "Bitbucket проєкти",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
-      "name": "Саша Іваненко",
+      "name": "Саша Коваленко",
+      "email": "sasha.kovalenko@freelance.example.com",
       "service": "GitLab",
-      "email": "sasha.ivanenko@freelance.example.com",
+      "icon": "🎯",
       "description": "Фриланс-проєкти"
     }
   ],
@@ -335,12 +335,12 @@ Host bitbucket.org
 | `false` (за замовчуванням) | `icon` показується тільки в UI редактора. В Git config записується тільки `name` |
 | `true`                     | В Git config записується `icon + name`. Емодзі залишається в історії комітів     |
 
-Приклад: `icon: "👤"`, `name: "Саша Іваненко"`
+Приклад: `icon: "👤"`, `name: "Саша Коваленко"`
 
-| includeIconInGitConfig | Git config `user.name` | Підпис коміту              |
-| ---------------------- | ---------------------- | -------------------------- |
-| `false`                | `Саша Іваненко`        | `Саша Іваненко <email>`    |
-| `true`                 | `👤 Саша Іваненко`     | `👤 Саша Іваненко <email>` |
+| includeIconInGitConfig | Git config `user.name` | Підпис коміту               |
+| ---------------------- | ---------------------- | --------------------------- |
+| `false`                | `Саша Коваленко`       | `Саша Коваленко <email>`    |
+| `true`                 | `👤 Саша Коваленко`    | `👤 Саша Коваленко <email>` |
 
 ### Примітка: Базове налаштування (без SSH)
 
@@ -351,16 +351,16 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
+      "name": "Саша Коваленко",
+      "email": "sasha.kovalenko@personal.example.com",
       "icon": "🏠",
-      "name": "Саша Іваненко",
-      "email": "sasha.ivanenko@personal.example.com",
       "description": "Особисті проєкти"
     },
     {
       "id": "work",
+      "name": "Саша Коваленко",
+      "email": "sasha.kovalenko@company.example.com",
       "icon": "💼",
-      "name": "Саша Іваненко",
-      "email": "sasha.ivanenko@company.example.com",
       "description": "Робочий обліковий запис"
     }
   ]
@@ -500,10 +500,10 @@ Git-конфігурація має три рівні, де нижні рівн�
 
 ```jsonc
 // Неправильно
-"name": "Саша Іваненко (особистий)"
+"name": "Саша Коваленко (особистий)"
 
 // Правильно
-"name": "Саша Іваненко",
+"name": "Саша Коваленко",
 "service": "GitHub"
 ```
 

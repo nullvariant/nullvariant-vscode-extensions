@@ -110,19 +110,19 @@ Otevřete nastavení rozšíření (`Cmd+,` / `Ctrl+,`) → hledejte "Git ID Swi
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Novák",
       "email": "alex.novak@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Osobní projekty",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Novák",
       "email": "alex.novak@company.example.com",
       "service": "GitHub Práce",
+      "icon": "💼",
       "description": "Pracovní účet",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -183,9 +183,9 @@ ID klíče je `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Novák",
       "email": "alex.novak@personal.example.com",
+      "icon": "🏠",
       "description": "Osobní projekty",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -237,20 +237,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Novák",
       "email": "alex.novak@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Osobní projekty",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Novák",
       "email": "alex.novak@company.example.com",
       "service": "GitHub Práce",
+      "icon": "💼",
       "description": "Pracovní účet",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -258,20 +258,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "Alex Novák",
       "email": "alex.novak@bitbucket.example.com",
       "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Bitbucket projekty",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
       "name": "Alex Novák",
       "email": "alex.novak@freelance.example.com",
       "service": "GitLab",
+      "icon": "🎯",
       "description": "Freelance projekty"
     }
   ],
@@ -350,16 +350,16 @@ Pokud nepotřebujete přepínat SSH klíče (např. při použití různých com
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Novák",
       "email": "alex.novak@personal.example.com",
+      "icon": "🏠",
       "description": "Osobní projekty"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Novák",
       "email": "alex.novak@company.example.com",
+      "icon": "💼",
       "description": "Pracovní účet"
     }
   ]

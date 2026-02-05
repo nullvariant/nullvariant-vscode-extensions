@@ -110,19 +110,19 @@ Host github-work
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Саша Иванов",
-      "service": "GitHub",
       "email": "sasha.ivanov@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Лични проекти",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Саша Иванов",
-      "service": "GitHub Служебен",
       "email": "sasha.ivanov@company.example.com",
+      "service": "GitHub Служебен",
+      "icon": "💼",
       "description": "Служебен акаунт",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -183,10 +183,10 @@ ID на ключа е `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Саша Иванов",
-      "service": "GitHub",
       "email": "sasha.ivanov@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Лични проекти",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Саша Иванов",
-      "service": "GitHub",
       "email": "sasha.ivanov@personal.example.com",
+      "service": "GitHub",
+      "icon": "🏠",
       "description": "Лични проекти",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Саша Иванов",
-      "service": "GitHub Служебен",
       "email": "sasha.ivanov@company.example.com",
+      "service": "GitHub Служебен",
+      "icon": "💼",
       "description": "Служебен акаунт",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "Саша Иванов",
-      "service": "Bitbucket",
       "email": "sasha.ivanov@bitbucket.example.com",
+      "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Bitbucket проекти",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
       "name": "Саша Иванов",
-      "service": "GitLab",
       "email": "sasha.ivanov@freelance.example.com",
+      "service": "GitLab",
+      "icon": "🎯",
       "description": "Свободни проекти"
     }
   ],
@@ -351,16 +351,16 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Саша Иванов",
       "email": "sasha.ivanov@personal.example.com",
+      "icon": "🏠",
       "description": "Лични проекти"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Саша Иванов",
       "email": "sasha.ivanov@company.example.com",
+      "icon": "💼",
       "description": "Служебен акаунт"
     }
   ]

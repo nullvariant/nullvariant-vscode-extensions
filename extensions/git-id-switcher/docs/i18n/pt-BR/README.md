@@ -110,19 +110,19 @@ Abra as configurações da extensão (`Cmd+,` / `Ctrl+,`) → pesquise "Git ID S
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Silva",
       "email": "alex.silva@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Projetos pessoais",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Silva",
       "email": "alex.silva@company.example.com",
       "service": "GitHub Trabalho",
+      "icon": "💼",
       "description": "Conta de trabalho",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -183,10 +183,10 @@ O ID da chave é `ABCD1234`.
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Silva",
       "email": "alex.silva@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Projetos pessoais",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -238,20 +238,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Silva",
       "email": "alex.silva@personal.example.com",
       "service": "GitHub",
+      "icon": "🏠",
       "description": "Projetos pessoais",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Silva",
       "email": "alex.silva@company.example.com",
       "service": "GitHub Trabalho",
+      "icon": "💼",
       "description": "Conta de trabalho",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -259,20 +259,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
       "name": "asilva-bb",
       "email": "asilva.bb@example.com",
       "service": "Bitbucket",
+      "icon": "🪣",
       "description": "Projetos Bitbucket",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "freelance",
-      "icon": "🎯",
       "name": "Alex Silva",
       "email": "alex.silva@freelance.example.com",
       "service": "GitLab",
+      "icon": "🎯",
       "description": "Projetos freelance"
     }
   ],
@@ -351,16 +351,16 @@ Se você não precisa trocar chaves SSH (ex: usando informações de committer d
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
       "name": "Alex Silva",
       "email": "alex.silva@personal.example.com",
+      "icon": "🏠",
       "description": "Projetos pessoais"
     },
     {
       "id": "work",
-      "icon": "💼",
       "name": "Alex Silva",
       "email": "alex.silva@company.example.com",
+      "icon": "💼",
       "description": "Conta de trabalho"
     }
   ]

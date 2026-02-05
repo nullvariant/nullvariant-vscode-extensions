@@ -93,10 +93,10 @@ Git ID 切り替えツールやいっぺーあいびーしが、**Git ID Switche
 
 ```bash
 # 個人用
-ssh-keygen -t ed25519 -C "tarou@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "makoto@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # 仕事用
-ssh-keygen -t ed25519 -C "tarou@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "makoto@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 うぬうぬぬキーぬ**公開鍵**（`.pub`ファイル）ば対応すーるGitHubアカウントんかい登録しくぃみそーれー。
@@ -132,19 +132,19 @@ Host github-work
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "比嘉太郎",
+      "name": "比嘉真",
+      "email": "makoto@personal.example.com",
       "service": "GitHub",
-      "email": "tarou@personal.example.com",
+      "icon": "🏠",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "比嘉太郎",
+      "name": "比嘉真",
+      "email": "makoto@company.example.com",
       "service": "GitHub 仕事",
-      "email": "tarou@company.example.com",
+      "icon": "💼",
       "description": "会社ぬ仕事",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
@@ -173,7 +173,7 @@ Host github-work
 git clone git@github-work:company/repo.git
 
 # 個人ID用（デフォルトぬgithub.com使う）
-git clone git@github.com:tarou/repo.git
+git clone git@github.com:makoto/repo.git
 ```
 
 ---
@@ -193,7 +193,7 @@ gpg --list-secret-keys --keyid-format SHORT
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] 比嘉太郎 <tarou@personal.example.com>
+uid         [ultimate] 比嘉真 <makoto@personal.example.com>
 ```
 
 キーIDや`ABCD1234`やいびーん。
@@ -205,10 +205,10 @@ uid         [ultimate] 比嘉太郎 <tarou@personal.example.com>
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "比嘉太郎",
+      "name": "比嘉真",
+      "email": "makoto@personal.example.com",
       "service": "GitHub",
-      "email": "tarou@personal.example.com",
+      "icon": "🏠",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
@@ -260,20 +260,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
-      "icon": "🏠",
-      "name": "比嘉太郎",
+      "name": "比嘉真",
+      "email": "makoto@personal.example.com",
       "service": "GitHub",
-      "email": "tarou@personal.example.com",
+      "icon": "🏠",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "PERSON12"
     },
     {
       "id": "work",
-      "icon": "💼",
-      "name": "比嘉太郎",
+      "name": "比嘉真",
+      "email": "makoto@company.example.com",
       "service": "GitHub 仕事",
-      "email": "tarou@company.example.com",
+      "icon": "💼",
       "description": "仕事アカウント",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
@@ -281,20 +281,20 @@ Host bitbucket.org
     },
     {
       "id": "bitbucket",
-      "icon": "🪣",
-      "name": "比嘉太郎",
+      "name": "比嘉真",
+      "email": "makoto@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "tarou@bitbucket.example.com",
+      "icon": "🪣",
       "description": "Bitbucketプロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "jiyu",
-      "icon": "🎯",
-      "name": "比嘉太郎",
+      "name": "比嘉真",
+      "email": "makoto@freelance.example.com",
       "service": "GitLab",
-      "email": "tarou@freelance.example.com",
+      "icon": "🎯",
       "description": "自由業プロジェクト"
     }
   ],
@@ -357,12 +357,12 @@ Host bitbucket.org
 | `false`（デフォルト） | `icon`やエディタUIだけんかい表示。Git configんかいや`name`だけ書かーるん  |
 | `true`                | Git configんかい`icon + name`書かーるん。絵文字がコミット履歴んかい残いん |
 
-例: `icon: "👤"`, `name: "比嘉太郎"`
+例: `icon: "👤"`, `name: "比嘉真"`
 
-| includeIconInGitConfig | Git config `user.name` | コミット署名          |
-| ---------------------- | ---------------------- | --------------------- |
-| `false`                | `比嘉太郎`             | `比嘉太郎 <email>`    |
-| `true`                 | `👤 比嘉太郎`          | `👤 比嘉太郎 <email>` |
+| includeIconInGitConfig | Git config `user.name` | コミット署名        |
+| ---------------------- | ---------------------- | ------------------- |
+| `false`                | `比嘉真`               | `比嘉真 <email>`    |
+| `true`                 | `👤 比嘉真`            | `👤 比嘉真 <email>` |
 
 ### メモ: 基本設定（SSH無し）
 
@@ -373,16 +373,16 @@ SSH鍵切り替え不要な場合（例：同じGitHubアカウントんかい�
   "gitIdSwitcher.identities": [
     {
       "id": "personal",
+      "name": "比嘉真",
+      "email": "makoto@personal.example.com",
       "icon": "🏠",
-      "name": "比嘉太郎",
-      "email": "tarou@personal.example.com",
       "description": "個人プロジェクト"
     },
     {
       "id": "work",
+      "name": "比嘉真",
+      "email": "makoto@company.example.com",
       "icon": "💼",
-      "name": "比嘉太郎",
-      "email": "tarou@company.example.com",
       "description": "仕事アカウント"
     }
   ]
@@ -522,10 +522,10 @@ Gitサブモジュール持っちょーる複雑なリポジトリんかい、ID
 
 ```jsonc
 // ダメ
-"name": "比嘉太郎 (個人)"
+"name": "比嘉真 (個人)"
 
 // いっぺー
-"name": "比嘉太郎",
+"name": "比嘉真",
 "service": "GitHub"
 ```
 

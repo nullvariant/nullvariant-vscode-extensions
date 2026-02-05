@@ -69,10 +69,10 @@ Typical setup fer managin' yer personal account and company account (Enterprise 
 
 ```bash
 # Captain's personal account
-ssh-keygen -t ed25519 -C "blackbeard@personal.example.com" -f ~/.ssh/id_ed25519_captain
+ssh-keygen -t ed25519 -C "morgan@personal.example.com" -f ~/.ssh/id_ed25519_captain
 
 # Merchant vessel account (fer legitimate business, arrr)
-ssh-keygen -t ed25519 -C "blackbeard@merchant.example.com" -f ~/.ssh/id_ed25519_merchant
+ssh-keygen -t ed25519 -C "morgan@company.example.com" -f ~/.ssh/id_ed25519_merchant
 ```
 
 After generatin' yer keys, register the public keys (`.pub`) to each service (GitHub, GitLab, Bitbucket, etc.). This be required, matey!
@@ -95,13 +95,6 @@ Host github-merchant
     User git
     IdentityFile ~/.ssh/id_ed25519_merchant
     IdentitiesOnly yes
-
-# Tavern Account (Bitbucket)
-Host bitbucket.org
-    HostName bitbucket.org
-    User git
-    IdentityFile ~/.ssh/id_ed25519_tavern
-    IdentitiesOnly yes
 ```
 
 ### Step 3: Configure the Extension
@@ -113,38 +106,22 @@ Open **Extension Settings** and configure yer identities in `gitIdSwitcher.ident
   "gitIdSwitcher.identities": [
     {
       "id": "captain",
+      "name": "Cap'n Morgan",
+      "email": "morgan@personal.example.com",
+      "service": "github",
       "icon": "🏴‍☠️",
-      "name": "Captain Blackbeard",
-      "email": "blackbeard@personal.example.com",
       "description": "Plunderin' personal projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_captain",
-      "service": "github"
+      "sshKeyPath": "~/.ssh/id_ed25519_captain"
     },
     {
       "id": "merchant",
+      "name": "Cap'n Morgan",
+      "email": "morgan@company.example.com",
+      "service": "github",
       "icon": "⚓",
-      "name": "Edward Teach",
-      "email": "blackbeard@merchant.example.com",
       "description": "Legitimate merchant business",
       "sshKeyPath": "~/.ssh/id_ed25519_merchant",
-      "sshHost": "github-merchant",
-      "service": "github"
-    },
-    {
-      "id": "navy-spy",
-      "icon": "🎭",
-      "name": "Lieutenant Smith",
-      "email": "smith@navy.example.com",
-      "description": "Undercover operations",
-      "service": "gitlab"
-    },
-    {
-      "id": "tavern",
-      "icon": "🍺",
-      "name": "Jolly Roger",
-      "email": "jolly@tavern.example.com",
-      "description": "Tavern side projects",
-      "service": "bitbucket"
+      "sshHost": "github-merchant"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "captain",
@@ -178,7 +155,7 @@ Example output:
 ```text
 sec   ed25519/ABCD1234 2024-01-01 [SC]
       ...
-uid         [ultimate] Captain Blackbeard <blackbeard@personal.example.com>
+uid         [ultimate] Cap'n Morgan <morgan@personal.example.com>
 ```
 
 Yer key ID be `ABCD1234`. Remember it well!
@@ -190,10 +167,10 @@ Yer key ID be `ABCD1234`. Remember it well!
   "gitIdSwitcher.identities": [
     {
       "id": "captain",
-      "icon": "🏴‍☠️",
-      "name": "Captain Blackbeard",
+      "name": "Cap'n Morgan",
+      "email": "morgan@personal.example.com",
       "service": "GitHub",
-      "email": "blackbeard@personal.example.com",
+      "icon": "🏴‍☠️",
       "description": "Plunderin' personal projects",
       "sshKeyPath": "~/.ssh/id_ed25519_captain",
       "gpgKeyId": "ABCD1234"
@@ -247,20 +224,20 @@ Host bitbucket.org
   "gitIdSwitcher.identities": [
     {
       "id": "captain",
-      "icon": "🏴‍☠️",
-      "name": "Captain Blackbeard",
+      "name": "Cap'n Morgan",
+      "email": "morgan@personal.example.com",
       "service": "GitHub",
-      "email": "blackbeard@personal.example.com",
+      "icon": "🏴‍☠️",
       "description": "Personal - Plunderin' projects",
       "sshKeyPath": "~/.ssh/id_ed25519_captain",
       "gpgKeyId": "CAPTAIN1"
     },
     {
       "id": "merchant",
-      "icon": "⚓",
-      "name": "Edward Teach",
+      "name": "Cap'n Morgan",
+      "email": "morgan@company.example.com",
       "service": "GitHub Company",
-      "email": "teach@company_blackbeard.example.com",
+      "icon": "⚓",
       "description": "Company (EMU) - Merchant business",
       "sshKeyPath": "~/.ssh/id_ed25519_merchant",
       "sshHost": "github-merchant",
@@ -268,20 +245,20 @@ Host bitbucket.org
     },
     {
       "id": "tavern",
-      "icon": "🪣",
-      "name": "Jolly Roger",
+      "name": "Cap'n Morgan",
+      "email": "morgan@bitbucket.example.com",
       "service": "Bitbucket",
-      "email": "jolly@tavern.example.com",
+      "icon": "🪣",
       "description": "Bitbucket - Tavern projects",
       "sshKeyPath": "~/.ssh/id_ed25519_tavern",
       "sshHost": "bitbucket.org"
     },
     {
       "id": "navy-spy",
-      "icon": "🎭",
-      "name": "Lieutenant Smith",
+      "name": "Cap'n Morgan",
+      "email": "morgan@freelance.example.com",
       "service": "GitLab",
-      "email": "smith@freelance.example.com",
+      "icon": "🎭",
       "description": "Freelance - Undercover operations"
     }
   ],
@@ -353,10 +330,10 @@ Note: The last identity (`navy-spy`) has no SSH. Ye can use this fer switchin' j
 
 This setting controls whether emoji be added to Git `user.name`.
 
-| Setting           | Behavior                                                          |
-| ----------------- | ----------------------------------------------------------------- |
-| `false` (default) | Git config: `user.name = Captain Blackbeard` (no emoji in config) |
-| `true`            | Git config: `user.name = 🏴‍☠️ Captain Blackbeard` (emoji in config) |
+| Setting           | Behavior                                                    |
+| ----------------- | ----------------------------------------------------------- |
+| `false` (default) | Git config: `user.name = Cap'n Morgan` (no emoji in config) |
+| `true`            | Git config: `user.name = 🏴‍☠️ Cap'n Morgan` (emoji in config) |
 
 > **Note**: Emoji always shows in status bar regardless of this setting! This only affects Git config, matey.
 
@@ -416,8 +393,8 @@ If ye see this error, check yer settings:
   "gitIdSwitcher.identities": [
     {
       "id": "captain",
-      "name": "Captain Blackbeard", // ← This be required!
-      "email": "blackbeard@personal.example.com" // ← This too!
+      "name": "Cap'n Morgan", // ← This be required!
+      "email": "morgan@personal.example.com" // ← This too!
     }
   ]
 }
