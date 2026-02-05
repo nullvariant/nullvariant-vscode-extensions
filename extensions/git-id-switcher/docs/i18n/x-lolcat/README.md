@@ -95,13 +95,6 @@ Host github-keyboard
     User git
     IdentityFile ~/.ssh/id_ed25519_keyboard
     IdentitiesOnly yes
-
-# NYAN CAT ACCOUNT (BITBUCKET)
-Host bitbucket.org
-    HostName bitbucket.org
-    User git
-    IdentityFile ~/.ssh/id_ed25519_nyan
-    IdentitiesOnly yes
 ```
 
 ### STEP 3: CONFIGUR TEH EXTENSHUN
@@ -129,22 +122,6 @@ OPEN **EXTENSHUN SETTINGZ** AN CONFIGUR UR IDENTITIEZ IN `gitIdSwitcher.identiti
       "description": "PLAY HIM OFF",
       "sshKeyPath": "~/.ssh/id_ed25519_keyboard",
       "sshHost": "github-keyboard"
-    },
-    {
-      "id": "grumpy-cat",
-      "name": "Grumpy Cat",
-      "email": "grumpy@cat.example.com",
-      "service": "gitlab",
-      "icon": "😾",
-      "description": "I HAD FUN ONCE. IT WUZ AWFUL."
-    },
-    {
-      "id": "nyan",
-      "name": "Nyan Cat",
-      "email": "nyan@cat.example.com",
-      "service": "bitbucket",
-      "icon": "🌈",
-      "description": "NYANYANYANYANYA"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "ceiling-cat",

@@ -99,13 +99,6 @@ Host github-work
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
-
-# Bitbucket Account
-Host bitbucket.org
-    HostName bitbucket.org
-    User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
-    IdentitiesOnly yes
 ```
 
 ### Act III: Configure the Extension
@@ -133,22 +126,6 @@ Open **Extension Settings** and configure thine identities within `gitIdSwitcher
       "description": "Is this a merge conflict I see before me?",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work"
-    },
-    {
-      "id": "freelance",
-      "name": "William the Bard",
-      "email": "william@freelance.example.com",
-      "service": "GitLab",
-      "icon": "🪶",
-      "description": "But soft, what code through yonder window breaks?"
-    },
-    {
-      "id": "bitbucket",
-      "name": "William the Bard",
-      "email": "william@bitbucket.example.com",
-      "service": "Bitbucket",
-      "icon": "🌹",
-      "description": "O Git, Git! Wherefore art thou Git?"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",

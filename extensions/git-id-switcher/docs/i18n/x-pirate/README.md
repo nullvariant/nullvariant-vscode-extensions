@@ -95,13 +95,6 @@ Host github-merchant
     User git
     IdentityFile ~/.ssh/id_ed25519_merchant
     IdentitiesOnly yes
-
-# Tavern Account (Bitbucket)
-Host bitbucket.org
-    HostName bitbucket.org
-    User git
-    IdentityFile ~/.ssh/id_ed25519_tavern
-    IdentitiesOnly yes
 ```
 
 ### Step 3: Configure the Extension
@@ -129,22 +122,6 @@ Open **Extension Settings** and configure yer identities in `gitIdSwitcher.ident
       "description": "Legitimate merchant business",
       "sshKeyPath": "~/.ssh/id_ed25519_merchant",
       "sshHost": "github-merchant"
-    },
-    {
-      "id": "navy-spy",
-      "name": "Cap'n Morgan",
-      "email": "morgan@freelance.example.com",
-      "service": "gitlab",
-      "icon": "🎭",
-      "description": "Undercover operations"
-    },
-    {
-      "id": "tavern",
-      "name": "Cap'n Morgan",
-      "email": "morgan@bitbucket.example.com",
-      "service": "bitbucket",
-      "icon": "🍺",
-      "description": "Tavern side projects"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "captain",
