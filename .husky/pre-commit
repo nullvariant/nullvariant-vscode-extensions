@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
+# Run lint-staged for prettier formatting on staged files
+npx lint-staged
+
 # Auto-regenerate README.md when i18n/en/README.md changes
 # This ensures all commits are signed by the developer, not by GitHub Actions
 
