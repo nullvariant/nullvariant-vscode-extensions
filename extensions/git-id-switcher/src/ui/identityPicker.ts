@@ -120,7 +120,7 @@ export async function showIdentityQuickPick(
 
   const quickPick = vs.window.createQuickPick<IdentityQuickPickItem>();
   quickPick.items = allItems;
-  quickPick.title = vs.l10n.t('Select Identity');
+  quickPick.title = vs.l10n.t('Select an identity');
   quickPick.placeholder = vs.l10n.t('Search identities...');
   quickPick.buttons = [manageButton];
   quickPick.matchOnDescription = true;
