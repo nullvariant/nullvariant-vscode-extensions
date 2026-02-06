@@ -28,7 +28,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      シネㇷ゚ クリㇰ オロワ Git ID ウコイタㇰ ウタㇻ ホㇱキノ エトゥㇾ。GitHub アカウント、SSH キー、GPG サイン オロワノ ウコイタㇰ、<b>Git Submodule オロワノ ID ウコイタㇰ</b>。
+      シネㇷ゚ クリㇰ オロワ Git プロフィール ウコイタㇰ。GitHub アカウント、SSH キー、GPG サイン ウコイタㇰ、<b>Git サブモジュール オロワノ プロフィール 自動適用</b>。
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -51,69 +51,72 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-ain.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ain/demo.webp" width="600" alt="デモ" loading="lazy">
 
-## 🎯 ネーン クス タン Extension?
+## 🎯 ネーン クス Git ID Switcher?
 
-Git ID ウコイタㇰ Extension ポㇿ アン、**Git ID Switcher** ウタㇻ オㇿケ ピㇼカノ:
+Git プロフィール ウコイタㇰ ツール ポㇿ アン、**Git ID Switcher** ホッカ ツール エヌカㇻ ソモ キ ピㇼカ ウタㇻ:
 
-1. **Submodule**: submodule アン repository オロワ、シネㇷ゚ シネㇷ゚ `git config user.name` エキ クス ネ。タン extension オロワ submodule オㇿ ID ウコイタㇰ。
-2. **SSH & GPG**: レー エトゥㇾ アイヌ、SSH キー ウン GPG サイン エキ。
+1. **サブモジュール ピㇼカ**: サブモジュール アン リポジトリ（Hugo テーマ、ベンダーライブラリ）、シネㇷ゚ シネㇷ゚ サブモジュール `git config user.name` 手動設定。タン Extension、オㇿ サブモジュール オロワノ プロフィール 自動適用。
+2. **SSH & GPG ウコイタㇰ**: レー ウコイタㇰ ワノ、ssh-agent SSH キー ウコイタㇰ、GPG サイン 設定。ウェン サイン commit ソモ キ。
 
-## ピㇼカ ウタㇻ (Features / 機能)
+## ピㇼカ ウタㇻ
 
-- **Submodule**: Git submodule オロワノ ID ウコイタㇰ
-- **SSH キー ウコイタㇰ**: ssh-agent オロワ SSH キー ウコイタㇰ
-- **GPG サイン**: commit サイン GPG キー (オプション)
-- **シネㇷ゚ クリㇰ オロワ ID ウコイタㇰ**: Git user.name ウン user.email ホㇱキノ エトゥㇾ
-- **ステータスバー**: エネアン ID エヌカㇻ
-- **ツールチップ**: ID ウタㇻ オロワ
-- **macOS, Linux, Windows**: オㇿ ケウトゥㇺ
-- **17 イタㇰ**: ウコイタㇰ ウタㇻ
+- **プロフィール 管理 UI**: settings.json エトゥㇾ ソモ、プロフィール エレㇷ゚・エトゥㇾ・エオㇷ゚キ・並べ替え UI オロワ
+- **シネㇷ゚ クリㇰ プロフィール ウコイタㇰ**: Git user.name ウン user.email ホㇱキノ エトゥㇾ
+- **ステータスバー**: エネアン プロフィール エヌカㇻ
+- **サブモジュール 対応**: Git サブモジュール オロワノ プロフィール 自動伝播
+- **SSH キー 管理**: ssh-agent SSH キー 自動ウコイタㇰ
+- **GPG サイン 対応**: commit サイン GPG キー（オプション）
+- **リッチ ツールチップ**: 説明、SSH ホスト 詳細情報
+- **クロスプラットフォーム**: macOS, Linux, Windows
+- **17 イタㇰ 対応**: 17 言語 サポート
 
 ## 🌏 イタㇰ ウタㇻ オロワ
 
-> **ポン ウタㇻ オロワノ ピㇼカ アン。**
+> **クアニ ポン ウタㇻ オロワノ ピㇼカ アン。**
 > ポンノ アン クス ホㇱキ エヤㇺ シㇼ ソモ キ。
 > ピㇼカノ ウコイタㇰ エアㇻキ シㇼ ソモ ネ ヤㇰカ、ポン イタㇰ オロワ ピㇼカノ エヌカㇻ クス エラㇺ。
 
-タン extension オロワ VSCode 17 イタㇰ オㇿ。README オロワ、ポン イタㇰ ウン ホㇱキㇷ゚ イタㇰ オロワノ。
+タン Extension、VS Code 17 イタㇰ オㇿ。README、ポン イタㇰ ウン ジョーク イタㇰ オロワノ。
+
+タン 「グローバル対応」 ワノ、「イタㇰ 多様性 敬意」。イタㇰ エトゥㇾ、オㇿ コタン 開発者 オロワ ピㇼカ commit...ネプキ インフラ ネ ヤㇰ ピㇼカ。
 
 ---
 
-## ホㇱキノ (Quick Start / クイックスタート)
+## ホㇱキノ
 
-ウタㇻ アカウント ウン モノレ アカウント (Enterprise Managed User) ウコイタㇰ。
+ウタㇻ アカウント ウン モノレ アカウント（Enterprise Managed User）ウコイタㇰ セットアップ。
 
-### 1: SSH キー
+### ステップ 1: SSH キー
 
-SSH キー エキ (アン ヤㇰカ エレㇷ゚):
+アカウント シネㇷ゚ シネㇷ゚ SSH キー エキ（アン ヤㇰ エレㇷ゚）:
 
 ```bash
-# ウタㇻ (Personal / 個人用)
+# ウタㇻ
 ssh-keygen -t ed25519 -C "sisam@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
-# モノレ (Work / 仕事用)
+# モノレ
 ssh-keygen -t ed25519 -C "sisam@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
-シネㇷ゚ シネㇷ゚ **公開鍵** (`.pub` ファイル) GitHub アカウント オロワ。
+シネㇷ゚ シネㇷ゚ SSH キー **公開鍵**（`.pub` ファイル）GitHub アカウント オロワ。
 
-> **ウタㇻ**: GitHub オロワ `id_ed25519_personal.pub` (公開鍵)。`id_ed25519_personal` (拡張子ナシ) 秘密鍵—ホㇱキ アン ソモ キ。
+> **ウタㇻ**: GitHub オロワ `id_ed25519_personal.pub`（公開鍵）。`id_ed25519_personal`（拡張子ソモ）秘密鍵—ホッカ ウタㇻ シェア ソモ キ、アップロード ソモ キ。
 
-### 2: SSH Config
+### ステップ 2: SSH config 設定
 
 `~/.ssh/config` エトゥㇾ:
 
 ```ssh-config
-# ウタㇻ アカウント
+# ウタㇻ GitHub アカウント（デフォルト）
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# モノレ アカウント
+# モノレ GitHub アカウント
 Host github-work
     HostName github.com
     User git
@@ -121,122 +124,39 @@ Host github-work
     IdentitiesOnly yes
 ```
 
-### 3: Extension
+### ステップ 3: Extension 設定
 
-Extension 設定 (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" エヌカㇻ → "settings.json エトゥㇾ" クリㇰ:
+インストール サンプル プロフィール アン。
+ポン ガイド、ウタㇻ エトゥㇾ。
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "シサㇺ",
-      "email": "sisam@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "ウタㇻ プロジェクト",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal"
-    },
-    {
-      "id": "work",
-      "name": "シサㇺ",
-      "email": "sisam@company.example.com",
-      "service": "GitHub モノレ",
-      "icon": "💼",
-      "description": "モノレ",
-      "sshKeyPath": "~/.ssh/id_ed25519_work",
-      "sshHost": "github-work"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "personal",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ain/first-ux.webp" width="600" alt="ホㇱキ セットアップ（13 ステップ）：ステータスバー オロワ プロフィール 管理、エトゥㇾ・エキ" loading="lazy">
 
-### 4: エキ!
+> **キー ファイル 送信 ソモ キ**: SSH キー パス 設定、キー ファイル パス（場所）ワノ。キー ファイル 中身 アップロード ソモ キ、外部送信 ソモ キ。
 
-1. ステータスバー ID アイコン クリㇰ (ハヨㇰペ シㇼペ)
-2. ID エトゥㇾ
-3. オㇿケ! Git config ウン SSH キー ウコイタㇰ。
+> **GPG サイン エキ ヤㇰ**: プロフィール エトゥㇾ 画面 `gpgKeyId` 設定。
+> GPG キー ID 確認、「[トラブルシューティング](#gpg-サイン-ソモ-キ)」エヌカㇻ。
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-ain.png" width="600" alt="Quick Pick">
-
-### SSH Host エイリアス
-
-Repository クローン、ID オロワ Host エキ:
-
-```bash
-# モノレ ID (github-work エイリアス)
-git clone git@github-work:company/repo.git
-
-# ウタㇻ ID (github.com デフォルト)
-git clone git@github.com:sisam/repo.git
-```
+> **ヒント**: settings.json オロワ 直接設定。
+> Extension 設定（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」エヌカㇻ →「settings.json エトゥㇾ」クリㇰ。
+> JSON 設定例「[フル 設定例](#フル-設定例-4-アカウント-ssh--gpg)」エヌカㇻ。
 
 ---
 
-## オプション: GPG サイン
+## フル 設定例: 4 アカウント SSH + GPG
 
-GPG オロワ commit サイン:
+オㇿ 組み合わせ 完全例:
 
-### 1: GPG キー ID エヌカㇻ
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-例:
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] シサㇺ <sisam@personal.example.com>
-```
-
-キー ID `ABCD1234`。
-
-### 2: GPG キー ID オロワ
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "シサㇺ",
-      "email": "sisam@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "ウタㇻ プロジェクト",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-タン ID ウコイタㇰ、extension エキ:
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
-
----
-
-## 例: 4 アカウント SSH + GPG
-
-オㇿ 例:
-
-### SSH Config (`~/.ssh/config`)
+### SSH 設定 (`~/.ssh/config`)
 
 ```ssh-config
-# ウタㇻ アカウント (デフォルト)
+# ウタㇻ アカウント（デフォルト）
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# モノレ アカウント
+# モノレ アカウント（Enterprise Managed User）
 Host github-work
     HostName github.com
     User git
@@ -264,7 +184,7 @@ Host bitbucket.org
       "icon": "🏠",
       "description": "ウタㇻ プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSON12"
+      "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
@@ -272,7 +192,7 @@ Host bitbucket.org
       "email": "sisam@company.example.com",
       "service": "GitHub モノレ",
       "icon": "💼",
-      "description": "モノレ アカウント",
+      "description": "モノレ 開発",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
@@ -293,7 +213,7 @@ Host bitbucket.org
       "email": "sisam@freelance.example.com",
       "service": "GitLab",
       "icon": "🎯",
-      "description": "シㇿカン プロジェクト"
+      "description": "シㇿカン 案件"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -302,138 +222,181 @@ Host bitbucket.org
 }
 ```
 
-ウタㇻ: ホㇱキ ID (`sirokan`) SSH ソモ—Git config ウコイタㇰ ワノ。GitLab アカウント エネアン commit ウタㇻ オロワ。
+ウタㇻ: ホㇱキ プロフィール（`sirokan`）SSH ソモ。エネアン GitHub アカウント エネアン commit ウタㇻ、Git config ワノ ウコイタㇰ。
 
 ---
 
-## 設定 リファレンス (Configuration Reference)
+## プロフィール 管理
 
-### ID プロパティ (Identity Properties)
+ステータスバー クリㇰ → 一覧 ハヨㇰペ「プロフィール 管理」オロワ 管理画面。
+プロフィール エレㇷ゚・エトゥㇾ・エオㇷ゚キ・並べ替え UI オロワ 直接操作。
 
-| プロパティ    | 必須 | ウコイタㇰ                                               |
-| ------------- | ---- | -------------------------------------------------------- |
-| `id`          | ✅   | ユニーク ID (例: `"work"`, `"personal"`)                 |
-| `name`        | ✅   | Git user.name — commit オロワ                            |
-| `email`       | ✅   | Git user.email — commit オロワ                           |
-| `icon`        |      | ステータスバー 絵文字 (例: `"🏠"`)。シネㇷ゚ 絵文字 ワノ |
-| `service`     |      | サービス レー (例: `"GitHub"`, `"GitLab"`)。UI オロワ    |
-| `description` |      | ピッカー ウン ツールチップ オロワ                        |
-| `sshKeyPath`  |      | SSH 秘密鍵 パス (例: `"~/.ssh/id_ed25519_work"`)         |
-| `sshHost`     |      | SSH config ホスト エイリアス (例: `"github-work"`)       |
-| `gpgKeyId`    |      | GPG キー ID commit サイン                                |
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ain/identity-management.webp" width="600" alt="プロフィール 管理：エオㇷ゚キ・並べ替え 操作ガイド" loading="lazy">
 
-#### 表示制限 (Display Limitations)
+コマンドパレット `Git ID Switcher: Delete Identity` オロワ プロフィール エオㇷ゚キ。
 
-- **ステータスバー**: ~25 文字 `...` オロワ
-- **`icon`**: シネㇷ゚ 絵文字 (grapheme cluster) ワノ。ポㇿ 絵文字 ロングテキスト ソモ キ
+---
 
-### 設定 (General Settings)
+## コマンド
 
-| 設定                                       | デフォルト  | ウコイタㇰ                                                                       |
-| ------------------------------------------ | ----------- | -------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | 例 エヌカㇻ | ID 設定 リスト                                                                   |
-| `gitIdSwitcher.defaultIdentity`            | 例 エヌカㇻ | デフォルト ID                                                                    |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | SSH キー ウコイタㇰ                                                              |
-| `gitIdSwitcher.showNotifications`          | `true`      | ウコイタㇰ 通知                                                                  |
-| `gitIdSwitcher.applyToSubmodules`          | `true`      | Git submodule ID ウコイタㇰ                                                      |
-| `gitIdSwitcher.submoduleDepth`             | `1`         | ネスト submodule 深さ (1-5)                                                      |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | 絵文字 icon Git config `user.name` オロワ                                        |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`     | 監査ログ ファイル オロワ（ID ウコイタㇰ、SSH 操作 等）                           |
-| `gitIdSwitcher.logging.filePath`           | `""`        | ログファイル パス（例：`~/.git-id-switcher/security.log`）。空 = デフォルト      |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | ローテーション前 最大ファイルサイズ（バイト、1MB-100MB）                         |
-| `gitIdSwitcher.logging.maxFiles`           | `5`         | 保持 ローテーションファイル 最大数（1-20）                                       |
-| `gitIdSwitcher.logging.level`              | `"INFO"`    | ログレベル：`DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`。選択レベル以上 記録        |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | ウコイタㇰ、タント ウン コラムパコロ マスク（最大プライバシー）                  |
-| `gitIdSwitcher.commandTimeouts`            | `{}`        | コマンド タイムアウト（ミリ秒、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
+| コマンド                                 | ウコイタㇰ                     |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | プロフィール ピッカー          |
+| `Git ID Switcher: Delete Identity`       | プロフィール エオㇷ゚キ        |
+| `Git ID Switcher: Show Current Identity` | エネアン プロフィール エヌカㇻ |
+| `Git ID Switcher: Show Documentation`    | ドキュメント エヌカㇻ          |
+
+---
+
+## 設定 リファレンス
+
+### プロフィール プロパティ
+
+| プロパティ    | 必須 | ウコイタㇰ                                                |
+| ------------- | ---- | --------------------------------------------------------- |
+| `id`          | ✅   | ユニーク ID（例：`"personal"`, `"work"`）                 |
+| `name`        | ✅   | Git user.name — commit オロワ                             |
+| `email`       | ✅   | Git user.email — commit オロワ                            |
+| `icon`        |      | ステータスバー 絵文字（例：`"🏠"`）。シネㇷ゚ 絵文字 ワノ |
+| `service`     |      | サービス レー（例：`"GitHub"`, `"GitLab"`）。UI オロワ    |
+| `description` |      | ピッカー ウン ツールチップ 短い説明                       |
+| `sshKeyPath`  |      | SSH 秘密鍵 パス（例：`"~/.ssh/id_ed25519_work"`）         |
+| `sshHost`     |      | SSH config ホスト エイリアス（例：`"github-work"`）       |
+| `gpgKeyId`    |      | commit サイン GPG キー ID                                 |
+
+#### 表示制限
+
+- **ステータスバー**: ~25 文字 `...` オロワ 省略
+- **`icon`**: シネㇷ゚ 絵文字（書記素クラスター）ワノ。ポㇿ 絵文字 ロング 文字列 ソモ キ
+
+### グローバル 設定
+
+| 設定                                       | デフォルト   | ウコイタㇰ                                                                        |
+| ------------------------------------------ | ------------ | --------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | サンプル参照 | プロフィール 設定 リスト                                                          |
+| `gitIdSwitcher.defaultIdentity`            | サンプル参照 | デフォルト プロフィール ID                                                        |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | プロフィール 変更時 SSH キー 自動切り替え                                         |
+| `gitIdSwitcher.showNotifications`          | `true`       | プロフィール 切り替え時 通知                                                      |
+| `gitIdSwitcher.applyToSubmodules`          | `true`       | Git サブモジュール プロフィール 伝播                                              |
+| `gitIdSwitcher.submoduleDepth`             | `1`          | ネスト サブモジュール 設定 最大深度（1-5）                                        |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`      | アイコン 絵文字 Git config `user.name` オロワ                                     |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`      | 監査ログ ファイル 保存（ID 切り替え、SSH キー 操作 記録）                         |
+| `gitIdSwitcher.logging.filePath`           | `""`         | ログファイル パス（例：`~/.git-id-switcher/security.log`）。空 = デフォルト       |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | ローテーション 最大ファイルサイズ（バイト、1MB-100MB）                            |
+| `gitIdSwitcher.logging.maxFiles`           | `5`          | 保持 ローテーションファイル 最大数（1-20）                                        |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`      | 有効、ログ オㇿ 値 マスク（最大プライバシー）                                     |
+| `gitIdSwitcher.logging.level`              | `"INFO"`     | ログ 詳細度（`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`）。選択レベル 以上 記録 |
+| `gitIdSwitcher.commandTimeouts`            | `{}`         | コマンド タイムアウト（ミリ秒、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}`  |
 
 #### `includeIconInGitConfig` オロワ
 
 `icon` フィールド 設定 動作:
 
-| 値                   | 動作                                                       |
-| -------------------- | ---------------------------------------------------------- |
-| `false` (デフォルト) | `icon` エディタ UI ワノ。`name` ワノ Git config オロワ     |
-| `true`               | `icon + name` Git config オロワ。絵文字 commit 履歴 オロワ |
+| 値                    | 動作                                                  |
+| --------------------- | ----------------------------------------------------- |
+| `false`（デフォルト） | `icon` エディタ UI ワノ。Git config `name` ワノ       |
+| `true`                | Git config `icon + name`。コミット 履歴 絵文字 オロワ |
 
-例: `icon: "👤"`, `name: "シサㇺ"`
+例：`icon: "👤"`, `name: "シサㇺ"`
 
-| includeIconInGitConfig | Git config `user.name` | Commit サイン       |
+| includeIconInGitConfig | Git config `user.name` | コミット サイン     |
 | ---------------------- | ---------------------- | ------------------- |
 | `false`                | `シサㇺ`               | `シサㇺ <email>`    |
 | `true`                 | `👤 シサㇺ`            | `👤 シサㇺ <email>` |
 
-### ウタㇻ: 基本設定 (SSH ソモ)
-
-SSH キー ウコイタㇰ ソモ (例、GitHub アカウント エネアン commit ウタㇻ オロワ)、ポン 設定 エキ:
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "シサㇺ",
-      "email": "sisam@personal.example.com",
-      "icon": "🏠",
-      "description": "ウタㇻ プロジェクト"
-    },
-    {
-      "id": "work",
-      "name": "シサㇺ",
-      "email": "sisam@company.example.com",
-      "icon": "💼",
-      "description": "モノレ"
-    }
-  ]
-}
-```
-
-タン 設定 `git config user.name` ウン `user.email` ワノ ウコイタㇰ。
-
 ---
 
-## エキ (How It Works)
+## エキ 仕組み
 
-### Git Config 構造 (Git Config Layer Structure)
+### Git config レイヤー 構造
 
-Git config 3 レイヤー; ハヨㇰペ レイヤー リㇰンペ オロワ:
+Git 設定 3 レイヤー; ハヨㇰペ 設定 リㇰンペ 上書き:
 
 ```text
 システム (/etc/gitconfig)
-    ↓ オロワ
+    ↓ 上書き
 グローバル (~/.gitconfig)
-    ↓ オロワ
-ローカル (.git/config)  ← コㇿケㇷ゚
+    ↓ 上書き
+ローカル (.git/config)  ← 最優先
 ```
 
-**Git ID Switcher `--local` (repository ローカル) オロワ。**
+**Git ID Switcher `--local`（リポジトリ ローカル）オロワ。**
 
-タン ウタㇻ:
+タン:
 
-- ID シネㇷ゚ シネㇷ゚ repository `.git/config` ファイル オロワ
-- シネㇷ゚ シネㇷ゚ repository エネアン ID オロワ
-- グローバル 設定 (`~/.gitconfig`) ウコイタㇰ ソモ キ
+- シネㇷ゚ シネㇷ゚ リポジトリ `.git/config` プロフィール 保存
+- リポジトリ シネㇷ゚ シネㇷ゚ エネアン プロフィール 維持
+- グローバル 設定（`~/.gitconfig`）変更 ソモ キ
 
-### ID ウコイタㇰ 動作 (Identity Switching Behavior)
+### プロフィール 切り替え 動作
 
-ID ウコイタㇰ、extension エキ (順番):
+プロフィール ウコイタㇰ、Extension 以下（順番）:
 
-1. **Git Config** (常に): `git config --local user.name` ウン `user.email` 設定
-2. **SSH キー** (`sshKeyPath` 設定): ssh-agent オロワ キー エレㇷ゚、エトゥㇾ キー オロワ
-3. **GPG キー** (`gpgKeyId` 設定): `git config --local user.signingkey` 設定 ウン サイン オロワ
-4. **Submodule** (オロワ): オㇿ submodule 設定 オロワ (デフォルト: 深さ 1)
+1. **Git Config**（常時）: `git config --local user.name` ウン `user.email` 設定
+2. **SSH キー**（`sshKeyPath` 設定時）: ホッカ キー ssh-agent オロワ 削除、選択 キー 追加
+3. **GPG キー**（`gpgKeyId` 設定時）: `git config --local user.signingkey` 設定、サイン 有効化
+4. **サブモジュール**（有効時）: オㇿ サブモジュール 設定 伝播（デフォルト：深度 1）
 
-### Submodule 伝播 (Submodule Propagation Mechanism)
+### サブモジュール 伝播 仕組み
 
-ローカル 設定 repository レベル オロワ、submodule オロワ ソモ キ。
-タン extension submodule 伝播 機能 オロワ ("アドバンスド: Submodule" エヌカㇻ)。
+ローカル 設定 リポジトリ 単位、サブモジュール 自動適用 ソモ キ。
+タン Extension サブモジュール 伝播機能（詳細「上級者向け: サブモジュール」エヌカㇻ）。
+
+### SSH キー 管理 詳細
+
+Git ID Switcher `ssh-agent` オロワ SSH キー 管理:
+
+| 操作      | 実行コマンド           |
+| --------- | ---------------------- |
+| キー 追加 | `ssh-add <keyPath>`    |
+| キー 削除 | `ssh-add -d <keyPath>` |
+| キー 一覧 | `ssh-add -l`           |
+
+**ウタㇻ:** タン Extension `~/.ssh/config` **変更 ソモ キ**。SSH config 設定 手動（「ホㇱキノ」ステップ 2 エヌカㇻ）。
+
+### 既存 SSH 設定 相互作用
+
+SSH 設定 アン ヤㇰ、Git ID Switcher 以下:
+
+| 設定                                | Git ID Switcher 動作                          |
+| ----------------------------------- | --------------------------------------------- |
+| `~/.ssh/config` `IdentityFile` 指定 | 両方 使用可能；`IdentitiesOnly yes` 競合防止  |
+| 環境変数 `GIT_SSH_COMMAND` 設定     | カスタム SSH コマンド；ssh-agent 引き続き動作 |
+| `git config core.sshCommand` 設定   | 上記 同様                                     |
+| direnv SSH 関連 環境変数 設定       | 共存可能；ssh-agent 独立 動作                 |
+
+**推奨:** SSH config 常に `IdentitiesOnly yes`。SSH ポㇿ キー 試行 防止。
+
+### ネーン クス `IdentitiesOnly yes`?
+
+タン 設定 ソモ ヤㇰ、SSH 以下 順序 キー 試行:
+
+1. ssh-agent キー（Git ID Switcher 管理）
+2. `~/.ssh/config` 指定 キー
+3. デフォルト キー（`~/.ssh/id_rsa`, `~/.ssh/id_ed25519` 等）
+
+認証失敗 意図 ソモ キー 使用 可能性。
+
+`IdentitiesOnly yes` 設定、SSH **指定 キー ワノ** 使用。Git ID Switcher 設定 キー 確実 使用。
+
+```ssh-config
+# 推奨 設定
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← タン 行 重要
+```
+
+タン 設定、`github-work` ホスト 接続時 `~/.ssh/id_ed25519_work` ワノ 使用、ホッカ キー 試行 ソモ。
 
 ---
 
-## アドバンスド: Submodule (Advanced: Submodule Support)
+## 上級者向け: サブモジュール
 
-Git submodule アン repository、ID ウコイタㇰ ピㇼカノ ソモ キ。Submodule commit、Git タン submodule ローカル 設定 エキ; 設定 ソモ、グローバル 設定 オロワ (email ウェン!)。
+Git サブモジュール 複雑 リポジトリ、プロフィール 管理 厄介。サブモジュール commit、Git タン サブモジュール ローカル 設定 使用、明示的 設定 ソモ ヤㇰ グローバル 設定（ウェン email!）デフォルト 可能性。
 
-**Git ID Switcher** submodule エヌカㇻ ウン ID オロワ。
+**Git ID Switcher** 自動 サブモジュール 検出、選択 プロフィール 適用。
 
 ```json
 {
@@ -442,26 +405,26 @@ Git submodule アン repository、ID ウコイタㇰ ピㇼカノ ソモ キ。S
 }
 ```
 
-- `applyToSubmodules`: タン 機能 オロワ/ソモ
+- `applyToSubmodules`: タン 機能 有効/無効
 - `submoduleDepth`: ネーン 深さ?
-  - `1`: 直接 submodule ワノ (マウ)
-  - `2+`: ネスト submodule (submodule オロワ submodule)
+  - `1`: 直接 サブモジュール ワノ（最も 一般的）
+  - `2+`: ネスト サブモジュール（サブモジュール オロワ サブモジュール）
 
-タン ID 常に ピㇼカ、メイン repository ウン vendor ライブラリ commit。
+タン、メイン リポジトリ commit、ベンダーライブラリ commit、プロフィール 常に ピㇼカ。
 
 ---
 
-## トラブルシューティング (Troubleshooting)
+## トラブルシューティング
 
 ### SSH キー ウコイタㇰ ソモ キ?
 
-1. `ssh-agent` エキ エヌカㇻ:
+1. `ssh-agent` 実行 確認:
 
    ```bash
    eval "$(ssh-agent -s)"
    ```
 
-2. キー パス エヌカㇻ:
+2. キー パス 正しい 確認:
 
    ```bash
    ls -la ~/.ssh/id_ed25519_*
@@ -473,16 +436,30 @@ Git submodule アン repository、ID ウコイタㇰ ピㇼカノ ソモ キ。S
    ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
-### Push ID ウェン?
+### プッシュ時 ウェン プロフィール?
 
-1. リモート URL ホスト エイリアス エヌカㇻ:
+**新規クローン時:**
+
+モノレ リポジトリ クローン、SSH config ホスト エイリアス 使用:
+
+```bash
+# モノレ（github-work エイリアス 使用）
+git clone git@github-work:company/repo.git
+
+# ウタㇻ（デフォルト github.com 使用）
+git clone git@github.com:sisam/repo.git
+```
+
+**既存リポジトリ:**
+
+1. リモート URL ホスト エイリアス 確認:
 
    ```bash
    git remote -v
-   # モノレ repository git@github-work:... オロワ
+   # モノレ リポジトリ git@github-work:... オロワ
    ```
 
-2. オロワ:
+2. 必要 更新:
 
    ```bash
    git remote set-url origin git@github-work:company/repo.git
@@ -490,7 +467,7 @@ Git submodule アン repository、ID ウコイタㇰ ピㇼカノ ソモ キ。S
 
 ### GPG サイン ソモ キ?
 
-1. GPG キー ID エヌカㇻ:
+1. GPG キー ID 確認:
 
    ```bash
    gpg --list-secret-keys --keyid-format SHORT
@@ -502,21 +479,21 @@ Git submodule アン repository、ID ウコイタㇰ ピㇼカノ ソモ キ。S
    echo "test" | gpg --clearsign
    ```
 
-3. ID email ウン GPG キー email エネアン エヌカㇻ。
+3. プロフィール email GPG キー email 一致 確認
 
-### ID エヌカㇻ ソモ キ?
+### プロフィール 検出 ソモ キ?
 
-- Git repository オロワ エヌカㇻ
-- `settings.json` シンタックス エラー エヌカㇻ
-- VS Code ウィンドウ リロード (`Cmd+Shift+P` → "Reload Window")
+- Git リポジトリ オロワ 確認
+- `settings.json` シンタックス エラー ソモ 確認
+- VS Code ウィンドウ リロード（`Cmd+Shift+P` →「ウィンドウの再読み込み」）
 
 ### `name` フィールド エラー?
 
-`name` フィールド タン 文字 アン、エラー:
+`name` フィールド 以下 文字 エラー:
 
 `` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
 
-サービス レー オロワ、`service` フィールド エキ。
+サービス レー オロワ `service` フィールド 使用。
 
 ```jsonc
 // ウェン
@@ -527,55 +504,45 @@ Git submodule アン repository、ID ウコイタㇰ ピㇼカノ ソモ キ。S
 "service": "GitHub"
 ```
 
-### 新設定 エヌカㇻ ソモ キ?
+### 新しい 設定項目 表示 ソモ キ?
 
-Extension アップデート、新設定 設定画面 エヌカㇻ ソモ。
+Extension 更新、新しい 設定項目 設定画面 表示 ソモ 場合。
 
-**ホㇱキ:** マシン リスタート。
+**ホㇱキ:** マシン 全体 リスタート。
 
-VS Code 設定スキーマ メモリ キャッシュ、"Reload Window" ウン reinstall ソモ。
+VS Code 設定スキーマ メモリ キャッシュ、「ウィンドウの再読み込み」 Extension 再インストール ワノ 更新 ソモ。
 
-### デフォルト値 (identities 等) カㇻ?
+### デフォルト値（identities 等）空っぽ?
 
-新インストール サンプル設定 エヌカㇻ ソモ、**Settings Sync** オロワ。
+新規インストール サンプル 設定 表示 ソモ、**Settings Sync** 原因 可能性。
 
-カㇻ 設定 マウ 保存、クラウド sync オロワ 新インストール デフォルト値 オロワ。
+過去 空 設定 保存、クラウド 同期、新規インストール デフォルト値 上書き。
 
 **ホㇱキ:**
 
-1. 設定画面 設定 エヌカㇻ
-2. 歯車アイコン → "設定リセット" エトゥㇾ
-3. Settings Sync sync (カㇻ 設定 クラウド エレㇷ゚)
+1. 設定画面 該当 設定項目 エヌカㇻ
+2. 歯車アイコン →「設定をリセット」選択
+3. Settings Sync 同期（古い 設定 クラウド 削除）
 
 ---
 
-## コマンド
+## 設計哲学
 
-| コマンド                                 | ウコイタㇰ            |
-| ---------------------------------------- | --------------------- |
-| `Git ID Switcher: Select Identity`       | ID ピッカー           |
-| `Git ID Switcher: Show Current Identity` | エネアン ID エヌカㇻ  |
-| `Git ID Switcher: Show Documentation`    | ドキュメント エヌカㇻ |
+> **「クアニ ネノ ネ?」** — タン Extension ネイタ ハウェアン
 
----
-
-## Design Philosophy
-
-> 「クアニ ネノ ネ?」— クコロ extension ネイタ ハウェアン。
-
-**Karesansui Architecture** コㇿカ アラ: simple core (100 lines),
-deliberate quality (90% coverage, logging, timeouts) オッタ
-intentional constraints (GitHub API アㇰ、token management アㇰ)。
+**枯山水アーキテクチャ** 設計。コア 100 行 単純さ。
+残り 品質（テスト 90%、ログ、タイムアウト）ウン
+意図的 制約（GitHub API 連携 ソモ、トークン 管理 ソモ）オロワ。
 
 [![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
 
-[Full philosophy エヌカㇻ](../../DESIGN_PHILOSOPHY.md)
+[設計哲学 全文 エヌカㇻ](../../DESIGN_PHILOSOPHY.md)
 
 ---
 
 ## Contributing
 
-[CONTRIBUTING.md](../../CONTRIBUTING.md) エヌカㇻ。
+貢献 歓迎! [CONTRIBUTING.md](../../CONTRIBUTING.md) エヌカㇻ。
 
 ## License
 
