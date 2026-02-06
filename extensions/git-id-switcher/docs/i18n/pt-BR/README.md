@@ -6,7 +6,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      Alterne entre múltiplas identidades Git com um clique. Gerencie múltiplas contas GitHub, chaves SSH, assinatura GPG e <b>aplique automaticamente a identidade aos submódulos Git</b>.
+      Alterne entre vários perfis Git com um clique. Gerencie múltiplas contas GitHub, chaves SSH e assinaturas GPG, e <b>aplique automaticamente os perfis aos submódulos Git</b>.
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -29,43 +29,44 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-pt-BR.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/pt-BR/demo.webp" width="600" alt="Demo" loading="lazy">
 
 ## 🎯 Por que Git ID Switcher?
 
-Embora existam muitos alternadores de identidade Git, o **Git ID Switcher** resolve problemas complexos que outros frequentemente ignoram:
+Existem muitas ferramentas para alternar perfis Git, mas o **Git ID Switcher** resolve problemas complexos que outras ferramentas costumam ignorar:
 
-1. **O pesadelo dos submódulos**: Ao trabalhar com repositórios que têm submódulos (temas Hugo, bibliotecas vendor, etc.), normalmente é preciso configurar `git config user.name` manualmente para _cada_ submódulo. Esta extensão resolve isso elegantemente aplicando sua identidade recursivamente a todos os submódulos ativos.
-2. **Tratamento de SSH e GPG**: Ela não apenas muda seu nome; também troca suas chaves SSH no agent e configura a assinatura GPG para que você nunca faça commit com a assinatura errada.
+1. **O pesadelo dos submódulos**: Ao trabalhar com repositórios que possuem submódulos (temas Hugo, bibliotecas vendor, etc.), normalmente é necessário configurar `git config user.name` manualmente para _cada_ submódulo. Esta extensão resolve isso elegantemente, aplicando recursivamente o perfil a todos os submódulos ativos.
+2. **Gestão de SSH e GPG**: Não apenas muda seu nome — também troca suas chaves SSH no ssh-agent e configura a assinatura GPG, evitando que você faça commits com a assinatura errada.
 
-## Recursos
+## Funcionalidades
 
-- **Suporte a submódulos**: Propague automaticamente a identidade para submódulos Git
+- **UI de gerenciamento de perfis**: Adicione, edite, exclua e reordene perfis sem editar o settings.json
+- **Troca de perfil com um clique**: Altere Git user.name e user.email instantaneamente
+- **Integração na barra de status**: Veja seu perfil atual de relance a qualquer momento
+- **Suporte a submódulos**: Propague automaticamente o perfil aos submódulos Git
 - **Gerenciamento de chaves SSH**: Alterne automaticamente as chaves SSH no ssh-agent
 - **Suporte a assinatura GPG**: Configure a chave GPG para assinar commits (opcional)
-- **Troca de identidade com um clique**: Mude Git user.name e user.email instantaneamente
-- **Integração na barra de status**: Sempre veja sua identidade atual de relance
-- **Tooltips detalhados**: Informações completas com descrição e host SSH
+- **Tooltips detalhados**: Informações completas do perfil, incluindo descrição e host SSH
 - **Multiplataforma**: Funciona no macOS, Linux e Windows
 - **Multilíngue**: Suporta 17 idiomas
 
-## 🌏 Uma nota sobre suporte multilíngue
+## 🌏 Nosso compromisso com o multilinguismo
 
 > **Eu valorizo a existência das minorias.**
-> Não quero descartá-las apenas porque são poucas em número.
-> Mesmo que as traduções não sejam perfeitas, espero que você possa sentir nossa intenção de entender e mostrar respeito pelas línguas minoritárias.
+> Não quero descartá-las apenas porque são poucas.
+> Mesmo que as traduções não sejam perfeitas, espero que você possa sentir nossa intenção de compreender e mostrar respeito pelas línguas minoritárias.
 
-Esta extensão suporta todos os 17 idiomas que o VSCode suporta. Além disso, para a documentação README, estamos nos desafiando a traduzir para línguas minoritárias e até línguas humorísticas.
+Esta extensão é compatível com todos os 17 idiomas suportados pelo VS Code. Além disso, para a documentação README, nos desafiamos a traduzir para línguas minoritárias e até para línguas humorísticas.
 
-Isso não é apenas "suporte global" - é "respeito pela diversidade linguística". E ficaria feliz se isso se tornasse uma infraestrutura onde commits que melhoram o mundo venham de desenvolvedores de todos os lugares, transcendendo barreiras linguísticas.
+Isso não é simplesmente «suporte global» — é «respeito pela diversidade linguística». E ficaria feliz se isso se tornasse uma infraestrutura onde commits que melhoram o mundo venham de desenvolvedores de todos os lugares, transcendendo as barreiras do idioma.
 
 ---
 
 ## Início rápido
 
-Uma configuração típica para gerenciar uma conta pessoal e uma conta de trabalho (Enterprise Managed User).
+Uma configuração típica para alternar entre uma conta pessoal e uma conta corporativa (Enterprise Managed User).
 
-### Passo 1: Preparar chaves SSH
+### Passo 1: Preparar as chaves SSH
 
 Primeiro, crie chaves SSH para cada conta (pule se já tiver):
 
@@ -77,11 +78,11 @@ ssh-keygen -t ed25519 -C "alex.silva@personal.example.com" -f ~/.ssh/id_ed25519_
 ssh-keygen -t ed25519 -C "alex.silva@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
-Registre a **chave pública** (arquivo `.pub`) de cada chave na conta GitHub correspondente.
+Registre a **chave pública** (arquivo `.pub`) de cada chave SSH na conta GitHub correspondente.
 
-> **Nota**: Registre `id_ed25519_personal.pub` (chave pública) no GitHub. `id_ed25519_personal` (sem extensão) é a chave privada - nunca compartilhe nem faça upload em lugar nenhum.
+> **Nota**: O que se registra no GitHub é `id_ed25519_personal.pub` (chave pública). `id_ed25519_personal` (sem extensão) é a chave privada — nunca compartilhe nem faça upload em lugar nenhum.
 
-### Passo 2: Configurar SSH
+### Passo 2: Configurar o SSH config
 
 Edite `~/.ssh/config`:
 
@@ -93,7 +94,7 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Conta GitHub de trabalho (Enterprise Managed User fornecido pela empresa)
+# Conta GitHub de trabalho
 Host github-work
     HostName github.com
     User git
@@ -103,108 +104,25 @@ Host github-work
 
 ### Passo 3: Configurar a extensão
 
-Abra as configurações da extensão (`Cmd+,` / `Ctrl+,`) → pesquise "Git ID Switcher" → clique em "Editar em settings.json":
+Ao instalar a extensão, perfis de exemplo são disponibilizados.
+Siga o guia abaixo para editá-los conforme suas necessidades.
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Alex Silva",
-      "email": "alex.silva@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Projetos pessoais",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal"
-    },
-    {
-      "id": "work",
-      "name": "Alex Silva",
-      "email": "alex.silva@company.example.com",
-      "service": "GitHub Trabalho",
-      "icon": "💼",
-      "description": "Conta de trabalho",
-      "sshKeyPath": "~/.ssh/id_ed25519_work",
-      "sshHost": "github-work"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "personal",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/pt-BR/first-ux.webp" width="600" alt="Configuração inicial (13 passos): abrir o gerenciamento de perfis pela barra de status, editar e criar novos perfis" loading="lazy">
 
-### Passo 4: Usar
+> **Os arquivos de chave não são enviados**: Ao configurar caminhos de chaves SSH, apenas o caminho (localização) do arquivo é registrado. O conteúdo do arquivo de chave nunca é carregado ou transmitido externamente.
 
-1. Clique no ícone de identidade na barra de status (canto inferior direito)
-2. Selecione uma identidade
-3. Pronto! A configuração Git e a chave SSH foram trocadas.
+> **Se usar assinatura GPG**: Também é possível configurar `gpgKeyId` na tela de edição do perfil.
+> Para encontrar seu ID de chave GPG, consulte «[Solução de problemas](#assinatura-gpg-não-funciona)».
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-pt-BR.png" width="600" alt="Quick Pick">
-
-### Usando aliases de host SSH
-
-Ao clonar repos, use o host que corresponde à sua identidade:
-
-```bash
-# Para identidade de trabalho (usa o alias github-work)
-git clone git@github-work:company/repo.git
-
-# Para identidade pessoal (usa github.com padrão)
-git clone git@github.com:asilva/repo.git
-```
-
----
-
-## Opcional: Assinatura GPG
-
-Se você assina commits com GPG:
-
-### Passo 1: Encontrar seu ID de chave GPG
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-Exemplo de saída:
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] Alex Silva <alex.silva@personal.example.com>
-```
-
-O ID da chave é `ABCD1234`.
-
-### Passo 2: Adicionar chave GPG à identidade
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Alex Silva",
-      "email": "alex.silva@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Projetos pessoais",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-Ao trocar para esta identidade, a extensão configura:
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
+> **Dica**: Também é possível configurar diretamente pelo settings.json.
+> Abra as configurações da extensão (`Cmd+,` / `Ctrl+,`) → pesquise «Git ID Switcher» → clique em «Editar em settings.json».
+> Para exemplos de configuração em formato JSON, consulte «[Exemplo completo](#exemplo-completo-4-contas-com-ssh--gpg)».
 
 ---
 
 ## Exemplo completo: 4 contas com SSH + GPG
 
-Aqui está um exemplo completo combinando tudo:
+Um exemplo completo combinando todas as funcionalidades:
 
 ### Configuração SSH (`~/.ssh/config`)
 
@@ -252,15 +170,15 @@ Host bitbucket.org
       "email": "alex.silva@company.example.com",
       "service": "GitHub Trabalho",
       "icon": "💼",
-      "description": "Conta de trabalho",
+      "description": "Desenvolvimento na empresa",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
     },
     {
       "id": "bitbucket",
-      "name": "asilva-bb",
-      "email": "asilva.bb@example.com",
+      "name": "Alex Silva",
+      "email": "alex.silva@bitbucket.example.com",
       "service": "Bitbucket",
       "icon": "🪣",
       "description": "Projetos Bitbucket",
@@ -282,58 +200,80 @@ Host bitbucket.org
 }
 ```
 
-Nota: A última identidade (`freelance`) não tem SSH — ela apenas troca a configuração Git. Isso é útil quando você usa informações de committer diferentes com a mesma conta GitHub.
+Nota: O último perfil (`freelance`) não possui SSH. Também é possível alternar apenas a configuração Git, por exemplo, para usar informações de committer diferentes com a mesma conta GitHub.
+
+---
+
+## Gerenciamento de perfis
+
+Clique na barra de status → selecione «Gerenciamento de perfis» na parte inferior da lista para abrir a tela de gerenciamento.
+A adição, edição, exclusão e reordenação de perfis podem ser feitas diretamente pela interface.
+
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/pt-BR/identity-management.webp" width="600" alt="Gerenciamento de perfis: guia de exclusão e reordenação" loading="lazy">
+
+Também é possível excluir um perfil pela paleta de comandos com `Git ID Switcher: Delete Identity`.
+
+---
+
+## Comandos
+
+| Comando                                  | Descrição                           |
+| ---------------------------------------- | ----------------------------------- |
+| `Git ID Switcher: Select Identity`       | Abrir o seletor de perfis           |
+| `Git ID Switcher: Delete Identity`       | Excluir um perfil                   |
+| `Git ID Switcher: Show Current Identity` | Mostrar informações do perfil atual |
+| `Git ID Switcher: Show Documentation`    | Mostrar documentação                |
 
 ---
 
 ## Referência de configuração
 
-### Propriedades de identidade
+### Propriedades do perfil
 
-| Propriedade   | Obrigatório | Descrição                                                               |
-| ------------- | ----------- | ----------------------------------------------------------------------- |
-| `id`          | ✅          | Identificador único (ex: `"work"`, `"personal"`)                        |
-| `name`        | ✅          | Git user.name - mostrado nos commits                                    |
-| `email`       | ✅          | Git user.email - mostrado nos commits                                   |
-| `icon`        |             | Emoji mostrado na barra de status (ex.: `"🏠"`). Apenas um emoji        |
-| `service`     |             | Nome do serviço (ex: `"GitHub"`, `"GitLab"`). Usado para exibição na UI |
-| `description` |             | Descrição curta mostrada no seletor e tooltip                           |
-| `sshKeyPath`  |             | Caminho para a chave SSH privada (ex: `"~/.ssh/id_ed25519_work"`)       |
-| `sshHost`     |             | Alias de host SSH (ex: `"github-work"`)                                 |
-| `gpgKeyId`    |             | ID da chave GPG para assinar commits                                    |
+| Propriedade   | Obrigatório | Descrição                                                                |
+| ------------- | ----------- | ------------------------------------------------------------------------ |
+| `id`          | ✅          | Identificador único (ex.: `"personal"`, `"work"`)                        |
+| `name`        | ✅          | Git user.name — exibido nos commits                                      |
+| `email`       | ✅          | Git user.email — exibido nos commits                                     |
+| `icon`        |             | Emoji na barra de status (ex.: `"🏠"`). Apenas um emoji                  |
+| `service`     |             | Nome do serviço (ex.: `"GitHub"`, `"GitLab"`). Usado para exibição na UI |
+| `description` |             | Descrição breve exibida no seletor e no tooltip                          |
+| `sshKeyPath`  |             | Caminho para a chave SSH privada (ex.: `"~/.ssh/id_ed25519_work"`)       |
+| `sshHost`     |             | Alias de host SSH (ex.: `"github-work"`)                                 |
+| `gpgKeyId`    |             | ID da chave GPG para assinar commits                                     |
 
 #### Limitações de exibição
 
 - **Barra de status**: Texto que exceda ~25 caracteres será truncado com `...`
-- **`icon`**: Apenas um único emoji (cluster de grafemas) é permitido. Múltiplos emojis ou strings longas não são suportados
+- **`icon`**: Apenas um emoji (cluster de grafemas) é permitido. Múltiplos emojis ou strings longas não são suportados
 
 ### Configurações globais
 
-| Configuração                               | Padrão      | Descrição                                                                                         |
-| ------------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | Ver exemplo | Lista de configurações de identidade                                                              |
-| `gitIdSwitcher.defaultIdentity`            | Ver exemplo | ID da identidade padrão                                                                           |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | Trocar automaticamente a chave SSH                                                                |
-| `gitIdSwitcher.showNotifications`          | `true`      | Mostrar notificação ao trocar identidade                                                          |
-| `gitIdSwitcher.applyToSubmodules`          | `true`      | Propagar identidade para submódulos Git                                                           |
-| `gitIdSwitcher.submoduleDepth`             | `1`         | Profundidade máx. para submódulos aninhados (1-5)                                                 |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Incluir emoji do ícone no Git config `user.name`                                                  |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`     | Habilitar log de auditoria (mudanças de identidade, operações SSH, etc.)                          |
-| `gitIdSwitcher.logging.filePath`           | `""`        | Caminho do arquivo de log (ex.: `~/.git-id-switcher/security.log`). Vazio = local padrão          |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Tamanho máx. do arquivo antes da rotação (bytes, 1MB-100MB)                                       |
-| `gitIdSwitcher.logging.maxFiles`           | `5`         | Núm. máx. de arquivos de log em rotação (1-20)                                                    |
-| `gitIdSwitcher.logging.level`              | `"INFO"`    | Nível de log: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Registra o nível selecionado e superiores |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | Quando ativado, todos os valores são mascarados nos logs (máxima privacidade)                     |
-| `gitIdSwitcher.commandTimeouts`            | `{}`        | Timeout personalizado por comando (ms, 1seg-5min). Ex.: `{"git": 15000, "ssh-add": 10000}`        |
+| Configuração                               | Padrão       | Descrição                                                                                              |
+| ------------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------ |
+| `gitIdSwitcher.identities`                 | Ver exemplos | Lista de configurações de perfis                                                                       |
+| `gitIdSwitcher.defaultIdentity`            | Ver exemplos | ID do perfil padrão a ser usado                                                                        |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | Trocar automaticamente a chave SSH ao mudar de perfil                                                  |
+| `gitIdSwitcher.showNotifications`          | `true`       | Mostrar notificação ao trocar de perfil                                                                |
+| `gitIdSwitcher.applyToSubmodules`          | `true`       | Propagar o perfil aos submódulos Git                                                                   |
+| `gitIdSwitcher.submoduleDepth`             | `1`          | Profundidade máxima para submódulos aninhados (1-5)                                                    |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`      | Incluir o emoji do ícone no `user.name` do Git config                                                  |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`      | Salvar log de auditoria em arquivo (mudanças de perfil, operações SSH, etc.)                           |
+| `gitIdSwitcher.logging.filePath`           | `""`         | Caminho do arquivo de log (ex.: `~/.git-id-switcher/security.log`). Vazio = local padrão               |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | Tamanho máximo do arquivo antes da rotação (bytes, 1 MB–100 MB)                                        |
+| `gitIdSwitcher.logging.maxFiles`           | `5`          | Número máximo de arquivos de log em rotação (1-20)                                                     |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`      | Quando ativado, todos os valores são mascarados nos logs (máxima privacidade)                          |
+| `gitIdSwitcher.logging.level`              | `"INFO"`     | Nível de log (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Registra o nível selecionado e superiores |
+| `gitIdSwitcher.commandTimeouts`            | `{}`         | Timeout personalizado por comando (ms, 1 s–5 min). Ex.: `{"git": 15000, "ssh-add": 10000}`             |
 
 #### Sobre `includeIconInGitConfig`
 
-Controla o comportamento quando o campo `icon` está definido:
+Controla o comportamento quando o campo `icon` está configurado:
 
-| Valor            | Comportamento                                                                          |
-| ---------------- | -------------------------------------------------------------------------------------- |
-| `false` (padrão) | `icon` é mostrado apenas na interface do editor. Apenas `name` é gravado na config Git |
-| `true`           | `icon + name` é gravado na config Git. O emoji aparece no histórico de commits         |
+| Valor            | Comportamento                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| `false` (padrão) | `icon` é exibido apenas na interface do editor. Apenas `name` é gravado no Git config |
+| `true`           | `icon + name` é gravado no Git config. O emoji aparece no histórico de commits        |
 
 Exemplo: `icon: "👤"`, `name: "Alex Silva"`
 
@@ -342,40 +282,13 @@ Exemplo: `icon: "👤"`, `name: "Alex Silva"`
 | `false`                | `Alex Silva`           | `Alex Silva <email>`    |
 | `true`                 | `👤 Alex Silva`        | `👤 Alex Silva <email>` |
 
-### Nota: Configuração básica (sem SSH)
-
-Se você não precisa trocar chaves SSH (ex: usando informações de committer diferentes com uma única conta GitHub), você pode usar uma configuração mínima:
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Alex Silva",
-      "email": "alex.silva@personal.example.com",
-      "icon": "🏠",
-      "description": "Projetos pessoais"
-    },
-    {
-      "id": "work",
-      "name": "Alex Silva",
-      "email": "alex.silva@company.example.com",
-      "icon": "💼",
-      "description": "Conta de trabalho"
-    }
-  ]
-}
-```
-
-Esta configuração apenas troca `git config user.name` e `user.email`.
-
 ---
 
 ## Como funciona
 
-### Estrutura de camadas do Git Config
+### Estrutura de camadas do Git config
 
-A configuração Git tem três camadas, onde as camadas inferiores sobrescrevem as superiores:
+A configuração do Git possui três camadas, onde as camadas inferiores sobrescrevem as superiores:
 
 ```text
 Sistema (/etc/gitconfig)
@@ -389,31 +302,79 @@ Local (.git/config)  ← maior prioridade
 
 Isso significa:
 
-- A identidade é salva no `.git/config` de cada repositório
-- Diferentes identidades podem ser mantidas por repositório
+- O perfil é salvo no `.git/config` de cada repositório
+- Diferentes perfis podem ser mantidos por repositório
 - As configurações globais (`~/.gitconfig`) não são modificadas
 
-### Ao trocar de identidade
+### Comportamento ao trocar de perfil
 
-Ao trocar de identidade, a extensão faz (em ordem):
+Ao trocar de perfil, a extensão executa (em ordem):
 
-1. **Configuração Git** (sempre): Define `git config --local user.name` e `user.email`
-2. **Chave SSH** (se `sshKeyPath` definido): Remove outras chaves do ssh-agent, adiciona a selecionada
-3. **Chave GPG** (se `gpgKeyId` definido): Define `git config --local user.signingkey` e habilita assinatura
-4. **Submódulos** (se habilitado): Propaga configuração para todos os submódulos (padrão: profundidade 1)
+1. **Git Config** (sempre): Define `git config --local user.name` e `user.email`
+2. **Chave SSH** (se `sshKeyPath` configurado): Remove outras chaves do ssh-agent e adiciona a selecionada
+3. **Chave GPG** (se `gpgKeyId` configurado): Define `git config --local user.signingkey` e ativa a assinatura
+4. **Submódulos** (se ativado): Propaga a configuração para todos os submódulos (padrão: profundidade 1)
 
-### Como funciona a propagação para submódulos
+### Propagação para submódulos
 
-As configurações locais são por repositório, então não se aplicam automaticamente aos submódulos.
-Por isso esta extensão fornece propagação para submódulos (veja "Avançado: Suporte a submódulos" para detalhes).
+A configuração local é por repositório, portanto não se aplica automaticamente aos submódulos.
+Por isso, esta extensão fornece a funcionalidade de propagação para submódulos (consulte «Avançado: Suporte a submódulos» para mais detalhes).
+
+### Gerenciamento de chaves SSH em detalhes
+
+Git ID Switcher gerencia as chaves SSH por meio do `ssh-agent`:
+
+| Operação        | Comando executado      |
+| --------------- | ---------------------- |
+| Adicionar chave | `ssh-add <keyPath>`    |
+| Remover chave   | `ssh-add -d <keyPath>` |
+| Listar chaves   | `ssh-add -l`           |
+
+**Importante:** Esta extensão **não modifica** `~/.ssh/config`. A configuração SSH deve ser feita manualmente (consulte o passo 2 de «Início rápido»).
+
+### Interação com a configuração SSH existente
+
+Se você já possui uma configuração SSH, o Git ID Switcher funciona em coexistência:
+
+| Sua configuração                        | Comportamento do Git ID Switcher                                |
+| --------------------------------------- | --------------------------------------------------------------- |
+| `~/.ssh/config` com `IdentityFile`      | Ambas são utilizáveis; `IdentitiesOnly yes` evita conflitos     |
+| Variável de ambiente `GIT_SSH_COMMAND`  | Seu comando SSH personalizado é usado; ssh-agent continua ativo |
+| `git config core.sshCommand`            | Igual ao anterior                                               |
+| direnv com variáveis relacionadas a SSH | Coexistência possível; ssh-agent funciona independentemente     |
+
+**Recomendado:** Sempre configure `IdentitiesOnly yes` no seu SSH config. Isso evita que o SSH tente múltiplas chaves.
+
+### Por que `IdentitiesOnly yes`?
+
+Sem essa configuração, o SSH pode tentar as chaves na seguinte ordem:
+
+1. Chaves carregadas no ssh-agent (gerenciadas pelo Git ID Switcher)
+2. Chaves especificadas em `~/.ssh/config`
+3. Chaves padrão (`~/.ssh/id_rsa`, `~/.ssh/id_ed25519`, etc.)
+
+Isso pode causar falhas de autenticação ou o uso involuntário de uma chave incorreta.
+
+Com `IdentitiesOnly yes`, o SSH utiliza **apenas a chave especificada**. Isso garante que a chave configurada no Git ID Switcher seja usada de forma confiável.
+
+```ssh-config
+# Configuração recomendada
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← Esta linha é importante
+```
+
+Com essa configuração, ao conectar ao host `github-work`, apenas `~/.ssh/id_ed25519_work` é utilizada e nenhuma outra chave é tentada.
 
 ---
 
 ## Avançado: Suporte a submódulos
 
-Para repositórios complexos usando submódulos Git, o gerenciamento de identidade geralmente é trabalhoso. Se você faz commit em um submódulo, o Git usa a configuração local desse submódulo, que pode usar a configuração global (email errado!) se não estiver explicitamente definida.
+Em repositórios complexos com submódulos Git, o gerenciamento de perfis costuma ser problemático. Ao fazer commit em um submódulo, o Git utiliza a configuração local desse submódulo, que pode recorrer à configuração global (e-mail errado!) caso não tenha sido configurada explicitamente.
 
-**Git ID Switcher** detecta automaticamente submódulos e aplica a identidade selecionada a eles.
+**Git ID Switcher** detecta automaticamente os submódulos e aplica o perfil selecionado.
 
 ```json
 {
@@ -422,20 +383,20 @@ Para repositórios complexos usando submódulos Git, o gerenciamento de identida
 }
 ```
 
-- `applyToSubmodules`: Habilitar/desabilitar este recurso
-- `submoduleDepth`: Quão profundo ir?
+- `applyToSubmodules`: Ativa/desativa esta funcionalidade
+- `submoduleDepth`: Até que profundidade aplicar?
   - `1`: Apenas submódulos diretos (mais comum)
   - `2+`: Submódulos aninhados (submódulos dentro de submódulos)
 
-Isso garante que sua identidade esteja sempre correta, seja fazendo commit no repo principal ou em uma biblioteca vendor.
+Isso garante que seu perfil esteja sempre correto, seja fazendo commit no repositório principal ou em uma biblioteca vendor.
 
 ---
 
 ## Solução de problemas
 
-### Chave SSH não está trocando?
+### A chave SSH não muda?
 
-1. Certifique-se de que o `ssh-agent` está rodando:
+1. Certifique-se de que o `ssh-agent` está em execução:
 
    ```bash
    eval "$(ssh-agent -s)"
@@ -453,7 +414,21 @@ Isso garante que sua identidade esteja sempre correta, seja fazendo commit no re
    ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
-### Identidade errada no push?
+### Perfil incorreto ao fazer push?
+
+**Ao clonar um repositório novo:**
+
+Ao clonar repositórios de trabalho, use o alias de host configurado no SSH config:
+
+```bash
+# Trabalho (usa o alias github-work)
+git clone git@github-work:company/repo.git
+
+# Pessoal (usa github.com padrão)
+git clone git@github.com:yourname/repo.git
+```
+
+**Para repositórios existentes:**
 
 1. Verifique se a URL remota usa o alias de host correto:
 
@@ -482,13 +457,13 @@ Isso garante que sua identidade esteja sempre correta, seja fazendo commit no re
    echo "test" | gpg --clearsign
    ```
 
-3. Certifique-se de que o email na sua identidade corresponde ao email da chave GPG.
+3. Certifique-se de que o e-mail no seu perfil corresponda ao e-mail da chave GPG
 
-### Identidade não detectada?
+### Perfil não detectado?
 
-- Certifique-se de estar em um repositório Git
-- Verifique se `settings.json` não tem erros de sintaxe
-- Recarregue a janela do VS Code (`Cmd+Shift+P` → "Recarregar Janela")
+- Certifique-se de estar dentro de um repositório Git
+- Verifique se o `settings.json` não possui erros de sintaxe
+- Recarregue a janela do VS Code (`Cmd+Shift+P` → «Recarregar Janela»)
 
 ### Erro com o campo `name`?
 
@@ -496,7 +471,7 @@ Os seguintes caracteres no campo `name` causarão um erro:
 
 `` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
 
-Use o campo `service` se quiser incluir informações do serviço.
+Se deseja incluir informações do serviço, use o campo `service`.
 
 ```jsonc
 // NG
@@ -513,9 +488,9 @@ Após atualizar a extensão, novas configurações podem não aparecer na interf
 
 **Solução:** Reinicie completamente sua máquina.
 
-Editores baseados em VS Code armazenam em cache o schema de configurações na memória, e "Recarregar Janela" ou reinstalar a extensão pode não ser suficiente para atualizá-lo.
+Editores baseados em VS Code armazenam em cache o schema de configurações na memória, e «Recarregar Janela» ou reinstalar a extensão pode não ser suficiente para atualizá-lo.
 
-### Valores padrão estão vazios?
+### Valores padrão (identities, etc.) estão vazios?
 
 Se as configurações de exemplo não aparecem mesmo após uma instalação limpa, o **Settings Sync** pode ser a causa.
 
@@ -524,28 +499,18 @@ Se você salvou anteriormente configurações vazias, elas podem ter sido sincro
 **Solução:**
 
 1. Encontre a configuração na interface de configurações
-2. Clique no ícone de engrenagem → "Redefinir Configuração"
+2. Clique no ícone de engrenagem → «Redefinir Configuração»
 3. Sincronize com Settings Sync (isso remove as configurações antigas da nuvem)
 
 ---
 
-## Comandos
+## Filosofia de design
 
-| Comando                                  | Descrição                               |
-| ---------------------------------------- | --------------------------------------- |
-| `Git ID Switcher: Select Identity`       | Abrir o seletor de identidade           |
-| `Git ID Switcher: Show Current Identity` | Mostrar informações da identidade atual |
-| `Git ID Switcher: Show Documentation`    | Mostrar documentação                    |
+> **Mudar «Quem sou eu»** — A única pergunta que esta extensão responde
 
----
-
-## Filosofia de Design
-
-> "Quem sou eu?" — A única pergunta que esta extensão responde.
-
-Construída com **Arquitetura Karesansui**: um núcleo simples (100 linhas),
-cercado por qualidade deliberada (90% cobertura, logging, timeouts)
-e restrições intencionais (sem API do GitHub, sem gerenciamento de tokens).
+Projetada com a **arquitetura Karesansui**: um núcleo simples (100 linhas).
+Por isso, o restante pode ser dedicado à qualidade (90% de cobertura, logging, timeouts)
+e a restrições deliberadas (sem API do GitHub, sem gerenciamento de tokens).
 
 [![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
 
@@ -555,11 +520,11 @@ e restrições intencionais (sem API do GitHub, sem gerenciamento de tokens).
 
 ## Contribuindo
 
-Contribuições são bem-vindas! Veja [CONTRIBUTING.md](../../CONTRIBUTING.md).
+Contribuições são bem-vindas! Consulte [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Licença
 
-Licença MIT - veja [LICENSE](../../../LICENSE).
+Licença MIT — consulte [LICENSE](../../../LICENSE).
 
 ## Créditos
 
