@@ -6,7 +6,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      Váltson több Git-azonosító között egyetlen kattintással. Kezeljen több GitHub-fiókot, SSH-kulcsokat, GPG-aláírást, és <b>automatikusan alkalmazza az azonosítót a Git-almodulokra</b>.
+      Váltson több Git-profil között egyetlen kattintással. Kezeljen több GitHub-fiókot, SSH-kulcsokat, GPG-aláírást, és <b>automatikusan alkalmazza a profilt a Git-almodulokra</b>.
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -29,23 +29,24 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-hu.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/hu/demo.webp" width="600" alt="Demó" loading="lazy">
 
 ## 🎯 Miért a Git ID Switcher?
 
-Bár sok Git-azonosító váltó létezik, a **Git ID Switcher** olyan összetett problémákat old meg, amelyeket mások gyakran figyelmen kívül hagynak:
+Bár sok Git-profil váltó létezik, a **Git ID Switcher** olyan összetett problémákat old meg, amelyeket mások gyakran figyelmen kívül hagynak:
 
-1. **Az almodulok rémálma**: Almodulokat tartalmazó tárolókkal (Hugo témák, vendor könyvtárak stb.) dolgozva általában manuálisan kell beállítani a `git config user.name`-et _minden_ almodulhoz. Ez a bővítmény elegánsan megoldja ezt az azonosító rekurzív alkalmazásával az összes aktív almodulra.
-2. **SSH és GPG kezelés**: Nem csak a nevét változtatja meg; az SSH-kulcsokat is cseréli az agentben és konfigurálja a GPG-aláírást, így soha nem fog rossz aláírással commitolni.
+1. **Az almodulok rémálma**: Almodulokat tartalmazó tárolókkal (Hugo témák, vendor könyvtárak stb.) dolgozva általában manuálisan kell beállítani a `git config user.name`-et _minden_ almodulhoz. Ez a bővítmény elegánsan megoldja ezt a profil rekurzív alkalmazásával az összes aktív almodulra.
+2. **SSH és GPG kezelés**: Nem csak a nevét változtatja meg; az SSH-kulcsokat is cseréli az ssh-agent-ben és konfigurálja a GPG-aláírást, így soha nem fog rossz aláírással commitolni.
 
 ## Funkciók
 
-- **Almodul-támogatás**: Azonosító automatikus propagálása Git-almodulokba
+- **Profilkezelő UI**: Profilok hozzáadása, szerkesztése, törlése és átrendezése a settings.json szerkesztése nélkül
+- **Egykattintásos profilváltás**: Git user.name és user.email azonnali módosítása
+- **Állapotsáv-integráció**: Aktuális profil mindig egy pillantásra látható
+- **Almodul-támogatás**: Profil automatikus alkalmazása a Git-almodulokra
 - **SSH-kulcs kezelés**: SSH-kulcsok automatikus váltása az ssh-agent-ben
 - **GPG-aláírás támogatás**: GPG-kulcs konfigurálása commit aláíráshoz (opcionális)
-- **Egykattintásos azonosítóváltás**: Git user.name és user.email azonnali módosítása
-- **Állapotsáv-integráció**: Mindig lássa az aktuális azonosítóját
-- **Részletes tooltipek**: Teljes körű információ leírással és SSH-hosttal
+- **Részletes tooltipek**: Teljes körű profilinformáció leírással és SSH-hosttal
 - **Platformfüggetlen**: Működik macOS, Linux és Windows rendszeren
 - **Többnyelvű**: 17 nyelvet támogat
 
@@ -55,7 +56,7 @@ Bár sok Git-azonosító váltó létezik, a **Git ID Switcher** olyan összetet
 > Nem akarom elvetni őket csak azért, mert kevesen vannak.
 > Még ha a fordítások nem is tökéletesek, remélem, hogy érezni fogja szándékunkat a kisebbségi nyelvek megértésére és tiszteletére.
 
-Ez a bővítmény mind a 17 VSCode által támogatott nyelvet támogatja. Ezen túlmenően a README dokumentációnál kihívást jelentünk magunknak kisebbségi nyelvekre és még vicces nyelvekre is fordítani.
+Ez a bővítmény mind a 17 VS Code által támogatott nyelvet támogatja. Ezen túlmenően a README dokumentációnál kihívást jelentünk magunknak kisebbségi nyelvekre és még vicces nyelvekre is fordítani.
 
 Ez nem csak „globális támogatás" — ez „tisztelet a nyelvi sokféleség iránt". És örülnék, ha ez olyan infrastruktúrává válna, ahol a világot jobbá tevő commitok a világ minden tájáról érkező fejlesztőktől származnak, túllépve a nyelvi akadályokon.
 
@@ -103,108 +104,25 @@ Host github-work
 
 ### 3. lépés: A bővítmény konfigurálása
 
-Nyissa meg a bővítmény beállításait (`Cmd+,` / `Ctrl+,`) → keressen rá: "Git ID Switcher" → kattintson a "Szerkesztés a settings.json-ban" lehetőségre:
+Telepítés után minta profilok állnak rendelkezésre.
+Kövesse az alábbi útmutatót a saját beállításaihoz való szerkesztéshez.
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Nagy Alex",
-      "email": "alex.nagy@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Személyes projektek",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal"
-    },
-    {
-      "id": "work",
-      "name": "Nagy Alex",
-      "email": "alex.nagy@company.example.com",
-      "service": "GitHub Munkahelyi",
-      "icon": "💼",
-      "description": "Munkahelyi fiók",
-      "sshKeyPath": "~/.ssh/id_ed25519_work",
-      "sshHost": "github-work"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "personal",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/hu/first-ux.webp" width="600" alt="Első beállítási útmutató (13 lépés): Nyissa meg a profilkezelőt az állapotsávról, majd szerkessze vagy hozzon létre újat" loading="lazy">
 
-### 4. lépés: Használat
+> **A kulcsfájlok nem kerülnek elküldésre**: Az SSH-kulcs elérési útjának beállításakor csak a kulcsfájl elérési útja (helye) kerül rögzítésre. A kulcsfájl tartalma soha nem kerül feltöltésre vagy külső helyre küldésre.
 
-1. Kattintson az azonosító ikonra az állapotsávon (jobb alsó sarokban)
-2. Válasszon azonosítót
-3. Kész! A Git-konfiguráció és az SSH-kulcs váltva lett.
+> **GPG-aláírás használata esetén**: A profilszerkesztő képernyőn a `gpgKeyId` is beállítható.
+> A GPG-kulcs azonosítójának megtalálásához lásd a „[Hibaelhárítás](#gpg-aláírás-nem-működik)" részt.
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-hu.png" width="600" alt="Quick Pick">
-
-### SSH host aliasok használata
-
-Tárolók klónozásakor használja az azonosítójának megfelelő hostot:
-
-```bash
-# Munkahelyi azonosítóhoz (a github-work aliast használja)
-git clone git@github-work:company/repo.git
-
-# Személyes azonosítóhoz (az alapértelmezett github.com-ot használja)
-git clone git@github.com:anagy/repo.git
-```
+> **Tipp**: Közvetlenül a settings.json-ból is konfigurálhatja.
+> Nyissa meg a bővítmény beállításait (`Cmd+,` / `Ctrl+,`) → keressen rá: „Git ID Switcher" → kattintson a „Szerkesztés a settings.json-ban" lehetőségre.
+> A JSON formátumú konfigurációhoz lásd a „[Teljes konfigurációs példa](#teljes-konfigurációs-példa-4-fiók-ssh--gpg-val)" részt.
 
 ---
 
-## Opcionális: GPG-aláírás
+## Teljes konfigurációs példa: 4 fiók SSH + GPG-val
 
-Ha GPG-vel írja alá a commitokat:
-
-### 1. lépés: Keresse meg a GPG-kulcs ID-ját
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-Példa kimenet:
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] Nagy Alex <alex.nagy@personal.example.com>
-```
-
-A kulcs ID: `ABCD1234`.
-
-### 2. lépés: GPG-kulcs hozzáadása az azonosítóhoz
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Nagy Alex",
-      "email": "alex.nagy@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Személyes projektek",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-Erre az azonosítóra váltáskor a bővítmény beállítja:
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
-
----
-
-## Teljes példa: 4 fiók SSH + GPG-vel
-
-Itt egy teljes példa, ami mindent kombinál:
+Teljes példa, amely mindent kombinál:
 
 ### SSH konfiguráció (`~/.ssh/config`)
 
@@ -216,7 +134,7 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Munkahelyi fiók
+# Munkahelyi fiók (vállalati Enterprise Managed User)
 Host github-work
     HostName github.com
     User git
@@ -252,7 +170,7 @@ Host bitbucket.org
       "email": "alex.nagy@company.example.com",
       "service": "GitHub Munkahelyi",
       "icon": "💼",
-      "description": "Munkahelyi fiók",
+      "description": "Vállalati fejlesztés",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
@@ -282,17 +200,39 @@ Host bitbucket.org
 }
 ```
 
-Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-konfigurációt váltja. Ez hasznos, ha különböző committer-információkat használ ugyanazzal a GitLab-fiókkal.
+Megjegyzés: Az utolsó profil (`freelance`) SSH nélküli. Ha ugyanazon GitHub-fiókkal különböző committer-információkat használ, csak a Git konfiguráció váltása is lehetséges.
 
 ---
 
-## Konfiguráció referencia
+## Profilkezelés
 
-### Azonosító tulajdonságai
+Kattintson az állapotsávra → a lista alján válassza a „Profilkezelés" lehetőséget a kezelőfelület megnyitásához.
+A profilok hozzáadása, szerkesztése, törlése és átrendezése közvetlenül az UI-ból végezhető.
+
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/hu/identity-management.webp" width="600" alt="Profilkezelés: törlési és átrendezési műveletek útmutatója" loading="lazy">
+
+A profilokat a Parancspalettából is törölheti a `Git ID Switcher: Delete Identity` paranccsal.
+
+---
+
+## Parancsok
+
+| Parancs                                  | Leírás                             |
+| ---------------------------------------- | ---------------------------------- |
+| `Git ID Switcher: Select Identity`       | Profilválasztó megnyitása          |
+| `Git ID Switcher: Delete Identity`       | Profil törlése                     |
+| `Git ID Switcher: Show Current Identity` | Aktuális profil info megjelenítése |
+| `Git ID Switcher: Show Documentation`    | Dokumentáció megjelenítése         |
+
+---
+
+## Beállítási referencia
+
+### Profil tulajdonságai
 
 | Tulajdonság   | Kötelező | Leírás                                                               |
 | ------------- | -------- | -------------------------------------------------------------------- |
-| `id`          | ✅       | Egyedi azonosító (pl.: `"work"`, `"personal"`)                       |
+| `id`          | ✅       | Egyedi azonosító (pl.: `"personal"`, `"work"`)                       |
 | `name`        | ✅       | Git user.name — commitokban jelenik meg                              |
 | `email`       | ✅       | Git user.email — commitokban jelenik meg                             |
 | `icon`        |          | Emoji az állapotsávon (pl.: `"🏠"`). Csak egyetlen emoji használható |
@@ -309,22 +249,22 @@ Megjegyzés: Az utolsó azonosító (`freelance`) SSH nélküli — csak a Git-k
 
 ### Globális beállítások
 
-| Beállítás                                  | Alapértelmezett | Leírás                                                                                            |
-| ------------------------------------------ | --------------- | ------------------------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | Lásd a példát   | Azonosító konfigurációk listája                                                                   |
-| `gitIdSwitcher.defaultIdentity`            | Lásd a példát   | Alapértelmezett azonosító ID                                                                      |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`          | SSH-kulcs automatikus váltása                                                                     |
-| `gitIdSwitcher.showNotifications`          | `true`          | Értesítés megjelenítése váltáskor                                                                 |
-| `gitIdSwitcher.applyToSubmodules`          | `true`          | Azonosító alkalmazása Git-almodulokra                                                             |
-| `gitIdSwitcher.submoduleDepth`             | `1`             | Max. mélység beágyazott almodulokhoz (1-5)                                                        |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`         | Ikon emoji beírása a Git config `user.name`-be                                                    |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`         | Audit naplózás engedélyezése (azonosítóváltások, SSH műveletek, stb.)                             |
-| `gitIdSwitcher.logging.filePath`           | `""`            | Naplófájl elérési útja (pl.: `~/.git-id-switcher/security.log`). Üres = alapértelmezett hely      |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760`      | Max. fájlméret forgatás előtt (bájt, 1MB-100MB)                                                   |
-| `gitIdSwitcher.logging.maxFiles`           | `5`             | Forgatott naplófájlok max. száma (1-20)                                                           |
-| `gitIdSwitcher.logging.level`              | `"INFO"`        | Naplózási szint: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. A kiválasztott szint és felette rögzít |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`         | Ha engedélyezve van, minden érték maszkolva van a naplókban (maximális adatvédelem)               |
-| `gitIdSwitcher.commandTimeouts`            | `{}`            | Egyedi időtúllépés parancsonként (ms, 1mp-5perc). Pl.: `{"git": 15000, "ssh-add": 10000}`         |
+| Beállítás                                  | Alapértelmezett | Leírás                                                                                          |
+| ------------------------------------------ | --------------- | ----------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Lásd a mintát   | Profil konfigurációk listája                                                                    |
+| `gitIdSwitcher.defaultIdentity`            | Lásd a mintát   | Alapértelmezett profil ID                                                                       |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`          | SSH-kulcs automatikus váltása profilváltáskor                                                   |
+| `gitIdSwitcher.showNotifications`          | `true`          | Értesítés megjelenítése profilváltáskor                                                         |
+| `gitIdSwitcher.applyToSubmodules`          | `true`          | Profil alkalmazása Git-almodulokra                                                              |
+| `gitIdSwitcher.submoduleDepth`             | `1`             | Max. mélység beágyazott almodulokhoz (1-5)                                                      |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`         | Ikon emoji beírása a Git config `user.name`-be                                                  |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`         | Audit naplózás fájlba (profilváltások, SSH műveletek, stb.)                                     |
+| `gitIdSwitcher.logging.filePath`           | `""`            | Naplófájl elérési útja (pl.: `~/.git-id-switcher/security.log`). Üres = alapértelmezett hely    |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`      | Max. fájlméret rotálás előtt (bájt, 1MB-100MB)                                                  |
+| `gitIdSwitcher.logging.maxFiles`           | `5`             | Rotált naplófájlok max. száma (1-20)                                                            |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`         | Ha engedélyezve van, minden érték maszkolva van a naplókban (maximális adatvédelem)             |
+| `gitIdSwitcher.logging.level`              | `"INFO"`        | Naplózási szint (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). A kiválasztott szint és felette |
+| `gitIdSwitcher.commandTimeouts`            | `{}`            | Egyedi időtúllépés parancsonként (ms, 1mp-5perc). Pl.: `{"git": 15000, "ssh-add": 10000}`       |
 
 #### Az `includeIconInGitConfig` beállításról
 
@@ -342,36 +282,9 @@ Példa: `icon: "👤"`, `name: "Nagy Alex"` esetén
 | `false`                | `Nagy Alex`            | `Nagy Alex <email>`    |
 | `true`                 | `👤 Nagy Alex`         | `👤 Nagy Alex <email>` |
 
-### Megjegyzés: Alapbeállítás (SSH nélkül)
-
-Ha nincs szükség SSH-kulcs váltásra (pl. különböző committer-információk használata egyetlen GitHub-fiókkal), minimális konfigurációt használhat:
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Nagy Alex",
-      "email": "alex.nagy@personal.example.com",
-      "icon": "🏠",
-      "description": "Személyes projektek"
-    },
-    {
-      "id": "work",
-      "name": "Nagy Alex",
-      "email": "alex.nagy@company.example.com",
-      "icon": "💼",
-      "description": "Munkahelyi fiók"
-    }
-  ]
-}
-```
-
-Ez a beállítás csak a `git config user.name` és `user.email` értékeket váltja.
-
 ---
 
-## Működés
+## Működési elv
 
 ### Git config rétegstruktúra
 
@@ -389,13 +302,13 @@ Lokális (.git/config)  ← legmagasabb prioritás
 
 Ez azt jelenti:
 
-- Az azonosítót minden tároló `.git/config` fájljába menti
-- Tárolónként különböző azonosítók tarthatók fenn
+- A profilt minden tároló `.git/config` fájljába menti
+- Tárolónként különböző profilok tarthatók fenn
 - A globális beállítás (`~/.gitconfig`) nem módosul
 
-### Azonosítóváltás viselkedése
+### Profilváltási viselkedés
 
-Azonosító váltásakor a bővítmény a következőket hajtja végre (sorrendben):
+Profil váltásakor a bővítmény a következőket hajtja végre (sorrendben):
 
 1. **Git konfiguráció** (mindig): Beállítja a `git config --local user.name` és `user.email` értékeket
 2. **SSH-kulcs** (ha `sshKeyPath` be van állítva): Eltávolítja a többi kulcsot az ssh-agent-ből, hozzáadja a kiválasztottat
@@ -407,13 +320,61 @@ Azonosító váltásakor a bővítmény a következőket hajtja végre (sorrendb
 A lokális konfiguráció tároló-szintű, ezért az almodulokra nem vonatkozik automatikusan.
 Ezért ez a bővítmény almodul-propagációs funkciót biztosít (részletekért lásd: „Haladó: Almodul-támogatás").
 
+### SSH-kulcs kezelés részletei
+
+A Git ID Switcher az `ssh-agent`-en keresztül kezeli az SSH-kulcsokat:
+
+| Művelet            | Végrehajtott parancs   |
+| ------------------ | ---------------------- |
+| Kulcs hozzáadása   | `ssh-add <keyPath>`    |
+| Kulcs eltávolítása | `ssh-add -d <keyPath>` |
+| Kulcsok listázása  | `ssh-add -l`           |
+
+**Fontos:** Ez a bővítmény **nem módosítja** a `~/.ssh/config` fájlt. Az SSH konfigurációt manuálisan kell beállítani (lásd: „Gyors kezdés" 2. lépés).
+
+### Kölcsönhatás a meglévő SSH beállításokkal
+
+Ha már rendelkezik SSH beállításokkal, a Git ID Switcher a következőképpen működik:
+
+| Az Ön beállítása                             | Git ID Switcher viselkedése                                           |
+| -------------------------------------------- | --------------------------------------------------------------------- |
+| `~/.ssh/config`-ban `IdentityFile` megadva   | Mindkettő használható; `IdentitiesOnly yes` a konfliktus megelőzésére |
+| `GIT_SSH_COMMAND` környezeti változó         | Egyéni SSH parancsot használ; az ssh-agent továbbra is működik        |
+| `git config core.sshCommand` beállítva       | Ugyanaz, mint fent                                                    |
+| direnv SSH-kapcsolódó környezeti változókkal | Együtt élnek; az ssh-agent függetlenül működik                        |
+
+**Ajánlás:** Az SSH configban mindig állítsa be az `IdentitiesOnly yes` opciót. Ez megakadályozza, hogy az SSH több kulcsot próbáljon ki.
+
+### Miért az `IdentitiesOnly yes`?
+
+E beállítás nélkül az SSH a következő sorrendben próbálhatja a kulcsokat:
+
+1. Az ssh-agent-be betöltött kulcsok (amelyeket a Git ID Switcher kezel)
+2. A `~/.ssh/config`-ban megadott kulcsok
+3. Alapértelmezett kulcsok (`~/.ssh/id_rsa`, `~/.ssh/id_ed25519` stb.)
+
+Ez hitelesítési hibákhoz vagy nem szándékolt kulcshasználathoz vezethet.
+
+Az `IdentitiesOnly yes` beállítással az SSH **csak a megadott kulcsot** használja. Ez biztosítja, hogy a Git ID Switcherben beállított kulcs kerüljön felhasználásra.
+
+```ssh-config
+# Ajánlott beállítás
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← Ez a sor fontos
+```
+
+Ezzel a beállítással a `github-work` hosthoz való kapcsolódáskor csak a `~/.ssh/id_ed25519_work` kulcs kerül felhasználásra, más kulcsok nem lesznek kipróbálva.
+
 ---
 
 ## Haladó: Almodul-támogatás
 
-Git-almodulokat használó összetett tárolók esetén az azonosítókezelés gyakran problémás. Ha almodulban commitol, a Git az adott almodul helyi konfigurációját használja, ami a globális konfigurációra eshet vissza (rossz email!), ha nincs explicit módon beállítva.
+Git-almodulokat használó összetett tárolók esetén a profilkezelés gyakran problémás. Ha almodulban commitol, a Git az adott almodul helyi konfigurációját használja, ami a globális konfigurációra eshet vissza (rossz email!), ha nincs explicit módon beállítva.
 
-A **Git ID Switcher** automatikusan felismeri az almodulokat és alkalmazza rájuk a kiválasztott azonosítót.
+A **Git ID Switcher** automatikusan felismeri az almodulokat és alkalmazza rájuk a kiválasztott profilt.
 
 ```json
 {
@@ -427,7 +388,7 @@ A **Git ID Switcher** automatikusan felismeri az almodulokat és alkalmazza ráj
   - `1`: Csak közvetlen almodulok (leggyakoribb)
   - `2+`: Beágyazott almodulok (almodulok almodulokon belül)
 
-Ez biztosítja, hogy az azonosítója mindig helyes legyen, akár a fő tárolóban, akár vendor könyvtárban commitol.
+Ez biztosítja, hogy a profilja mindig helyes legyen, akár a fő tárolóban, akár vendor könyvtárban commitol.
 
 ---
 
@@ -453,13 +414,27 @@ Ez biztosítja, hogy az azonosítója mindig helyes legyen, akár a fő tároló
    ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
-### Rossz azonosító push-kor?
+### Rossz profil push-kor?
+
+**Új klónozáskor:**
+
+Munkahelyi tárolók klónozásakor használja az SSH configban beállított host aliast:
+
+```bash
+# Munkahelyi profilhoz (github-work aliast használva)
+git clone git@github-work:company/repo.git
+
+# Személyes profilhoz (alapértelmezett github.com-ot használva)
+git clone git@github.com:yourname/repo.git
+```
+
+**Meglévő tárolók esetén:**
 
 1. Ellenőrizze, hogy a távoli URL a megfelelő host aliast használja:
 
    ```bash
    git remote -v
-   # A munkahelyi tárolóknál git@github-work:... kell megjelenjen
+   # Munkahelyi tárolóknál git@github-work:... kell legyen
    ```
 
 2. Szükség esetén frissítse:
@@ -482,13 +457,13 @@ Ez biztosítja, hogy az azonosítója mindig helyes legyen, akár a fő tároló
    echo "test" | gpg --clearsign
    ```
 
-3. Győződjön meg róla, hogy az azonosítóban szereplő email megegyezik a GPG-kulcs emailjével.
+3. Győződjön meg róla, hogy a profilban szereplő email megegyezik a GPG-kulcs emailjével.
 
-### Azonosító nem észlelt?
+### Profil nem észlelt?
 
 - Győződjön meg róla, hogy Git-tárolóban van
 - Ellenőrizze, hogy a `settings.json`-ban nincsenek szintaktikai hibák
-- Töltse újra a VS Code ablakot (`Cmd+Shift+P` → "Ablak újratöltése")
+- Töltse újra a VS Code ablakot (`Cmd+Shift+P` → „Ablak újratöltése")
 
 ### A `name` mezőben hiba van?
 
@@ -529,23 +504,13 @@ Ha korábban üres beállításokat mentett, azok szinkronizálódtak a felhőbe
 
 ---
 
-## Parancsok
-
-| Parancs                                  | Leírás                                |
-| ---------------------------------------- | ------------------------------------- |
-| `Git ID Switcher: Select Identity`       | Azonosító választó megnyitása         |
-| `Git ID Switcher: Show Current Identity` | Aktuális azonosító info megjelenítése |
-| `Git ID Switcher: Show Documentation`    | Dokumentáció megjelenítése            |
-
----
-
 ## Tervezési filozófia
 
-> "Ki vagyok én?" — Az egyetlen kérdés, amire ez a bővítmény válaszol.
+> **„Ki vagyok én" váltása** — Az egyetlen kérdés, amire ez a bővítmény válaszol
 
 A **Karesansui Architektúrára** épül: egyszerű mag (100 sor),
-szándékos minőséggel (90% lefedettség, naplózás, időtúllépések)
-és tudatos korlátozásokkal (nincs GitHub API, nincs token kezelés) körülvéve.
+ezért a többit minőségre (90% lefedettség, naplózás, időtúllépések)
+és tudatos korlátozásokra (nincs GitHub API, nincs token kezelés) fordíthatjuk.
 
 [![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
 
