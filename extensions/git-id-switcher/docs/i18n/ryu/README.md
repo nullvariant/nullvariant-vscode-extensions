@@ -28,7 +28,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      ちゅーちゅクリックさーに Git ID 変えーいびーん。GitHub アカウント、SSH キー、GPG 署名、<b>Git Submodule んかい自動的にID適用</b>さびーん。
+      ちゅーちゅクリックさーに複数ぬGitプロフィール切り替えーいびーん。複数ぬGitHubアカウント、SSH鍵、GPG署名管理さーに、<b>Gitサブモジュールんかいも自動的にプロフィール適用</b>さびーん。
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -51,23 +51,24 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-ryu.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ryu/demo.webp" width="600" alt="デモ" loading="lazy">
 
-## 🎯 ぬーんちくぬ Extension 作たがやー?
+## 🎯 ぬーんちくぬ Git ID Switcher?
 
-Git ID 切り替えツールやいっぺーあいびーしが、**Git ID Switcher** や他ぬツールぬ見落としがちな問題解決さびーん:
+Gitプロフィール切り替えツールやいっぺーあいびーしが、**Git ID Switcher** や他ぬツールぬ見落としがちな問題解決さびーん:
 
-1. **サブモジュールぬ悩み**: サブモジュール持っちょーるリポジトリ（例：Hugoテーマ、ベンダーライブラリ）んかい仕事すーる時、普通や*うぬうぬ*サブモジュールんかい`git config user.name`手動で設定せんといかんさー。くぬ拡張機能や、全部ぬサブモジュールんかいID適用さーに、くぬ問題解決さびーん。
-2. **SSH & GPG**: 名前変えーるだけやあらん、ssh-agentぬSSH鍵入れ替えーてぃ、GPG署名設定さーに、間違った署名んかいコミットすーるくとぅ防じゃびーん。
+1. **サブモジュールぬ悩み**: サブモジュール持っちょーるリポジトリ（例：Hugoテーマ、ベンダーライブラリ）んかい仕事すーる時、普通や*うぬうぬ*サブモジュールんかい`git config user.name`手動で設定せんといかんさー。くぬ拡張機能や、全部ぬアクティブなサブモジュールんかい再帰的にプロフィール適用さーに、くぬ問題エレガントに解決さびーん。
+2. **SSH & GPG処理**: 単に名前変えーるだけやあらん、ssh-agent内ぬSSH鍵入れ替えーてぃ、GPG署名設定さーに、間違った署名んかいコミットすーるくとぅ防じゃびーん。
 
-## 機能 (Features)
+## 機能
 
-- **サブモジュール対応**: Gitサブモジュールんかいも自動的にID適用
+- **プロフィール管理UI**: settings.json編集せんでぃ、プロフィールぬ追加・編集・削除・並べ替えがUI可能
+- **ちゅーちゅクリックさーにプロフィール切り替え**: Git user.nameとぅuser.emailふぃっちー変えーいびーん
+- **ステータスバー統合**: 今ぬプロフィールいちなん分かいびーん
+- **サブモジュール対応**: Gitサブモジュールんかいも自動的にプロフィール伝播
 - **SSH鍵管理**: ssh-agentぬSSH鍵自動的に切り替え
 - **GPG署名対応**: コミット署名用ぬGPG鍵設定（オプション）
-- **ちゅーちゅクリックさーにID切り替え**: Git user.name とぅ user.email ふぃっちー変えーいびーん
-- **ステータスバー**: 今ぬIDいちなん分かいびーん
-- **リッチなツールチップ**: IDぬ詳細情報
+- **リッチなツールチップ**: 説明やSSHホスト含む詳細なプロフィール情報
 - **クロスプラットフォーム**: macOS、Linux、Windowsんかい動ちゃびーん
 - **多言語対応**: 17言語サポート
 
@@ -77,45 +78,45 @@ Git ID 切り替えツールやいっぺーあいびーしが、**Git ID Switche
 > 少数やしんち切り捨てーぶさーねーやいびらん。
 > 完璧に翻訳でーきらんてぃん、少数言語ぬ存在理解さーに、敬意示す気持ちだきん感じてぃくぃみそーれー。
 
-くぬ拡張機能や、VSCodeがサポートすーる17言語全部んかい対応しょーいびーん。さらに、READMEドキュメントについてぃや、少数民族ぬ言語やジョーク言語んかいぬ翻訳んかいもチャレンジしょーいびーん。
+くぬ拡張機能や、VS Codeがサポートすーる17言語全部んかい対応しょーいびーん。さらに、READMEドキュメントについてぃや、少数民族ぬ言語やジョーク言語んかいぬ翻訳んかいもチャレンジしょーいびーん。
 
-くれーただぬ「グローバル対応」やあらん、「言語的多様性んかいぬ敬意」やいびーん。
+くれーただぬ「グローバル対応」やあらん、「言語的多様性んかいぬ敬意」やいびーん。そしてぃ、言語ば超えーてぃ、あらゆる場所んかいいーる開発者から世界がゆーなーるコミットがさりてぃいちゅん...そんなインフラになーたら嬉しいびーん。
 
 ---
 
 ## クイックスタート
 
-個人アカウントとぅ会社アカウント（Enterprise Managed User）管理すーる典型的な設定やいびーん。
+個人アカウントとぅ会社発行アカウント（Enterprise Managed User）使い分けーる典型的なセットアップやいびーん。
 
 ### ステップ 1: SSH鍵準備
 
-まず、うぬうぬぬアカウント用んかいSSH鍵作てぃくぃみそーれー（あいねーとばしてぃんでぃーびる）:
+まず、アカウントぬうぬうぬんかいSSH鍵作てぃくぃみそーれー（あいねーとばしてぃんでぃーびる）:
 
 ```bash
 # 個人用
 ssh-keygen -t ed25519 -C "makoto@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # 仕事用
-ssh-keygen -t ed25519 -C "makoto@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "makoto.higa@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
-うぬうぬぬキーぬ**公開鍵**（`.pub`ファイル）ば対応すーるGitHubアカウントんかい登録しくぃみそーれー。
+うぬうぬぬSSH鍵ぬ**公開鍵**（`.pub`ファイル）ばそれぞれぬGitHubアカウントんかい登録しくぃみそーれー。
 
-> **メモ**: GitHubんかい登録さーるんや`id_ed25519_personal.pub`（公開鍵）やいびーん。`id_ed25519_personal`（拡張子無し）や秘密鍵やくとぅ、絶対ん共有したり、どぅこんかいもアップロードさんしぐわーしくぃみそーれー。
+> **メモ**: GitHubんかい登録すーるんや`id_ed25519_personal.pub`（公開鍵）やいびーん。`id_ed25519_personal`（拡張子なし）や秘密鍵やくとぅ、絶対ん他人とぅ共有したり、アップロードさんようにしくぃみそーれー。
 
-### ステップ 2: SSH config 設定
+### ステップ 2: SSH config設定
 
 `~/.ssh/config` 編集:
 
 ```ssh-config
-# 個人用アカウント
+# 個人用GitHubアカウント（デフォルト）
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# 仕事用アカウント
+# 仕事用GitHubアカウント
 Host github-work
     HostName github.com
     User git
@@ -125,127 +126,44 @@ Host github-work
 
 ### ステップ 3: 拡張機能設定
 
-拡張機能ぬ設定開ちゅん（`Cmd+,` / `Ctrl+,`）→ "Git ID Switcher" 検索 → "settings.jsonで編集" クリック:
+インストール直後やサンプルプロフィール用意さりてぃいびーん。
+以下ぬガイドんかい沿ってぃ、くれー自分用んかい編集しくぃみそーれー。
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "比嘉真",
-      "email": "makoto@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "個人プロジェクト",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal"
-    },
-    {
-      "id": "work",
-      "name": "比嘉真",
-      "email": "makoto@company.example.com",
-      "service": "GitHub 仕事",
-      "icon": "💼",
-      "description": "会社ぬ仕事",
-      "sshKeyPath": "~/.ssh/id_ed25519_work",
-      "sshHost": "github-work"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "personal",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ryu/first-ux.webp" width="600" alt="初回セットアップ手順（13ステップ）：ステータスバーからプロフィール管理開ちゅん、編集・新規作成すーる流れ" loading="lazy">
 
-### ステップ 4: 使てぃみーん!
+> **鍵ファイルや送信さらん**: SSH鍵パスぬ設定んかい記録さーるんや鍵ファイルぬパス（場所）だけやいびーん。鍵ファイルぬ中身がアップロードさりたり外部んかい送信さりーるくとぅやあいびらん。
 
-1. ステータスバー（右下）ぬIDアイコンクリック
-2. ID選ぶん
-3. 終わい! Git configとぅSSH鍵切り替わたん。
+> **GPG署名使う場合**: プロフィール編集画面んかい`gpgKeyId`も設定でぃちゅん。
+> GPG鍵IDぬ確認方法や「[トラブルシューティング](#gpg署名動かん)」見てぃくぃみそーれー。
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-ryu.png" width="600" alt="Quick Pick">
-
-### SSHホストエイリアスぬ使い方
-
-リポジトリクローンすーる時、IDんかい対応すーるホスト使てぃくぃみそーれー:
-
-```bash
-# 仕事ID用（github-workエイリアス使う）
-git clone git@github-work:company/repo.git
-
-# 個人ID用（デフォルトぬgithub.com使う）
-git clone git@github.com:makoto/repo.git
-```
+> **ヒント**: settings.jsonから直接設定すーるくとぅもでぃちゅん。
+> 拡張機能ぬ設定開ちゅん（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」検索 →「settings.jsonで編集」クリック。
+> JSON形式んかいぬ設定例や「[フル設定例](#フル設定例-4アカウントとぅssh--gpg)」見てぃくぃみそーれー。
 
 ---
 
-## オプション: GPG署名
-
-GPGんかいコミット署名すーる場合:
-
-### ステップ 1: GPG鍵ID探すん
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-出力例:
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] 比嘉真 <makoto@personal.example.com>
-```
-
-キーIDや`ABCD1234`やいびーん。
-
-### ステップ 2: GPG鍵ばIDんかい追加
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "比嘉真",
-      "email": "makoto@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "個人プロジェクト",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-くぬIDんかい切り替える時、拡張機能やくぬゆーに設定さびーん:
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
-
----
-
-## 完全な例: SSH + GPGんかい4アカウント
+## フル設定例: 4アカウントとぅSSH + GPG
 
 全部まとめた完全な例やいびーん:
 
 ### SSH設定 (`~/.ssh/config`)
 
 ```ssh-config
-# 個人アカウント（デフォルト）
+# 個人用アカウント（デフォルト）
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# 仕事アカウント
+# 仕事用アカウント（会社発行ぬEnterprise Managed User）
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucketアカウント
+# Bitbucket用アカウント
 Host bitbucket.org
     HostName bitbucket.org
     User git
@@ -266,15 +184,15 @@ Host bitbucket.org
       "icon": "🏠",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSON12"
+      "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
       "name": "比嘉真",
-      "email": "makoto@company.example.com",
-      "service": "GitHub 仕事",
+      "email": "makoto.higa@company.example.com",
+      "service": "GitHub 仕事用",
       "icon": "💼",
-      "description": "仕事アカウント",
+      "description": "会社ぬ開発用",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
@@ -295,7 +213,7 @@ Host bitbucket.org
       "email": "makoto@freelance.example.com",
       "service": "GitLab",
       "icon": "🎯",
-      "description": "自由業プロジェクト"
+      "description": "自由業案件"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -304,100 +222,95 @@ Host bitbucket.org
 }
 ```
 
-メモ: 最後ぬID（`jiyu`）やSSH無し—Git configだけ切り替えーいびーん。同じGitLabアカウントんかい違うコミッター情報使う時便利やいびーん。
+メモ: 最後ぬプロフィール（`jiyu`）やSSH無し。同じGitHubアカウントんかい違うコミッター情報使い分けーる場合んかい、Git configだけぬ切り替えも可能やいびーん。
+
+---
+
+## プロフィール管理
+
+ステータスバークリック → 一覧下部ぬ「プロフィール管理」んかい管理画面開ちゅん。
+プロフィールぬ追加・編集・削除・並べ替えや全部UIから直接操作でぃちゅん。
+
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/ryu/identity-management.webp" width="600" alt="プロフィール管理：削除・並べ替えぬ操作ガイド" loading="lazy">
+
+コマンドパレットから`Git ID Switcher: Delete Identity`んかいプロフィール削除すーるくとぅもでぃちゅん。
+
+---
+
+## コマンド
+
+| コマンド                                 | 説明                         |
+| ---------------------------------------- | ---------------------------- |
+| `Git ID Switcher: Select Identity`       | プロフィールピッカー開ちゅん |
+| `Git ID Switcher: Delete Identity`       | プロフィール削除             |
+| `Git ID Switcher: Show Current Identity` | 今ぬプロフィール情報表示     |
+| `Git ID Switcher: Show Documentation`    | ドキュメント表示             |
 
 ---
 
 ## 設定リファレンス
 
-### IDプロパティ
+### プロフィールぬプロパティ
 
 | プロパティ    | 必須 | 説明                                                               |
 | ------------- | ---- | ------------------------------------------------------------------ |
-| `id`          | ✅   | ユニーク識別子（例：`"work"`, `"personal"`）                       |
-| `name`        | ✅   | Git user.name — コミットんかい表示さーるん                         |
-| `email`       | ✅   | Git user.email — コミットんかい表示さーるん                        |
-| `icon`        |      | ステータスバーんかい表示すーる絵文字（例：`"🏠"`）。単一絵文字のみ |
-| `service`     |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI用                     |
-| `description` |      | ピッカーとぅツールチップんかい表示すーる短い説明                   |
-| `sshKeyPath`  |      | SSH秘密鍵ぬパス（例：`"~/.ssh/id_ed25519_work"`）                  |
-| `sshHost`     |      | SSH configホストエイリアス（例：`"github-work"`）                  |
-| `gpgKeyId`    |      | コミット署名用GPG鍵ID                                              |
+| `id`          | ✅   | 一意ぬ識別子（例：`"personal"`, `"work"`）                         |
+| `name`        | ✅   | Git user.name - コミットんかい表示                                 |
+| `email`       | ✅   | Git user.email - コミットんかい表示                                |
+| `icon`        |      | ステータスバーんかい表示さーる絵文字（例：`"🏠"`）。単一絵文字のみ |
+| `service`     |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI表示んかい使用         |
+| `description` |      | ピッカーとぅツールチップんかい表示さーる短い説明                   |
+| `sshKeyPath`  |      | SSHプライベートキーぬパス（例：`"~/.ssh/id_ed25519_work"`）        |
+| `sshHost`     |      | SSH configぬHostエイリアス（例：`"github-work"`）                  |
+| `gpgKeyId`    |      | コミット署名用ぬGPG鍵ID                                            |
 
-#### 表示制限
+#### 表示んかい関すーる制限
 
-- **ステータスバー**: ~25文字以上ぬテキストや`...`んかい省略さーるん
-- **`icon`**: 単一絵文字（grapheme cluster）のみ使えーるん。複数絵文字や長いテキストやダメやいびーん
+- **ステータスバー**: 約25文字超えーる場合や`...`んかい省略さーるん
+- **`icon`**: 単一ぬ絵文字（書記素クラスター）のみ使用可能。複数ぬ絵文字や長い文字列や使用でーきらん
 
-### 全般設定
+### グローバル設定
 
-| 設定                                       | デフォルト | 説明                                                                   |
-| ------------------------------------------ | ---------- | ---------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | 例ば見ーん | ID設定ぬリスト                                                         |
-| `gitIdSwitcher.defaultIdentity`            | 例ば見ーん | デフォルトID                                                           |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | SSH鍵自動切り替え                                                      |
-| `gitIdSwitcher.showNotifications`          | `true`     | 切り替え時通知表示                                                     |
-| `gitIdSwitcher.applyToSubmodules`          | `true`     | Gitサブモジュールんかいも適用                                          |
-| `gitIdSwitcher.submoduleDepth`             | `1`        | ネストしたサブモジュールぬ最大深度（1-5）                              |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | 絵文字アイコンばGit config `user.name`んかい書くん                     |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`    | 監査ログファイル出力有効化                                             |
-| `gitIdSwitcher.logging.filePath`           | `""`       | カスタムログファイルパス                                               |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | ローテーション前ぬ最大ファイルサイズ（バイト、1MB-100MB）              |
-| `gitIdSwitcher.logging.maxFiles`           | `5`        | 保持すーるログファイル数（1-20）                                       |
-| `gitIdSwitcher.logging.level`              | `"INFO"`   | ログレベル（DEBUG/INFO/WARN/ERROR/SECURITY）                           |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | 有効にすると、ログぬ全部ぬ値むマスクさりーる（最大プライバシーモード） |
-| `gitIdSwitcher.commandTimeouts`            | `{}`       | 外部コマンドぬタイムアウト（ms、1秒-5分）                              |
+| 設定                                       | デフォルト   | 説明                                                                                                      |
+| ------------------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | サンプル参照 | プロフィール設定ぬリスト                                                                                  |
+| `gitIdSwitcher.defaultIdentity`            | サンプル参照 | 使用すーるデフォルトプロフィールぬID                                                                      |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | プロフィール変更時んかいSSH鍵自動切り替え                                                                 |
+| `gitIdSwitcher.showNotifications`          | `true`       | プロフィール切り替え時んかい通知表示                                                                      |
+| `gitIdSwitcher.applyToSubmodules`          | `true`       | Gitサブモジュールんかいプロフィール伝播                                                                   |
+| `gitIdSwitcher.submoduleDepth`             | `1`          | ネストさりたサブモジュール設定ぬ最大深度（1-5）                                                           |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`      | アイコン絵文字ばGit configぬ`user.name`んかい含めーるか                                                   |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`      | 監査ログばファイルんかい保存すーる（ID切り替え、SSH鍵操作んかい記録）                                     |
+| `gitIdSwitcher.logging.filePath`           | `""`         | ログファイルぬパス（例：`~/.git-id-switcher/security.log`）。空文字列ぬ場合やデフォルトパス使用           |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | ローテーション前ぬ最大ファイルサイズ（バイト単位、1MB-100MB）                                             |
+| `gitIdSwitcher.logging.maxFiles`           | `5`          | 保持すーるローテーションファイルぬ最大数（1-20）                                                          |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`      | 有効にすーると、ログ内ぬ全部ぬ値ばマスクさびーん（最大プライバシーモード）                                |
+| `gitIdSwitcher.logging.level`              | `"INFO"`     | ログぬ詳細度（`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`）。選択したレベル以上ば記録                    |
+| `gitIdSwitcher.commandTimeouts`            | `{}`         | コマンドぬうぬうぬぬカスタムタイムアウト値（ミリ秒単位、1秒-5分）。例：`{"git": 15000, "ssh-add": 10000}` |
 
 #### `includeIconInGitConfig`について
 
-`icon`フィールド設定した時ぬ動作制御さびーん:
+`icon`フィールド設定した場合ぬ動作制御さびーん:
 
 | 値                    | 動作                                                                      |
 | --------------------- | ------------------------------------------------------------------------- |
-| `false`（デフォルト） | `icon`やエディタUIだけんかい表示。Git configんかいや`name`だけ書かーるん  |
-| `true`                | Git configんかい`icon + name`書かーるん。絵文字がコミット履歴んかい残いん |
+| `false`（デフォルト） | `icon`やエディタUIのみんかい表示。Git configんかいや`name`のみ書き込み    |
+| `true`                | Git configんかい`icon + name`ば書き込み。コミット履歴んかいも絵文字残いん |
 
-例: `icon: "👤"`, `name: "比嘉真"`
+例：`icon: "👤"`, `name: "比嘉真"` ぬ場合
 
 | includeIconInGitConfig | Git config `user.name` | コミット署名        |
 | ---------------------- | ---------------------- | ------------------- |
 | `false`                | `比嘉真`               | `比嘉真 <email>`    |
 | `true`                 | `👤 比嘉真`            | `👤 比嘉真 <email>` |
 
-### メモ: 基本設定（SSH無し）
-
-SSH鍵切り替え不要な場合（例：同じGitHubアカウントんかい違うコミッター情報使う）、最小設定使えーるん:
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "比嘉真",
-      "email": "makoto@personal.example.com",
-      "icon": "🏠",
-      "description": "個人プロジェクト"
-    },
-    {
-      "id": "work",
-      "name": "比嘉真",
-      "email": "makoto@company.example.com",
-      "icon": "💼",
-      "description": "仕事アカウント"
-    }
-  ]
-}
-```
-
-くぬ設定や`git config user.name`とぅ`user.email`だけ切り替えーるん。
-
 ---
 
 ## 仕組み
 
-### Git Config階層構造
+### Git configぬレイヤー構造
 
-Git configや3つぬ階層あいん；下ぬ階層が上ぬ階層ば上書きさびーん:
+Gitぬ設定んかいや3つぬレイヤーあいん、下位ぬ設定ば上位が上書きさびーん:
 
 ```text
 システム (/etc/gitconfig)
@@ -407,35 +320,83 @@ Git configや3つぬ階層あいん；下ぬ階層が上ぬ階層ば上書きさ
 ローカル (.git/config)  ← 最優先
 ```
 
-**Git ID Switcherや`--local`（リポジトリローカル）レベルんかい書ちゃびーん。**
+**Git ID Switcherや`--local`（リポジトリローカル）んかい書き込みさびーん。**
 
 くぬ意味:
 
-- IDやうぬうぬぬリポジトリぬ`.git/config`ファイルんかい保存さーるん
-- うぬうぬぬリポジトリんかい違うID保持でぃちゅん
+- うぬうぬぬリポジトリぬ`.git/config`んかいプロフィール保存さーるん
+- リポジトリぬうぬうぬんかい異なーるプロフィール維持でぃちゅん
 - グローバル設定（`~/.gitconfig`）や変更さらん
 
-### ID切り替え動作
+### プロフィール切り替え時ぬ動作
 
-ID切り替える時、拡張機能やくぬ順番んかい実行さびーん:
+プロフィール切り替えーる時、拡張機能や以下ば（順番に）実行さびーん:
 
-1. **Git Config**（常に）: `git config --local user.name`とぅ`user.email`設定
-2. **SSH鍵**（`sshKeyPath`設定時）: ssh-agentから他ぬキー削除、選んだん追加
-3. **GPG鍵**（`gpgKeyId`設定時）: `git config --local user.signingkey`設定、署名有効化
-4. **サブモジュール**（有効時）: 全サブモジュールんかい設定伝播（デフォルト: 深度1）
+1. **Git Config**（常時）: `git config --local user.name`とぅ`user.email`ば設定
+2. **SSH鍵**（`sshKeyPath`設定時）: 他ぬ鍵ばssh-agentから削除さーに、選択した鍵ば追加
+3. **GPG鍵**（`gpgKeyId`設定時）: `git config --local user.signingkey`ば設定さーに、署名ば有効化
+4. **サブモジュール**（有効時）: 全部ぬサブモジュールんかい設定ば伝播（デフォルト：深度1）
 
-### サブモジュール伝播メカニズム
+### サブモジュール伝播ぬ仕組み
 
-ローカル設定やリポジトリレベルんかい動作すーるくとぅ、サブモジュールんかい自動的んかい適用さらん。
-やくとぅくぬ拡張機能やサブモジュール伝播機能提供さびーん（詳細や「アドバンスド: サブモジュール対応」見てぃくぃみそーれー）。
+ローカル設定やリポジトリ単位やくとぅ、サブモジュールんかいや自動的に適用さらん。
+やくとぅ、本拡張機能やサブモジュールんかいぬ伝播機能提供しょーいびーん（詳細や「上級者向け: サブモジュールサポート」見てぃくぃみそーれー）。
+
+### SSH鍵管理ぬ詳細
+
+Git ID Switcherや`ssh-agent`通じてぃSSH鍵管理さびーん:
+
+| 操作     | 実行コマンド           |
+| -------- | ---------------------- |
+| 鍵ば追加 | `ssh-add <keyPath>`    |
+| 鍵ば削除 | `ssh-add -d <keyPath>` |
+| 鍵ぬ一覧 | `ssh-add -l`           |
+
+**重要:** くぬ拡張機能や`~/.ssh/config`ば**変更さらん**。SSH configぬ設定や手動んかい行う必要あいびーん（「クイックスタート」ぬステップ2見てぃくぃみそーれー）。
+
+### 既存ぬSSH設定とぅぬ相互作用
+
+あいねーSSH設定あーる場合、Git ID Switcherや以下ぬようんかい動ちゃびーん:
+
+| 設定                                    | Git ID Switcherぬ動作                                |
+| --------------------------------------- | ---------------------------------------------------- |
+| `~/.ssh/config`んかい`IdentityFile`指定 | 両方が使用可能；`IdentitiesOnly yes`んかい競合防止   |
+| 環境変数`GIT_SSH_COMMAND`ば設定         | カスタムSSHコマンド使用；ssh-agentや引き続き動ちゅん |
+| `git config core.sshCommand`ば設定      | 上記とぅ同様                                         |
+| direnvんかいSSH関連ぬ環境変数設定       | 共存可能；ssh-agentや独立さーに動ちゅん              |
+
+**推奨:** SSH configんかいや常に`IdentitiesOnly yes`設定しくぃみそーれー。くれーにゆてぃ、SSHが複数ぬ鍵試行すーるくとぅ防じゃびーん。
+
+### ぬーんち`IdentitiesOnly yes`?
+
+くぬ設定無い場合、SSHや以下ぬ順序んかい鍵試行すーる可能性あいびーん:
+
+1. ssh-agentんかい読み込まりた鍵（Git ID Switcherが管理）
+2. `~/.ssh/config`んかい指定さりた鍵
+3. デフォルトぬ鍵（`~/.ssh/id_rsa`, `~/.ssh/id_ed25519`んかい）
+
+くれーにゆてぃ、認証失敗や意図さらん鍵ぬ使用が発生すーる可能性あいびーん。
+
+`IdentitiesOnly yes`設定すーると、SSHや**指定さりた鍵のみ**使用さびーん。くれーにゆてぃ、Git ID Switcherんかい設定した鍵が確実に使用さーるん。
+
+```ssh-config
+# 推奨さーる設定
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← くぬ行が重要
+```
+
+くぬ設定にゆてぃ、`github-work`ホストんかいぬ接続時んかいや`~/.ssh/id_ed25519_work`のみが使用さーり、他ぬ鍵や試行さらん。
 
 ---
 
-## アドバンスド: サブモジュール対応
+## 上級者向け: サブモジュールサポート
 
-Gitサブモジュール持っちょーる複雑なリポジトリんかい、ID管理やしばしば面倒やいびーん。サブモジュールんかいコミットすーる場合、Gitやそぬサブモジュールぬローカル設定使う；明示的んかい設定さらんちゃー、グローバル設定んかい戻てぃ（間違ったメール！）。
+Gitサブモジュール使用すーる複雑なリポジトリんかいや、プロフィール管理がしばしば厄介やいびーん。サブモジュール内んかいコミットすーると、Gitやそぬサブモジュールぬローカル設定使用さびーしが、明示的に設定さりてぃいらんちゃーグローバル設定（間違ったメールアドレス！）がデフォルトになーる可能性あいびーん。
 
-**Git ID Switcher**やサブモジュール自動検出さーに、選んだIDば適用さびーん。
+**Git ID Switcher**や自動的にサブモジュール検出さーに、選択したプロフィール適用さびーん。
 
 ```json
 {
@@ -444,12 +405,12 @@ Gitサブモジュール持っちょーる複雑なリポジトリんかい、ID
 }
 ```
 
-- `applyToSubmodules`: くぬ機能ば有効/無効化
-- `submoduleDepth`: どぬ深さまで適用すーるか?
+- `applyToSubmodules`: くぬ機能ぬ有効/無効切り替え
+- `submoduleDepth`: どぬ深さまで適用すーるか？
   - `1`: 直接ぬサブモジュールのみ（最も一般的）
-  - `2+`: ネストしたサブモジュール（サブモジュールぬ中ぬサブモジュール）
+  - `2+`: ネストさりたサブモジュール（サブモジュール内ぬサブモジュール）
 
-くれーにゆてぃ、メインリポジトリんかいコミットしてぃんベンダーライブラリんかいコミットしてぃん、IDや常に正しくなーいびーん。
+くれーにゆてぃ、メインリポジトリんかいコミットしてぃん、ベンダーライブラリんかいコミットしてぃん、プロフィールや常に正しく設定さーるん。
 
 ---
 
@@ -457,34 +418,48 @@ Gitサブモジュール持っちょーる複雑なリポジトリんかい、ID
 
 ### SSH鍵切り替わらん?
 
-1. `ssh-agent`が動いちょーる確認:
+1. `ssh-agent`が実行さりてぃいーる確認:
 
    ```bash
    eval "$(ssh-agent -s)"
    ```
 
-2. キーぬパスが正しい確認:
+2. 鍵ぬパスが正しいか確認:
 
    ```bash
    ls -la ~/.ssh/id_ed25519_*
    ```
 
-3. macOSんかいや、Keychainんかい一回追加:
+3. macOSんかいや、一回Keychainんかい追加:
 
    ```bash
    ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
-### プッシュ時間違ったID?
+### プッシュ時んかい間違ったプロフィール?
+
+**新規クローン時:**
+
+仕事用リポジトリクローンすーる時や、SSH configんかい設定したホストエイリアス使用さびーん:
+
+```bash
+# 仕事用（github-workエイリアス使用）
+git clone git@github-work:company/repo.git
+
+# 個人用（デフォルトぬgithub.com使用）
+git clone git@github.com:makoto/repo.git
+```
+
+**既存リポジトリぬ場合:**
 
 1. リモートURLが正しいホストエイリアス使っちょーる確認:
 
    ```bash
    git remote -v
-   # 仕事リポジトリやgit@github-work:...になっちょーるべき
+   # 仕事用リポジトリなら git@github-work:... となっちょーるべき
    ```
 
-2. 必要あらば更新:
+2. 必要んかい応じてぃ更新:
 
    ```bash
    git remote set-url origin git@github-work:company/repo.git
@@ -504,21 +479,21 @@ Gitサブモジュール持っちょーる複雑なリポジトリんかい、ID
    echo "test" | gpg --clearsign
    ```
 
-3. IDぬメールがGPG鍵ぬメールとぅ一致しちょーる確認。
+3. プロフィールぬメールアドレスがGPG鍵ぬメールアドレスとぅ一致しちょーる確認
 
-### ID検出さらん?
+### プロフィール検出さらん?
 
 - Gitリポジトリ内んかいいーる確認
 - `settings.json`んかい構文エラー無いか確認
-- VS Codeウィンドウリロード（`Cmd+Shift+P` → "ウィンドウの再読み込み"）
+- VS Codeウィンドウリロード（`Cmd+Shift+P` → 「ウィンドウの再読み込み」）
 
-### `name`フィールドんかいエラー?
+### `name`フィールドんかいエラー発生?
 
-`name`フィールドんかいくぬ文字含まれてぃーたらエラーなーるん:
+`name`フィールドんかい以下ぬ文字含まりてぃいーるとぅエラーなーいびーん:
 
 `` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
 
-サービス名含めーぶさい場合や`service`フィールド使てぃくぃみそーれー。
+サービス名含めーぶさい場合や`service`フィールド使用しくぃみそーれー。
 
 ```jsonc
 // ダメ
@@ -535,7 +510,7 @@ Gitサブモジュール持っちょーる複雑なリポジトリんかい、ID
 
 **解決策:** マシン全体リスタートしくぃみそーれー。
 
-VS Codeんかいぬエディタや設定スキーマばメモリんかいキャッシュしちょーり、"ウィンドウの再読み込み"や拡張機能ぬ再インストールだけやぬーらん場合あいびーん。
+VS Codeんかいぬエディタや設定スキーマばメモリんかいキャッシュしちょーり、「ウィンドウの再読み込み」や拡張機能ぬ再インストールだけやぬーらん場合あいびーん。
 
 ### デフォルト値（identities等）空っぽ?
 
@@ -551,23 +526,13 @@ VS Codeんかいぬエディタや設定スキーマばメモリんかいキャ�
 
 ---
 
-## コマンド
-
-| コマンド                                 | 説明               |
-| ---------------------------------------- | ------------------ |
-| `Git ID Switcher: Select Identity`       | IDピッカー開ちゅん |
-| `Git ID Switcher: Show Current Identity` | 今ぬID情報表示     |
-| `Git ID Switcher: Show Documentation`    | ドキュメント表示   |
-
----
-
 ## 設計哲学
 
-> 「わんねー誰やが？」— くぬ拡張が答えいる唯一ぬ問いやいびーん。
+> **「わんねー誰やが?」** — くぬ拡張機能が答えーる唯一ぬ問い
 
-**枯山水アーキテクチャ**んかい基づちゅん：単純なコア（100行）、
-意図的な品質（90%カバレッジ、ログ、タイムアウト）と
-意図的な制約（GitHub APIなし、トークン管理なし）んかい囲まりてぃいびーん。
+**枯山水アーキテクチャ**んかい設計しちょーいびーん。コアや100行んかい書けーる単純さ。
+やくとぅ、残りば品質（テスト90%、ログ、タイムアウト）とぅ
+意図的な制約（GitHub API連携なし、トークン管理なし）んかい費やせーるん。
 
 [![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
 
@@ -577,15 +542,15 @@ VS Codeんかいぬエディタや設定スキーマばメモリんかいキャ�
 
 ## 貢献
 
-[CONTRIBUTING.md](../../CONTRIBUTING.md) 見てぃくぃみそーれー。
+貢献歓迎さびーん！[CONTRIBUTING.md](../../CONTRIBUTING.md)見てぃくぃみそーれー。
 
 ## ライセンス
 
-MIT License - [LICENSE](../../../LICENSE) 見てぃくぃみそーれー。
+MITライセンス - [LICENSE](../../../LICENSE)見てぃくぃみそーれー。
 
 ## クレジット
 
-[Null;Variant](https://github.com/nullvariant) が作たん
+[Null;Variant](https://github.com/nullvariant)にゆてぃ作成
 
 ---
 
