@@ -6,7 +6,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      Tek tıklamayla birden fazla Git kimliği arasında geçiş yapın. Birden fazla GitHub hesabını, SSH anahtarlarını, GPG imzalamayı yönetin ve <b>kimliği Git alt modüllerine otomatik olarak uygulayın</b>.
+      Tek tıklamayla birden fazla Git profili arasında geçiş yapın. Birden fazla GitHub hesabını, SSH anahtarlarını, GPG imzalamayı yönetin ve <b>profili Git alt modüllerine otomatik olarak uygulayın</b>.
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -29,23 +29,24 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-tr.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/tr/demo.webp" width="600" alt="Demo" loading="lazy">
 
 ## 🎯 Neden Git ID Switcher?
 
-Birçok Git kimlik değiştirici olmasına rağmen, **Git ID Switcher** diğerlerinin genellikle görmezden geldiği karmaşık sorunları çözer:
+Birçok Git profil değiştirici olmasına rağmen, **Git ID Switcher** diğerlerinin genellikle görmezden geldiği karmaşık sorunları çözer:
 
-1. **Alt Modül Kabusu**: Alt modülleri olan depolarla (Hugo temaları, vendor kütüphaneleri vb.) çalışırken, genellikle _her_ alt modül için `git config user.name`'i manuel olarak ayarlamanız gerekir. Bu eklenti, kimliğinizi tüm aktif alt modüllere özyinelemeli olarak uygulayarak bunu zarif bir şekilde çözer.
-2. **SSH ve GPG İşleme**: Sadece adınızı değiştirmez; aynı zamanda agent'taki SSH anahtarlarınızı değiştirir ve GPG imzalamayı yapılandırır, böylece asla yanlış imzayla commit yapmazsınız.
+1. **Alt Modül Kabusu**: Alt modülleri olan depolarla (Hugo temaları, vendor kütüphaneleri vb.) çalışırken, genellikle _her_ alt modül için `git config user.name`'i manuel olarak ayarlamanız gerekir. Bu eklenti, profilinizi tüm aktif alt modüllere özyinelemeli olarak uygulayarak bunu zarif bir şekilde çözer.
+2. **SSH ve GPG İşleme**: Sadece adınızı değiştirmez; aynı zamanda ssh-agent'taki SSH anahtarlarınızı değiştirir ve GPG imzalamayı yapılandırır, böylece asla yanlış imzayla commit yapmazsınız.
 
 ## Özellikler
 
-- **Alt Modül Desteği**: Kimliği Git alt modüllerine otomatik olarak yayın
+- **Profil Yönetimi UI**: settings.json'ı düzenlemeden profil ekleme, düzenleme, silme ve sıralama
+- **Tek Tıkla Profil Değiştirme**: Git user.name ve user.email'i anında değiştirin
+- **Durum Çubuğu Entegrasyonu**: Mevcut profilinizi her zaman bir bakışta görün
+- **Alt Modül Desteği**: Profili Git alt modüllerine otomatik olarak yayın
 - **SSH Anahtar Yönetimi**: ssh-agent'ta SSH anahtarlarını otomatik olarak değiştirin
 - **GPG İmzalama Desteği**: Commit imzalamak için GPG anahtarını yapılandırın (isteğe bağlı)
-- **Tek Tıkla Kimlik Değiştirme**: Git user.name ve user.email'i anında değiştirin
-- **Durum Çubuğu Entegrasyonu**: Mevcut kimliğinizi her zaman bir bakışta görün
-- **Zengin Araç İpuçları**: Açıklama ve SSH hostu içeren ayrıntılı kimlik bilgileri
+- **Zengin Araç İpuçları**: Açıklama ve SSH hostu içeren ayrıntılı profil bilgileri
 - **Çapraz Platform**: macOS, Linux ve Windows'ta çalışır
 - **Çok Dilli**: 17 dili destekler
 
@@ -55,7 +56,7 @@ Birçok Git kimlik değiştirici olmasına rağmen, **Git ID Switcher** diğerle
 > Sadece sayıca az oldukları için onları bir kenara atmak istemiyorum.
 > Çeviriler mükemmel olmasa bile, azınlık dillerini anlama ve saygı gösterme niyetimizi hissedeceğinizi umuyorum.
 
-Bu eklenti, VSCode'un desteklediği 17 dilin tamamını destekler. Ayrıca README belgeleri için azınlık dillerine ve hatta şaka dillerine çeviri yapmaya kendimizi zorluyoruz.
+Bu eklenti, VS Code'un desteklediği 17 dilin tamamını destekler. Ayrıca README belgeleri için azınlık dillerine ve hatta şaka dillerine çeviri yapmaya kendimizi zorluyoruz.
 
 Bu sadece "küresel destek" değil — "dilsel çeşitliliğe saygı"dır. Ve bu, dil engellerini aşarak dünyanın her yerinden geliştiricilerin dünyayı daha iyi yapan commitleri yaptığı bir altyapı haline gelirse mutlu olurum.
 
@@ -71,7 +72,7 @@ Kişisel hesap ve kurumsal hesap (Enterprise Managed User) yönetmek için tipik
 
 ```bash
 # Kişisel
-ssh-keygen -t ed25519 -C "deniz.yilmaz@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "deniz@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # İş
 ssh-keygen -t ed25519 -C "deniz.yilmaz@company.example.com" -f ~/.ssh/id_ed25519_work
@@ -103,106 +104,23 @@ Host github-work
 
 ### Adım 3: Eklentiyi Yapılandırın
 
-Eklenti ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın → "settings.json'da Düzenle"ye tıklayın:
+Kurulumdan hemen sonra örnek profiller hazır olarak gelir.
+Aşağıdaki kılavuzu izleyerek bunları kendi kullanımınıza göre düzenleyin.
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Deniz Yılmaz",
-      "email": "deniz.yilmaz@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Kişisel projeler",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal"
-    },
-    {
-      "id": "work",
-      "name": "Deniz Yılmaz",
-      "email": "deniz.yilmaz@company.example.com",
-      "service": "GitHub İş",
-      "icon": "💼",
-      "description": "İş hesabı",
-      "sshKeyPath": "~/.ssh/id_ed25519_work",
-      "sshHost": "github-work"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "personal",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/tr/first-ux.webp" width="600" alt="İlk kurulum adımları (13 adım): Durum çubuğundan profil yönetimini açın, düzenleyin ve yeni profil oluşturun" loading="lazy">
 
-### Adım 4: Kullanın
+> **Anahtar dosyası gönderilmez**: SSH anahtar yolu ayarlandığında, sadece anahtar dosyasının yolu (konumu) kaydedilir. Anahtar dosyasının içeriği asla yüklenmez veya harici bir yere gönderilmez.
 
-1. Durum çubuğundaki (sağ alt) kimlik simgesine tıklayın
-2. Bir kimlik seçin
-3. Tamam! Git yapılandırması ve SSH anahtarı değiştirildi.
+> **GPG imzalama kullanıyorsanız**: Profil düzenleme ekranında `gpgKeyId` de ayarlayabilirsiniz.
+> GPG anahtar ID'nizi bulmak için "[Sorun Giderme](#gpg-imzalama-çalışmıyor-mu)" bölümüne bakın.
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-tr.png" width="600" alt="Quick Pick">
-
-### SSH Host Takma Adlarını Kullanma
-
-Depoları klonlarken, kimliğinize karşılık gelen hostu kullanın:
-
-```bash
-# İş kimliği için (github-work takma adını kullanır)
-git clone git@github-work:company/repo.git
-
-# Kişisel kimlik için (varsayılan github.com kullanır)
-git clone git@github.com:dyilmaz/repo.git
-```
+> **İpucu**: Doğrudan settings.json'dan da yapılandırabilirsiniz.
+> Eklenti ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın → "settings.json'da Düzenle"ye tıklayın.
+> JSON formatında örnek için "[Tam Örnek](#tam-örnek-4-hesap-ve-ssh--gpg)" bölümüne bakın.
 
 ---
 
-## İsteğe Bağlı: GPG İmzalama
-
-Commitleri GPG ile imzalıyorsanız:
-
-### Adım 1: GPG Anahtar ID'nizi Bulun
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-Örnek çıktı:
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] Deniz Yılmaz <deniz.yilmaz@personal.example.com>
-```
-
-Anahtar ID'si `ABCD1234`'tür.
-
-### Adım 2: GPG Anahtarını Kimliğe Ekleyin
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Deniz Yılmaz",
-      "email": "deniz.yilmaz@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Kişisel projeler",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-Bu kimliğe geçtiğinizde, eklenti şunları ayarlar:
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
-
----
-
-## Tam Örnek: SSH + GPG ile 4 Hesap
+## Tam Örnek: 4 Hesap ve SSH + GPG
 
 Her şeyi birleştiren tam bir örnek:
 
@@ -216,7 +134,7 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# İş hesabı
+# İş hesabı (şirket tarafından verilen Enterprise Managed User)
 Host github-work
     HostName github.com
     User git
@@ -239,7 +157,7 @@ Host bitbucket.org
     {
       "id": "personal",
       "name": "Deniz Yılmaz",
-      "email": "deniz.yilmaz@personal.example.com",
+      "email": "deniz@personal.example.com",
       "service": "GitHub",
       "icon": "🏠",
       "description": "Kişisel projeler",
@@ -252,7 +170,7 @@ Host bitbucket.org
       "email": "deniz.yilmaz@company.example.com",
       "service": "GitHub İş",
       "icon": "💼",
-      "description": "İş hesabı",
+      "description": "Şirket geliştirme",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
@@ -260,7 +178,7 @@ Host bitbucket.org
     {
       "id": "bitbucket",
       "name": "Deniz Yılmaz",
-      "email": "deniz.yilmaz@bitbucket.example.com",
+      "email": "deniz@bitbucket.example.com",
       "service": "Bitbucket",
       "icon": "🪣",
       "description": "Bitbucket projeleri",
@@ -270,7 +188,7 @@ Host bitbucket.org
     {
       "id": "freelance",
       "name": "Deniz Yılmaz",
-      "email": "deniz.yilmaz@freelance.example.com",
+      "email": "deniz@freelance.example.com",
       "service": "GitLab",
       "icon": "🎯",
       "description": "Serbest projeler"
@@ -282,17 +200,39 @@ Host bitbucket.org
 }
 ```
 
-Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını değiştirir. Aynı GitLab hesabıyla farklı committer bilgileri kullanırken faydalıdır.
+Not: Son profil (`freelance`) SSH'sız — sadece Git yapılandırmasını değiştirir. Aynı GitHub hesabıyla farklı committer bilgileri kullanırken faydalıdır.
+
+---
+
+## Profil Yönetimi
+
+Durum çubuğuna tıklayın → Listenin altındaki "Profil Yönetimi"ni seçerek yönetim ekranını açın.
+Profil ekleme, düzenleme, silme ve sıralama işlemlerinin tümü doğrudan UI'dan yapılabilir.
+
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/tr/identity-management.webp" width="600" alt="Profil Yönetimi: Silme ve sıralama işlemleri kılavuzu" loading="lazy">
+
+Profilleri silmek için Komut Paleti'nden `Git ID Switcher: Delete Identity` komutunu da kullanabilirsiniz.
+
+---
+
+## Komutlar
+
+| Komut                                    | Açıklama                       |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | Profil seçiciyi aç             |
+| `Git ID Switcher: Delete Identity`       | Profil sil                     |
+| `Git ID Switcher: Show Current Identity` | Mevcut profil bilgisini göster |
+| `Git ID Switcher: Show Documentation`    | Belgeleri göster               |
 
 ---
 
 ## Yapılandırma Referansı
 
-### Kimlik Özellikleri
+### Profil Özellikleri
 
 | Özellik       | Gerekli | Açıklama                                                         |
 | ------------- | ------- | ---------------------------------------------------------------- |
-| `id`          | ✅      | Benzersiz tanımlayıcı (örn: `"work"`, `"personal"`)              |
+| `id`          | ✅      | Benzersiz tanımlayıcı (örn: `"personal"`, `"work"`)              |
 | `name`        | ✅      | Git user.name — commitlerde gösterilir                           |
 | `email`       | ✅      | Git user.email — commitlerde gösterilir                          |
 | `icon`        |         | Durum çubuğunda gösterilen emoji (örn: `"🏠"`). Sadece tek emoji |
@@ -309,22 +249,22 @@ Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını deği
 
 ### Genel Ayarlar
 
-| Ayar                                       | Varsayılan | Açıklama                                                                                  |
-| ------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | Örneğe bak | Kimlik yapılandırmaları listesi                                                           |
-| `gitIdSwitcher.defaultIdentity`            | Örneğe bak | Varsayılan kimlik ID'si                                                                   |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | SSH anahtarını otomatik değiştir                                                          |
-| `gitIdSwitcher.showNotifications`          | `true`     | Değiştirirken bildirim göster                                                             |
-| `gitIdSwitcher.applyToSubmodules`          | `true`     | Kimliği Git alt modüllerine uygula                                                        |
-| `gitIdSwitcher.submoduleDepth`             | `1`        | İç içe alt modüller için maks. derinlik (1-5)                                             |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Emoji ikonunu Git config `user.name`'e yaz                                                |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Denetim günlüğünü etkinleştir (kimlik değişiklikleri, SSH işlemleri, vb.)                 |
-| `gitIdSwitcher.logging.filePath`           | `""`       | Günlük dosyası yolu (örn.: `~/.git-id-switcher/security.log`). Boş = varsayılan konum     |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Döndürmeden önce maks. dosya boyutu (bayt, 1MB-100MB)                                     |
-| `gitIdSwitcher.logging.maxFiles`           | `5`        | Döndürülen günlük dosyası maks. sayısı (1-20)                                             |
-| `gitIdSwitcher.logging.level`              | `"INFO"`   | Günlük düzeyi: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Seçilen düzey ve üstünü kaydeder |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Etkinleştirildiğinde, günlüklerdeki tüm değerler maskelenir (maksimum gizlilik)           |
-| `gitIdSwitcher.commandTimeouts`            | `{}`       | Komut başına özel zaman aşımı (ms, 1sn-5dk). Örn.: `{"git": 15000, "ssh-add": 10000}`     |
+| Ayar                                       | Varsayılan | Açıklama                                                                                       |
+| ------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Örneğe bak | Profil yapılandırmaları listesi                                                                |
+| `gitIdSwitcher.defaultIdentity`            | Örneğe bak | Varsayılan profil ID'si                                                                        |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Profil değiştirildiğinde SSH anahtarını otomatik değiştir                                      |
+| `gitIdSwitcher.showNotifications`          | `true`     | Profil değiştirildiğinde bildirim göster                                                       |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Profili Git alt modüllerine uygula                                                             |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | İç içe alt modüller için maks. derinlik (1-5)                                                  |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Emoji ikonunu Git config `user.name`'e yaz                                                     |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Denetim günlüğünü dosyaya kaydet (profil değişiklikleri, SSH işlemleri vb.)                    |
+| `gitIdSwitcher.logging.filePath`           | `""`       | Günlük dosyası yolu (örn.: `~/.git-id-switcher/security.log`). Boş = varsayılan konum          |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Döndürmeden önce maks. dosya boyutu (bayt, 1MB-100MB)                                          |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | Döndürülen günlük dosyası maks. sayısı (1-20)                                                  |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Etkinleştirildiğinde, günlüklerdeki tüm değerler maskelenir (maksimum gizlilik)                |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | Günlük düzeyi (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Seçilen düzey ve üstünü kaydeder |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | Komut başına özel zaman aşımı (ms, 1sn-5dk). Örn.: `{"git": 15000, "ssh-add": 10000}`          |
 
 #### `includeIconInGitConfig` Hakkında
 
@@ -341,33 +281,6 @@ Not: Son kimlik (`freelance`) SSH'sız — sadece Git yapılandırmasını deği
 | ---------------------- | ---------------------- | ------------------------- |
 | `false`                | `Deniz Yılmaz`         | `Deniz Yılmaz <email>`    |
 | `true`                 | `👤 Deniz Yılmaz`      | `👤 Deniz Yılmaz <email>` |
-
-### Not: Temel Kurulum (SSH Olmadan)
-
-SSH anahtar değiştirmeye ihtiyacınız yoksa (örn., tek bir GitHub hesabıyla farklı committer bilgileri kullanma), minimal bir yapılandırma kullanabilirsiniz:
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Deniz Yılmaz",
-      "email": "deniz.yilmaz@personal.example.com",
-      "icon": "🏠",
-      "description": "Kişisel projeler"
-    },
-    {
-      "id": "work",
-      "name": "Deniz Yılmaz",
-      "email": "deniz.yilmaz@company.example.com",
-      "icon": "💼",
-      "description": "İş hesabı"
-    }
-  ]
-}
-```
-
-Bu kurulum sadece `git config user.name` ve `user.email`'i değiştirir.
 
 ---
 
@@ -389,13 +302,13 @@ Yerel (.git/config)  ← en yüksek öncelik
 
 Bu şu anlama gelir:
 
-- Kimliği her deponun `.git/config` dosyasına kaydeder
-- Her depo için farklı kimlikler tutulabilir
+- Profili her deponun `.git/config` dosyasına kaydeder
+- Her depo için farklı profiller tutulabilir
 - Global ayarlar (`~/.gitconfig`) değiştirilmez
 
-### Kimlik Değiştirme Davranışı
+### Profil Değiştirme Davranışı
 
-Kimlik değiştirirken, eklenti şunları yapar (sırayla):
+Profil değiştirirken, eklenti şunları yapar (sırayla):
 
 1. **Git Yapılandırması** (her zaman): `git config --local user.name` ve `user.email`'i ayarlar
 2. **SSH Anahtarı** (`sshKeyPath` ayarlanmışsa): Diğer anahtarları ssh-agent'tan kaldırır, seçileni ekler
@@ -407,13 +320,61 @@ Kimlik değiştirirken, eklenti şunları yapar (sırayla):
 Yerel yapılandırma depo seviyesinde çalıştığından, alt modüllere otomatik olarak uygulanmaz.
 Bu nedenle bu eklenti alt modüllere yayılım özelliği sağlar (detaylar için "Gelişmiş: Alt Modül Desteği"ne bakın).
 
+### SSH Anahtar Yönetimi Detayları
+
+Git ID Switcher, SSH anahtarlarını `ssh-agent` aracılığıyla yönetir:
+
+| İşlem           | Çalıştırılan Komut     |
+| --------------- | ---------------------- |
+| Anahtar ekle    | `ssh-add <keyPath>`    |
+| Anahtar sil     | `ssh-add -d <keyPath>` |
+| Anahtar listele | `ssh-add -l`           |
+
+**Önemli:** Bu eklenti `~/.ssh/config`'i **değiştirmez**. SSH yapılandırmasını manuel olarak ayarlamanız gerekir ("Hızlı Başlangıç" Adım 2'ye bakın).
+
+### Mevcut SSH Ayarlarıyla Etkileşim
+
+Zaten SSH ayarlarınız varsa, Git ID Switcher şu şekilde davranır:
+
+| Ayarlarınız                                 | Git ID Switcher Davranışı                                             |
+| ------------------------------------------- | --------------------------------------------------------------------- |
+| `~/.ssh/config`'de `IdentityFile` belirtili | Her ikisi de kullanılabilir; `IdentitiesOnly yes` ile çakışma önlenir |
+| `GIT_SSH_COMMAND` ortam değişkeni ayarlı    | Özel SSH komutu kullanılır; ssh-agent çalışmaya devam eder            |
+| `git config core.sshCommand` ayarlı         | Yukarıdakiyle aynı                                                    |
+| direnv ile SSH ortam değişkenleri ayarlı    | Birlikte çalışabilir; ssh-agent bağımsız çalışır                      |
+
+**Öneri:** SSH config'de her zaman `IdentitiesOnly yes` ayarlayın. Bu, SSH'ın birden fazla anahtar denemesini önler.
+
+### Neden `IdentitiesOnly yes`?
+
+Bu ayar olmadan, SSH şu sırayla anahtar deneyebilir:
+
+1. ssh-agent'a yüklenmiş anahtarlar (Git ID Switcher yönetir)
+2. `~/.ssh/config`'de belirtilen anahtarlar
+3. Varsayılan anahtarlar (`~/.ssh/id_rsa`, `~/.ssh/id_ed25519` vb.)
+
+Bu, kimlik doğrulama hatalarına veya istenmeyen anahtar kullanımına yol açabilir.
+
+`IdentitiesOnly yes` ayarlandığında, SSH **sadece belirtilen anahtarı** kullanır. Bu, Git ID Switcher'da ayarlanan anahtarın kesinlikle kullanılmasını sağlar.
+
+```ssh-config
+# Önerilen yapılandırma
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← Bu satır önemli
+```
+
+Bu yapılandırmayla, `github-work` hostuna bağlanırken sadece `~/.ssh/id_ed25519_work` kullanılır ve diğer anahtarlar denenmez.
+
 ---
 
 ## Gelişmiş: Alt Modül Desteği
 
-Git alt modülleri kullanan karmaşık depolar için kimlik yönetimi genellikle zahmetlidir. Bir alt modülde commit yaparsanız, Git o alt modülün yerel yapılandırmasını kullanır; açıkça ayarlanmamışsa global yapılandırmaya (yanlış e-posta!) geri dönebilir.
+Git alt modülleri kullanan karmaşık depolar için profil yönetimi genellikle zahmetlidir. Bir alt modülde commit yaparsanız, Git o alt modülün yerel yapılandırmasını kullanır; açıkça ayarlanmamışsa global yapılandırmaya (yanlış e-posta!) geri dönebilir.
 
-**Git ID Switcher** alt modülleri otomatik olarak algılar ve seçilen kimliği onlara uygular.
+**Git ID Switcher** alt modülleri otomatik olarak algılar ve seçilen profili onlara uygular.
 
 ```json
 {
@@ -427,7 +388,7 @@ Git alt modülleri kullanan karmaşık depolar için kimlik yönetimi genellikle
   - `1`: Sadece doğrudan alt modüller (en yaygın)
   - `2+`: İç içe alt modüller (alt modüller içindeki alt modüller)
 
-Bu, ana depoda veya vendor kütüphanesinde commit yapsanız da kimliğinizin her zaman doğru olmasını sağlar.
+Bu, ana depoda veya vendor kütüphanesinde commit yapsanız da profilinizin her zaman doğru olmasını sağlar.
 
 ---
 
@@ -453,7 +414,21 @@ Bu, ana depoda veya vendor kütüphanesinde commit yapsanız da kimliğinizin he
    ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
-### Push'ta yanlış kimlik mi?
+### Push'ta yanlış profil mi?
+
+**Yeni klonlama:**
+
+İş depolarını klonlarken, SSH config'de ayarlanan host takma adını kullanın:
+
+```bash
+# İş için (github-work takma adını kullanır)
+git clone git@github-work:company/repo.git
+
+# Kişisel için (varsayılan github.com kullanır)
+git clone git@github.com:yourname/repo.git
+```
+
+**Mevcut depolar için:**
 
 1. Uzak URL'nin doğru host takma adını kullandığını kontrol edin:
 
@@ -482,9 +457,9 @@ Bu, ana depoda veya vendor kütüphanesinde commit yapsanız da kimliğinizin he
    echo "test" | gpg --clearsign
    ```
 
-3. Kimliğinizdeki e-postanın GPG anahtarının e-postasıyla eşleştiğinden emin olun.
+3. Profilinizdeki e-postanın GPG anahtarının e-postasıyla eşleştiğinden emin olun
 
-### Kimlik algılanmadı mı?
+### Profil algılanmadı mı?
 
 - Bir Git deposunda olduğunuzdan emin olun
 - `settings.json`'da sözdizimi hatası olup olmadığını kontrol edin
@@ -529,27 +504,17 @@ Geçmişte boş ayarlar kaydettiyseniz, bu ayarlar buluta senkronize edilmiş ve
 
 ---
 
-## Komutlar
-
-| Komut                                    | Açıklama                       |
-| ---------------------------------------- | ------------------------------ |
-| `Git ID Switcher: Select Identity`       | Kimlik seçiciyi aç             |
-| `Git ID Switcher: Show Current Identity` | Mevcut kimlik bilgisini göster |
-| `Git ID Switcher: Show Documentation`    | Belgeleri göster               |
-
----
-
 ## Tasarım Felsefesi
 
-> "Ben kimim?" — Bu uzantının yanıtladığı tek soru.
+> **"Ben kimim"i değiştirmek** — Bu eklentinin yanıtladığı tek soru
 
-**Karesansui Mimarisi** üzerine inşa edilmiştir: basit bir çekirdek (100 satır),
-kasıtlı kalite (90% kapsama, loglama, zaman aşımları) ve
-bilinçli kısıtlamalarla (GitHub API yok, token yönetimi yok) çevrili.
+**Karesansui Mimarisi** üzerine inşa edilmiştir. Çekirdek 100 satırda yazılabilecek kadar basittir.
+Bu sayede geriye kalan kısım kaliteye (90% test, günlükleme, zaman aşımları) ve
+bilinçli kısıtlamalara (GitHub API yok, token yönetimi yok) ayrılabilir.
 
 [![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
 
-[Tam felsefeyi oku](../../DESIGN_PHILOSOPHY.md)
+[Tam tasarım felsefesini oku](../../DESIGN_PHILOSOPHY.md)
 
 ---
 
