@@ -6,7 +6,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      Přepínejte mezi více Git identitami jedním kliknutím. Spravujte více GitHub účtů, SSH klíče, GPG podepisování a <b>automaticky aplikujte identitu na Git submoduly</b>.
+      Přepínejte mezi více Git profily jedním kliknutím. Spravujte více GitHub účtů, SSH klíče, GPG podepisování a <b>automaticky aplikujte profil na Git submoduly</b>.
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -29,22 +29,23 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-cs.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/cs/demo.webp" width="600" alt="Demo" loading="lazy">
 
 ## 🎯 Proč Git ID Switcher?
 
-I když existuje mnoho nástrojů pro přepínání Git identity, **Git ID Switcher** řeší složité problémy, které jiné často ignorují:
+I když existuje mnoho nástrojů pro přepínání Git profilů, **Git ID Switcher** řeší složité problémy, které jiné často ignorují:
 
-1. **Noční můra submodulů**: Při práci s repozitáři obsahujícími submoduly (Hugo témata, vendor knihovny atd.) je obvykle nutné ručně nastavit `git config user.name` pro _každý_ submodul. Toto rozšíření to elegantně řeší rekurzivní aplikací vaší identity na všechny aktivní submoduly.
-2. **Zpracování SSH a GPG**: Nemění jen vaše jméno; také vyměňuje SSH klíče v agentovi a konfiguruje GPG podepisování, takže nikdy neuděláte commit s nesprávným podpisem.
+1. **Noční můra submodulů**: Při práci s repozitáři obsahujícími submoduly (Hugo témata, vendor knihovny atd.) je obvykle nutné ručně nastavit `git config user.name` pro _každý_ submodul. Toto rozšíření to elegantně řeší rekurzivní aplikací vašeho profilu na všechny aktivní submoduly.
+2. **Zpracování SSH & GPG**: Nemění jen vaše jméno — také vyměňuje SSH klíče v agentovi a konfiguruje GPG podepisování, takže nikdy neuděláte commit s nesprávným podpisem.
 
 ## Funkce
 
-- **Podpora submodulů**: Automatická propagace identity do Git submodulů
+- **UI pro správu profilů**: Přidávejte, upravujte, mažte a přeřazujte profily bez úpravy settings.json
+- **Přepnutí profilu jedním klikem**: Okamžitá změna Git user.name a user.email
+- **Integrace do stavového řádku**: Vždy vidíte aktuální profil
+- **Podpora submodulů**: Automatická propagace profilu do Git submodulů
 - **Správa SSH klíčů**: Automatické přepínání SSH klíčů v ssh-agent
 - **Podpora GPG podepisování**: Konfigurace GPG klíče pro podepisování commitů (volitelné)
-- **Přepnutí identity jedním klikem**: Okamžitá změna Git user.name a user.email
-- **Integrace do stavového řádku**: Vždy vidíte aktuální identitu
 - **Podrobné nápovědy**: Kompletní informace s popisem a SSH hostem
 - **Multiplatformní**: Funguje na macOS, Linux a Windows
 - **Vícejazyčný**: Podporuje 17 jazyků
@@ -55,7 +56,7 @@ I když existuje mnoho nástrojů pro přepínání Git identity, **Git ID Switc
 > Nechci je zavrhnout jen proto, že jich je málo.
 > I když překlady nejsou dokonalé, doufám, že pocítíte náš záměr porozumět a projevit respekt menšinovým jazykům.
 
-Toto rozšíření podporuje všech 17 jazyků, které podporuje VSCode. Navíc se u README dokumentace pokoušíme překládat do menšinových jazyků a dokonce i vtipných jazyků.
+Toto rozšíření podporuje všech 17 jazyků, které podporuje VS Code. Navíc se u README dokumentace pokoušíme překládat do menšinových jazyků a dokonce i vtipných jazyků.
 
 To není jen „globální podpora" — je to „respekt k jazykové rozmanitosti". A budu rád, když se to stane infrastrukturou, kde commity zlepšující svět přicházejí od vývojářů odkudkoli, překonávajících jazykové bariéry.
 
@@ -103,107 +104,25 @@ Host github-work
 
 ### Krok 3: Nakonfigurujte rozšíření
 
-Otevřete nastavení rozšíření (`Cmd+,` / `Ctrl+,`) → hledejte "Git ID Switcher" → klikněte na "Upravit v settings.json":
+Po instalaci jsou připraveny ukázkové profily.
+Postupujte podle níže uvedeného průvodce a upravte je podle svých potřeb.
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Alex Novák",
-      "email": "alex.novak@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Osobní projekty",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal"
-    },
-    {
-      "id": "work",
-      "name": "Alex Novák",
-      "email": "alex.novak@company.example.com",
-      "service": "GitHub Práce",
-      "icon": "💼",
-      "description": "Pracovní účet",
-      "sshKeyPath": "~/.ssh/id_ed25519_work",
-      "sshHost": "github-work"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "personal",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/cs/first-ux.webp" width="600" alt="Průvodce prvním nastavením (13 kroků): Otevřete správu profilů ze stavového řádku, upravte a vytvořte nové" loading="lazy">
 
-### Krok 4: Používejte
+> **Soubory klíčů se neodesílají**: Při nastavení cesty k SSH klíči se zaznamenává pouze cesta (umístění) k souboru klíče. Obsah souboru klíče nebude nikdy nahrán nebo odeslán externě.
 
-1. Klikněte na ikonu identity ve stavovém řádku (vpravo dole)
-2. Vyberte identitu
-3. Hotovo! Git konfigurace a SSH klíč jsou přepnuty.
+> **Pokud používáte GPG podepisování**: Můžete také nastavit `gpgKeyId` na obrazovce úprav profilu.
+> Informace o nalezení ID GPG klíče viz „[Řešení problémů](#gpg-podepisování-nefunguje)".
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-cs.png" width="600" alt="Quick Pick">
-
-### Používání SSH host aliasů
-
-Při klonování repozitářů použijte host odpovídající vaší identitě:
-
-```bash
-# Pro pracovní identitu (používá alias github-work)
-git clone git@github-work:company/repo.git
-
-# Pro osobní identitu (používá výchozí github.com)
-git clone git@github.com:anovak/repo.git
-```
+> **Tip**: Můžete také konfigurovat přímo v settings.json.
+> Otevřete nastavení rozšíření (`Cmd+,` / `Ctrl+,`) → vyhledejte „Git ID Switcher" → klikněte na „Upravit v settings.json".
+> Příklad konfigurace ve formátu JSON viz „[Kompletní příklad konfigurace](#kompletní-příklad-konfigurace-4-účty-s-ssh--gpg)".
 
 ---
 
-## Volitelné: GPG podepisování
+## Kompletní příklad konfigurace: 4 účty s SSH + GPG
 
-Pokud podepisujete commity pomocí GPG:
-
-### Krok 1: Najděte ID vašeho GPG klíče
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-Příklad výstupu:
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] Alex Novák <alex.novak@personal.example.com>
-```
-
-ID klíče je `ABCD1234`.
-
-### Krok 2: Přidejte GPG klíč k identitě
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Alex Novák",
-      "email": "alex.novak@personal.example.com",
-      "icon": "🏠",
-      "description": "Osobní projekty",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-Při přepnutí na tuto identitu rozšíření nastaví:
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
-
----
-
-## Kompletní příklad: 4 účty s SSH + GPG
-
-Zde je kompletní příklad kombinující vše:
+Kompletní příklad kombinující vše:
 
 ### SSH konfigurace (`~/.ssh/config`)
 
@@ -281,17 +200,39 @@ Host bitbucket.org
 }
 ```
 
-Poznámka: Poslední identita (`freelance`) nemá SSH — pouze přepíná Git konfiguraci. To je užitečné při použití různých committer informací se stejným GitLab účtem.
+Poznámka: Poslední profil (`freelance`) nemá SSH. Pokud používáte různé informace o committerovi se stejným GitHub účtem atd., můžete také přepínat pouze Git config.
+
+---
+
+## Správa profilů
+
+Klikněte na stavový řádek → „Správa profilů" ve spodní části seznamu pro otevření obrazovky správy.
+Přidávání, úpravy, mazání a přeřazování profilů lze provádět přímo z UI.
+
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/cs/identity-management.webp" width="600" alt="Správa profilů: Průvodce operacemi mazání a přeřazování" loading="lazy">
+
+Profily můžete také mazat z palety příkazů pomocí `Git ID Switcher: Delete Identity`.
+
+---
+
+## Příkazy
+
+| Příkaz                                   | Popis                             |
+| ---------------------------------------- | --------------------------------- |
+| `Git ID Switcher: Select Identity`       | Otevřít výběr profilu             |
+| `Git ID Switcher: Delete Identity`       | Smazat profil                     |
+| `Git ID Switcher: Show Current Identity` | Zobrazit info o aktuálním profilu |
+| `Git ID Switcher: Show Documentation`    | Zobrazit dokumentaci              |
 
 ---
 
 ## Reference konfigurace
 
-### Vlastnosti identity
+### Vlastnosti profilu
 
 | Vlastnost     | Povinná | Popis                                                                       |
 | ------------- | ------- | --------------------------------------------------------------------------- |
-| `id`          | ✅      | Jedinečný identifikátor (např.: `"work"`, `"personal"`)                     |
+| `id`          | ✅      | Jedinečný identifikátor (např.: `"personal"`, `"work"`)                     |
 | `name`        | ✅      | Git user.name — zobrazeno v commitech                                       |
 | `email`       | ✅      | Git user.email — zobrazeno v commitech                                      |
 | `icon`        |         | Emoji ve stavovém řádku (např.: `"🏠"`). Pouze jedno emoji                  |
@@ -308,22 +249,22 @@ Poznámka: Poslední identita (`freelance`) nemá SSH — pouze přepíná Git k
 
 ### Globální nastavení
 
-| Nastavení                                  | Výchozí     | Popis                                                                                          |
-| ------------------------------------------ | ----------- | ---------------------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | Viz příklad | Seznam konfigurací identit                                                                     |
-| `gitIdSwitcher.defaultIdentity`            | Viz příklad | ID výchozí identity                                                                            |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | Automaticky přepínat SSH klíč                                                                  |
-| `gitIdSwitcher.showNotifications`          | `true`      | Zobrazit oznámení při přepnutí                                                                 |
-| `gitIdSwitcher.applyToSubmodules`          | `true`      | Aplikovat identitu na Git submoduly                                                            |
-| `gitIdSwitcher.submoduleDepth`             | `1`         | Max. hloubka pro vnořené submoduly (1-5)                                                       |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Zahrnout emoji ikonu do Git config `user.name`                                                 |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`     | Zapnout auditní logování (změny identity, operace SSH, atd.)                                   |
-| `gitIdSwitcher.logging.filePath`           | `""`        | Cesta k souboru logu (např.: `~/.git-id-switcher/security.log`). Prázdné = výchozí umístění    |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Max. velikost souboru před rotací (bajty, 1MB-100MB)                                           |
-| `gitIdSwitcher.logging.maxFiles`           | `5`         | Max. počet rotovaných log souborů (1-20)                                                       |
-| `gitIdSwitcher.logging.level`              | `"INFO"`    | Úroveň logování: `DEBUG`/`INFO`/`WARN`/`ERROR`/`SECURITY`. Zaznamenává vybranou úroveň a vyšší |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | Pokud je povoleno, všechny hodnoty jsou v protokolech maskovány (maximální soukromí)           |
-| `gitIdSwitcher.commandTimeouts`            | `{}`        | Vlastní timeout pro příkaz (ms, 1sek-5min). Např.: `{"git": 15000, "ssh-add": 10000}`          |
+| Nastavení                                  | Výchozí     | Popis                                                                                        |
+| ------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Viz příklad | Seznam konfigurací profilů                                                                   |
+| `gitIdSwitcher.defaultIdentity`            | Viz příklad | ID výchozího profilu                                                                         |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | Automaticky přepínat SSH klíč při změně profilu                                              |
+| `gitIdSwitcher.showNotifications`          | `true`      | Zobrazit oznámení při přepnutí profilu                                                       |
+| `gitIdSwitcher.applyToSubmodules`          | `true`      | Aplikovat profil na Git submoduly                                                            |
+| `gitIdSwitcher.submoduleDepth`             | `1`         | Maximální hloubka pro vnořené submoduly (1-5)                                                |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Zahrnout emoji ikonu do Git config `user.name`                                               |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`     | Zapnout auditní logování (změny profilu, operace SSH atd.)                                   |
+| `gitIdSwitcher.logging.filePath`           | `""`        | Cesta k souboru logu (např.: `~/.git-id-switcher/security.log`). Prázdné = výchozí umístění  |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Maximální velikost souboru před rotací (bajty, 1MB-100MB)                                    |
+| `gitIdSwitcher.logging.maxFiles`           | `5`         | Maximální počet rotovaných log souborů (1-20)                                                |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | Pokud je povoleno, všechny hodnoty jsou v protokolech maskovány (maximální soukromí)         |
+| `gitIdSwitcher.logging.level`              | `"INFO"`    | Úroveň logování (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Zaznamenává vybranou a vyšší |
+| `gitIdSwitcher.commandTimeouts`            | `{}`        | Vlastní timeout pro příkaz (ms, 1sek-5min). Např.: `{"git": 15000, "ssh-add": 10000}`        |
 
 #### O nastavení `includeIconInGitConfig`
 
@@ -340,33 +281,6 @@ Příklad: `icon: "👤"`, `name: "Alex Novák"`
 | ---------------------- | ---------------------- | ----------------------- |
 | `false`                | `Alex Novák`           | `Alex Novák <email>`    |
 | `true`                 | `👤 Alex Novák`        | `👤 Alex Novák <email>` |
-
-### Poznámka: Základní nastavení (bez SSH)
-
-Pokud nepotřebujete přepínat SSH klíče (např. při použití různých committer informací s jedním GitHub účtem), můžete použít minimální konfiguraci:
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Alex Novák",
-      "email": "alex.novak@personal.example.com",
-      "icon": "🏠",
-      "description": "Osobní projekty"
-    },
-    {
-      "id": "work",
-      "name": "Alex Novák",
-      "email": "alex.novak@company.example.com",
-      "icon": "💼",
-      "description": "Pracovní účet"
-    }
-  ]
-}
-```
-
-Toto nastavení pouze přepíná `git config user.name` a `user.email`.
 
 ---
 
@@ -388,13 +302,13 @@ Lokální (.git/config)  ← nejvyšší priorita
 
 To znamená:
 
-- Identita je uložena v `.git/config` každého repozitáře
-- Lze udržovat různé identity pro každý repozitář
+- Profil je uložen v `.git/config` každého repozitáře
+- Lze udržovat různé profily pro každý repozitář
 - Globální nastavení (`~/.gitconfig`) se nemění
 
-### Chování při přepnutí identity
+### Chování při přepnutí profilu
 
-Při přepnutí identity rozšíření provede (v pořadí):
+Při přepnutí profilu rozšíření provede (v pořadí):
 
 1. **Git konfigurace** (vždy): Nastaví `git config --local user.name` a `user.email`
 2. **SSH klíč** (pokud je nastaven `sshKeyPath`): Odstraní ostatní klíče z ssh-agent, přidá vybraný
@@ -406,13 +320,61 @@ Při přepnutí identity rozšíření provede (v pořadí):
 Lokální nastavení jsou specifická pro repozitář, takže se automaticky neaplikují na submoduly.
 Proto toto rozšíření poskytuje funkci propagace do submodulů (podrobnosti viz „Pokročilé: Podpora submodulů").
 
+### Podrobnosti správy SSH klíčů
+
+Git ID Switcher spravuje SSH klíče prostřednictvím `ssh-agent`:
+
+| Operace        | Prováděný příkaz       |
+| -------------- | ---------------------- |
+| Přidání klíče  | `ssh-add <keyPath>`    |
+| Odebrání klíče | `ssh-add -d <keyPath>` |
+| Seznam klíčů   | `ssh-add -l`           |
+
+**Důležité:** Toto rozšíření **nemodifikuje** `~/.ssh/config`. Konfiguraci SSH musíte nastavit ručně (viz „Krok 2" v Rychlém startu).
+
+### Interakce s existující SSH konfigurací
+
+Pokud již máte konfiguraci SSH, Git ID Switcher funguje následovně:
+
+| Vaše nastavení                                          | Chování Git ID Switcheru                                  |
+| ------------------------------------------------------- | --------------------------------------------------------- |
+| `IdentityFile` specifikován v `~/.ssh/config`           | Oba lze použít; `IdentitiesOnly yes` zabraňuje konfliktům |
+| Nastavena proměnná prostředí `GIT_SSH_COMMAND`          | Použije se vlastní SSH příkaz; ssh-agent nadále funguje   |
+| Nastaven `git config core.sshCommand`                   | Stejné jako výše                                          |
+| Proměnné prostředí související s SSH nastaveny v direnv | Koexistuje; ssh-agent funguje nezávisle                   |
+
+**Doporučeno:** Vždy nastavte `IdentitiesOnly yes` v SSH configu. Tím se zabrání, aby SSH zkoušelo více klíčů.
+
+### Proč `IdentitiesOnly yes`?
+
+Bez tohoto nastavení může SSH zkoušet klíče v tomto pořadí:
+
+1. Klíče načtené v ssh-agent (spravované Git ID Switcherem)
+2. Klíče specifikované v `~/.ssh/config`
+3. Výchozí klíče (`~/.ssh/id_rsa`, `~/.ssh/id_ed25519` atd.)
+
+To může vést k selhání autentizace nebo použití nesprávného klíče.
+
+Nastavením `IdentitiesOnly yes` bude SSH používat **pouze specifikovaný klíč**. Tím se zajistí, že se použije klíč nastavený v Git ID Switcheru.
+
+```ssh-config
+# Doporučená konfigurace
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← Tento řádek je důležitý
+```
+
+S tímto nastavením bude při připojení k hostu `github-work` použit pouze `~/.ssh/id_ed25519_work` a žádné jiné klíče se nezkoušejí.
+
 ---
 
 ## Pokročilé: Podpora submodulů
 
-Pro složité repozitáře používající Git submoduly je správa identity často problematická. Pokud uděláte commit v submodulu, Git použije lokální konfiguraci tohoto submodulu, která může použít globální konfiguraci (špatný email!), pokud není explicitně nastavena.
+Pro složité repozitáře používající Git submoduly je správa profilů často problematická. Pokud uděláte commit v submodulu, Git použije lokální konfiguraci tohoto submodulu, která může použít globální konfiguraci (špatný email!), pokud není explicitně nastavena.
 
-**Git ID Switcher** automaticky detekuje submoduly a aplikuje na ně vybranou identitu.
+**Git ID Switcher** automaticky detekuje submoduly a aplikuje na ně vybraný profil.
 
 ```json
 {
@@ -426,7 +388,7 @@ Pro složité repozitáře používající Git submoduly je správa identity ča
   - `1`: Pouze přímé submoduly (nejběžnější)
   - `2+`: Vnořené submoduly (submoduly v submodulech)
 
-To zajišťuje, že vaše identita je vždy správná, ať už děláte commit v hlavním repozitáři nebo ve vendor knihovně.
+To zajišťuje, že váš profil je vždy správný, ať už děláte commit v hlavním repozitáři nebo ve vendor knihovně.
 
 ---
 
@@ -452,7 +414,21 @@ To zajišťuje, že vaše identita je vždy správná, ať už děláte commit v
    ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
-### Špatná identita při push?
+### Špatný profil při push?
+
+**Při novém klonování:**
+
+Při klonování pracovních repozitářů použijte host alias nastavený v SSH configu:
+
+```bash
+# Pracovní (používá alias github-work)
+git clone git@github-work:company/repo.git
+
+# Osobní (používá výchozí github.com)
+git clone git@github.com:yourname/repo.git
+```
+
+**Pro existující repozitáře:**
 
 1. Zkontrolujte, že vzdálená URL používá správný host alias:
 
@@ -481,13 +457,13 @@ To zajišťuje, že vaše identita je vždy správná, ať už děláte commit v
    echo "test" | gpg --clearsign
    ```
 
-3. Ujistěte se, že email ve vaší identitě odpovídá emailu GPG klíče.
+3. Ujistěte se, že email v profilu odpovídá emailu GPG klíče
 
-### Identita není detekována?
+### Profil není detekován?
 
 - Ujistěte se, že jste v Git repozitáři
 - Zkontrolujte, že `settings.json` nemá syntaktické chyby
-- Znovu načtěte okno VS Code (`Cmd+Shift+P` → "Znovu načíst okno")
+- Znovu načtěte okno VS Code (`Cmd+Shift+P` → „Znovu načíst okno")
 
 ### Chyba v poli `name`?
 
@@ -495,7 +471,7 @@ Následující znaky v poli `name` způsobí chybu:
 
 `` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
 
-Pokud chcete zahrnout informace o službě, použijte pole `service`.
+Pokud chcete zahrnout název služby, použijte pole `service`.
 
 ```jsonc
 // NG
@@ -514,7 +490,7 @@ Po aktualizaci rozšíření se nová nastavení nemusí zobrazit v rozhraní na
 
 Editory založené na VS Code ukládají do mezipaměti schémata nastavení v paměti a „Znovu načíst okno" nebo přeinstalace rozšíření nemusí stačit k jejich obnovení.
 
-### Výchozí hodnoty jsou prázdné?
+### Výchozí hodnoty (identities atd.) jsou prázdné?
 
 Pokud se ukázková nastavení nezobrazují ani po čisté instalaci, příčinou může být **Settings Sync**.
 
@@ -528,23 +504,13 @@ Pokud jste dříve uložili prázdná nastavení, mohla být synchronizována do
 
 ---
 
-## Příkazy
-
-| Příkaz                                   | Popis                             |
-| ---------------------------------------- | --------------------------------- |
-| `Git ID Switcher: Select Identity`       | Otevřít výběr identity            |
-| `Git ID Switcher: Show Current Identity` | Zobrazit info o aktuální identitě |
-| `Git ID Switcher: Show Documentation`    | Zobrazit dokumentaci              |
-
----
-
 ## Filozofie návrhu
 
-> "Kdo jsem?" — Jediná otázka, na kterou toto rozšíření odpovídá.
+> **„Kdo jsem?" — Jediná otázka, na kterou toto rozšíření odpovídá**
 
-Postaveno na **Architektuře Karesansui**: jednoduché jádro (100 řádků),
-obklopené záměrnou kvalitou (90% pokrytí, logování, timeouty)
-a vědomými omezeními (žádné GitHub API, žádná správa tokenů).
+Postaveno na **Architektuře Karesansui**: jednoduché jádro (100 řádků).
+Proto zbývá prostor pro kvalitu (90% pokrytí testy, logování, timeouty)
+a záměrná omezení (žádné GitHub API, žádná správa tokenů).
 
 [![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
 
