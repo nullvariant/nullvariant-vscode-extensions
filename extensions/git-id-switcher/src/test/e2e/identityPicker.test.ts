@@ -380,7 +380,7 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
   });
 
   describe('Title and Placeholder', () => {
-    it('should set title to Select Identity', async () => {
+    it('should set title to Select an identity', async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
         selectedIdentity: TEST_IDENTITIES.work,
@@ -390,7 +390,7 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
       await showIdentityQuickPick();
 
       const title = mockVSCode._getCapturedTitle();
-      assert.ok(title.includes('Select Identity'), 'Title should be "Select Identity"');
+      assert.ok(title.includes('Select an identity'), 'Title should be "Select an identity"');
     });
 
     it('should set correct placeholder', async () => {
