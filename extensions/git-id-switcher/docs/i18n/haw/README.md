@@ -49,23 +49,24 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-haw.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/haw/demo.webp" width="600" alt="Demo" loading="lazy">
 
 ## 🎯 No ke aha kēia Extension?
 
 ʻOiai he nui nā mea hoʻololi ID Git, hoʻoponopono ʻo **Git ID Switcher** i nā pilikia paʻakikī:
 
-1. **Pilikia Submodule**: I ka hana ʻana me nā repository me nā submodule, pono e hoʻonohonoho lima i ka `git config user.name` no _kēlā me kēia_ submodule. Hoʻoponopono kēia extension i kēia pilikia ma ka hoʻopili ʻana i ka ID i nā submodule āpau.
-2. **SSH & GPG**: ʻAʻole wale e hoʻololi i ka inoa; e hoʻololi i nā kī SSH ma ka agent a hoʻonohonoho i ke kākau inoa GPG.
+1. **Pilikia Submodule**: I ka hana ʻana me nā repository me nā submodule (e laʻa, Hugo themes, vendor libraries), pono e hoʻonohonoho lima i ka `git config user.name` no _kēlā me kēia_ submodule. Hoʻoponopono kēia extension i kēia pilikia ma ka hoʻopili ʻana i ka ID i nā submodule āpau.
+2. **SSH & GPG**: ʻAʻole wale e hoʻololi i ka inoa; e hoʻololi i nā kī SSH ma ka agent a hoʻonohonoho i ke kākau inoa GPG, no laila ʻaʻole hiki ke commit me ke kākau inoa hewa.
 
-## Nā Hiʻohiʻona (Features)
+## Nā Hiʻohiʻona
 
+- **UI Hoʻoponopono ID**: Hiki ke hoʻohui, hoʻoponopono, holoi, a hoʻonohonoho i nā ID me ʻole ka hoʻoponopono ʻana i settings.json
+- **Hoʻololi ID me ke Kaomi Hoʻokahi**: E hoʻololi wikiwiki i ka Git user.name a me user.email
+- **Hoʻohui Pahu Status**: E ʻike mau i kou ID i kēia manawa
 - **Kākoʻo Submodule**: E hoʻopili ʻia ka ID i nā Git submodule
 - **Hoʻoponopono Kī SSH**: E hoʻololi ʻia nā kī SSH ma ka ssh-agent
 - **Kākoʻo GPG**: E hoʻonohonoho i ke kī GPG no ke kākau inoa commit (koho)
-- **Hoʻololi ID me ke Kaomi Hoʻokahi**: E hoʻololi i ka Git user.name a me user.email me ka wikiwiki
-- **Pahu Status**: E ʻike mau i kou ID i kēia manawa
-- **Nā Tooltip Nui**: Nā ʻike kikoʻī e pili ana i ka ID
+- **Nā Tooltip Nui**: Nā ʻike kikoʻī e pili ana i ka ID me ka wehewehe a me ka SSH host
 - **Nā Kahua Āpau**: Hana ma macOS, Linux, a me Windows
 - **Nā ʻŌlelo He Nui**: Kākoʻo i 17 ʻōlelo
 
@@ -75,13 +76,13 @@
 > ʻAʻole makemake wau e haʻalele iā lākou no ka mea he liʻiliʻi.
 > ʻOiai ʻaʻole hiki ke unuhi hemolele, manaʻolana wau e hoʻomaopopo ʻoukou i koʻu manaʻo e hoʻomaikaʻi a hoʻohanohano i nā ʻōlelo liʻiliʻi.
 
-Kākoʻo kēia extension i nā ʻōlelo 17 āpau a VSCode e kākoʻo ai. Eia kekahi, no ka palapala README, hoʻāʻo mākou e unuhi i nā ʻōlelo liʻiliʻi a me nā ʻōlelo hoʻomākeʻaka.
+Kākoʻo kēia extension i nā ʻōlelo 17 āpau a VS Code e kākoʻo ai. Eia kekahi, no ka palapala README, hoʻāʻo mākou e unuhi i nā ʻōlelo liʻiliʻi a me nā ʻōlelo hoʻomākeʻaka.
 
-ʻAʻole kēia he "kākoʻo honua" wale nō - ʻo ia ka "hoʻohanohano i ka ʻokoʻa o nā ʻōlelo."
+ʻAʻole kēia he "kākoʻo honua" wale nō—ʻo ia ka "hoʻohanohano i ka ʻokoʻa o nā ʻōlelo." A ma waena o nā ʻōlelo, manaʻo wau e hana nā mea hoʻomohala mai nā wahi āpau i nā commit e hoʻomaikaʻi i ka honua... makemake wau e lilo kēia i kēia ʻano infrastructure.
 
 ---
 
-## Hoʻomaka Wikiwiki (Quick Start)
+## Hoʻomaka Wikiwiki
 
 He hoʻonohonoho maʻamau no ka hoʻoponopono ʻana i ka moʻokāki pilikino a me ka moʻokāki hui (Enterprise Managed User).
 
@@ -90,11 +91,11 @@ He hoʻonohonoho maʻamau no ka hoʻoponopono ʻana i ka moʻokāki pilikino a m
 E hana mua i nā kī SSH no kēlā me kēia moʻokāki (e lele inā loaʻa):
 
 ```bash
-# Pilikino (Personal)
+# Pilikino
 ssh-keygen -t ed25519 -C "kai@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
-# Hana (Work)
-ssh-keygen -t ed25519 -C "kai@company.example.com" -f ~/.ssh/id_ed25519_work
+# Hana
+ssh-keygen -t ed25519 -C "kai.kalani@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 E hoʻopaʻa i ke **kī lehulehu** (`.pub` faila) o kēlā me kēia kī i ka moʻokāki GitHub pili.
@@ -106,14 +107,14 @@ E hoʻopaʻa i ke **kī lehulehu** (`.pub` faila) o kēlā me kēia kī i ka mo�
 E hoʻoponopono i `~/.ssh/config`:
 
 ```ssh-config
-# Moʻokāki Pilikino
+# Moʻokāki Pilikino (paʻamau)
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Moʻokāki Hana
+# Moʻokāki Hana (Enterprise Managed User)
 Host github-work
     HostName github.com
     User git
@@ -123,102 +124,19 @@ Host github-work
 
 ### Pae 3: E Hoʻonohonoho i ka Extension
 
-E wehe i nā hoʻonohonoho extension (`Cmd+,` / `Ctrl+,`) → E huli "Git ID Switcher" → E kaomi "Hoʻoponopono ma settings.json":
+Ma ka hoʻouka ʻana, loaʻa nā ID laʻana.
+E hahai i kēia alakaʻi e hoʻoponopono iā lākou no kou hoʻohana ʻana.
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Kai Kalani",
-      "email": "kai@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Nā papahana pilikino",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal"
-    },
-    {
-      "id": "work",
-      "name": "Kai Kalani",
-      "email": "kai@company.example.com",
-      "service": "GitHub Hana",
-      "icon": "💼",
-      "description": "Hana hui",
-      "sshKeyPath": "~/.ssh/id_ed25519_work",
-      "sshHost": "github-work"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "personal",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/haw/first-ux.webp" width="600" alt="Hoʻomaka mua (13 pae): E wehe i ka hoʻoponopono ID mai ka pahu status, e hoʻoponopono a hana i nā ID hou" loading="lazy">
 
-### Pae 4: E Hoʻohana!
+> **ʻAʻole hoʻouna ʻia nā faila kī**: I ka hoʻonohonoho ʻana i ke ala kī SSH, mālama wale ʻia ke ala (ka wahi). ʻAʻole e hoʻouka a hoʻouna ʻia ka ʻike o ka faila kī i kekahi wahi.
 
-1. E kaomi i ka icon ID ma ka pahu status (ʻaoʻao hema lalo)
-2. E koho i ka ID
-3. Pau! Ua hoʻololi ʻia ka Git config a me ke kī SSH.
+> **Inā hoʻohana ʻoe i ke kākau inoa GPG**: Hiki ke hoʻonohonoho i ka `gpgKeyId` ma ka pale hoʻoponopono ID.
+> E nānā i "[Hoʻoponopono Pilikia](#ʻaʻole-hana-ka-kākau-inoa-gpg)" no ke ʻano e ʻimi ai i kou GPG key ID.
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-haw.png" width="600" alt="Quick Pick">
-
-### E Hoʻohana i nā Inoa Hoʻololi SSH Host
-
-I ka clone ʻana i nā repository, e hoʻohana i ka host e pili ana i kou ID:
-
-```bash
-# No ka ID hana (hoʻohana i ka inoa hoʻololi github-work)
-git clone git@github-work:company/repo.git
-
-# No ka ID pilikino (hoʻohana i ka github.com maʻamau)
-git clone git@github.com:kai/repo.git
-```
-
----
-
-## Koho: Kākau Inoa GPG
-
-Inā kākau inoa ʻoe i nā commit me GPG:
-
-### Pae 1: E ʻImi i Kou GPG Key ID
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-Laʻana hoʻopuka:
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] Kai Kalani <kai@personal.example.com>
-```
-
-ʻO ka key ID ʻo `ABCD1234`.
-
-### Pae 2: E Hoʻohui i ka GPG Key i ka ID
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Kai Kalani",
-      "email": "kai@personal.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Nā papahana pilikino",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-I ka hoʻololi ʻana i kēia ID, hoʻonohonoho ka extension:
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
+> **Manaʻo**: Hiki ke hoʻonohonoho pololei mai settings.json.
+> E wehe i nā hoʻonohonoho extension (`Cmd+,` / `Ctrl+,`) → E huli "Git ID Switcher" → E kaomi "Hoʻoponopono ma settings.json".
+> E nānā i "[Laʻana Piha](#laʻana-piha-4-moʻokāki-me-ssh--gpg)" no nā laʻana hoʻonohonoho JSON.
 
 ---
 
@@ -229,14 +147,14 @@ He laʻana piha e hoʻohui i nā mea āpau:
 ### Hoʻonohonoho SSH (`~/.ssh/config`)
 
 ```ssh-config
-# Moʻokāki pilikino (maʻamau)
+# Moʻokāki pilikino (paʻamau)
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Moʻokāki hana
+# Moʻokāki hana (Enterprise Managed User)
 Host github-work
     HostName github.com
     User git
@@ -264,15 +182,15 @@ Host bitbucket.org
       "icon": "🏠",
       "description": "Nā papahana pilikino",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSON12"
+      "gpgKeyId": "PERSONAL1"
     },
     {
       "id": "work",
       "name": "Kai Kalani",
-      "email": "kai@company.example.com",
+      "email": "kai.kalani@company.example.com",
       "service": "GitHub Hana",
       "icon": "💼",
-      "description": "Moʻokāki hana",
+      "description": "Hana hui",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
       "gpgKeyId": "WORK1234"
@@ -302,13 +220,35 @@ Host bitbucket.org
 }
 ```
 
-Palapala: ʻAʻohe SSH i ka ID hope (`kūʻokoʻa`)—hoʻololi wale i ka Git config. Maikaʻi i ka hoʻohana ʻana i ka moʻokāki GitLab like me nā ʻike commit ʻokoʻa.
+Palapala: ʻAʻohe SSH i ka ID hope (`kūʻokoʻa`)—hoʻololi wale i ka Git config. Maikaʻi i ka hoʻohana ʻana i ka moʻokāki GitHub like me nā ʻike commit ʻokoʻa.
 
 ---
 
-## Kuhikuhi Hoʻonohonoho (Configuration Reference)
+## Hoʻoponopono ID
 
-### Nā Waiwai ID (Identity Properties)
+E kaomi i ka pahu status → "Hoʻoponopono ID" ma ka lalo o ka papa inoa e wehe i ka pale hoʻoponopono.
+Hiki ke hoʻohui, hoʻoponopono, holoi, a hoʻonohonoho pono i nā ID mai ka UI.
+
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/haw/identity-management.webp" width="600" alt="Hoʻoponopono ID: Alakaʻi hana no ka holoi a me ka hoʻonohonoho" loading="lazy">
+
+Hiki ke holoi i nā ID mai ka command palette me `Git ID Switcher: Delete Identity`.
+
+---
+
+## Nā Kauoha
+
+| Kauoha                                   | Wehewehe                       |
+| ---------------------------------------- | ------------------------------ |
+| `Git ID Switcher: Select Identity`       | E wehe i ka mea koho ID        |
+| `Git ID Switcher: Delete Identity`       | E holoi i kekahi ID            |
+| `Git ID Switcher: Show Current Identity` | E hōʻike i ka ID o kēia manawa |
+| `Git ID Switcher: Show Documentation`    | E hōʻike i nā palapala         |
+
+---
+
+## Kuhikuhi Hoʻonohonoho
+
+### Nā Waiwai ID
 
 | Waiwai        | Pono | Wehewehe                                                              |
 | ------------- | ---- | --------------------------------------------------------------------- |
@@ -322,29 +262,29 @@ Palapala: ʻAʻohe SSH i ka ID hope (`kūʻokoʻa`)—hoʻololi wale i ka Git co
 | `sshHost`     |      | Inoa hoʻololi host SSH config (laʻa: `"github-work"`)                 |
 | `gpgKeyId`    |      | GPG key ID no ke kākau inoa commit                                    |
 
-#### Nā Palena Hōʻike (Display Limitations)
+#### Nā Palena Hōʻike
 
 - **Pahu status**: E hoʻopōkole ʻia ka kikokikona ma mua o ~25 hua palapala me `...`
 - **`icon`**: Hoʻokahi emoji (grapheme cluster) wale nō. ʻAʻole hiki ke hoʻohana i nā emoji he nui a i ʻole kikokikona lōʻihi
 
-### Nā Hoʻonohonoho Nui (General Settings)
+### Nā Hoʻonohonoho Nui
 
-| Hoʻonohonoho                               | Paʻamau    | Wehewehe                                                                      |
-| ------------------------------------------ | ---------- | ----------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | Nānā laʻa. | Papa inoa o nā hoʻonohonoho ID                                                |
-| `gitIdSwitcher.defaultIdentity`            | Nānā laʻa. | ID paʻamau                                                                    |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Hoʻololi ʻia ke kī SSH                                                        |
-| `gitIdSwitcher.showNotifications`          | `true`     | Hōʻike i ka hoʻolaha i ka hoʻololi ʻana                                       |
-| `gitIdSwitcher.applyToSubmodules`          | `true`     | Hoʻopili i ka ID i nā Git submodule                                           |
-| `gitIdSwitcher.submoduleDepth`             | `1`        | Hohonu nui loa no nā submodule nested (1-5)                                   |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Kākau i ka emoji icon i ka Git config `user.name`                             |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Hoʻohana i ka logging i faila no ka audit                                     |
-| `gitIdSwitcher.logging.filePath`           | `""`       | Ala faila log pilikino                                                        |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Nui loa o ka faila log ma mua o ka rotation (bytes, 1MB-100MB)                |
-| `gitIdSwitcher.logging.maxFiles`           | `5`        | Helu o nā faila log e mālama (1-20)                                           |
-| `gitIdSwitcher.logging.level`              | `"INFO"`   | Pae logging (DEBUG/INFO/WARN/ERROR/SECURITY)                                  |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Ke hoʻā ʻia, e uhi ʻia nā waiwai a pau ma nā moʻolelo (pale pilikino nui loa) |
-| `gitIdSwitcher.commandTimeouts`            | `{}`       | Manawa palena no nā kauoha waho (ms, 1s-5min)                                 |
+| Hoʻonohonoho                               | Paʻamau    | Wehewehe                                                                                |
+| ------------------------------------------ | ---------- | --------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Nānā laʻa. | Papa inoa o nā hoʻonohonoho ID                                                          |
+| `gitIdSwitcher.defaultIdentity`            | Nānā laʻa. | ID paʻamau                                                                              |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Hoʻololi ʻia ke kī SSH ma ka hoʻololi ID                                                |
+| `gitIdSwitcher.showNotifications`          | `true`     | Hōʻike i ka hoʻolaha i ka hoʻololi ʻana                                                 |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Hoʻopili i ka ID i nā Git submodule                                                     |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | Hohonu nui loa no nā submodule nested (1-5)                                             |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Kākau i ka emoji icon i ka Git config `user.name`                                       |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Hoʻohana i ka logging i faila no ka audit (ID hoʻololi, SSH kī hana, etc.)              |
+| `gitIdSwitcher.logging.filePath`           | `""`       | Ala faila log pilikino (laʻa: `~/.git-id-switcher/security.log`). Hakahaka = paʻamau    |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Nui loa o ka faila log ma mua o ka rotation (bytes, 1MB-100MB)                          |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | Helu o nā faila log e mālama (1-20)                                                     |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Ke hoʻā ʻia, e uhi ʻia nā waiwai a pau ma nā moʻolelo (pale pilikino nui loa)           |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | Pae logging (DEBUG/INFO/WARN/ERROR/SECURITY). Hoʻopaʻa i ka pae i koho ʻia a me luna    |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | Manawa palena no nā kauoha waho (ms, 1s-5min). Laʻa: `{"git": 15000, "ssh-add": 10000}` |
 
 #### E Pili ana i `includeIconInGitConfig`
 
@@ -362,38 +302,11 @@ Laʻana: `icon: "👤"`, `name: "Kai Kalani"`
 | `false`                | `Kai Kalani`           | `Kai Kalani <leka>`    |
 | `true`                 | `👤 Kai Kalani`        | `👤 Kai Kalani <leka>` |
 
-### Palapala: Hoʻonohonoho Kumu (ʻAʻohe SSH)
-
-Inā ʻaʻole pono ʻoe e hoʻololi i ke kī SSH (laʻa., hoʻohana i ka moʻokāki GitHub like me nā ʻike commit ʻokoʻa), hiki ke hoʻohana i ka hoʻonohonoho liʻiliʻi:
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "personal",
-      "name": "Kai Kalani",
-      "email": "kai@personal.example.com",
-      "icon": "🏠",
-      "description": "Nā papahana pilikino"
-    },
-    {
-      "id": "work",
-      "name": "Kai Kalani",
-      "email": "kai@company.example.com",
-      "icon": "💼",
-      "description": "Moʻokāki hana"
-    }
-  ]
-}
-```
-
-Hoʻololi wale kēia hoʻonohonoho i ka `git config user.name` a me `user.email`.
-
 ---
 
-## Pehea e Hana Ai (How It Works)
+## Pehea e Hana Ai
 
-### Ala Papa Git Config (Git Config Layer Structure)
+### Ala Papa Git Config
 
 Loaʻa i ka Git config ʻekolu papa; hoʻololi nā papa haʻahaʻa i nā papa kiʻekiʻe:
 
@@ -413,23 +326,71 @@ Manaʻo kēia:
 - Hiki ke mālama i nā ID ʻokoʻa no kēlā me kēia repository
 - ʻAʻole hoʻololi ʻia nā hoʻonohonoho honua (`~/.gitconfig`)
 
-### Hana Hoʻololi ID (Identity Switching Behavior)
+### Hana Hoʻololi ID
 
 I ka hoʻololi ʻana i ka ID, hana ka extension (ma ka ʻokoʻa):
 
 1. **Git Config** (mau): Hoʻonohonoho i ka `git config --local user.name` a me `user.email`
-2. **Kī SSH** (inā hoʻonohonoho ʻia ka `sshKeyPath`): Hoʻokomo i nā kī ʻē aʻe mai ka ssh-agent, hoʻohui i ka mea i koho ʻia
+2. **Kī SSH** (inā hoʻonohonoho ʻia ka `sshKeyPath`): Holoi i nā kī ʻē aʻe mai ka ssh-agent, hoʻohui i ka mea i koho ʻia
 3. **Kī GPG** (inā hoʻonohonoho ʻia ka `gpgKeyId`): Hoʻonohonoho i ka `git config --local user.signingkey` a hoʻohana i ke kākau inoa
 4. **Submodule** (inā hoʻohana ʻia): Hoʻolaha i ka hoʻonohonoho i nā submodule āpau (paʻamau: hohonu 1)
 
-### Hana Hoʻolaha Submodule (Submodule Propagation Mechanism)
+### Hana Hoʻolaha Submodule
 
 No ka mea hana ka hoʻonohonoho kūloko ma ka pae repository, ʻaʻole hoʻopili ʻia i nā submodule.
 No laila, hāʻawi kēia extension i ka hana hoʻolaha submodule (nānā i "Kiʻekiʻe: Kākoʻo Submodule" no nā kikoʻī).
 
+### Nā Kikoʻī Hoʻoponopono Kī SSH
+
+Hoʻoponopono ʻo Git ID Switcher i nā kī SSH ma o ka `ssh-agent`:
+
+| Hana            | Kauoha Hoʻokō          |
+| --------------- | ---------------------- |
+| Hoʻohui kī      | `ssh-add <keyPath>`    |
+| Holoi kī        | `ssh-add -d <keyPath>` |
+| Papa inoa nā kī | `ssh-add -l`           |
+
+**Nui:** ʻAʻole hoʻololi kēia extension i `~/.ssh/config`. Pono e hoʻonohonoho lima i ka SSH config (nānā i "Pae 2" o ka Hoʻomaka Wikiwiki).
+
+### Ka Pili ʻana me nā Hoʻonohonoho SSH e Ola nei
+
+Inā loaʻa iā ʻoe nā hoʻonohonoho SSH e ola nei, hana ʻo Git ID Switcher penei:
+
+| Kāu Hoʻonohonoho                        | Hana a Git ID Switcher                                    |
+| --------------------------------------- | --------------------------------------------------------- |
+| `~/.ssh/config` me `IdentityFile`       | Hana nā ʻelua; `IdentitiesOnly yes` e pale i ka hālō      |
+| `GIT_SSH_COMMAND` env variable          | Hoʻohana i kāu kauoha SSH pilikino; hana mau ka ssh-agent |
+| `git config core.sshCommand`            | Like me luna                                              |
+| direnv e hoʻonohonoho i nā env vars SSH | Hiki ke noho pū; hana kūʻokoʻa ka ssh-agent               |
+
+**Palapala:** E hoʻonohonoho mau i `IdentitiesOnly yes` i kāu SSH config. Kēia e pale i ka SSH mai ka hoʻāʻo ʻana i nā kī he nui.
+
+### No ke aha ʻo `IdentitiesOnly yes`?
+
+Me ʻole kēia hoʻonohonoho, hiki i ka SSH ke hoʻāʻo i nā kī ma kēia papa:
+
+1. Nā kī i hoʻouka ʻia i ka ssh-agent (i hoʻoponopono ʻia e Git ID Switcher)
+2. Nā kī i hoʻonohonoho ʻia ma `~/.ssh/config`
+3. Nā kī paʻamau (`~/.ssh/id_rsa`, `~/.ssh/id_ed25519`, etc.)
+
+Hiki ke pilikia ka hōʻoia a i ʻole ke hoʻohana ʻia ka kī hewa.
+
+Ma ka hoʻonohonoho ʻana i `IdentitiesOnly yes`, hoʻohana wale ka SSH i ka kī i **hoʻonohonoho pololei ʻia**. Kēia e hoʻoiaʻiʻo e hoʻohana ʻia ka kī āu i hoʻonohonoho ai ma Git ID Switcher.
+
+```ssh-config
+# Hoʻonohonoho kūpono
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← Kēia laina koʻikoʻi
+```
+
+Me kēia hoʻonohonoho, i ka hoʻopili ʻana i ka host `github-work`, hoʻohana wale ʻia ka `~/.ssh/id_ed25519_work` a ʻaʻole e hoʻāʻo ʻia nā kī ʻē aʻe.
+
 ---
 
-## Kiʻekiʻe: Kākoʻo Submodule (Advanced: Submodule Support)
+## Kiʻekiʻe: Kākoʻo Submodule
 
 No nā repository paʻakikī me nā Git submodule, paʻakikī ka hoʻoponopono ID. Inā hana ʻoe i commit ma kekahi submodule, hoʻohana ʻo Git i ka hoʻonohonoho kūloko o kēlā submodule; inā ʻaʻole hoʻonohonoho ʻia, hiki ke hoʻi i ka hoʻonohonoho honua (leka hewa!).
 
@@ -451,7 +412,7 @@ Hoʻoiaʻiʻo kēia e pololei mau kou ID, inā hana ʻoe i commit ma ka reposito
 
 ---
 
-## Hoʻoponopono Pilikia (Troubleshooting)
+## Hoʻoponopono Pilikia
 
 ### ʻAʻole hoʻololi ʻia ke kī SSH?
 
@@ -474,6 +435,20 @@ Hoʻoiaʻiʻo kēia e pololei mau kou ID, inā hana ʻoe i commit ma ka reposito
    ```
 
 ### ID hewa i ka push?
+
+**I ka clone ʻana i nā repository hou:**
+
+I ka clone ʻana i nā repository hana, e hoʻohana i ka host alias i hoʻonohonoho ʻia ma kāu SSH config:
+
+```bash
+# No ka hana (hoʻohana i ka github-work alias)
+git clone git@github-work:company/repo.git
+
+# No ka pilikino (hoʻohana i ka github.com paʻamau)
+git clone git@github.com:kai/repo.git
+```
+
+**No nā repository e ola nei:**
 
 1. E nānā i ka URL mamao e hoʻohana i ka inoa hoʻololi host pololei:
 
@@ -506,7 +481,7 @@ Hoʻoiaʻiʻo kēia e pololei mau kou ID, inā hana ʻoe i commit ma ka reposito
 
 ### ʻAʻole ʻike ʻia ka ID?
 
-- E hoʻoiaʻiʻo e ma ka Git repository ʻoe
+- E hoʻoiaʻiʻo ua noho ʻoe ma ka Git repository
 - E nānā i ka hewa syntax ma `settings.json`
 - E hoʻohou i ka pukaaniani VS Code (`Cmd+Shift+P` → "Reload Window")
 
@@ -549,19 +524,9 @@ Inā mālama ʻoe i nā hoʻonohonoho hakahaka ma mua, ua sync ʻia lākou i ka 
 
 ---
 
-## Nā Kauoha (Commands)
+## Ke Kumu Hoʻolālā
 
-| Kauoha                                   | Wehewehe                       |
-| ---------------------------------------- | ------------------------------ |
-| `Git ID Switcher: Select Identity`       | E wehe i ka mea koho ID        |
-| `Git ID Switcher: Show Current Identity` | E hōʻike i ka ID o kēia manawa |
-| `Git ID Switcher: Show Documentation`    | E hōʻike i nā palapala         |
-
----
-
-## Ke Kumu Hoʻolālā (Design Philosophy)
-
-> "ʻO wai au?" — ʻO ia wale nō ka nīnau a kēia hoʻonui e pane ai.
+> **"ʻO wai au?"** — ʻO ia wale nō ka nīnau a kēia extension e pane ai.
 
 Kūkulu ʻia ma luna o ka **Karesansui Architecture**: he kumu maʻalahi (100 laina),
 puni ʻia e ka maikaʻi hoʻoholo ʻia (90% uhi, logging, timeouts)
@@ -573,15 +538,15 @@ a me nā palena manaʻo ʻia (ʻaʻohe GitHub API, ʻaʻohe token management).
 
 ---
 
-## Kōkua (Contributing)
+## Kōkua
 
 E ʻoluʻolu e nānā i [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
-## Laikini (License)
+## Laikini
 
 MIT License - E nānā i [LICENSE](../../../LICENSE).
 
-## Nā Hōʻoia (Credits)
+## Nā Hōʻoia
 
 Hana ʻia e [Null;Variant](https://github.com/nullvariant)
 
