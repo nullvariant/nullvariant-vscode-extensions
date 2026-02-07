@@ -119,11 +119,11 @@ AFTR U INSTALL, SAMPLE PROFILEZ R REDDY 4 U. FOLLOW DIS GUIDE 2 EDIT DEM 4 URSEL
 
 > **TIP**: U CAN ALSO CONFIGUR DIRECTLY FROM settings.json.
 > OPEN EXTENSHUN SETTINGZ (`Cmd+,` / `Ctrl+,`) → SEARCH "Git ID Switcher" → CLIK "EDIT IN settings.json".
-> 4 JSON FORMAT EXAMPLZ, C "[FULL EXAMPL](#full-exampl-4-accountz-wif-ssh--gpg)".
+> 4 JSON FORMAT EXAMPLZ, C "[FULL EXAMPL](#full-exampl-5-accountz-wif-ssh--gpg)".
 
 ---
 
-## FULL EXAMPL: 4 ACCOUNTZ WIF SSH + GPG
+## FULL EXAMPL: 5 ACCOUNTZ WIF SSH + GPG
 
 ALL TEH THINGZ COMBIND! HEER IZ FULL EXAMPL:
 
@@ -131,7 +131,7 @@ ALL TEH THINGZ COMBIND! HEER IZ FULL EXAMPL:
 
 ```ssh-config
 # PURSONAL ACCOUNT (DEFALT)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -144,11 +144,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# BITBUCKET ACCOUNT
+# CLIENT A WERK (BITBUCKET)
 Host bitbucket-clienta
     HostName bitbucket.org
     User git
     IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# CLIENT B WERK (BITBUCKET)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS STUFFZ (GITLAB)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -165,7 +179,8 @@ Host bitbucket-clienta
       "icon": "🐱",
       "description": "MAH STUFFZ",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "CEILING1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
       "id": "work-main",
@@ -176,7 +191,7 @@ Host bitbucket-clienta
       "description": "TechCorp SRIUS BIZNESS",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "KEYBOARD1"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
       "id": "client-a",
@@ -189,12 +204,24 @@ Host bitbucket-clienta
       "sshHost": "bitbucket-clienta"
     },
     {
+      "id": "client-b",
+      "name": "C.Cat",
+      "email": "c.cat@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "😻",
+      "description": "ClientB IN UR OFFICE",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
       "id": "oss",
       "name": "ceiling-dev",
       "email": "ceiling.dev@example.com",
       "service": "GitLab",
       "icon": "🐈",
-      "description": "I CAN HAZ OSS"
+      "description": "I CAN HAZ OSS",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -203,7 +230,7 @@ Host bitbucket-clienta
 }
 ```
 
-NOTE: TEH LAST PROFILE (`oss`) HAZ NO SSH. U CAN USE DIS 4 SWITCHIN JUS GIT CONFIG (LIEK DIFFRNT COMITTR INFO ON SAEM ACCOUNT). EZ!
+NOTE: TEH 4TH PROFILE (`client-b`) UZEZ SHORT NAEM, AN TEH 5TH (`oss`) UZEZ DEV HANDL. U CAN SET DIFFRNT DISPLAY NAEMZ 4 EACH PROFILE, EVEN 4 TEH SAEM PURSON. KTHX!
 
 ---
 

@@ -116,11 +116,11 @@ Postupujte podle níže uvedeného průvodce a upravte je podle svých potřeb.
 
 > **Tip**: Můžete také konfigurovat přímo v settings.json.
 > Otevřete nastavení rozšíření (`Cmd+,` / `Ctrl+,`) → vyhledejte „Git ID Switcher" → klikněte na „Upravit v settings.json".
-> Příklad konfigurace ve formátu JSON viz „[Kompletní příklad konfigurace](#kompletní-příklad-konfigurace-4-účty-s-ssh--gpg)".
+> Příklad konfigurace ve formátu JSON viz „[Kompletní příklad konfigurace](#kompletní-příklad-konfigurace-5-účtů-s-ssh--gpg)".
 
 ---
 
-## Kompletní příklad konfigurace: 4 účty s SSH + GPG
+## Kompletní příklad konfigurace: 5 účtů s SSH + GPG
 
 Kompletní příklad kombinující vše:
 
@@ -128,7 +128,7 @@ Kompletní příklad kombinující vše:
 
 ```ssh-config
 # Osobní účet (výchozí)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -141,11 +141,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket účet
-Host bitbucket.org
+# Klient A – zakázková práce (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Klient B – projekt na místě (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS příspěvky (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -157,41 +171,54 @@ Host bitbucket.org
     {
       "id": "personal",
       "name": "Alex Novák",
-      "email": "alex.novak@personal.example.com",
+      "email": "alex@personal.example.com",
       "service": "GitHub",
       "icon": "🏠",
       "description": "Osobní projekty",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "Alex Novák",
-      "email": "alex.novak@company.example.com",
+      "email": "alex.novak@techcorp.example.com",
       "service": "GitHub Práce",
       "icon": "💼",
-      "description": "Pracovní účet",
+      "description": "TechCorp hlavní práce",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Alex Novák",
-      "email": "alex.novak@bitbucket.example.com",
+      "email": "alex@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket projekty",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA zakázka",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "Alex Novák",
-      "email": "alex.novak@freelance.example.com",
+      "id": "client-b",
+      "name": "A.Novák",
+      "email": "a.novak@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB na místě",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "alex-dev",
+      "email": "alex.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Freelance projekty"
+      "icon": "🌟",
+      "description": "Příspěvky do OSS",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -200,7 +227,7 @@ Host bitbucket.org
 }
 ```
 
-Poznámka: Poslední profil (`freelance`) nemá SSH. Pokud používáte různé informace o committerovi se stejným GitHub účtem atd., můžete také přepínat pouze Git config.
+Poznámka: 4. profil (`client-b`) používá zkrácené jméno a 5. (`oss`) vývojářský handle. Pro každý profil můžete nastavit jiné zobrazované jméno, i pro tutéž osobu.
 
 ---
 

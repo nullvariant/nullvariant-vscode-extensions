@@ -138,11 +138,11 @@ Host github-work
 
 > **ヒント**: settings.json オロワ 直接設定。
 > Extension 設定（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」エヌカㇻ →「settings.json エトゥㇾ」クリㇰ。
-> JSON 設定例「[フル 設定例](#フル-設定例-4-アカウント-ssh--gpg)」エヌカㇻ。
+> JSON 設定例「[フル 設定例](#フル-設定例-5-アカウント-ssh--gpg)」エヌカㇻ。
 
 ---
 
-## フル 設定例: 4 アカウント SSH + GPG
+## フル 設定例: 5 アカウント SSH + GPG
 
 オㇿ 組み合わせ 完全例:
 
@@ -150,7 +150,7 @@ Host github-work
 
 ```ssh-config
 # ウタㇻ アカウント（デフォルト）
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -163,11 +163,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket アカウント
-Host bitbucket.org
+# ウレシパ A アカウント（Bitbucket）
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# ウレシパ B アカウント（Bitbucket）
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS アカウント（GitLab）
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -181,39 +195,52 @@ Host bitbucket.org
       "name": "シサㇺ",
       "email": "sisam@personal.example.com",
       "service": "GitHub",
-      "icon": "🏠",
-      "description": "ウタㇻ プロジェクト",
+      "icon": "🐻",
+      "description": "クアニ コㇿ プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "シサㇺ",
-      "email": "sisam@company.example.com",
-      "service": "GitHub モノレ",
-      "icon": "💼",
-      "description": "モノレ 開発",
+      "email": "sisam@techcorp.example.com",
+      "service": "GitHub モンラヤン",
+      "icon": "🌲",
+      "description": "TechCorp ポンノ モンラヤン",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "シサㇺ",
-      "email": "sisam@bitbucket.example.com",
+      "email": "sisam@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket プロジェクト",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "❄️",
+      "description": "ClientA ウコイキ",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "sirokan",
-      "name": "シサㇺ",
-      "email": "sisam@freelance.example.com",
+      "id": "client-b",
+      "name": "S.シサㇺ",
+      "email": "s.sisam@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🦌",
+      "description": "ClientB タンペ",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "sisam-dev",
+      "email": "sisam.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "シㇿカン 案件"
+      "icon": "🦅",
+      "description": "OSS ウコイキ",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -222,7 +249,7 @@ Host bitbucket.org
 }
 ```
 
-ウタㇻ: ホㇱキ プロフィール（`sirokan`）SSH ソモ。エネアン GitHub アカウント エネアン commit ウタㇻ、Git config ワノ ウコイタㇰ。
+ウタㇻ: 4バンメ プロフィール（`client-b`）ミジカイ ナマエ、5バンメ（`oss`）ハンドルネーム ア ウサ。シネ ウタㇻ ワノ プロフィール ヘンネ ナマエ ア ウサ エアㇱカイ。
 
 ---
 
@@ -257,7 +284,7 @@ Host bitbucket.org
 | `id`          | ✅   | ユニーク ID（例：`"personal"`, `"work"`）                 |
 | `name`        | ✅   | Git user.name — commit オロワ                             |
 | `email`       | ✅   | Git user.email — commit オロワ                            |
-| `icon`        |      | ステータスバー 絵文字（例：`"🏠"`）。シネㇷ゚ 絵文字 ワノ |
+| `icon`        |      | ステータスバー 絵文字（例：`"🐻"`）。シネㇷ゚ 絵文字 ワノ |
 | `service`     |      | サービス レー（例：`"GitHub"`, `"GitLab"`）。UI オロワ    |
 | `description` |      | ピッカー ウン ツールチップ 短い説明                       |
 | `sshKeyPath`  |      | SSH 秘密鍵 パス（例：`"~/.ssh/id_ed25519_work"`）         |

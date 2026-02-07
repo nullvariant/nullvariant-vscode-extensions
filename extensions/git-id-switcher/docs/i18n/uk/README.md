@@ -116,11 +116,11 @@ Host github-work
 
 > **Підказка**: Можна також налаштувати безпосередньо в settings.json.
 > Відкрийте налаштування розширення (`Cmd+,` / `Ctrl+,`) → знайдіть "Git ID Switcher" → натисніть "Редагувати в settings.json".
-> Приклад у форматі JSON див. у розділі «[Повний приклад](#повний-приклад-4-облікових-записи-з-ssh--gpg)».
+> Приклад у форматі JSON див. у розділі «[Повний приклад](#повний-приклад-5-облікових-записів-з-ssh--gpg)».
 
 ---
 
-## Повний приклад: 4 облікових записи з SSH + GPG
+## Повний приклад: 5 облікових записів з SSH + GPG
 
 Повний приклад з усіма можливостями:
 
@@ -128,24 +128,38 @@ Host github-work
 
 ```ssh-config
 # Особистий обліковий запис (за замовчуванням)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Робочий обліковий запис (корпоративний Enterprise Managed User)
+# Робочий обліковий запис (Enterprise Managed User від компанії)
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Обліковий запис Bitbucket
-Host bitbucket.org
+# Клієнт A – контрактна робота (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Клієнт B – проєкт на площадці (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS-внесок (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -157,41 +171,54 @@ Host bitbucket.org
     {
       "id": "personal",
       "name": "Саша Коваленко",
-      "email": "sasha.kovalenko@personal.example.com",
+      "email": "sasha@personal.example.com",
       "service": "GitHub",
       "icon": "🏠",
-      "description": "Особисті проєкти",
+      "description": "Особисті проекти",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "Саша Коваленко",
-      "email": "sasha.kovalenko@company.example.com",
-      "service": "GitHub Робочий",
+      "email": "sasha.kovalenko@techcorp.example.com",
+      "service": "GitHub Робота",
       "icon": "💼",
-      "description": "Корпоративна розробка",
+      "description": "TechCorp основна робота",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Саша Коваленко",
-      "email": "sasha.kovalenko@bitbucket.example.com",
+      "email": "sasha@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Проєкти Bitbucket",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA контракт",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "Саша Коваленко",
-      "email": "sasha.kovalenko@freelance.example.com",
+      "id": "client-b",
+      "name": "С.Коваленко",
+      "email": "s.kovalenko@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB на місці",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "sasha-dev",
+      "email": "sasha.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Фриланс-проєкти"
+      "icon": "🌟",
+      "description": "Внесок в OSS",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -200,7 +227,7 @@ Host bitbucket.org
 }
 ```
 
-Примітка: Останній профіль (`freelance`) без SSH. Можна перемикати лише Git config, наприклад, коли використовуєте різну інформацію про комітера з одним обліковим записом GitHub.
+Примітка: 4-й профіль (`client-b`) використовує скорочене ім'я, а 5-й (`oss`) — нік розробника. Для кожного профілю можна задати різне відображуване ім'я, навіть для однієї людини.
 
 ---
 

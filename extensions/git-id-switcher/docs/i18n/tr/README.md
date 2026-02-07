@@ -116,11 +116,11 @@ Aşağıdaki kılavuzu izleyerek bunları kendi kullanımınıza göre düzenley
 
 > **İpucu**: Doğrudan settings.json'dan da yapılandırabilirsiniz.
 > Eklenti ayarlarını açın (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" arayın → "settings.json'da Düzenle"ye tıklayın.
-> JSON formatında örnek için "[Tam Örnek](#tam-örnek-4-hesap-ve-ssh--gpg)" bölümüne bakın.
+> JSON formatında örnek için "[Tam Örnek](#tam-örnek-5-hesap-ve-ssh--gpg)" bölümüne bakın.
 
 ---
 
-## Tam Örnek: 4 Hesap ve SSH + GPG
+## Tam Örnek: 5 Hesap ve SSH + GPG
 
 Her şeyi birleştiren tam bir örnek:
 
@@ -128,7 +128,7 @@ Her şeyi birleştiren tam bir örnek:
 
 ```ssh-config
 # Kişisel hesap (varsayılan)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -141,11 +141,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket hesabı
-Host bitbucket.org
+# Müşteri A – sözleşmeli iş (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Müşteri B – yerinde proje (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS katkıları (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -162,36 +176,49 @@ Host bitbucket.org
       "icon": "🏠",
       "description": "Kişisel projeler",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "Deniz Yılmaz",
-      "email": "deniz.yilmaz@company.example.com",
+      "email": "deniz.yilmaz@techcorp.example.com",
       "service": "GitHub İş",
       "icon": "💼",
-      "description": "Şirket geliştirme",
+      "description": "TechCorp ana iş",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Deniz Yılmaz",
-      "email": "deniz@bitbucket.example.com",
+      "email": "deniz@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket projeleri",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA sözleşme",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "Deniz Yılmaz",
-      "email": "deniz@freelance.example.com",
+      "id": "client-b",
+      "name": "D.Yılmaz",
+      "email": "d.yilmaz@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB yerinde",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "deniz-dev",
+      "email": "deniz.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Serbest projeler"
+      "icon": "🌟",
+      "description": "OSS katkıları",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -200,7 +227,7 @@ Host bitbucket.org
 }
 ```
 
-Not: Son profil (`freelance`) SSH'sız — sadece Git yapılandırmasını değiştirir. Aynı GitHub hesabıyla farklı committer bilgileri kullanırken faydalıdır.
+Not: 4. profil (`client-b`) kısaltılmış ad, 5. profil (`oss`) geliştirici takma adı kullanır. Aynı kişi için bile her profile farklı görünen ad ayarlayabilirsiniz.
 
 ---
 

@@ -78,15 +78,15 @@ o pali e SSH key (sina jo la o ante ala):
 
 ```bash
 # jan pona
-ssh-keygen -t ed25519 -C "mun@pona.example.com" -f ~/.ssh/id_ed25519_pona
+ssh-keygen -t ed25519 -C "mun@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # jan lawa
-ssh-keygen -t ed25519 -C "mun@lawa.example.com" -f ~/.ssh/id_ed25519_lawa
+ssh-keygen -t ed25519 -C "mun@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 SSH key **key open** (`.pub` file) o pana tawa GitHub account.
 
-> **sona**: GitHub li kama jo e `id_ed25519_pona.pub` (key open). `id_ed25519_pona` (ala .pub) li key len—o pana ala tawa jan ante!
+> **sona**: GitHub li kama jo e `id_ed25519_personal.pub` (key open). `id_ed25519_personal` (ala .pub) li key len—o pana ala tawa jan ante!
 
 ### nanpa tu: SSH config
 
@@ -97,14 +97,14 @@ SSH key **key open** (`.pub` file) o pana tawa GitHub account.
 Host github.com
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_pona
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
 # jan lawa GitHub account
-Host github-lawa
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_lawa
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 ```
 
@@ -121,11 +121,11 @@ ilo o open la, nimi lukin li lon. o ante e ona tawa sina.
 
 > **sona**: settings.json la, sina ken ante.
 > settings o open (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" o alasa → "Edit in settings.json" o luka.
-> JSON nasin "[sona ale: 4 account SSH + GPG](#sona-ale-4-account-ssh--gpg)" o lukin.
+> JSON nasin "[sona ale: 5 account SSH + GPG](#sona-ale-5-account-ssh--gpg)" o lukin.
 
 ---
 
-## sona ale: 4 account SSH + GPG
+## sona ale: 5 account SSH + GPG
 
 ale li lon ni:
 
@@ -133,24 +133,38 @@ ale li lon ni:
 
 ```ssh-config
 # jan pona account (open)
-Host github.com
+Host github-personal
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_pona
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
 # jan lawa account (Enterprise Managed User)
-Host github-lawa
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_lawa
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket account
-Host bitbucket.org
+# kulupu mani A (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# kulupu mani B (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# pali open (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -160,52 +174,65 @@ Host bitbucket.org
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "jan-pona",
+      "id": "personal",
       "name": "jan Mun",
-      "email": "mun@pona.example.com",
+      "email": "mun@personal.example.com",
       "service": "GitHub",
-      "icon": "🏠",
-      "description": "pali pona mi",
-      "sshKeyPath": "~/.ssh/id_ed25519_pona",
-      "gpgKeyId": "PONA1234"
+      "icon": "☀️",
+      "description": "pali mi",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "jan-lawa",
+      "id": "work-main",
       "name": "jan Mun",
-      "email": "mun@lawa.example.com",
-      "service": "GitHub lawa",
-      "icon": "💼",
-      "description": "pali lawa",
-      "sshKeyPath": "~/.ssh/id_ed25519_lawa",
-      "sshHost": "github-lawa",
-      "gpgKeyId": "LAWA1234"
+      "email": "mun@techcorp.example.com",
+      "service": "GitHub pali",
+      "icon": "🌙",
+      "description": "TechCorp pali suli",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "jan Mun",
-      "email": "mun@bitbucket.example.com",
+      "email": "mun@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "pali Bitbucket",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "💧",
+      "description": "ClientA pali",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "jan-musi",
-      "name": "jan Mun",
-      "email": "mun@musi.example.com",
+      "id": "client-b",
+      "name": "M.Mun",
+      "email": "m.mun@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🔥",
+      "description": "ClientB lon ma",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "mun-dev",
+      "email": "mun.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "musi pona"
+      "icon": "🌿",
+      "description": "pana tawa OSS",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
-  "gitIdSwitcher.defaultIdentity": "jan-pona",
+  "gitIdSwitcher.defaultIdentity": "personal",
   "gitIdSwitcher.autoSwitchSshKey": true,
   "gitIdSwitcher.applyToSubmodules": true
 }
 ```
 
-sona: pini nimi (`jan-musi`) li jo ala e SSH—GitHub account sama, commit nimi ante la, Git config taso li ante.
+sona: nimi nanpa 4 (`client-b`) li nimi lili. nimi nanpa 5 (`oss`) li nimi pali. jan sama la, nimi ante li ken lon nimi ante ale.
 
 ---
 
@@ -237,14 +264,14 @@ command palette la, `Git ID Switcher: Delete Identity` li ken weka e nimi.
 
 | ijo           | wile | sona                                                         |
 | ------------- | ---- | ------------------------------------------------------------ |
-| `id`          | ✅   | nimi ante (example: `"jan-pona"`, `"jan-lawa"`)              |
+| `id`          | ✅   | nimi ante (example: `"personal"`, `"work-main"`)             |
 | `name`        | ✅   | Git user.name — commit li jo e ni                            |
 | `email`       | ✅   | Git user.email — commit li jo e ni                           |
-| `icon`        |      | sitelen lon status bar (example: `"🏠"`). sitelen wan taso   |
+| `icon`        |      | sitelen lon status bar (example: `"☀️"`). sitelen wan taso   |
 | `service`     |      | nimi ilo (example: `"GitHub"`, `"GitLab"`). tawa UI          |
 | `description` |      | sona lili tawa picker en tooltip                             |
-| `sshKeyPath`  |      | nasin tawa SSH key len (example: `"~/.ssh/id_ed25519_lawa"`) |
-| `sshHost`     |      | SSH config host nimi (example: `"github-lawa"`)              |
+| `sshKeyPath`  |      | nasin tawa SSH key len (example: `"~/.ssh/id_ed25519_work"`) |
+| `sshHost`     |      | SSH config host nimi (example: `"github-work"`)              |
 | `gpgKeyId`    |      | GPG key ID tawa commit sitelen                               |
 
 #### lukin poka (Display Limitations)
@@ -364,14 +391,14 @@ ni la, key ike li ken kama.
 
 ```ssh-config
 # nasin pona
-Host github-lawa
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_lawa
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes  # ← ni li suli
 ```
 
-ni la, `github-lawa` host li kepeken `~/.ssh/id_ed25519_lawa` taso. key ante li lon ala.
+ni la, `github-work` host li kepeken `~/.ssh/id_ed25519_work` taso. key ante li lon ala.
 
 ---
 
@@ -416,7 +443,7 @@ ni la repo suli commit anu vendor repo commit—nimi sina li pona.
 3. macOS la, Keychain li kama jo:
 
    ```bash
-   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_lawa
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
 ### push la, nimi ike?
@@ -426,8 +453,8 @@ ni la repo suli commit anu vendor repo commit—nimi sina li pona.
 jan lawa repo o clone la, SSH config host nimi o kepeken:
 
 ```bash
-# jan lawa (github-lawa nimi o kepeken)
-git clone git@github-lawa:lawa/repo.git
+# jan lawa (github-work nimi o kepeken)
+git clone git@github-work:lawa/repo.git
 
 # jan pona (github.com open o kepeken)
 git clone git@github.com:mun/repo.git
@@ -439,13 +466,13 @@ git clone git@github.com:mun/repo.git
 
    ```bash
    git remote -v
-   # jan lawa repo la git@github-lawa:... li lon
+   # jan lawa repo la git@github-work:... li lon
    ```
 
 2. o ante:
 
    ```bash
-   git remote set-url origin git@github-lawa:lawa/repo.git
+   git remote set-url origin git@github-work:lawa/repo.git
    ```
 
 ### GPG sitelen li pali ala?

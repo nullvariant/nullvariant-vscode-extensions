@@ -114,18 +114,51 @@ Open **Extension Settings** and configure thine identities within `gitIdSwitcher
       "email": "william@personal.example.com",
       "service": "GitHub",
       "icon": "🎭",
-      "description": "To code, or not to code",
-      "sshKeyPath": "~/.ssh/id_ed25519_personal"
+      "description": "Mine own works",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "William the Bard",
-      "email": "william@company.example.com",
-      "service": "GitHub Company",
+      "email": "william@techcorp.example.com",
+      "service": "GitHub Labour",
       "icon": "👑",
-      "description": "Is this a merge conflict I see before me?",
+      "description": "TechCorp principal toil",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
-      "sshHost": "github-work"
+      "sshHost": "github-work",
+      "gpgKeyId": "9876543210FEDCBA"
+    },
+    {
+      "id": "client-a",
+      "name": "William the Bard",
+      "email": "william@clienta.example.com",
+      "service": "Bitbucket",
+      "icon": "🏰",
+      "description": "ClientA commission",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
+    },
+    {
+      "id": "client-b",
+      "name": "W.Shakespeare",
+      "email": "w.shakespeare@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "⚔️",
+      "description": "ClientB in residence",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "william-dev",
+      "email": "william.dev@example.com",
+      "service": "GitLab",
+      "icon": "📜",
+      "description": "OSS for the commons",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -192,7 +225,7 @@ Now thy commits bear the royal seal!
 
 ---
 
-## Full Example: Four Accounts with SSH + GPG (A Grand Ensemble)
+## Full Example: Five Accounts with SSH + GPG (A Grand Ensemble)
 
 All the elements combined! Here doth follow the complete example:
 
@@ -200,7 +233,7 @@ All the elements combined! Here doth follow the complete example:
 
 ```ssh-config
 # Personal Account (default)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -213,11 +246,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket Account
-Host bitbucket.org
+# Client A – commissioned work (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Client B – on-site engagement (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS contributions (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -232,38 +279,51 @@ Host bitbucket.org
       "email": "william@personal.example.com",
       "service": "GitHub",
       "icon": "🎭",
-      "description": "Personal - To code, or not to code",
+      "description": "Mine own works",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSON01"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "William the Bard",
-      "email": "william@company.example.com",
-      "service": "GitHub Company",
+      "email": "william@techcorp.example.com",
+      "service": "GitHub Labour",
       "icon": "👑",
-      "description": "Company (EMU) - All the world's a stage",
+      "description": "TechCorp principal toil",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK0001"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "William the Bard",
-      "email": "william@bitbucket.example.com",
+      "email": "william@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket - O happy dagger",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏰",
+      "description": "ClientA commission",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "William the Bard",
-      "email": "william@freelance.example.com",
+      "id": "client-b",
+      "name": "W.Shakespeare",
+      "email": "w.shakespeare@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "⚔️",
+      "description": "ClientB in residence",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "william-dev",
+      "email": "william.dev@example.com",
       "service": "GitLab",
-      "icon": "🪶",
-      "description": "Freelance - Wherefore art thou, code?"
+      "icon": "📜",
+      "description": "OSS for the commons",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -272,7 +332,7 @@ Host bitbucket.org
 }
 ```
 
-Note: The final identity (`freelance`) hath no SSH. Thou canst use this for switching merely the Git config (such as different committer information upon the same account).
+Note: The fourth identity (`client-b`) employeth an abbreviated name, and the fifth (`oss`) a developer's nom de plume. Thou canst set different display names for each identity, even for the selfsame person.
 
 ---
 

@@ -68,11 +68,11 @@ Typical setup fer managin' yer personal account and company account (Enterprise 
 ### Step 1: Prepare Yer SSH Keys
 
 ```bash
-# Captain's personal account
-ssh-keygen -t ed25519 -C "morgan@personal.example.com" -f ~/.ssh/id_ed25519_captain
+# Personal account
+ssh-keygen -t ed25519 -C "morgan@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
-# Merchant vessel account (fer legitimate business, arrr)
-ssh-keygen -t ed25519 -C "morgan@company.example.com" -f ~/.ssh/id_ed25519_merchant
+# Work account (fer legitimate business, arrr)
+ssh-keygen -t ed25519 -C "morgan@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 After generatin' yer keys, register the public keys (`.pub`) to each service (GitHub, GitLab, Bitbucket, etc.). This be required, matey!
@@ -82,18 +82,18 @@ After generatin' yer keys, register the public keys (`.pub`) to each service (Gi
 Edit `~/.ssh/config`:
 
 ```ssh-config
-# Captain's Personal Account (GitHub - default)
+# Personal Account (GitHub - default)
 Host github.com
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_captain
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Merchant Account (GitHub)
-Host github-merchant
+# Work Account (GitHub)
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_merchant
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 ```
 
@@ -105,26 +105,59 @@ Open **Extension Settings** and configure yer identities in `gitIdSwitcher.ident
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "captain",
+      "id": "personal",
       "name": "Cap'n Morgan",
       "email": "morgan@personal.example.com",
-      "service": "github",
+      "service": "GitHub",
       "icon": "🏴‍☠️",
-      "description": "Plunderin' personal projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_captain"
+      "description": "Me own treasure",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "merchant",
+      "id": "work-main",
       "name": "Cap'n Morgan",
-      "email": "morgan@company.example.com",
-      "service": "github",
+      "email": "morgan@techcorp.example.com",
+      "service": "GitHub Crew",
       "icon": "⚓",
-      "description": "Legitimate merchant business",
-      "sshKeyPath": "~/.ssh/id_ed25519_merchant",
-      "sshHost": "github-merchant"
+      "description": "TechCorp main voyage",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "gpgKeyId": "9876543210FEDCBA"
+    },
+    {
+      "id": "client-a",
+      "name": "Cap'n Morgan",
+      "email": "morgan@clienta.example.com",
+      "service": "Bitbucket",
+      "icon": "🦜",
+      "description": "ClientA plunderin'",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
+    },
+    {
+      "id": "client-b",
+      "name": "M.Morgan",
+      "email": "m.morgan@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "💀",
+      "description": "ClientB aboard ship",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "morgan-dev",
+      "email": "morgan.dev@example.com",
+      "service": "GitLab",
+      "icon": "🏆",
+      "description": "OSS booty fer all",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
-  "gitIdSwitcher.defaultIdentity": "captain",
+  "gitIdSwitcher.defaultIdentity": "personal",
   "gitIdSwitcher.autoSwitchSshKey": true,
   "gitIdSwitcher.applyToSubmodules": true
 }
@@ -166,13 +199,13 @@ Yer key ID be `ABCD1234`. Remember it well!
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "captain",
+      "id": "personal",
       "name": "Cap'n Morgan",
       "email": "morgan@personal.example.com",
       "service": "GitHub",
       "icon": "🏴‍☠️",
-      "description": "Plunderin' personal projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_captain",
+      "description": "Me own treasure",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
       "gpgKeyId": "ABCD1234"
     }
   ]
@@ -188,32 +221,46 @@ Now yer commits be properly signed like a captain's decree!
 
 ---
 
-## Full Example: 4 Accounts with SSH + GPG (Full Fleet)
+## Full Example: 5 Accounts with SSH + GPG (Full Fleet)
 
 All the provisions combined! Here be the full example:
 
 ### SSH Config (`~/.ssh/config`)
 
 ```ssh-config
-# Captain's Personal Account (default)
-Host github.com
+# Personal Account (default)
+Host github-personal
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_captain
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Merchant Account (Company EMU)
-Host github-merchant
+# Work Account (Company EMU)
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_merchant
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Tavern Account (Bitbucket)
-Host bitbucket.org
+# Client A – contract plunder (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_tavern
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Client B – on-site voyage (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS treasure (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -223,52 +270,65 @@ Host bitbucket.org
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "captain",
+      "id": "personal",
       "name": "Cap'n Morgan",
       "email": "morgan@personal.example.com",
       "service": "GitHub",
       "icon": "🏴‍☠️",
-      "description": "Personal - Plunderin' projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_captain",
-      "gpgKeyId": "CAPTAIN1"
+      "description": "Me own treasure",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "merchant",
+      "id": "work-main",
       "name": "Cap'n Morgan",
-      "email": "morgan@company.example.com",
-      "service": "GitHub Company",
+      "email": "morgan@techcorp.example.com",
+      "service": "GitHub Crew",
       "icon": "⚓",
-      "description": "Company (EMU) - Merchant business",
-      "sshKeyPath": "~/.ssh/id_ed25519_merchant",
-      "sshHost": "github-merchant",
-      "gpgKeyId": "MERCHANT1"
+      "description": "TechCorp main voyage",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "tavern",
+      "id": "client-a",
       "name": "Cap'n Morgan",
-      "email": "morgan@bitbucket.example.com",
+      "email": "morgan@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket - Tavern projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_tavern",
-      "sshHost": "bitbucket.org"
+      "icon": "🦜",
+      "description": "ClientA plunderin'",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "navy-spy",
-      "name": "Cap'n Morgan",
-      "email": "morgan@freelance.example.com",
+      "id": "client-b",
+      "name": "M.Morgan",
+      "email": "m.morgan@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "💀",
+      "description": "ClientB aboard ship",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "morgan-dev",
+      "email": "morgan.dev@example.com",
       "service": "GitLab",
-      "icon": "🎭",
-      "description": "Freelance - Undercover operations"
+      "icon": "🏆",
+      "description": "OSS booty fer all",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
-  "gitIdSwitcher.defaultIdentity": "captain",
+  "gitIdSwitcher.defaultIdentity": "personal",
   "gitIdSwitcher.autoSwitchSshKey": true,
   "gitIdSwitcher.applyToSubmodules": true
 }
 ```
 
-Note: The last identity (`navy-spy`) has no SSH. Ye can use this fer switchin' just Git config (like different committer info on the same account).
+Note: The 4th identity (`client-b`) uses a shortened name, and the 5th (`oss`) uses a dev handle. Ye can set different display names fer each identity, even fer the same scallywag.
 
 ---
 
@@ -392,7 +452,7 @@ If ye see this error, check yer settings:
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "captain",
+      "id": "personal",
       "name": "Cap'n Morgan", // ← This be required!
       "email": "morgan@personal.example.com" // ← This too!
     }
