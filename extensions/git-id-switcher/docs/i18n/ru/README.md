@@ -116,11 +116,11 @@ Host github-work
 
 > **Совет**: Вы также можете настроить напрямую в settings.json.
 > Откройте настройки расширения (`Cmd+,` / `Ctrl+,`) → найдите «Git ID Switcher» → нажмите «Редактировать в settings.json».
-> Примеры JSON-формата см. в разделе «[Полный пример: 4 аккаунта с SSH + GPG](#полный-пример-4-аккаунта-с-ssh--gpg)».
+> Примеры JSON-формата см. в разделе «[Полный пример: 5 аккаунтов с SSH + GPG](#полный-пример-5-аккаунтов-с-ssh--gpg)».
 
 ---
 
-## Полный пример: 4 аккаунта с SSH + GPG
+## Полный пример: 5 аккаунтов с SSH + GPG
 
 Полный пример, объединяющий всё:
 
@@ -128,7 +128,7 @@ Host github-work
 
 ```ssh-config
 # Личный аккаунт (по умолчанию)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -141,11 +141,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Аккаунт Bitbucket
-Host bitbucket.org
+# Клиент A – контрактная работа (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Клиент B – проект на площадке (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS-вклад (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -162,36 +176,49 @@ Host bitbucket.org
       "icon": "🏠",
       "description": "Личные проекты",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "Саша Петров",
-      "email": "sasha.petrov@company.example.com",
+      "email": "sasha.petrov@techcorp.example.com",
       "service": "GitHub Работа",
       "icon": "💼",
-      "description": "Рабочий аккаунт",
+      "description": "TechCorp основная работа",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Саша Петров",
-      "email": "sasha@bitbucket.example.com",
+      "email": "sasha@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Проекты Bitbucket",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA контракт",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "Саша Петров",
-      "email": "sasha@freelance.example.com",
+      "id": "client-b",
+      "name": "С.Петров",
+      "email": "s.petrov@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB на месте",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "sasha-dev",
+      "email": "sasha.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Фриланс-проекты"
+      "icon": "🌟",
+      "description": "Вклад в OSS",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -200,7 +227,7 @@ Host bitbucket.org
 }
 ```
 
-Примечание: Последний профиль (`freelance`) без SSH. Это полезно, когда нужно использовать разную информацию о коммиттере с одним аккаунтом GitHub — переключается только Git-конфигурация.
+Примечание: 4-й профиль (`client-b`) использует сокращённое имя, а 5-й (`oss`) — ник разработчика. Для каждого профиля можно задать разное отображаемое имя, даже для одного человека.
 
 ---
 

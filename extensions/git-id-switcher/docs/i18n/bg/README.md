@@ -116,11 +116,11 @@ Host github-work
 
 > **Съвет**: Можете също да конфигурирате директно от settings.json.
 > Отворете настройките на разширението (`Cmd+,` / `Ctrl+,`) → потърсете „Git ID Switcher" → кликнете „Редактиране в settings.json".
-> За примери на JSON формат вижте „[Пълен пример](#пълен-пример-4-акаунта-с-ssh--gpg)".
+> За примери на JSON формат вижте „[Пълен пример](#пълен-пример-5-акаунта-с-ssh--gpg)".
 
 ---
 
-## Пълен пример: 4 акаунта с SSH + GPG
+## Пълен пример: 5 акаунта с SSH + GPG
 
 Ето пълен пример комбиниращ всичко:
 
@@ -128,24 +128,38 @@ Host github-work
 
 ```ssh-config
 # Личен акаунт (по подразбиране)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Служебен акаунт (Enterprise Managed User)
+# Служебен акаунт (Enterprise Managed User от компанията)
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket акаунт
-Host bitbucket.org
+# Клиент A – договорна работа (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Клиент B – проект на място (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS приноси (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -162,36 +176,49 @@ Host bitbucket.org
       "icon": "🏠",
       "description": "Лични проекти",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "Саша Иванов",
-      "email": "sasha.ivanov@company.example.com",
-      "service": "GitHub Служебен",
+      "email": "sasha.ivanov@techcorp.example.com",
+      "service": "GitHub Работа",
       "icon": "💼",
-      "description": "Служебен акаунт",
+      "description": "TechCorp основна работа",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Саша Иванов",
-      "email": "sasha@bitbucket.example.com",
+      "email": "sasha@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket проекти",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA договор",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "Саша Иванов",
-      "email": "sasha@freelance.example.com",
+      "id": "client-b",
+      "name": "С.Иванов",
+      "email": "s.ivanov@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB на място",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "sasha-dev",
+      "email": "sasha.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Проекти на свободна практика"
+      "icon": "🌟",
+      "description": "OSS принос",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -200,7 +227,7 @@ Host bitbucket.org
 }
 ```
 
-Забележка: Последният профил (`freelance`) е без SSH. Когато използвате различна информация за комитър със същия GitHub акаунт, е възможно само превключване на Git config.
+Забележка: 4-ият профил (`client-b`) използва съкратено име, а 5-ият (`oss`) — псевдоним на разработчик. Можете да зададете различно показвано име за всеки профил, дори за едно и също лице.
 
 ---
 

@@ -116,11 +116,11 @@ Host github-work
 
 > **ヒント**: settings.jsonから直接設定することもできます。
 > 拡張機能の設定を開き（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」を検索 →「settings.jsonで編集」をクリック。
-> JSON形式での設定例は「[フル設定例](#フル設定例-4アカウントとssh--gpg)」を参照してください。
+> JSON形式での設定例は「[フル設定例](#フル設定例-5アカウントとssh--gpg)」を参照してください。
 
 ---
 
-## フル設定例: 4アカウントとSSH + GPG
+## フル設定例: 5アカウントとSSH + GPG
 
 すべてを組み合わせた完全な例：
 
@@ -128,7 +128,7 @@ Host github-work
 
 ```ssh-config
 # 個人用アカウント（デフォルト）
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -141,11 +141,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket用アカウント
-Host bitbucket.org
+# クライアントA 受託開発（Bitbucket）
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# クライアントB 常駐プロジェクト（Bitbucket）
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS活動（GitLab）
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -162,36 +176,49 @@ Host bitbucket.org
       "icon": "🏠",
       "description": "個人プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "高橋カオル",
-      "email": "kaoru.takahashi@company.example.com",
+      "email": "kaoru.takahashi@techcorp.example.com",
       "service": "GitHub 会社用",
       "icon": "💼",
-      "description": "会社の開発用",
+      "description": "TechCorp 本業",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "高橋カオル",
-      "email": "kaoru@bitbucket.example.com",
+      "email": "kaoru@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucketプロジェクト",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA社 受託案件",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "高橋カオル",
-      "email": "kaoru@freelance.example.com",
+      "id": "client-b",
+      "name": "K.Takahashi",
+      "email": "k.takahashi@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB社 常駐案件",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "kaoru-dev",
+      "email": "kaoru.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "フリーランス案件"
+      "icon": "🌟",
+      "description": "OSSコントリビューション",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -200,7 +227,7 @@ Host bitbucket.org
 }
 ```
 
-注意：最後のプロフィール（`freelance`）にはSSHがありません。同じGitHubアカウントで異なるコミット者情報を使い分ける場合など、Git configのみの切り替えも可能です。
+注意：4番目のプロフィール（`client-b`）は省略名、5番目（`oss`）はハンドルネームを使用しています。同じ人物でもプロフィールごとに異なる表示名を設定できます。
 
 ---
 

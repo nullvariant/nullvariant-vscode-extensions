@@ -116,11 +116,11 @@ Kövesse az alábbi útmutatót a saját beállításaihoz való szerkesztéshez
 
 > **Tipp**: Közvetlenül a settings.json-ból is konfigurálhatja.
 > Nyissa meg a bővítmény beállításait (`Cmd+,` / `Ctrl+,`) → keressen rá: „Git ID Switcher" → kattintson a „Szerkesztés a settings.json-ban" lehetőségre.
-> A JSON formátumú konfigurációhoz lásd a „[Teljes konfigurációs példa](#teljes-konfigurációs-példa-4-fiók-ssh--gpg-val)" részt.
+> A JSON formátumú konfigurációhoz lásd a „[Teljes konfigurációs példa](#teljes-konfigurációs-példa-5-fiók-ssh--gpg-val)" részt.
 
 ---
 
-## Teljes konfigurációs példa: 4 fiók SSH + GPG-val
+## Teljes konfigurációs példa: 5 fiók SSH + GPG-val
 
 Teljes példa, amely mindent kombinál:
 
@@ -128,7 +128,7 @@ Teljes példa, amely mindent kombinál:
 
 ```ssh-config
 # Személyes fiók (alapértelmezett)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -141,11 +141,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket fiók
-Host bitbucket.org
+# A ügyfél – szerződéses munka (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# B ügyfél – helyszíni projekt (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS hozzájárulások (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -157,41 +171,54 @@ Host bitbucket.org
     {
       "id": "personal",
       "name": "Nagy Alex",
-      "email": "alex.nagy@personal.example.com",
+      "email": "alex@personal.example.com",
       "service": "GitHub",
       "icon": "🏠",
       "description": "Személyes projektek",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "Nagy Alex",
-      "email": "alex.nagy@company.example.com",
-      "service": "GitHub Munkahelyi",
+      "email": "alex.nagy@techcorp.example.com",
+      "service": "GitHub Munka",
       "icon": "💼",
-      "description": "Vállalati fejlesztés",
+      "description": "TechCorp fő munka",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Nagy Alex",
-      "email": "alex.nagy@bitbucket.example.com",
+      "email": "alex@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket projektek",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA megbízás",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "Nagy Alex",
-      "email": "alex.nagy@freelance.example.com",
+      "id": "client-b",
+      "name": "A.Nagy",
+      "email": "a.nagy@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB helyszíni",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "alex-dev",
+      "email": "alex.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Szabadúszó projektek"
+      "icon": "🌟",
+      "description": "OSS hozzájárulások",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -200,7 +227,7 @@ Host bitbucket.org
 }
 ```
 
-Megjegyzés: Az utolsó profil (`freelance`) SSH nélküli. Ha ugyanazon GitHub-fiókkal különböző committer-információkat használ, csak a Git konfiguráció váltása is lehetséges.
+Megjegyzés: A 4. profil (`client-b`) rövidített nevet, az 5. (`oss`) fejlesztői felhasználónevet használ. Ugyanannak a személynek minden profilhoz más megjelenítési nevet állíthat be.
 
 ---
 

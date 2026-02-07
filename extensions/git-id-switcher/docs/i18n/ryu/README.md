@@ -138,11 +138,11 @@ Host github-work
 
 > **ヒント**: settings.jsonから直接設定すーるくとぅもでぃちゅん。
 > 拡張機能ぬ設定開ちゅん（`Cmd+,` / `Ctrl+,`）→「Git ID Switcher」検索 →「settings.jsonで編集」クリック。
-> JSON形式んかいぬ設定例や「[フル設定例](#フル設定例-4アカウントとぅssh--gpg)」見てぃくぃみそーれー。
+> JSON形式んかいぬ設定例や「[フル設定例](#フル設定例-5アカウントとぅssh--gpg)」見てぃくぃみそーれー。
 
 ---
 
-## フル設定例: 4アカウントとぅSSH + GPG
+## フル設定例: 5アカウントとぅSSH + GPG
 
 全部まとめた完全な例やいびーん:
 
@@ -150,7 +150,7 @@ Host github-work
 
 ```ssh-config
 # 個人用アカウント（デフォルト）
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -163,11 +163,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket用アカウント
-Host bitbucket.org
+# クライアントA 受託開発（Bitbucket）
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# クライアントB 常駐プロジェクト（Bitbucket）
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS活動（GitLab）
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -181,39 +195,52 @@ Host bitbucket.org
       "name": "比嘉真",
       "email": "makoto@personal.example.com",
       "service": "GitHub",
-      "icon": "🏠",
-      "description": "個人プロジェクト",
+      "icon": "🐉",
+      "description": "わん ぬ プロジェクト",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "比嘉真",
-      "email": "makoto.higa@company.example.com",
-      "service": "GitHub 仕事用",
-      "icon": "💼",
-      "description": "会社ぬ開発用",
+      "email": "makoto.higa@techcorp.example.com",
+      "service": "GitHub しくち",
+      "icon": "🌊",
+      "description": "TechCorp めー ぬ しくち",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "比嘉真",
-      "email": "makoto@bitbucket.example.com",
+      "email": "makoto@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucketプロジェクト",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "☀️",
+      "description": "ClientA うきー",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "jiyu",
-      "name": "比嘉真",
-      "email": "makoto@freelance.example.com",
+      "id": "client-b",
+      "name": "M.比嘉",
+      "email": "m.higa@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏝️",
+      "description": "ClientB じょーちゅー",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "makoto-dev",
+      "email": "makoto.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "自由業案件"
+      "icon": "🦁",
+      "description": "OSS てぃーだち",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -222,7 +249,7 @@ Host bitbucket.org
 }
 ```
 
-メモ: 最後ぬプロフィール（`jiyu`）やSSH無し。同じGitHubアカウントんかい違うコミッター情報使い分けーる場合んかい、Git configだけぬ切り替えも可能やいびーん。
+メモ: 4番目ぬプロフィール（`client-b`）や省略名、5番目（`oss`）やハンドルネーム使とーいびーん。同じ人やてぃんプロフィールごとぅ違う表示名設定出来やいびーん。
 
 ---
 
@@ -257,7 +284,7 @@ Host bitbucket.org
 | `id`          | ✅   | 一意ぬ識別子（例：`"personal"`, `"work"`）                         |
 | `name`        | ✅   | Git user.name - コミットんかい表示                                 |
 | `email`       | ✅   | Git user.email - コミットんかい表示                                |
-| `icon`        |      | ステータスバーんかい表示さーる絵文字（例：`"🏠"`）。単一絵文字のみ |
+| `icon`        |      | ステータスバーんかい表示さーる絵文字（例：`"🐉"`）。単一絵文字のみ |
 | `service`     |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI表示んかい使用         |
 | `description` |      | ピッカーとぅツールチップんかい表示さーる短い説明                   |
 | `sshKeyPath`  |      | SSHプライベートキーぬパス（例：`"~/.ssh/id_ed25519_work"`）        |

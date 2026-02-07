@@ -136,11 +136,11 @@ E hahai i kēia alakaʻi e hoʻoponopono iā lākou no kou hoʻohana ʻana.
 
 > **Manaʻo**: Hiki ke hoʻonohonoho pololei mai settings.json.
 > E wehe i nā hoʻonohonoho extension (`Cmd+,` / `Ctrl+,`) → E huli "Git ID Switcher" → E kaomi "Hoʻoponopono ma settings.json".
-> E nānā i "[Laʻana Piha](#laʻana-piha-4-moʻokāki-me-ssh--gpg)" no nā laʻana hoʻonohonoho JSON.
+> E nānā i "[Laʻana Piha](#laʻana-piha-5-moʻokāki-me-ssh--gpg)" no nā laʻana hoʻonohonoho JSON.
 
 ---
 
-## Laʻana Piha: 4 Moʻokāki me SSH + GPG
+## Laʻana Piha: 5 Moʻokāki me SSH + GPG
 
 He laʻana piha e hoʻohui i nā mea āpau:
 
@@ -148,7 +148,7 @@ He laʻana piha e hoʻohui i nā mea āpau:
 
 ```ssh-config
 # Moʻokāki pilikino (paʻamau)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -161,11 +161,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Moʻokāki Bitbucket
-Host bitbucket.org
+# Mea kūʻai aku A (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Mea kūʻai aku B (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# Hāʻawi OSS (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -179,39 +193,52 @@ Host bitbucket.org
       "name": "Kai Kalani",
       "email": "kai@personal.example.com",
       "service": "GitHub",
-      "icon": "🏠",
-      "description": "Nā papahana pilikino",
+      "icon": "🌺",
+      "description": "Papahana pilikino",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "Kai Kalani",
-      "email": "kai.kalani@company.example.com",
+      "email": "kai.kalani@techcorp.example.com",
       "service": "GitHub Hana",
-      "icon": "💼",
-      "description": "Hana hui",
+      "icon": "🌴",
+      "description": "TechCorp hana nui",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Kai Kalani",
-      "email": "kai@bitbucket.example.com",
+      "email": "kai@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Nā papahana Bitbucket",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🌊",
+      "description": "ClientA ʻaelike",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "kūʻokoʻa",
-      "name": "Kai Kalani",
-      "email": "kai@freelance.example.com",
+      "id": "client-b",
+      "name": "K.Kalani",
+      "email": "k.kalani@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏝️",
+      "description": "ClientB ma laila",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "kai-dev",
+      "email": "kai.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Nā papahana kūʻokoʻa"
+      "icon": "🐚",
+      "description": "Kōkua OSS",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -220,7 +247,7 @@ Host bitbucket.org
 }
 ```
 
-Palapala: ʻAʻohe SSH i ka ID hope (`kūʻokoʻa`)—hoʻololi wale i ka Git config. Maikaʻi i ka hoʻohana ʻana i ka moʻokāki GitHub like me nā ʻike commit ʻokoʻa.
+Palapala: Ka 4 ID (`client-b`) hoʻohana i ka inoa pōkole, a ka 5 (`oss`) hoʻohana i ka inoa hana hoʻomohala. Hiki ke hoʻonohonoho i nā inoa hōʻike ʻokoʻa no kēlā me kēia ID, no ka mea like hoʻokahi.
 
 ---
 
@@ -255,7 +282,7 @@ Hiki ke holoi i nā ID mai ka command palette me `Git ID Switcher: Delete Identi
 | `id`          | ✅   | Hōʻailona kūʻokoʻa (laʻa: `"work"`, `"personal"`)                     |
 | `name`        | ✅   | Git user.name — hōʻike ʻia ma nā commit                               |
 | `email`       | ✅   | Git user.email — hōʻike ʻia ma nā commit                              |
-| `icon`        |      | Emoji hōʻike ma ka pahu status (laʻa: `"🏠"`). Hoʻokahi emoji wale nō |
+| `icon`        |      | Emoji hōʻike ma ka pahu status (laʻa: `"🌺"`). Hoʻokahi emoji wale nō |
 | `service`     |      | Inoa lawelawe (laʻa: `"GitHub"`, `"GitLab"`). No ka UI                |
 | `description` |      | Wehewehe pōkole no ke koho a me ke tooltip                            |
 | `sshKeyPath`  |      | Ala i ke kī SSH pilikino (laʻa: `"~/.ssh/id_ed25519_work"`)           |

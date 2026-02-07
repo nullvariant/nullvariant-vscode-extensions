@@ -116,11 +116,11 @@ Host github-work
 
 > **提示**: 您也可以直接從 settings.json 進行設定。
 > 開啟擴充功能設定（`Cmd+,` / `Ctrl+,`）→ 搜尋 "Git ID Switcher" → 點擊 "在 settings.json 中編輯"。
-> JSON 設定範例請參閱「[完整範例](#完整範例-4-個帳戶與-ssh--gpg)」。
+> JSON 設定範例請參閱「[完整範例](#完整範例-5-個帳戶與-ssh--gpg)」。
 
 ---
 
-## 完整範例: 4 個帳戶與 SSH + GPG
+## 完整範例: 5 個帳戶與 SSH + GPG
 
 結合所有功能的完整範例：
 
@@ -128,7 +128,7 @@ Host github-work
 
 ```ssh-config
 # 個人帳戶（預設）
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -141,11 +141,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket 帳戶
-Host bitbucket.org
+# 客戶A 承攬專案（Bitbucket）
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# 客戶B 駐點專案（Bitbucket）
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS 貢獻（GitLab）
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -162,36 +176,49 @@ Host bitbucket.org
       "icon": "🏠",
       "description": "個人專案",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "陳雨",
-      "email": "chenyu@company.example.com",
+      "email": "chenyu.chen@techcorp.example.com",
       "service": "GitHub 公司",
       "icon": "💼",
-      "description": "公司開發（企業託管使用者）",
+      "description": "TechCorp 正職",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "陳雨",
-      "email": "chenyu@bitbucket.example.com",
+      "email": "chenyu@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket 專案",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA 接案",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "陳雨",
-      "email": "chenyu@freelance.example.com",
+      "id": "client-b",
+      "name": "Y.Chen",
+      "email": "y.chen@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB 駐點專案",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "chenyu-dev",
+      "email": "chenyu.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "自由接案專案"
+      "icon": "🌟",
+      "description": "開源貢獻",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -200,7 +227,7 @@ Host bitbucket.org
 }
 ```
 
-注意：最後一個身分檔案（`freelance`）沒有 SSH — 它只切換 Git 設定。這在使用同一個 GitHub 帳戶但需要不同提交者資訊時很有用。
+注意：第4個身分（`client-b`）使用了縮寫名稱，第5個（`oss`）使用了開發者暱稱。同一個人可以為每個身分設定不同的顯示名稱。
 
 ---
 

@@ -121,11 +121,11 @@ Install rIntaHvIS sample profiles qawmoHlu'. Guide tlha', SoH choH.
 
 > **QI'**: settings.json tI' Segh Datu'.
 > Extension settings poSmoH (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" nej → "Edit in settings.json" wIv.
-> JSON format Segh pIv "[Full Example](#full-example-4-accounts-ssh--gpg)" legh.
+> JSON format Segh pIv "[Full Example](#full-example-5-accounts-ssh--gpg)" legh.
 
 ---
 
-## pIv naQ: 4 Accounts SSH + GPG
+## pIv naQ: 5 Accounts SSH + GPG
 
 Hoch tay'taH pIv naQ:
 
@@ -133,7 +133,7 @@ Hoch tay'taH pIv naQ:
 
 ```ssh-config
 # Personal account (default)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
@@ -146,11 +146,25 @@ Host github-work
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket account
-Host bitbucket.org
+# Client A – contract work (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Client B – on-site project (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# OSS contributions (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -164,39 +178,52 @@ Host bitbucket.org
       "name": "Qapla'",
       "email": "qapla@personal.example.com",
       "service": "GitHub",
-      "icon": "🏠",
-      "description": "Personal projects",
+      "icon": "⚔️",
+      "description": "jIH ta'mey",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "Qapla'",
-      "email": "qapla@company.example.com",
-      "service": "GitHub Work",
-      "icon": "💼",
-      "description": "Company development",
+      "email": "qapla@techcorp.example.com",
+      "service": "GitHub vum",
+      "icon": "🗡️",
+      "description": "TechCorp vum'a'",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Qapla'",
-      "email": "qapla@bitbucket.example.com",
+      "email": "qapla@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "💪",
+      "description": "ClientA mIw",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "Qapla'",
-      "email": "qapla@freelance.example.com",
+      "id": "client-b",
+      "name": "Q.Qapla'",
+      "email": "q.qapla@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🔥",
+      "description": "ClientB Daq",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "qapla-dev",
+      "email": "qapla.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Freelance work"
+      "icon": "🏆",
+      "description": "OSS boQ",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -205,7 +232,7 @@ Host bitbucket.org
 }
 ```
 
-ghu: profile Qav (`freelance`) SSH Hutlh—GitHub account rap committer De' rar lo', Git config neH choH Datu'.
+ghu: profile 4 (`client-b`) pong mojaq lo'. profile 5 (`oss`) chenmoH pong lo'. nuv rap qoj profiles pIm pong'e' lo'laH.
 
 ---
 
@@ -240,7 +267,7 @@ Command Palette `Git ID Switcher: Delete Identity` profile teq je Datu'.
 | `id`          | ✅       | Unique identifier (e.g., `"personal"`, `"work"`)            |
 | `name`        | ✅       | Git user.name — commits show                                |
 | `email`       | ✅       | Git user.email — commits show                               |
-| `icon`        |          | Status bar emoji (e.g., `"🏠"`). Single emoji only          |
+| `icon`        |          | Status bar emoji (e.g., `"⚔️"`). Single emoji only          |
 | `service`     |          | Service name (e.g., `"GitHub"`, `"GitLab"`). UI display use |
 | `description` |          | Picker 'ej tooltip short description                        |
 | `sshKeyPath`  |          | SSH private key path (e.g., `"~/.ssh/id_ed25519_work"`)     |

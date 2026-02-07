@@ -116,11 +116,11 @@ Sigue la guía a continuación para editarlos a tu medida.
 
 > **Consejo**: También puedes configurar directamente desde settings.json.
 > Abre los ajustes de la extensión (`Cmd+,` / `Ctrl+,`) → busca «Git ID Switcher» → haz clic en «Editar en settings.json».
-> Para ejemplos de configuración en formato JSON, consulta «[Ejemplo completo](#ejemplo-completo-4-cuentas-con-ssh--gpg)».
+> Para ejemplos de configuración en formato JSON, consulta «[Ejemplo completo](#ejemplo-completo-5-cuentas-con-ssh--gpg)».
 
 ---
 
-## Ejemplo completo: 4 cuentas con SSH + GPG
+## Ejemplo completo: 5 cuentas con SSH + GPG
 
 Un ejemplo completo combinando todas las funcionalidades:
 
@@ -128,24 +128,38 @@ Un ejemplo completo combinando todas las funcionalidades:
 
 ```ssh-config
 # Cuenta personal (predeterminada)
-Host github.com
+Host github-personal
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Cuenta de trabajo (Enterprise Managed User proporcionado por la empresa)
+# Cuenta de trabajo (Enterprise Managed User emitido por la empresa)
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Cuenta de Bitbucket
-Host bitbucket.org
+# Cliente A – trabajo por contrato (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Cliente B – proyecto en sitio (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# Contribuciones OSS (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -157,41 +171,54 @@ Host bitbucket.org
     {
       "id": "personal",
       "name": "Alex García",
-      "email": "alex.garcia@personal.example.com",
+      "email": "alex@personal.example.com",
       "service": "GitHub",
       "icon": "🏠",
       "description": "Proyectos personales",
       "sshKeyPath": "~/.ssh/id_ed25519_personal",
-      "gpgKeyId": "PERSONAL1"
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "work",
+      "id": "work-main",
       "name": "Alex García",
-      "email": "alex.garcia@company.example.com",
+      "email": "alex.garcia@techcorp.example.com",
       "service": "GitHub Trabajo",
       "icon": "💼",
-      "description": "Desarrollo en la empresa",
+      "description": "TechCorp empleo principal",
       "sshKeyPath": "~/.ssh/id_ed25519_work",
       "sshHost": "github-work",
-      "gpgKeyId": "WORK1234"
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Alex García",
-      "email": "alex.garcia@bitbucket.example.com",
+      "email": "alex@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Proyectos Bitbucket",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA contrato",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "freelance",
-      "name": "Alex García",
-      "email": "alex.garcia@freelance.example.com",
+      "id": "client-b",
+      "name": "A.García",
+      "email": "a.garcia@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB presencial",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "alex-dev",
+      "email": "alex.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Proyectos freelance"
+      "icon": "🌟",
+      "description": "Contribuciones OSS",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
   "gitIdSwitcher.defaultIdentity": "personal",
@@ -200,7 +227,7 @@ Host bitbucket.org
 }
 ```
 
-Nota: El último perfil (`freelance`) no tiene SSH. También es posible cambiar solo la configuración de Git, por ejemplo, para usar diferente información de commit con la misma cuenta de GitHub.
+Nota: El 4.º perfil (`client-b`) usa un nombre abreviado y el 5.º (`oss`) un alias de desarrollador. Puedes establecer nombres de visualización diferentes para cada perfil, incluso para la misma persona.
 
 ---
 

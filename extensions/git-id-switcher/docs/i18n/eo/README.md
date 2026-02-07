@@ -77,15 +77,15 @@ Unue, generu SSH-ŝlosilojn por ĉiu konto (preterpasu se vi jam havas):
 
 ```bash
 # Persona konto
-ssh-keygen -t ed25519 -C "zamenhof@persona.example.com" -f ~/.ssh/id_ed25519_persona
+ssh-keygen -t ed25519 -C "zamenhof@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Labora konto
-ssh-keygen -t ed25519 -C "zamenhof@laboro.example.com" -f ~/.ssh/id_ed25519_laboro
+ssh-keygen -t ed25519 -C "zamenhof@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Registru la **publikan ŝlosilon** (`.pub` dosiero) de ĉiu ŝlosilo al la responda GitHub-konto.
 
-> **Noto**: Al GitHub oni registras `id_ed25519_persona.pub` (publika ŝlosilo). `id_ed25519_persona` (sen etendo) estas la privata ŝlosilo—neniam dividu aŭ alŝutu ĝin ien ajn.
+> **Noto**: Al GitHub oni registras `id_ed25519_personal.pub` (publika ŝlosilo). `id_ed25519_personal` (sen etendo) estas la privata ŝlosilo—neniam dividu aŭ alŝutu ĝin ien ajn.
 
 ### Paŝo 2: Agordu SSH
 
@@ -96,14 +96,14 @@ Redaktu `~/.ssh/config`:
 Host github.com
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_persona
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
 # Labora GitHub-konto
-Host github-laboro
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_laboro
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 ```
 
@@ -121,11 +121,11 @@ Laŭ la suba gvidilo, redaktu ilin por via propra uzo.
 
 > **Konsilo**: Vi ankaŭ povas agordi rekte el settings.json.
 > Malfermu etendo-agordojn (`Cmd+,` / `Ctrl+,`) → Serĉu "Git ID Switcher" → Klaku "Redakti en settings.json".
-> Por JSON-agordo-ekzemploj, vidu "[Plena Ekzemplo: 4 Kontoj kun SSH + GPG](#plena-ekzemplo-4-kontoj-kun-ssh--gpg)".
+> Por JSON-agordo-ekzemploj, vidu "[Plena Ekzemplo: 5 Kontoj kun SSH + GPG](#plena-ekzemplo-5-kontoj-kun-ssh--gpg)".
 
 ---
 
-## Plena Ekzemplo: 4 Kontoj kun SSH + GPG
+## Plena Ekzemplo: 5 Kontoj kun SSH + GPG
 
 Plena ekzemplo kiu kombinas ĉion:
 
@@ -133,24 +133,38 @@ Plena ekzemplo kiu kombinas ĉion:
 
 ```ssh-config
 # Persona konto (defaŭlta)
-Host github.com
+Host github-personal
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_persona
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
 # Labora konto (kompania Enterprise Managed User)
-Host github-laboro
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_laboro
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
-# Bitbucket-konto
-Host bitbucket.org
+# Kliento A – kontrakta laboro (Bitbucket)
+Host bitbucket-clienta
     HostName bitbucket.org
     User git
-    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentityFile ~/.ssh/id_ed25519_clienta
+    IdentitiesOnly yes
+
+# Kliento B – surloka projekto (Bitbucket)
+Host bitbucket-clientb
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_clientb
+    IdentitiesOnly yes
+
+# Malfermfontaj kontribuoj (GitLab)
+Host gitlab-oss
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_oss
     IdentitiesOnly yes
 ```
 
@@ -160,52 +174,65 @@ Host bitbucket.org
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "persona",
+      "id": "personal",
       "name": "Ludoviko Zamenhof",
-      "email": "zamenhof@persona.example.com",
+      "email": "zamenhof@personal.example.com",
       "service": "GitHub",
       "icon": "🏠",
       "description": "Personaj projektoj",
-      "sshKeyPath": "~/.ssh/id_ed25519_persona",
-      "gpgKeyId": "PERSONA1"
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
+      "sshHost": "github-personal",
+      "gpgKeyId": "ABCD1234EF567890"
     },
     {
-      "id": "laboro",
+      "id": "work-main",
       "name": "Ludoviko Zamenhof",
-      "email": "zamenhof@laboro.example.com",
+      "email": "ludoviko.zamenhof@techcorp.example.com",
       "service": "GitHub Laboro",
       "icon": "💼",
-      "description": "Labora konto",
-      "sshKeyPath": "~/.ssh/id_ed25519_laboro",
-      "sshHost": "github-laboro",
-      "gpgKeyId": "LABORO12"
+      "description": "TechCorp ĉefa laboro",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "gpgKeyId": "9876543210FEDCBA"
     },
     {
-      "id": "bitbucket",
+      "id": "client-a",
       "name": "Ludoviko Zamenhof",
-      "email": "zamenhof@bitbucket.example.com",
+      "email": "zamenhof@clienta.example.com",
       "service": "Bitbucket",
-      "icon": "🪣",
-      "description": "Bitbucket-projektoj",
-      "sshKeyPath": "~/.ssh/id_ed25519_bitbucket",
-      "sshHost": "bitbucket.org"
+      "icon": "🏢",
+      "description": "ClientA kontrakto",
+      "sshKeyPath": "~/.ssh/id_ed25519_clienta",
+      "sshHost": "bitbucket-clienta"
     },
     {
-      "id": "liberprofesia",
-      "name": "Ludoviko Zamenhof",
-      "email": "zamenhof@liberprofesia.example.com",
+      "id": "client-b",
+      "name": "L.Zamenhof",
+      "email": "l.zamenhof@clientb.example.com",
+      "service": "Bitbucket",
+      "icon": "🏭",
+      "description": "ClientB surloke",
+      "sshKeyPath": "~/.ssh/id_ed25519_clientb",
+      "sshHost": "bitbucket-clientb"
+    },
+    {
+      "id": "oss",
+      "name": "zamenhof-dev",
+      "email": "zamenhof.dev@example.com",
       "service": "GitLab",
-      "icon": "🎯",
-      "description": "Liberprofesiaj projektoj"
+      "icon": "🌟",
+      "description": "OSS kontribuoj",
+      "sshKeyPath": "~/.ssh/id_ed25519_oss",
+      "sshHost": "gitlab-oss"
     }
   ],
-  "gitIdSwitcher.defaultIdentity": "persona",
+  "gitIdSwitcher.defaultIdentity": "personal",
   "gitIdSwitcher.autoSwitchSshKey": true,
   "gitIdSwitcher.applyToSubmodules": true
 }
 ```
 
-Noto: La lasta profilo (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-agordon. Utile kiam oni uzas la saman GitHub-konton kun malsamaj commit-informoj.
+Noto: La 4-a profilo (`client-b`) uzas mallongigitan nomon, kaj la 5-a (`oss`) programistan kaŝnomon. Vi povas agordi malsamajn montrnomojn por ĉiu profilo, eĉ por la sama persono.
 
 ---
 
@@ -235,17 +262,17 @@ Vi ankaŭ povas forigi profilon el komand-paleto per `Git ID Switcher: Delete Id
 
 ### Profilo-Propraĵoj
 
-| Propraĵo      | Deviga | Priskribo                                                       |
-| ------------- | ------ | --------------------------------------------------------------- |
-| `id`          | ✅     | Unika identigilo (ekz: `"persona"`, `"laboro"`)                 |
-| `name`        | ✅     | Git user.name — montrita en commit-oj                           |
-| `email`       | ✅     | Git user.email — montrita en commit-oj                          |
-| `icon`        |        | Emoji montrita en statusbreto (ekz: `"🏠"`). Nur unu emoji      |
-| `service`     |        | Serva nomo (ekz: `"GitHub"`, `"GitLab"`). Por UI                |
-| `description` |        | Mallonga priskribo por elektilo kaj konsileto                   |
-| `sshKeyPath`  |        | Vojo al privata SSH-ŝlosilo (ekz: `"~/.ssh/id_ed25519_laboro"`) |
-| `sshHost`     |        | SSH-agordo gastiga kaŝnomo (ekz: `"github-laboro"`)             |
-| `gpgKeyId`    |        | GPG-ŝlosila ID por commit-subskribo                             |
+| Propraĵo      | Deviga | Priskribo                                                     |
+| ------------- | ------ | ------------------------------------------------------------- |
+| `id`          | ✅     | Unika identigilo (ekz: `"personal"`, `"work-main"`)           |
+| `name`        | ✅     | Git user.name — montrita en commit-oj                         |
+| `email`       | ✅     | Git user.email — montrita en commit-oj                        |
+| `icon`        |        | Emoji montrita en statusbreto (ekz: `"🏠"`). Nur unu emoji    |
+| `service`     |        | Serva nomo (ekz: `"GitHub"`, `"GitLab"`). Por UI              |
+| `description` |        | Mallonga priskribo por elektilo kaj konsileto                 |
+| `sshKeyPath`  |        | Vojo al privata SSH-ŝlosilo (ekz: `"~/.ssh/id_ed25519_work"`) |
+| `sshHost`     |        | SSH-agordo gastiga kaŝnomo (ekz: `"github-work"`)             |
+| `gpgKeyId`    |        | GPG-ŝlosila ID por commit-subskribo                           |
 
 #### Montraj Limigoj
 
@@ -364,14 +391,14 @@ Kun `IdentitiesOnly yes`, SSH uzas **nur la specifitan ŝlosilon**. Ĉi tio cert
 
 ```ssh-config
 # Rekomendita agordo
-Host github-laboro
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_laboro
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes  # ← Ĉi tiu linio estas grava
 ```
 
-Kun ĉi tiu agordo, kiam vi konektas al la gastigo `github-laboro`, nur `~/.ssh/id_ed25519_laboro` estos uzata, kaj neniuj aliaj ŝlosiloj estos provitaj.
+Kun ĉi tiu agordo, kiam vi konektas al la gastigo `github-work`, nur `~/.ssh/id_ed25519_work` estos uzata, kaj neniuj aliaj ŝlosiloj estos provitaj.
 
 ---
 
@@ -416,7 +443,7 @@ Por kompleksaj deponejoj kun Git-submoduloj, profila administrado ofte malfacila
 3. Sur macOS, aldonu al Keychain unufoje:
 
    ```bash
-   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_laboro
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
 ### Malĝusta profilo ĉe push?
@@ -426,8 +453,8 @@ Por kompleksaj deponejoj kun Git-submoduloj, profila administrado ofte malfacila
 Kiam vi klonas laboran deponejon, uzu la gastigon-kaŝnomon el via SSH config:
 
 ```bash
-# Por labora profilo (uzas github-laboro kaŝnomon)
-git clone git@github-laboro:kompanio/repo.git
+# Por labora profilo (uzas github-work kaŝnomon)
+git clone git@github-work:kompanio/repo.git
 
 # Por persona profilo (uzas defaŭltan github.com)
 git clone git@github.com:via-nomo/repo.git
@@ -439,13 +466,13 @@ git clone git@github.com:via-nomo/repo.git
 
    ```bash
    git remote -v
-   # Por laboraj deponejoj devus montri git@github-laboro:...
+   # Por laboraj deponejoj devus montri git@github-work:...
    ```
 
 2. Ĝisdatigu se necese:
 
    ```bash
-   git remote set-url origin git@github-laboro:kompanio/repo.git
+   git remote set-url origin git@github-work:kompanio/repo.git
    ```
 
 ### GPG-subskribo ne funkcias?
