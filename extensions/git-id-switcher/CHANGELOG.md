@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.17] - 2026-02-07
+
+### Documentation
+
+- **All 26 i18n READMEs restructured to match new ja/en format**:
+  - Added Profile Management UI section (add/edit/delete/reorder/SSH key path)
+  - Added SSH Key Management section with IdentitiesOnly explanation
+  - Improved Quick Start guide with first-ux image and UI-first approach
+  - Expanded Troubleshooting section with new entries
+  - Added Delete Identity command to Commands table
+  - Removed obsolete sections (old Step 4, GPG-only section, "Note: Basic Setup")
+  - Updated all screenshot references from old PNG to new per-language WebP format
+  - Maintained culturally appropriate sample profile names per language
+  - Languages: en, ja, zh-CN, zh-TW, ko, de, fr, es, pt-BR, it, ru, pl, tr, cs, hu, bg, uk, haw, ain, ryu, tlh, tok, eo, x-pirate, x-lolcat, x-shakespeare
+
 ## [0.16.16] - 2026-02-07
 
 ### Fixed
@@ -1635,7 +1650,8 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.16...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.17...HEAD
+[0.16.17]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.16...git-id-switcher-v0.16.17
 [0.16.16]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.15...git-id-switcher-v0.16.16
 [0.16.15]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.14...git-id-switcher-v0.16.15
 [0.16.14]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.13...git-id-switcher-v0.16.14
