@@ -75,7 +75,7 @@ Kişisel hesap ve kurumsal hesap (Enterprise Managed User) yönetmek için tipik
 ssh-keygen -t ed25519 -C "deniz@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # İş
-ssh-keygen -t ed25519 -C "deniz.yilmaz@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "deniz.yilmaz@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Her anahtarın **genel anahtarını** (`.pub` dosyası) ilgili GitHub hesabına kaydedin.

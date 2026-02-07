@@ -97,7 +97,7 @@ Gitプロフィール切り替えツールやいっぺーあいびーしが、**
 ssh-keygen -t ed25519 -C "makoto@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # 仕事用
-ssh-keygen -t ed25519 -C "makoto.higa@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "makoto.higa@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 うぬうぬぬSSH鍵ぬ**公開鍵**（`.pub`ファイル）ばそれぞれぬGitHubアカウントんかい登録しくぃみそーれー。

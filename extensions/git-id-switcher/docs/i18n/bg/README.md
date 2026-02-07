@@ -75,7 +75,7 @@
 ssh-keygen -t ed25519 -C "sasha@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Служебен
-ssh-keygen -t ed25519 -C "sasha.ivanov@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "sasha.ivanov@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Регистрирайте **публичния ключ** (`.pub` файл) на всеки ключ в съответния GitHub акаунт.

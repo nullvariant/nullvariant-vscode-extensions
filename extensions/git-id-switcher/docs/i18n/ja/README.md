@@ -75,7 +75,7 @@ Gitプロフィール切り替えツールは数多く存在しますが、**Git
 ssh-keygen -t ed25519 -C "kaoru@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # 仕事用
-ssh-keygen -t ed25519 -C "kaoru.takahashi@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "kaoru.takahashi@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 各SSH鍵の**公開鍵**（`.pub`ファイル）をそれぞれのGitHubアカウントに登録してください。

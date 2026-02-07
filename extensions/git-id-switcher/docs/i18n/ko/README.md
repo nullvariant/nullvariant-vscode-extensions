@@ -75,7 +75,7 @@ Git 프로필 전환 도구는 여럿 존재하지만, **Git ID Switcher**는 �
 ssh-keygen -t ed25519 -C "haneul@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # 업무용
-ssh-keygen -t ed25519 -C "haneul@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "haneul.kim@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 각 SSH 키의 **공개 키** (`.pub` 파일)를 해당 GitHub 계정에 등록하세요.

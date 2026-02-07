@@ -72,10 +72,10 @@ Először hozzon létre SSH-kulcsokat minden fiókhoz (hagyja ki, ha már megvan
 
 ```bash
 # Személyes
-ssh-keygen -t ed25519 -C "alex.nagy@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "alex@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Munkahelyi
-ssh-keygen -t ed25519 -C "alex.nagy@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "alex.nagy@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Regisztrálja minden kulcs **nyilvános kulcsát** (`.pub` fájl) a megfelelő GitHub-fiókhoz.

@@ -72,10 +72,10 @@
 
 ```bash
 # Особистий
-ssh-keygen -t ed25519 -C "sasha.kovalenko@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "sasha@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Робочий
-ssh-keygen -t ed25519 -C "sasha.kovalenko@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "sasha.kovalenko@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Зареєструйте **публічний ключ** (файл `.pub`) кожного SSH-ключа у відповідному обліковому записі GitHub.

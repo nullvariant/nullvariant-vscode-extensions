@@ -81,7 +81,7 @@ wa'DIch, accounts SSH keys chenmoH (already ghaj skip):
 ssh-keygen -t ed25519 -C "qapla@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Work
-ssh-keygen -t ed25519 -C "qapla@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "qapla@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 SSH key **public key** (`.pub` file) GitHub account yIchel.
