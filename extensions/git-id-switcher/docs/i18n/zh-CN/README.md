@@ -75,7 +75,7 @@
 ssh-keygen -t ed25519 -C "zhangchen@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # 工作账户
-ssh-keygen -t ed25519 -C "zhangchen@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "zhangchen@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 将每个密钥的**公钥**（`.pub` 文件）注册到相应的 GitHub 账户。

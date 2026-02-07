@@ -72,10 +72,10 @@ Nejprve vytvořte SSH klíče pro každý účet (přeskočte, pokud již máte)
 
 ```bash
 # Osobní
-ssh-keygen -t ed25519 -C "alex.novak@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "alex@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Pracovní
-ssh-keygen -t ed25519 -C "alex.novak@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "alex.novak@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Zaregistrujte **veřejný klíč** (soubor `.pub`) každého klíče na příslušném GitHub účtu.

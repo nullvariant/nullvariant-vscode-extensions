@@ -81,7 +81,7 @@ o pali e SSH key (sina jo la o ante ala):
 ssh-keygen -t ed25519 -C "mun@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # jan lawa
-ssh-keygen -t ed25519 -C "mun@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "mun@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 SSH key **key open** (`.pub` file) o pana tawa GitHub account.

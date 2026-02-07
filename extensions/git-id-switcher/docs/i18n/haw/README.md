@@ -95,7 +95,7 @@ E hana mua i nā kī SSH no kēlā me kēia moʻokāki (e lele inā loaʻa):
 ssh-keygen -t ed25519 -C "kai@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Hana
-ssh-keygen -t ed25519 -C "kai.kalani@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "kai.kalani@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 E hoʻopaʻa i ke **kī lehulehu** (`.pub` faila) o kēlā me kēia kī i ka moʻokāki GitHub pili.

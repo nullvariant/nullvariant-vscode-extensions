@@ -72,10 +72,10 @@ Primero, crea claves SSH para cada cuenta (omite este paso si ya las tienes):
 
 ```bash
 # Personal
-ssh-keygen -t ed25519 -C "alex.garcia@personal.example.com" -f ~/.ssh/id_ed25519_personal
+ssh-keygen -t ed25519 -C "alex@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Trabajo
-ssh-keygen -t ed25519 -C "alex.garcia@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "alex.garcia@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Registra la **clave pública** (archivo `.pub`) de cada clave SSH en la cuenta de GitHub correspondiente.

@@ -75,7 +75,7 @@ First, create SSH keys for each account (skip if you already have them):
 ssh-keygen -t ed25519 -C "alex@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Work
-ssh-keygen -t ed25519 -C "alex.smith@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "alex.smith@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Register the **public key** (`.pub` file) of each SSH key to the respective GitHub account.

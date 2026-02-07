@@ -76,7 +76,7 @@ A typical arrangement for the management of one's personal account and enterpris
 ssh-keygen -t ed25519 -C "william@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # For the comedy of work
-ssh-keygen -t ed25519 -C "william@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "william@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Upon generating thy keys, register the public keys (`.pub`) unto each service (GitHub, GitLab, Bitbucket, and so forth). This is most required!

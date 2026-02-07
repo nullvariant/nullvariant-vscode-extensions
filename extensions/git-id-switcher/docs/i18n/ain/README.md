@@ -97,7 +97,7 @@ Git プロフィール ウコイタㇰ ツール ポㇿ アン、**Git ID Switch
 ssh-keygen -t ed25519 -C "sisam@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # モノレ
-ssh-keygen -t ed25519 -C "sisam@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "sisam@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 シネㇷ゚ シネㇷ゚ SSH キー **公開鍵**（`.pub` ファイル）GitHub アカウント オロワ。

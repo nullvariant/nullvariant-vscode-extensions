@@ -80,7 +80,7 @@ Unue, generu SSH-ŝlosilojn por ĉiu konto (preterpasu se vi jam havas):
 ssh-keygen -t ed25519 -C "zamenhof@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Labora konto
-ssh-keygen -t ed25519 -C "zamenhof@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "ludoviko.zamenhof@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Registru la **publikan ŝlosilon** (`.pub` dosiero) de ĉiu ŝlosilo al la responda GitHub-konto.

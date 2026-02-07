@@ -72,7 +72,7 @@ Typical setup fer managin' yer personal account and company account (Enterprise 
 ssh-keygen -t ed25519 -C "morgan@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Work account (fer legitimate business, arrr)
-ssh-keygen -t ed25519 -C "morgan@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "morgan@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 After generatin' yer keys, register the public keys (`.pub`) to each service (GitHub, GitLab, Bitbucket, etc.). This be required, matey!

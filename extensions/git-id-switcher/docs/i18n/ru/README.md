@@ -75,7 +75,7 @@
 ssh-keygen -t ed25519 -C "sasha@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
 # Рабочий
-ssh-keygen -t ed25519 -C "sasha.petrov@company.example.com" -f ~/.ssh/id_ed25519_work
+ssh-keygen -t ed25519 -C "sasha.petrov@techcorp.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
 Зарегистрируйте **публичный ключ** (файл `.pub`) каждого ключа в соответствующем аккаунте GitHub.
