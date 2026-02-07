@@ -11,7 +11,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      Ŝanĝu inter pluraj Git-identecoj per unu klako. Administru plurajn GitHub-kontojn, SSH-ŝlosilojn, GPG-subskribon, kaj <b>aŭtomate apliku identecon al Git-submoduloj</b>.
+      Ŝanĝu inter pluraj Git-profiloj per unu klako. Administru plurajn GitHub-kontojn, SSH-ŝlosilojn, GPG-subskribon, kaj <b>aŭtomate apliku profilon al Git-submoduloj</b>.
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -34,23 +34,24 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-eo.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/eo/demo.webp" width="600" alt="Demo" loading="lazy">
 
-## 🎯 Kial Ĉi Tiu Etendo?
+## 🎯 Kial Git ID Switcher?
 
-Kvankam multaj Git-identeco-ŝanĝiloj ekzistas, **Git ID Switcher** solvas la kompleksajn problemojn kiujn aliaj ignoras:
+Kvankam multaj Git-profilo-ŝanĝiloj ekzistas, **Git ID Switcher** solvas kompleksajn problemojn kiujn aliaj ignoras:
 
-1. **Submodula Koŝmaro**: Laborante kun deponejoj havantaj submodulojn, oni kutime devas mane agordi `git config user.name` por _ĉiu_ submodulo. Ĉi tiu etendo traktas ĝin elegante, rekursie aplikante vian identecon al ĉiuj aktivaj submoduloj.
-2. **SSH & GPG Traktado**: Ĝi ne nur ŝanĝas vian nomon; ĝi interŝanĝas viajn SSH-ŝlosilojn en la agento kaj agordas GPG-subskribon, por ke vi neniam faru commit kun malĝusta subskribo.
+1. **Submodula Koŝmaro**: Laborante kun deponejoj havantaj submodulojn (ekz: Hugo-temoj, vendoraj bibliotekoj), oni kutime devas mane agordi `git config user.name` por _ĉiu_ submodulo. Ĉi tiu etendo traktas ĝin elegante, rekursie aplikante vian profilon al ĉiuj aktivaj submoduloj.
+2. **SSH & GPG Traktado**: Ĝi ne nur ŝanĝas vian nomon; ĝi interŝanĝas viajn SSH-ŝlosilojn en la ssh-agent kaj agordas GPG-subskribon, por ke vi neniam faru commit kun malĝusta subskribo.
 
 ## Funkcioj
 
-- **Submodula Subteno**: Aŭtomate disvastigu vian identecon al Git-submoduloj
+- **Profila Administra UI**: Aldonu, redaktu, forigu kaj reordigu profilojn sen redakti settings.json
+- **Unu-klaka Profilo-Ŝanĝo**: Ŝanĝu vian Git user.name kaj user.email tuj
+- **Statusbreto-Integriĝo**: Ĉiam vidu vian nunan profilon per unu rigardo
+- **Submodula Subteno**: Aŭtomate disvastigu vian profilon al Git-submoduloj
 - **SSH-Ŝlosila Administrado**: Aŭtomate ŝanĝu SSH-ŝlosilojn en ssh-agent
 - **GPG-Subskriba Subteno**: Agordu vian GPG-ŝlosilon por commit-subskribo (laŭvola)
-- **Unu-klaka Identeco-Ŝanĝo**: Ŝanĝu vian Git user.name kaj user.email tuj
-- **Statusbreto-Integriĝo**: Ĉiam vidu vian nunan identecon per unu rigardo
-- **Riĉaj Konsiletoj**: Detalaj identeco-informoj kun priskribo kaj SSH-gastigo
+- **Riĉaj Konsiletoj**: Detalaj profilo-informoj kun priskribo kaj SSH-gastigo
 - **Plurplatforma**: Funkcias sur macOS, Linux, kaj Windows
 - **Lokalizita**: Subtenas 17 lingvojn
 
@@ -60,13 +61,15 @@ Kvankam multaj Git-identeco-ŝanĝiloj ekzistas, **Git ID Switcher** solvas la k
 > Mi ne volas forĵeti ilin nur ĉar ili estas malmultaj.
 > Eĉ se tradukoj ne estas perfektaj, mi esperas ke vi povas senti nian intencon montri respekton.
 
-Esperanto mem naskiĝis el la ideo de lingva egaleco—ke ĉiu homo meritas voĉon, sendepende de sia denaska lingvo. Ĉi tiu etendo portas la saman spiriton.
+Ĉi tiu etendo subtenas ĉiujn 17 lingvojn subtenatajn de VS Code. Krome, por README-dokumentado, ni provas traduki ankaŭ al minoritataj lingvoj kaj ŝercaj lingvoj.
+
+Ĉi tio ne estas simple "tutmonda subteno", sed "respekto al lingva diverseco". Kaj super la lingvoj, mi esperas ke ĝi fariĝos infrastrukturo kie evoluigistoj ĉie kontribuas komitojn por plibonigi la mondon.
 
 ---
 
 ## Rapida Komenco
 
-Tipa agordo por administri personan konton kaj entrepranan konton (Enterprise Managed User).
+Tipa agordo por administri personan konton kaj kompanian konton (Enterprise Managed User).
 
 ### Paŝo 1: Preparu Viajn SSH-Ŝlosilojn
 
@@ -89,14 +92,14 @@ Registru la **publikan ŝlosilon** (`.pub` dosiero) de ĉiu ŝlosilo al la respo
 Redaktu `~/.ssh/config`:
 
 ```ssh-config
-# Persona Konto
+# Persona GitHub-konto (defaŭlta)
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_persona
     IdentitiesOnly yes
 
-# Labora Konto
+# Labora GitHub-konto
 Host github-laboro
     HostName github.com
     User git
@@ -106,102 +109,19 @@ Host github-laboro
 
 ### Paŝo 3: Agordu la Etendon
 
-Malfermu etendo-agordojn (`Cmd+,` / `Ctrl+,`) → Serĉu "Git ID Switcher" → Klaku "Redakti en settings.json":
+Tuj post instalado, ekzemplaj profiloj estas pretigitaj.
+Laŭ la suba gvidilo, redaktu ilin por via propra uzo.
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "persona",
-      "name": "Ludoviko Zamenhof",
-      "email": "zamenhof@persona.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Personaj projektoj",
-      "sshKeyPath": "~/.ssh/id_ed25519_persona"
-    },
-    {
-      "id": "laboro",
-      "name": "Ludoviko Zamenhof",
-      "email": "zamenhof@laboro.example.com",
-      "service": "GitHub Laboro",
-      "icon": "💼",
-      "description": "Labora evoluo",
-      "sshKeyPath": "~/.ssh/id_ed25519_laboro",
-      "sshHost": "github-laboro"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "persona",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/eo/first-ux.webp" width="600" alt="Unua agordo-proceduro (13 paŝoj): malfermu profilan administradon el statusbreto, redaktu kaj kreu novajn profilojn" loading="lazy">
 
-### Paŝo 4: Uzu!
+> **Ŝlosilaj dosieroj ne estas senditaj**: Kiam vi agordas SSH-ŝlosilan vojon, nur la dosiera vojo (loko) estas registrita. La enhavo de la ŝlosila dosiero neniam estas alŝutita aŭ sendata ekstere.
 
-1. Klaku la identeco-ikonon en la statusbreto (malsupra dekstra)
-2. Elektu vian identecon
-3. Farite! Via Git-agordo kaj SSH-ŝlosilo estas ŝanĝitaj.
+> **Se vi uzas GPG-subskribon**: Vi ankaŭ povas agordi `gpgKeyId` en la profila redakta ekrano.
+> Por kiel trovi vian GPG-ŝlosilan ID, vidu "[GPG-subskribo ne funkcias?](#gpg-subskribo-ne-funkcias)".
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-eo.png" width="600" alt="Quick Pick">
-
-### Uzi SSH-Gastigajn Kaŝnomojn
-
-Klonante deponejojn, uzu la gastigon kiu respondas al via identeco:
-
-```bash
-# Por labora identeco (uzas github-laboro kaŝnomon)
-git clone git@github-laboro:kompanio/repo.git
-
-# Por persona identeco (uzas defaŭltan github.com)
-git clone git@github.com:zamenhof/repo.git
-```
-
----
-
-## Laŭvola: GPG-Subskribo
-
-Se vi subskribas commit-ojn per GPG:
-
-### Paŝo 1: Trovu Vian GPG-Ŝlosilan ID
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-Ekzempla eligo:
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] Ludoviko Zamenhof <zamenhof@persona.example.com>
-```
-
-La ŝlosila ID estas `ABCD1234`.
-
-### Paŝo 2: Aldonu GPG-Ŝlosilon al la Identeco
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "persona",
-      "name": "Ludoviko Zamenhof",
-      "email": "zamenhof@persona.example.com",
-      "service": "GitHub",
-      "icon": "🏠",
-      "description": "Personaj projektoj",
-      "sshKeyPath": "~/.ssh/id_ed25519_persona",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-Kiam vi ŝanĝas al ĉi tiu identeco, la etendo agordas:
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
+> **Konsilo**: Vi ankaŭ povas agordi rekte el settings.json.
+> Malfermu etendo-agordojn (`Cmd+,` / `Ctrl+,`) → Serĉu "Git ID Switcher" → Klaku "Redakti en settings.json".
+> Por JSON-agordo-ekzemploj, vidu "[Plena Ekzemplo: 4 Kontoj kun SSH + GPG](#plena-ekzemplo-4-kontoj-kun-ssh--gpg)".
 
 ---
 
@@ -219,14 +139,14 @@ Host github.com
     IdentityFile ~/.ssh/id_ed25519_persona
     IdentitiesOnly yes
 
-# Labora konto
+# Labora konto (kompania Enterprise Managed User)
 Host github-laboro
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_laboro
     IdentitiesOnly yes
 
-# Bitbucket konto
+# Bitbucket-konto
 Host bitbucket.org
     HostName bitbucket.org
     User git
@@ -285,17 +205,39 @@ Host bitbucket.org
 }
 ```
 
-Noto: La lasta identeco (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-agordon. Utile kiam oni uzas la saman GitLab-konton kun malsamaj commit-informoj.
+Noto: La lasta profilo (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-agordon. Utile kiam oni uzas la saman GitHub-konton kun malsamaj commit-informoj.
+
+---
+
+## Profila Administrado
+
+Klaku statusbreton → Malfermu "Profila Administrado" ĉe la fundo de la listo.
+Ĉiuj profilo-operacioj—aldoni, redakti, forigi, reordigi—estas rekte alireblaj el la UI.
+
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/eo/identity-management.webp" width="600" alt="Profila administrado: gvidilo pri forigo kaj reordigado" loading="lazy">
+
+Vi ankaŭ povas forigi profilon el komand-paleto per `Git ID Switcher: Delete Identity`.
+
+---
+
+## Komandoj
+
+| Komando                                  | Priskribo                     |
+| ---------------------------------------- | ----------------------------- |
+| `Git ID Switcher: Select Identity`       | Malfermu la profilo-elektilon |
+| `Git ID Switcher: Delete Identity`       | Forigu profilon               |
+| `Git ID Switcher: Show Current Identity` | Montru nunan profilo-informon |
+| `Git ID Switcher: Show Documentation`    | Montri dokumentaron           |
 
 ---
 
 ## Agorda Referenco
 
-### Identeco-Propraĵoj
+### Profilo-Propraĵoj
 
 | Propraĵo      | Deviga | Priskribo                                                       |
 | ------------- | ------ | --------------------------------------------------------------- |
-| `id`          | ✅     | Unika identigilo (ekz: `"laboro"`, `"persona"`)                 |
+| `id`          | ✅     | Unika identigilo (ekz: `"persona"`, `"laboro"`)                 |
 | `name`        | ✅     | Git user.name — montrita en commit-oj                           |
 | `email`       | ✅     | Git user.email — montrita en commit-oj                          |
 | `icon`        |        | Emoji montrita en statusbreto (ekz: `"🏠"`). Nur unu emoji      |
@@ -312,22 +254,22 @@ Noto: La lasta identeco (`liberprofesia`) ne havas SSH—ĝi nur ŝanĝas Git-ag
 
 ### Ĝeneralaj Agordoj
 
-| Agordo                                     | Defaŭlto   | Priskribo                                                                      |
-| ------------------------------------------ | ---------- | ------------------------------------------------------------------------------ |
-| `gitIdSwitcher.identities`                 | Vidu ekz.  | Listo de identeco-agordoj                                                      |
-| `gitIdSwitcher.defaultIdentity`            | Vidu ekz.  | Defaŭlta identeco ID                                                           |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Aŭtomate ŝanĝu SSH-ŝlosilon                                                    |
-| `gitIdSwitcher.showNotifications`          | `true`     | Montru sciigon kiam ŝanĝante                                                   |
-| `gitIdSwitcher.applyToSubmodules`          | `true`     | Apliku identecon al Git-submoduloj                                             |
-| `gitIdSwitcher.submoduleDepth`             | `1`        | Maks. profundeco por nestitaj submoduloj (1-5)                                 |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Skribu emoji-ikonon al Git-agordo `user.name`                                  |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Ebligi protokoladon al dosiero por revizio                                     |
-| `gitIdSwitcher.logging.filePath`           | `""`       | Persona protokol-dosiera vojo                                                  |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Maks. dosiera grandeco antaŭ rotacio (bajtoj, 1MB-100MB)                       |
-| `gitIdSwitcher.logging.maxFiles`           | `5`        | Nombro de protokol-dosieroj por konservi (1-20)                                |
-| `gitIdSwitcher.logging.level`              | `"INFO"`   | Protokolado-nivelo (DEBUG/INFO/WARN/ERROR/SECURITY)                            |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Kiam ebligita, ĉiuj valoroj estas maskitaj en protokoloj (maksimuma privateco) |
-| `gitIdSwitcher.commandTimeouts`            | `{}`       | Tempolimo por eksteraj komandoj (ms, 1s-5min)                                  |
+| Agordo                                     | Defaŭlto     | Priskribo                                                                       |
+| ------------------------------------------ | ------------ | ------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Ekzemplo ref | Listo de profilo-agordoj                                                        |
+| `gitIdSwitcher.defaultIdentity`            | Ekzemplo ref | Defaŭlta profilo ID                                                             |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | Aŭtomate ŝanĝu SSH-ŝlosilon                                                     |
+| `gitIdSwitcher.showNotifications`          | `true`       | Montru sciigon kiam ŝanĝante profilon                                           |
+| `gitIdSwitcher.applyToSubmodules`          | `true`       | Apliku profilon al Git-submoduloj                                               |
+| `gitIdSwitcher.submoduleDepth`             | `1`          | Maks. profundeco por nestitaj submoduloj (1-5)                                  |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`      | Skribu emoji-ikonon al Git-agordo `user.name`                                   |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`      | Konservu reviziajn protokolojn en dosiero (ID-ŝanĝoj, SSH-operacioj ktp.)       |
+| `gitIdSwitcher.logging.filePath`           | `""`         | Protokol-dosiera vojo (ekz: `~/.git-id-switcher/security.log`). Malplena = def  |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | Maks. dosiera grandeco antaŭ rotacio (bajtoj, 1MB-100MB)                        |
+| `gitIdSwitcher.logging.maxFiles`           | `5`          | Nombro de protokol-dosieroj por konservi (1-20)                                 |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`      | Kiam ebligita, ĉiuj valoroj estas maskitaj en protokoloj (maks. privateco)      |
+| `gitIdSwitcher.logging.level`              | `"INFO"`     | Protokolado-nivelo (DEBUG/INFO/WARN/ERROR/SECURITY). Registras elektitan+supre  |
+| `gitIdSwitcher.commandTimeouts`            | `{}`         | Persona tempolimo por komandoj (ms, 1s-5min) ekz: `{"git":15000,"ssh-add":...}` |
 
 #### Pri `includeIconInGitConfig`
 
@@ -344,33 +286,6 @@ Ekzemplo: `icon: "👤"`, `name: "Ludoviko Zamenhof"`
 | ---------------------- | ---------------------- | --------------------------------- |
 | `false`                | `Ludoviko Zamenhof`    | `Ludoviko Zamenhof <retpoŝto>`    |
 | `true`                 | `👤 Ludoviko Zamenhof` | `👤 Ludoviko Zamenhof <retpoŝto>` |
-
-### Noto: Baza Agordo (Sen SSH)
-
-Se vi ne bezonas SSH-ŝlosilan ŝanĝon (ekz., uzante la saman GitHub-konton kun malsamaj commit-informoj), vi povas uzi minimuman agordon:
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "persona",
-      "name": "Ludoviko Zamenhof",
-      "email": "zamenhof@persona.example.com",
-      "icon": "🏠",
-      "description": "Personaj projektoj"
-    },
-    {
-      "id": "laboro",
-      "name": "Ludoviko Zamenhof",
-      "email": "zamenhof@laboro.example.com",
-      "icon": "💼",
-      "description": "Labora konto"
-    }
-  ]
-}
-```
-
-Ĉi tiu agordo nur ŝanĝas `git config user.name` kaj `user.email`.
 
 ---
 
@@ -392,13 +307,13 @@ Loka (.git/config)  ← plej alta prioritato
 
 Tio signifas:
 
-- Identeco estas konservita en la `.git/config`-dosiero de ĉiu deponejo
-- Malsamaj identecoj povas esti konservitaj por ĉiu deponejo
+- Profilo estas konservita en la `.git/config`-dosiero de ĉiu deponejo
+- Malsamaj profiloj povas esti konservitaj por ĉiu deponejo
 - Ĝeneralaj agordoj (`~/.gitconfig`) ne estas modifitaj
 
-### Identeco-Ŝanĝa Konduto
+### Profilo-Ŝanĝa Konduto
 
-Kiam vi ŝanĝas identecon, la etendo plenumas (en ordo):
+Kiam vi ŝanĝas profilon, la etendo plenumas (en ordo):
 
 1. **Git-Agordo** (ĉiam): Agordas `git config --local user.name` kaj `user.email`
 2. **SSH-Ŝlosilo** (se `sshKeyPath` agordita): Forigas aliajn ŝlosilojn el ssh-agent, aldonas la elektitan
@@ -410,13 +325,61 @@ Kiam vi ŝanĝas identecon, la etendo plenumas (en ordo):
 Ĉar loka agordo funkcias sur deponeja nivelo, ĝi ne aŭtomate aplikiĝas al submoduloj.
 Tial ĉi tiu etendo provizas submodulan disvastigan funkcion (vidu "Altnivela: Submodula Subteno" por detaloj).
 
+### SSH-Ŝlosila Administrada Detaloj
+
+Git ID Switcher administras SSH-ŝlosilojn per `ssh-agent`:
+
+| Operacio        | Plenumita komando      |
+| --------------- | ---------------------- |
+| Aldonu ŝlosilon | `ssh-add <keyPath>`    |
+| Forigu ŝlosilon | `ssh-add -d <keyPath>` |
+| Listo ŝlosilojn | `ssh-add -l`           |
+
+**Grava**: Ĉi tiu etendo **ne modifas** `~/.ssh/config`. Vi devas mane agordi SSH config (vidu Paŝo 2 en "Rapida Komenco").
+
+### Interagado kun Ekzistantaj SSH-Agordoj
+
+Se vi jam havas SSH-agordojn, Git ID Switcher funkcias jene:
+
+| Via Agordo                            | Git ID Switcher Konduto                                   |
+| ------------------------------------- | --------------------------------------------------------- |
+| `~/.ssh/config` kun `IdentityFile`    | Ambaŭ uzeblas; `IdentitiesOnly yes` malhelpas konfliktojn |
+| Mediovariablo `GIT_SSH_COMMAND`       | Uzas propran SSH-komandon; ssh-agent ankoraŭ funkcias     |
+| `git config core.sshCommand`          | Same kiel supre                                           |
+| direnv kun SSH-rilataj mediovariabloj | Povas kunekzisti; ssh-agent funkcias sendepende           |
+
+**Rekomendo**: Ĉiam uzu `IdentitiesOnly yes` en SSH config. Ĉi tio malhelpas SSH provi plurajn ŝlosilojn.
+
+### Kial `IdentitiesOnly yes`?
+
+Sen ĉi tiu agordo, SSH eble provas ŝlosilojn en ĉi tiu ordo:
+
+1. Ŝlosiloj ŝarĝitaj en ssh-agent (administritaj de Git ID Switcher)
+2. Ŝlosiloj specifitaj en `~/.ssh/config`
+3. Defaŭltaj ŝlosiloj (`~/.ssh/id_rsa`, `~/.ssh/id_ed25519` ktp.)
+
+Ĉi tio povas kaŭzi aŭtentikig-malsukceson aŭ uzon de neintencita ŝlosilo.
+
+Kun `IdentitiesOnly yes`, SSH uzas **nur la specifitan ŝlosilon**. Ĉi tio certigas ke via Git ID Switcher-agordita ŝlosilo estas uzata.
+
+```ssh-config
+# Rekomendita agordo
+Host github-laboro
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_laboro
+    IdentitiesOnly yes  # ← Ĉi tiu linio estas grava
+```
+
+Kun ĉi tiu agordo, kiam vi konektas al la gastigo `github-laboro`, nur `~/.ssh/id_ed25519_laboro` estos uzata, kaj neniuj aliaj ŝlosiloj estos provitaj.
+
 ---
 
 ## Altnivela: Submodula Subteno
 
-Por kompleksaj deponejoj kun Git-submoduloj, identeco-administrado ofte malfacilas. Se vi faras commit en submodulo, Git uzas la lokan agordon de tiu submodulo; se ne eksplicite agordita, ĝi povas reveni al la ĝenerala agordo (malĝusta retpoŝto!).
+Por kompleksaj deponejoj kun Git-submoduloj, profila administrado ofte malfacilas. Se vi faras commit en submodulo, Git uzas la lokan agordon de tiu submodulo; se ne eksplicite agordita, ĝi povas reveni al la ĝenerala agordo (malĝusta retpoŝto!).
 
-**Git ID Switcher** aŭtomate detektas submodulojn kaj aplikas la elektitan identecon al ili.
+**Git ID Switcher** aŭtomate detektas submodulojn kaj aplikas la elektitan profilon al ili.
 
 ```json
 {
@@ -430,7 +393,7 @@ Por kompleksaj deponejoj kun Git-submoduloj, identeco-administrado ofte malfacil
   - `1`: Nur rektaj submoduloj (plej ofta)
   - `2+`: Nestitaj submoduloj (submoduloj ene de submoduloj)
 
-Ĉi tio certigas ke via identeco ĉiam estas ĝusta, ĉu vi faras commit en la ĉefa deponejo aŭ en vendora biblioteko.
+Ĉi tio certigas ke via profilo ĉiam estas ĝusta, ĉu vi faras commit en la ĉefa deponejo aŭ en vendora biblioteko.
 
 ---
 
@@ -456,7 +419,21 @@ Por kompleksaj deponejoj kun Git-submoduloj, identeco-administrado ofte malfacil
    ssh-add --apple-use-keychain ~/.ssh/id_ed25519_laboro
    ```
 
-### Malĝusta identeco ĉe push?
+### Malĝusta profilo ĉe push?
+
+**Por novaj klonoj:**
+
+Kiam vi klonas laboran deponejon, uzu la gastigon-kaŝnomon el via SSH config:
+
+```bash
+# Por labora profilo (uzas github-laboro kaŝnomon)
+git clone git@github-laboro:kompanio/repo.git
+
+# Por persona profilo (uzas defaŭltan github.com)
+git clone git@github.com:via-nomo/repo.git
+```
+
+**Por ekzistantaj deponejoj:**
 
 1. Kontrolu ke la fora URL uzas la ĝustan gastigan kaŝnomon:
 
@@ -485,9 +462,9 @@ Por kompleksaj deponejoj kun Git-submoduloj, identeco-administrado ofte malfacil
    echo "test" | gpg --clearsign
    ```
 
-3. Certigu ke la retpoŝto en via identeco kongruas kun la retpoŝto de la GPG-ŝlosilo.
+3. Certigu ke la retpoŝto en via profilo kongruas kun la retpoŝto de la GPG-ŝlosilo.
 
-### Identeco ne detektita?
+### Profilo ne detektita?
 
 - Certigu ke vi estas en Git-deponejo
 - Kontrolu sintaksan eraron en `settings.json`
@@ -549,19 +526,9 @@ Se vi antaŭe konservis malplenajn agordojn, ili estis sinkronigitaj al la nubo 
 
 ---
 
-## Komandoj
-
-| Komando                                  | Priskribo                      |
-| ---------------------------------------- | ------------------------------ |
-| `Git ID Switcher: Select Identity`       | Malfermu la identeco-elektilon |
-| `Git ID Switcher: Show Current Identity` | Montru nunan identeco-informon |
-| `Git ID Switcher: Show Documentation`    | Montri dokumentaron            |
-
----
-
 ## Dezajna Filozofio
 
-> "Kiu mi estas?" — La sola demando, kiun ĉi tiu etendaĵo respondas.
+> **"Kiu mi estas?"** — La sola demando, kiun ĉi tiu etendaĵo respondas.
 
 Konstruita sur **Karesansui-Arkitekturo**: simpla kerno (100 linioj),
 ĉirkaŭita de intenca kvalito (90% kovrado, protokolado, tempolimoj)
