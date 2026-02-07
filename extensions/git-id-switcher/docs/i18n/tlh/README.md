@@ -12,7 +12,7 @@
       <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/icon.png" width="128" alt="Git ID Switcher">
     </td>
     <td>
-      wa' weQ neH lo'taHvIS Git ID law' choHlaH. GitHub accounts law', SSH keys, GPG signing, <b>Git Submodules automatic ID apply</b>.
+      wa' weQ neH Git profiles law' DachoH. GitHub accounts law', SSH keys, GPG signing Daqon, <b>Git Submodules profiles automatic apply</b>.
       <br><br>
       <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher"><img src="https://img.shields.io/visual-studio-marketplace/v/nullvariant.git-id-switcher" alt="VS Code Marketplace"></a>
       <a href="https://open-vsx.org/extension/nullvariant/git-id-switcher"><img src="https://img.shields.io/open-vsx/v/nullvariant/git-id-switcher" alt="Open VSX Registry"></a>
@@ -35,194 +35,115 @@
 
 <br>
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo-tlh.png" width="600" alt="Demo">
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/tlh/demo.webp" width="600" alt="Demo" loading="lazy">
 
-## 🎯 qatlh extension?
+## 🎯 qatlh Git ID Switcher?
 
-Git ID switchers law' tu'lu', 'ach **Git ID Switcher** qay' potlh solve:
+Git profile switchers law' tu'lu', 'ach **Git ID Switcher** latlh tools complex qay' Qaw':
 
-1. **Submodules qay'**: Submodules repository work, `git config user.name` _Hoch_ submodule manually set need. extension Hoch active submodules ID recursively apply.
-2. **SSH & GPG**: pong neH choH. ssh-agent SSH keys swap, GPG signing configure. wrong signature commit never!
+1. **Submodules qay'**: Submodules lo'taHvIS repositories (e.g., Hugo themes, vendor libraries), usually _Hoch_ submodule `git config user.name` manually DaSet. extension Hoch active submodules profiles recursively chel, elegantly Qaw'.
+2. **SSH & GPG SeH**: pong choH neH bIH. ssh-agent SSH keys DachoH, GPG signing DachoH, signature QIH commits yIbot.
 
-## Features (ngoQ)
+## ngoQ (Features)
 
-- **Submodule Support**: Git submodules ID automatic propagate
-- **SSH Key Management**: ssh-agent SSH keys automatic choH
-- **GPG Signing Support**: GPG key commit signing configure (optional)
-- **wa' weQ ID choH**: Git user.name, user.email nom choHlaH
-- **Status Bar Integration**: DaH ID leghlaH
-- **Rich Tooltips**: ID details, description, SSH host
-- **Cross-Platform**: macOS, Linux, Windows - Hoch platforms!
-- **Localized**: 17 Hol support
+- **Profile Management UI**: settings.json edit without, profiles add, edit, delete, reorder possible
+- **wa' weQ profile switch**: Git user.name 'ej user.email instant change
+- **Status bar integration**: DaH profile always leghlaH
+- **Submodule support**: Git submodules automatic profiles propagate
+- **SSH key management**: ssh-agent SSH keys automatic switch
+- **GPG signing support**: Commit signing GPG keys configure (optional)
+- **Rich tooltips**: Description 'ej SSH host profile details
+- **Cross-platform**: macOS, Linux, Windows - Hoch platforms!
+- **Multilingual**: 17 languages support
 
-## 🌏 Multilingual Support
+## 🌏 Multilingual je minorities
 
-> **minorities value jIH.**
-> puS neH chaH 'e' vIHar pagh.
-> translations perfect pagh, 'ach respect show intent feel DaneH.
+> **minorities jIvoq.**
+> puS neH chaH jIvoqbe'.
+> Translations perfect bIHbe', 'ach minority languages yaj, respect qaq intent boj.
+
+Extension VS Code Hol 17 qIp. README documentation, minority ethnic languages je joke languages mughwI' jIH.
+
+"global support" neH bIH—"linguistic diversity respect." Hol Hoch, Daq Hoch, developers batlh commits chenmoH... infrastructure vIneH.
 
 ---
 
 ## Quick Start
 
-Typical setup warrior account 'ej fleet account (Enterprise Managed User) manage.
+Personal account je company-issued account (Enterprise Managed User) Segh typical setup.
 
-### Step 1: SSH Keys prepare
+### Step 1: SSH keys qawmoH
 
-First, SSH keys generate accounts (skip if already have):
+wa'DIch, accounts SSH keys chenmoH (already ghaj skip):
 
 ```bash
-# warrior (personal)
-ssh-keygen -t ed25519 -C "qapla@personal.example.com" -f ~/.ssh/id_ed25519_warrior
+# Personal
+ssh-keygen -t ed25519 -C "qapla@personal.example.com" -f ~/.ssh/id_ed25519_personal
 
-# captain (work)
-ssh-keygen -t ed25519 -C "qapla@company.example.com" -f ~/.ssh/id_ed25519_captain
+# Work
+ssh-keygen -t ed25519 -C "qapla@company.example.com" -f ~/.ssh/id_ed25519_work
 ```
 
-Each key **public key** (`.pub` file) GitHub account register.
+SSH key **public key** (`.pub` file) GitHub account yIchel.
 
-> **Note**: GitHub register `id_ed25519_warrior.pub` (public key). `id_ed25519_warrior` (no extension) private key—never share, never upload!
+> **ghu**: GitHub `id_ed25519_personal.pub` (public key) yIchel. `id_ed25519_personal` (no extension) private key—not share, not upload!
 
-### Step 2: SSH Config
+### Step 2: SSH config choH
 
-`~/.ssh/config` edit:
+`~/.ssh/config` yIchoH:
 
 ```ssh-config
-# Warrior Account
+# Personal GitHub account (default)
 Host github.com
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_warrior
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Captain Account
-Host github-captain
+# Work GitHub account
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_captain
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 ```
 
-### Step 3: Extension Configure
+### Step 3: Extension Segh
 
-Extension settings open (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" search → "Edit in settings.json" click:
+Install rIntaHvIS sample profiles qawmoHlu'. Guide tlha', SoH choH.
 
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "warrior",
-      "name": "Qapla'",
-      "email": "qapla@personal.example.com",
-      "service": "GitHub",
-      "icon": "⚔️",
-      "description": "batlh (honor) projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_warrior"
-    },
-    {
-      "id": "captain",
-      "name": "Qapla'",
-      "email": "qapla@company.example.com",
-      "service": "GitHub Fleet",
-      "icon": "🖖",
-      "description": "Fleet command",
-      "sshKeyPath": "~/.ssh/id_ed25519_captain",
-      "sshHost": "github-captain"
-    }
-  ],
-  "gitIdSwitcher.defaultIdentity": "warrior",
-  "gitIdSwitcher.autoSwitchSshKey": true,
-  "gitIdSwitcher.applyToSubmodules": true
-}
-```
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/tlh/first-ux.webp" width="600" alt="First setup steps (13): Status bar profile management open, edit, create new flow" loading="lazy">
 
-### Step 4: Qapla'!
+> **Key files ngeH qet**: SSH key He' choH, key file He' (Daq) neH teq. Key file contents ngeHbe', external ngeHbe'.
 
-1. Status bar (bottom right) ID icon click
-2. ID select
-3. Qapla'! Git config, SSH keys switched!
+> **GPG signing lo'**: Profile choH screen `gpgKeyId` choH Datu'.
+> GPG key ID paS mIw "[Troubleshooting](#gpg-signing-no-work)" legh.
 
-<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/quickpick-tlh.png" width="600" alt="Quick Pick">
-
-### SSH Host Aliases Use
-
-Repositories clone, ID corresponding host use:
-
-```bash
-# Captain ID (github-captain alias use)
-git clone git@github-captain:fleet/repo.git
-
-# Warrior ID (default github.com use)
-git clone git@github.com:qapla/repo.git
-```
+> **QI'**: settings.json tI' Segh Datu'.
+> Extension settings poSmoH (`Cmd+,` / `Ctrl+,`) → "Git ID Switcher" nej → "Edit in settings.json" wIv.
+> JSON format Segh pIv "[Full Example](#full-example-4-accounts-ssh--gpg)" legh.
 
 ---
 
-## Optional: GPG Signing
+## pIv naQ: 4 Accounts SSH + GPG
 
-GPG commits signing:
-
-### Step 1: GPG Key ID Find
-
-```bash
-gpg --list-secret-keys --keyid-format SHORT
-```
-
-Example output:
-
-```text
-sec   ed25519/ABCD1234 2024-01-01 [SC]
-      ...
-uid         [ultimate] Qapla' <qapla@personal.example.com>
-```
-
-Key ID `ABCD1234`.
-
-### Step 2: GPG Key ID Add
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "warrior",
-      "name": "Qapla'",
-      "email": "qapla@personal.example.com",
-      "service": "GitHub",
-      "icon": "⚔️",
-      "description": "batlh (honor) projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_warrior",
-      "gpgKeyId": "ABCD1234"
-    }
-  ]
-}
-```
-
-ID switch, extension:
-
-- `git config user.signingkey ABCD1234`
-- `git config commit.gpgsign true`
-
----
-
-## Full Example: 4 Accounts SSH + GPG
-
-All combining full example:
+Hoch tay'taH pIv naQ:
 
 ### SSH Config (`~/.ssh/config`)
 
 ```ssh-config
-# Warrior account (default)
+# Personal account (default)
 Host github.com
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_warrior
+    IdentityFile ~/.ssh/id_ed25519_personal
     IdentitiesOnly yes
 
-# Captain account
-Host github-captain
+# Work account (company-issued Enterprise Managed User)
+Host github-work
     HostName github.com
     User git
-    IdentityFile ~/.ssh/id_ed25519_captain
+    IdentityFile ~/.ssh/id_ed25519_work
     IdentitiesOnly yes
 
 # Bitbucket account
@@ -239,25 +160,25 @@ Host bitbucket.org
 {
   "gitIdSwitcher.identities": [
     {
-      "id": "warrior",
+      "id": "personal",
       "name": "Qapla'",
       "email": "qapla@personal.example.com",
       "service": "GitHub",
-      "icon": "⚔️",
-      "description": "batlh (honor) projects",
-      "sshKeyPath": "~/.ssh/id_ed25519_warrior",
-      "gpgKeyId": "WARRIOR1"
+      "icon": "🏠",
+      "description": "Personal projects",
+      "sshKeyPath": "~/.ssh/id_ed25519_personal",
+      "gpgKeyId": "PERSONAL1"
     },
     {
-      "id": "captain",
+      "id": "work",
       "name": "Qapla'",
       "email": "qapla@company.example.com",
-      "service": "GitHub Fleet",
-      "icon": "🖖",
-      "description": "Fleet command",
-      "sshKeyPath": "~/.ssh/id_ed25519_captain",
-      "sshHost": "github-captain",
-      "gpgKeyId": "CAPTAIN1"
+      "service": "GitHub Work",
+      "icon": "💼",
+      "description": "Company development",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "gpgKeyId": "WORK1234"
     },
     {
       "id": "bitbucket",
@@ -270,63 +191,85 @@ Host bitbucket.org
       "sshHost": "bitbucket.org"
     },
     {
-      "id": "spy",
+      "id": "freelance",
       "name": "Qapla'",
       "email": "qapla@freelance.example.com",
       "service": "GitLab",
-      "icon": "🎭",
-      "description": "Covert operations"
+      "icon": "🎯",
+      "description": "Freelance work"
     }
   ],
-  "gitIdSwitcher.defaultIdentity": "warrior",
+  "gitIdSwitcher.defaultIdentity": "personal",
   "gitIdSwitcher.autoSwitchSshKey": true,
   "gitIdSwitcher.applyToSubmodules": true
 }
 ```
 
-Note: Last ID (`spy`) no SSH—Git config only change. Same GitLab account different committer info use.
+ghu: profile Qav (`freelance`) SSH Hutlh—GitHub account rap committer De' rar lo', Git config neH choH Datu'.
 
 ---
 
-## Configuration Reference
+## Profiles qon
 
-### Identity Properties
+Status bar yIwIv → list bIng "Profile Management" qon screen poSmoH.
+Profiles chel, choH, teq, tay'—Hoch UI tI' vum Datu'.
 
-| Property      | Required | Description                                                |
-| ------------- | -------- | ---------------------------------------------------------- |
-| `id`          | ✅       | Unique identifier (e.g., `"warrior"`, `"captain"`)         |
-| `name`        | ✅       | Git user.name — commits show                               |
-| `email`       | ✅       | Git user.email — commits show                              |
-| `icon`        |          | Status bar emoji (e.g., `"⚔️"`). Single emoji only         |
-| `service`     |          | Service name (e.g., `"GitHub"`, `"GitLab"`). UI use        |
-| `description` |          | Picker, tooltip short description                          |
-| `sshKeyPath`  |          | SSH private key path (e.g., `"~/.ssh/id_ed25519_captain"`) |
-| `sshHost`     |          | SSH config host alias (e.g., `"github-captain"`)           |
-| `gpgKeyId`    |          | GPG key ID commit signing                                  |
+<img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/tlh/identity-management.webp" width="600" alt="Profile management: delete, reorder operation guide" loading="lazy">
 
-#### Display Limitations
+Command Palette `Git ID Switcher: Delete Identity` profile teq je Datu'.
 
-- **Status bar**: ~25 characters text `...` truncate
-- **`icon`**: Single emoji (grapheme cluster) only. Multiple emojis, long text no work
+---
 
-### General Settings
+## ra' (Commands)
 
-| Setting                                    | Default     | Description                                          |
-| ------------------------------------------ | ----------- | ---------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | See example | Identity configurations list                         |
-| `gitIdSwitcher.defaultIdentity`            | See example | Default identity ID                                  |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | SSH key automatic switch                             |
-| `gitIdSwitcher.showNotifications`          | `true`      | Switch notification show                             |
-| `gitIdSwitcher.applyToSubmodules`          | `true`      | Git submodules ID apply                              |
-| `gitIdSwitcher.submoduleDepth`             | `1`         | Nested submodules max depth (1-5)                    |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Emoji icon Git config `user.name` write              |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`     | File logging enable (audit)                          |
-| `gitIdSwitcher.logging.filePath`           | `""`        | Custom log file path                                 |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Log file max size before rotation (bytes, 1MB-100MB) |
-| `gitIdSwitcher.logging.maxFiles`           | `5`         | Log files keep count (1-20)                          |
-| `gitIdSwitcher.logging.level`              | `"INFO"`    | Logging level (DEBUG/INFO/WARN/ERROR/SECURITY)       |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | qaSchugh, Hoch De' Sotlh (patlh'a' pegh)             |
-| `gitIdSwitcher.commandTimeouts`            | `{}`        | External commands timeout (ms, 1s-5min)              |
+| Command                                  | Description         |
+| ---------------------------------------- | ------------------- |
+| `Git ID Switcher: Select Identity`       | Profile picker open |
+| `Git ID Switcher: Delete Identity`       | Profile delete      |
+| `Git ID Switcher: Show Current Identity` | DaH profile show    |
+| `Git ID Switcher: Show Documentation`    | Documentation show  |
+
+---
+
+## Segh leghwI'
+
+### Profile Dotlh
+
+| Property      | Required | Description                                                 |
+| ------------- | -------- | ----------------------------------------------------------- |
+| `id`          | ✅       | Unique identifier (e.g., `"personal"`, `"work"`)            |
+| `name`        | ✅       | Git user.name — commits show                                |
+| `email`       | ✅       | Git user.email — commits show                               |
+| `icon`        |          | Status bar emoji (e.g., `"🏠"`). Single emoji only          |
+| `service`     |          | Service name (e.g., `"GitHub"`, `"GitLab"`). UI display use |
+| `description` |          | Picker 'ej tooltip short description                        |
+| `sshKeyPath`  |          | SSH private key path (e.g., `"~/.ssh/id_ed25519_work"`)     |
+| `sshHost`     |          | SSH config Host alias (e.g., `"github-work"`)               |
+| `gpgKeyId`    |          | Commit signing GPG key ID                                   |
+
+#### cha' jen
+
+- **Status bar**: ~25 mI' tIq `...` pe'
+- **`icon`**: wa' emoji (grapheme cluster) neH. law' emojis, ngoD potlh Hutlh
+
+### Segh Hoch
+
+| Setting                                    | Default    | Description                                                                               |
+| ------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Sample     | Profile configurations list                                                               |
+| `gitIdSwitcher.defaultIdentity`            | Sample     | Default profile ID use                                                                    |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Profile change SSH keys automatic switch                                                  |
+| `gitIdSwitcher.showNotifications`          | `true`     | Profile switch notification show                                                          |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Git submodules profiles propagate                                                         |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | Nested submodules max depth (1-5)                                                         |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Icon emoji Git config `user.name` include                                                 |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Audit logs file save (profile switches, SSH key operations record)                        |
+| `gitIdSwitcher.logging.filePath`           | `""`       | Log file path (e.g., `~/.git-id-switcher/security.log`). Empty default use                |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Rotation before max file size (bytes, 1MB-100MB)                                          |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | Rotation files keep max count (1-20)                                                      |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Enable Hoch values mask (maximum privacy mode)                                            |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | Log verbosity (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Selected level above record |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | Commands custom timeout values (ms, 1s-5min). E.g., `{"git": 15000, "ssh-add": 10000}`    |
 
 #### `includeIconInGitConfig` About
 
@@ -334,50 +277,23 @@ Note: Last ID (`spy`) no SSH—Git config only change. Same GitLab account diffe
 
 | Value             | Behavior                                                    |
 | ----------------- | ----------------------------------------------------------- |
-| `false` (default) | `icon` editor UI only show. `name` only Git config write    |
-| `true`            | `icon + name` Git config write. Emoji commit history remain |
+| `false` (default) | `icon` editor UI only show. Git config `name` only write    |
+| `true`            | Git config `icon + name` write. Commit history emoji remain |
 
-Example: `icon: "👤"`, `name: "Qapla'"`
+Example: `icon: "👤"`, `name: "Qapla'"` case
 
 | includeIconInGitConfig | Git config `user.name` | Commit signature    |
 | ---------------------- | ---------------------- | ------------------- |
 | `false`                | `Qapla'`               | `Qapla' <email>`    |
 | `true`                 | `👤 Qapla'`            | `👤 Qapla' <email>` |
 
-### Note: Basic Setup (No SSH)
-
-SSH key switching not need (e.g., same GitHub account different committer info use), minimal configuration use:
-
-```json
-{
-  "gitIdSwitcher.identities": [
-    {
-      "id": "warrior",
-      "name": "Qapla'",
-      "email": "qapla@personal.example.com",
-      "icon": "⚔️",
-      "description": "batlh (honor) projects"
-    },
-    {
-      "id": "captain",
-      "name": "Qapla'",
-      "email": "qapla@company.example.com",
-      "icon": "🖖",
-      "description": "Fleet command"
-    }
-  ]
-}
-```
-
-This setup `git config user.name` 'ej `user.email` only switch.
-
 ---
 
-## How It Works (chay' Qap)
+## chay' vum (How It Works)
 
-### Git Config Layer Structure
+### Git Config layer qach
 
-Git config three layers; lower layers higher layers override:
+Git config wej layers; bIng Segh Dung override:
 
 ```text
 System (/etc/gitconfig)
@@ -387,35 +303,83 @@ Global (~/.gitconfig)
 Local (.git/config)  ← highest priority
 ```
 
-**Git ID Switcher `--local` (repository local) level write.**
+**Git ID Switcher `--local` (repository local) ghItlh.**
 
-This means:
+Doch:
 
-- ID each repository `.git/config` file save
-- Different IDs each repository keep
-- Global settings (`~/.gitconfig`) no change
+- Repository `.git/config` profile choq
+- Repositories rar profiles pol Datu'
+- Global settings (`~/.gitconfig`) choHbe'
 
-### Identity Switching Behavior
+### Profile choH ngoQ
 
-ID switch, extension (order):
+Profile DachoH, extension (order) vum:
 
-1. **Git Config** (always): `git config --local user.name` 'ej `user.email` set
-2. **SSH Key** (`sshKeyPath` set): ssh-agent other keys remove, selected add
-3. **GPG Key** (`gpgKeyId` set): `git config --local user.signingkey` set, signing enable
-4. **Submodules** (enabled): All submodules config propagate (default: depth 1)
+1. **Git Config** (reH): `git config --local user.name` je `user.email` Datogh
+2. **SSH key** (`sshKeyPath` toghta'): latlh keys ssh-agent teq, wIvta' chel
+3. **GPG key** (`gpgKeyId` toghta'): `git config --local user.signingkey` Datogh, signing chu'
+4. **Submodules** (chu'ta'): Hoch submodules config ngeH (default: depth 1)
 
-### Submodule Propagation Mechanism
+### Submodule ngeH mIw
 
-Local config repository level work, submodules automatic no apply.
-Therefore this extension submodule propagation feature provide (see "Advanced: Submodule Support" details).
+Local config repository qib vum, submodules automatic chelbe'.
+vaj extension submodule ngeH ngoQ qem (De' "Advanced: Submodule Support" legh).
+
+### SSH Key qon De'
+
+Git ID Switcher `ssh-agent` lo'taHvIS SSH keys qon:
+
+| vum       | ra' vum                |
+| --------- | ---------------------- |
+| Key chel  | `ssh-add <keyPath>`    |
+| Key teq   | `ssh-add -d <keyPath>` |
+| Key tlha' | `ssh-add -l`           |
+
+**potlh:** Extension `~/.ssh/config` **choHbe'**. SSH config Segh manual poQ ("Quick Start" Step 2 legh).
+
+### SSH Segh tu'lu'taHvIS vay'
+
+SSH Segh DaghajtaH, Git ID Switcher ngoQ:
+
+| SoH Segh                              | Git ID Switcher ngoQ                        |
+| ------------------------------------- | ------------------------------------------- |
+| `~/.ssh/config` `IdentityFile` DaSegh | cha' Dalo'laH; `IdentitiesOnly yes` yem bot |
+| mi' Deghmey `GIT_SSH_COMMAND` DaSegh  | Custom SSH ra' Dalo'; ssh-agent vumtaH      |
+| `git config core.sshCommand` DaSegh   | Dung rap                                    |
+| direnv SSH mi' Deghmey DaSegh         | yIn Datu'; ssh-agent wa'bej vum             |
+
+**Qel:** SSH config reH `IdentitiesOnly yes` yItogh. SSH law' keys wIv botmoH.
+
+### qatlh `IdentitiesOnly yes`?
+
+Segh Hutlh, SSH keys wIv order:
+
+1. ssh-agent loaded keys (Git ID Switcher qon)
+2. `~/.ssh/config` specified keys
+3. Default keys (`~/.ssh/id_rsa`, `~/.ssh/id_ed25519`, etc.)
+
+Authentication luj, unintended key lo' Datu'.
+
+`IdentitiesOnly yes` Datogh, SSH **specified keys neH** lo'. Git ID Switcher toghta' keys bIH lo'.
+
+```ssh-config
+# QelmeH Segh
+Host github-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes  # ← ghItlh potlh
+```
+
+Segh toghta', `github-work` Host jot `~/.ssh/id_ed25519_work` neH lo', latlh keys wIvbe'.
 
 ---
 
-## Advanced: Submodule Support
+## po'wI': Submodule qIp
 
-Git submodules complex repositories, ID management often difficult. Submodule commit, Git that submodule local config use; explicit no set, global config fallback (wrong email!).
+Git submodules lo'taHvIS complex repositories, profile qon DatIv. Submodule commit, Git submodule local config lo'; explicitly Datoghbe', global config (email QIH!) default Datu'.
 
-**Git ID Switcher** submodules automatic detect, selected ID apply.
+**Git ID Switcher** automatic submodules tu', wIvta' profile chel.
 
 ```json
 {
@@ -424,142 +388,134 @@ Git submodules complex repositories, ID management often difficult. Submodule co
 }
 ```
 
-- `applyToSubmodules`: This feature enable/disable
-- `submoduleDepth`: How deep apply?
-  - `1`: Direct submodules only (most common)
-  - `2+`: Nested submodules (submodules inside submodules)
+- `applyToSubmodules`: ngoQ chu'/mev toggle
+- `submoduleDepth`: 'ar depth chel?
+  - `1`: tI' submodules neH (tlhutlh law')
+  - `2+`: Nested submodules (submodules submodules tItDaq)
 
-This ensure ID always correct, main repository or vendor library commit.
+Main repository commit, vendor library commit—profile reH pIv guarantee.
 
 ---
 
-## Troubleshooting (qay' Solve)
+## qay' Qaw' (Troubleshooting)
 
-### SSH key no switch?
+### SSH key choHbe'?
 
-1. `ssh-agent` running confirm:
+1. `ssh-agent` qetlh paS:
 
    ```bash
    eval "$(ssh-agent -s)"
    ```
 
-2. Key path correct confirm:
+2. Key He' pIv paS:
 
    ```bash
    ls -la ~/.ssh/id_ed25519_*
    ```
 
-3. macOS, Keychain once add:
+3. macOS, wa'logh Keychain chel:
 
    ```bash
-   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_captain
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519_work
    ```
 
-### Push wrong ID?
+### ngeH profile QIH?
 
-1. Remote URL correct host alias using confirm:
+**chu' clone:**
+
+vum repository clone, SSH config Seghta' host alias lo':
+
+```bash
+# vum (github-work alias lo')
+git clone git@github-work:company/repo.git
+
+# Personal (default github.com lo')
+git clone git@github.com:yourname/repo.git
+```
+
+**repository tu'lu'ta':**
+
+1. Remote URL pIv host alias lo' paS:
 
    ```bash
    git remote -v
-   # Captain repos git@github-captain:... show
+   # vum repository git@github-work:... cha' poQ
    ```
 
-2. Necessary update:
+2. poQlu' choH:
 
    ```bash
-   git remote set-url origin git@github-captain:fleet/repo.git
+   git remote set-url origin git@github-work:company/repo.git
    ```
 
-### GPG signing no work?
+### GPG signing vumbe'?
 
-1. GPG key ID find:
+1. GPG key ID paS:
 
    ```bash
    gpg --list-secret-keys --keyid-format SHORT
    ```
 
-2. Signing test:
+2. Signing wIv:
 
    ```bash
    echo "test" | gpg --clearsign
    ```
 
-3. ID email GPG key email match confirm.
+3. Profile email GPG key email rap paS
 
-### ID no detect?
+### Profile tu'be'?
 
-- Git repository inside confirm
-- `settings.json` syntax error check
-- VS Code window reload (`Cmd+Shift+P` → "Reload Window")
+- Git repository tItDaq paS
+- `settings.json` syntax Qagh yInej
+- VS Code window yIchu'qa' (`Cmd+Shift+P` → "Reload Window")
 
-### `name` field error?
+### `name` De' Qagh?
 
-`name` field these characters contain, error:
+`name` De' mI' bIH ngaS Qagh:
 
 `` ` `` `$` `(` `)` `{` `}` `|` `&` `<` `>`
 
-Service name include want, `service` field use.
+Service pong ngaS DaneH, `service` De' yIlo'.
 
 ```jsonc
-// WRONG
-"name": "Qapla' (Warrior)"
+// QIH
+"name": "Qapla' (Personal)"
 
-// CORRECT
+// pIv
 "name": "Qapla'",
 "service": "GitHub"
 ```
 
-### New settings no show?
+### chu' Segh cha'be'?
 
-Extension update, new settings settings screen no appear.
+Extension choHta', chu' Segh Segh screen cha'be'.
 
-**Solution:** Machine full restart.
+**Qaw':** Machine naQ yIchu'qa'.
 
-VS Code editors settings schema memory cache, "Reload Window" or reinstall not enough.
+VS Code editors Segh schema yab cache, "Reload Window" pagh reinstall naQbe'.
 
-### Default values (identities etc.) empty?
+### Default values (identities etc.) chIm?
 
-New install sample settings no show, **Settings Sync** cause.
+chu' install sample Segh cha'be', **Settings Sync** qaSmoH.
 
-Past empty settings save, cloud sync, new install default values override.
+ret chIm Segh choqta', cloud sync, chu' install default values override.
 
-**Solution:**
+**Qaw':**
 
-1. Settings screen relevant setting find
-2. Gear icon → "Reset Setting" select
-3. Settings Sync sync (old settings cloud remove)
-
----
-
-## tlhIngan Hol Quick Reference
-
-| tlhIngan              | English                    | Usage                         |
-| --------------------- | -------------------------- | ----------------------------- |
-| Qapla'                | Success!                   | Greeting/farewell             |
-| batlh                 | Honor                      | With honor                    |
-| Heghlu'meH QaQ jajvam | Today is a good day to die | Before battle (or deployment) |
-| nuqneH                | What do you want?          | Hello                         |
-| HIja' / ghobe'        | Yes / No                   | Responses                     |
+1. Segh screen Segh yItu'
+2. Gear icon → "Reset Setting" yIwIv
+3. Settings Sync sync (qan Segh cloud yIteq)
 
 ---
 
-## Commands (ra')
+## meqba' QeD (Design Philosophy)
 
-| Command                                  | Description    |
-| ---------------------------------------- | -------------- |
-| `Git ID Switcher: Select Identity`       | ID picker open |
-| `Git ID Switcher: Show Current Identity` | DaH ID show    |
-| `Git ID Switcher: Show Documentation`    | ghItlh tu'     |
+> **"jIH 'Iv?"** — wa' yu'wI' extension jang.
 
----
-
-## Design Philosophy (meqba' QeD)
-
-> "jIH 'Iv?" — wa' yu'wI' neH jang extension.
-
-**Karesansui Architecture** lo'lu': nap core (100 lines),
-quality puS (90% coverage, logging, timeouts) je
-constraints wIv (GitHub API pagh, token management pagh).
+**Karesansui Architecture** lo'lu'. Core 100 ghItlhmey nap.
+vaj remaining quality (test 90%, logging, timeouts) je
+intentional constraints (GitHub API Hutlh, token qon Hutlh) lo' Datu'.
 
 [![Karesansui Architecture](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](../../DESIGN_PHILOSOPHY.md)
 
@@ -567,17 +523,17 @@ constraints wIv (GitHub API pagh, token management pagh).
 
 ---
 
-## Contributing
+## boq (Contributing)
 
-Contributions welcome! [CONTRIBUTING.md](../../CONTRIBUTING.md) yIlaD.
+boq SuqeH! [CONTRIBUTING.md](../../CONTRIBUTING.md) yIlaD.
 
-## License
+## chut (License)
 
-MIT License - [LICENSE](../../../LICENSE) yIlaD.
+MIT chut - [LICENSE](../../../LICENSE) yIlaD.
 
-## Credits
+## quvmoH (Credits)
 
-[Null;Variant](https://github.com/nullvariant) chenmoH
+[Null;Variant](https://github.com/nullvariant) chenmoHta'
 
 ---
 
