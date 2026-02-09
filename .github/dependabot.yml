@@ -21,9 +21,9 @@ updates:
           - "minor"
           - "patch"
 
-  # npm dependencies for git-id-switcher extension
+  # npm dependencies (workspaces monorepo - must use root for lockfile sync)
   - package-ecosystem: "npm"
-    directory: "/extensions/git-id-switcher"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
