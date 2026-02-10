@@ -1,9 +1,17 @@
-# AGENTS Instructions
+# nullvariant-vscode-extensions
 
-- This file provides guidance for AI agents working in this repository.
-- Scope: the entire monorepo (root-level AGENTS.md).
-- Keep changes minimal and consistent with existing project conventions.
-- Do not modify files unrelated to the requested task.
+## Overview
+
+VS Code extensions monorepo. Primary extension: **Git ID Switcher** — manages multiple Git identities with SSH key association, GPG signing, and submodule support. TypeScript, npm workspaces, multilingual (26 languages).
+
+## Key Constraints
+
+1. Do not add tests for code marked with `/* c8 ignore */` — intentionally excluded from coverage.
+2. Do not remove code marked with `// defense-in-depth` — intentional security safeguards.
+3. Keep security validator files in `security/` as separate files (Single Responsibility Principle).
+4. Do not make security constants user-configurable — hardcoded security values are by design.
+5. Do not add features outside the current scope (e.g., GitHub API integration).
+6. Minimize dependencies — add only when genuinely needed and not replaceable by existing tools.
 
 ## Branch Protection
 
@@ -47,7 +55,7 @@ npm run test && npm run test:e2e
 ### Test Strategy
 
 | Test Type  | Target                                       | When to Use                |
-|------------|----------------------------------------------|----------------------------|
+| ---------- | -------------------------------------------- | -------------------------- |
 | Unit Tests | Pure functions, utilities, validation        | Fast feedback, edge cases  |
 | E2E Tests  | VS Code API integration, extension lifecycle | Real behavior verification |
 
