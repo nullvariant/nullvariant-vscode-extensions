@@ -22,7 +22,7 @@
  * Unknown paths or hash mismatches result in content rejection.
  */
 export const DOCUMENT_HASHES: Record<string, string> = {
-  'AGENTS.md': '54f16b767e57686b3eb46a2b4aa02b378554cc492c32c49ed96588f6d184b6b8',
+  'AGENTS.md': 'cb8170851742743e584cf21ff3427c78dc1c9471fd56d25a19abc174ed4fdd61',
   'CODE_OF_CONDUCT.md': 'a5eb286c902437bbe0f6d409894f20e51c172fa869fe2f151bfa388f9d911b54',
   'CONTRIBUTING.md': '4150f8810aec7b2e8eff9f3c69ee1bae1374843f50a812efa6778cba27a833cd',
   'extensions/git-id-switcher/CHANGELOG.md': 'c67ad4a778f2be5f7f3984a2c94d07014a9f4660322fd03fa621448c3eadc29d',
