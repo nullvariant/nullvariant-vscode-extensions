@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.19] - 2026-02-13
+
+### Fixed
+
+- **Switch to X-Extension-Id custom header for analytics classification**: The User-Agent approach in 0.16.18 was ineffective because Node.js `fetch()` overrides User-Agent to `"node"`. Now uses `X-Extension-Id: git-id-switcher` custom header, which the assets worker forwards to the analytics worker for correct VSCODE/is_likely_human=1 classification.
+
 ## [0.16.18] - 2026-02-13
 
 ### Fixed
