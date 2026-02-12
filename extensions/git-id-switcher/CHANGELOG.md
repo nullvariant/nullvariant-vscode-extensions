@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.18] - 2026-02-13
+
+### Fixed
+
+- **Add User-Agent header to Webview documentation fetch requests**: Node.js fetch in the extension host doesn't include VSCode's User-Agent (`Code/x.y.z`), causing Cloudflare analytics worker to classify documentation access as `OTHER/is_likely_human=0`. Now sends `Code/${vscode.version} git-id-switcher` to match existing `classifyTraffic` detection rules.
+
 ## [0.16.17] - 2026-02-07
 
 ### Documentation
