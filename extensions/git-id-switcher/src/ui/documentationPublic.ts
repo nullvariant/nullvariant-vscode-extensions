@@ -91,8 +91,13 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
   try {
     const url = `${ASSET_BASE_URL}/${path}`;
 
-    // Add header for CI/test environment access (for analytics filtering)
-    const headers: Record<string, string> = {};
+    // Add headers for analytics classification and CI/test filtering
+    // Node.js fetch doesn't include VSCode's User-Agent (Code/x.y.z),
+    // so analytics worker classifies requests as OTHER/is_likely_human=0.
+    // Setting User-Agent with "Code/" prefix matches existing classifyTraffic detection.
+    const headers: Record<string, string> = {
+      'User-Agent': `Code/${vscode.version} git-id-switcher`,
+    };
     if (isTestEnvironment()) {
       headers['X-Test-Environment'] = 'true';
     }
