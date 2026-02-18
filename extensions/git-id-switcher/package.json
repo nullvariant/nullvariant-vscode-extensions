@@ -284,7 +284,7 @@
     "generate:readme": "node scripts/generate-root-readme.js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.0.0",
+    "@eslint/js": "^10.0.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.2.3",
     "@types/vscode": "^1.109.0",

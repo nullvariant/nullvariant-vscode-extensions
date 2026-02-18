@@ -1150,6 +1150,7 @@ async function testCommandBlockedLogsToAuditTrail(): Promise<void> {
     } catch (error) {
       assert.ok(error instanceof Error, 'Should throw Error');
       assert.strictEqual(loggedCommand, 'git', 'Should log git command');
+      assert.deepStrictEqual(loggedArgs, ['--exec=evil'], 'Should log the blocked args');
       assert.ok(loggedReason !== null, 'Should log a reason for blocked flag');
     }
   }
