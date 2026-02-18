@@ -20,7 +20,7 @@ export default defineConfig({
   files: 'out/test/e2e/**/*.test.js',
 
   // VS Code version to use for testing (matches engines.vscode in package.json)
-  version: '1.85.0',
+  version: '1.109.0',
 
   // Mocha configuration
   mocha: {
