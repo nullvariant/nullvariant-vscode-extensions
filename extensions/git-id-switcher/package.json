@@ -291,7 +291,7 @@
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.0.0",
-    "eslint": "^9.0.0",
+    "eslint": "^10.0.1",
     "fast-check": "^4.5.3",
     "glob": "^13.0.6",
     "mocha": "^11.7.5",
