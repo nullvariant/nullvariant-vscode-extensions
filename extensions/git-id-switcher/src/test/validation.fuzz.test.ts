@@ -95,9 +95,9 @@ function testValidateIdentityReturnType(): void {
   fc.assert(
     fc.property(
       fc.record({
-        id: fc.oneof(fc.string(), fc.constant(), fc.constant(null)),
-        name: fc.oneof(fc.string(), fc.constant(), fc.constant(null)),
-        email: fc.oneof(fc.string(), fc.constant(), fc.constant(null)),
+        id: fc.oneof(fc.string(), fc.constant(undefined), fc.constant(null)),
+        name: fc.oneof(fc.string(), fc.constant(undefined), fc.constant(null)),
+        email: fc.oneof(fc.string(), fc.constant(undefined), fc.constant(null)),
       }),
       (obj) => {
         const result = validateIdentity(obj as Identity);

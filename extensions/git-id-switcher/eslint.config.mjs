@@ -93,6 +93,8 @@ export default [
       "unicorn/prefer-top-level-await": "off",
       "unicorn/no-abusive-eslint-disable": "off",
       "unicorn/import-style": "off",
+      "unicorn/no-useless-undefined": "off", // TypeScript requires explicit undefined arguments (resolve(undefined), update(key, undefined))
+      "unicorn/no-useless-error-capture-stack-trace": "off", // V8-specific Error.captureStackTrace is guarded by if-check for non-V8 engines
     },
     linterOptions: {
       reportUnusedDisableDirectives: "warn",

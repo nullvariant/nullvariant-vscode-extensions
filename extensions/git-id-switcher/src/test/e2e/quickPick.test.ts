@@ -55,7 +55,7 @@ function raceWithTimeout<T>(
   timeoutMs: number = 500
 ): Promise<T | undefined> {
   const timeoutPromise = new Promise<undefined>((resolve) => {
-    setTimeout(() => resolve(), timeoutMs);
+    setTimeout(() => resolve(undefined), timeoutMs);
   });
   return Promise.race([promise, timeoutPromise]);
 }

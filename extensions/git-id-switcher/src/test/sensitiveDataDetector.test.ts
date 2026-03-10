@@ -372,7 +372,7 @@ function testSanitizeValueTypes(): void {
       'null should pass through'
     );
     assert.strictEqual(
-      sanitizeValue(),
+      sanitizeValue(undefined),
       undefined,
       'undefined should pass through'
     );

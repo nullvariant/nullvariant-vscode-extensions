@@ -66,7 +66,7 @@ function createMockVSCode(options: {
           if (key === 'identities') {
             return options.identities ?? [];
           }
-          return;
+          return undefined;
         },
         update: async (key: string, value: unknown) => {
           if (options.configUpdateError) {
@@ -84,11 +84,11 @@ function createMockVSCode(options: {
       },
       showInformationMessage: async (message: string) => {
         showInformationMessageCalls.push(message);
-        return;
+        return undefined;
       },
       showErrorMessage: async (message: string) => {
         showErrorMessageCalls.push(message);
-        return;
+        return undefined;
       },
       createQuickPick: () => {
         const callbacks: {
@@ -194,7 +194,7 @@ function createAddMockVSCode(options: {
           if (key === 'identities') {
             return options.identities ?? [];
           }
-          return;
+          return undefined;
         },
         update: async (key: string, value: unknown) => {
           if (options.configUpdateError) {
@@ -208,15 +208,15 @@ function createAddMockVSCode(options: {
     window: {
       showWarningMessage: async (message: string) => {
         showWarningMessageCalls.push(message);
-        return;
+        return undefined;
       },
       showInformationMessage: async (message: string) => {
         showInformationMessageCalls.push(message);
-        return;
+        return undefined;
       },
       showErrorMessage: async (message: string) => {
         showErrorMessageCalls.push(message);
-        return;
+        return undefined;
       },
       createQuickPick: <T extends { field?: string | null; _isDisabled?: boolean; _isSaveButton?: boolean }>() => {
         let acceptCallback: (() => void) | undefined;
@@ -389,7 +389,7 @@ function createMockContext(currentIdentityId?: string) {
       },
     },
     globalState: {
-      get: () => {},
+      get: () => undefined,
       update: () => Promise.resolve(),
     },
     _getWorkspaceState: () => workspaceState,
@@ -409,7 +409,7 @@ function createMockStatusBar() {
     setIdentity: () => {},
     setLoading: () => {},
     setError: () => {},
-    getCurrentIdentity: () => {},
+    getCurrentIdentity: () => undefined,
     dispose: () => {},
     _wasNoIdentityCalled: () => noIdentityCalled,
   } as unknown as IdentityStatusBar & { _wasNoIdentityCalled: () => boolean };

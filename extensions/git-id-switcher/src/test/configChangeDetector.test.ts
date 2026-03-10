@@ -476,7 +476,7 @@ function testGetIdentityId(): void {
 
   // Undefined identity
   assert.strictEqual(
-    detector.getIdentityId(),
+    detector.getIdentityId(undefined),
     null,
     'Should return null for undefined identity'
   );

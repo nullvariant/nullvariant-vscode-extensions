@@ -91,7 +91,7 @@ function testAbsolutePathRejection(): void {
   const absolutePaths = [
     '/etc/passwd',
     '/home/user/project',
-    String.raw`C:\Windows\System32`,
+    'C:\\Windows\\System32',
     '/var/www/html',
   ];
 
@@ -117,7 +117,7 @@ function testControlCharacterRejection(): void {
 
   // Paths with control characters should be rejected
   const maliciousPaths = [
-    'vendor\u0000/lib',
+    'vendor\x00/lib',
     'sub\nmodule',
     'path\twith\ttabs',
     'vendor\rmodule',
@@ -309,7 +309,7 @@ function testPermissionErrorHandling(): void {
   }
 
   // Skip if running as root (root can read anything)
-  if (process.getuid?.() === 0) {
+  if (process.getuid && process.getuid() === 0) {
     console.log('  Skipped when running as root');
     console.log('  Permission error handling tests passed!');
     return;
@@ -413,7 +413,7 @@ function testRegexPatternStrictness(): void {
   // Copy of the regex from submodule.ts for testing
   // Control characters are intentionally excluded for security
   // eslint-disable-next-line no-control-regex
-  const SUBMODULE_STATUS_REGEX = /^([ +-])([a-f0-9]{40})\s+([^\u0000-\u001F\u007F]+?)(?:\s+\([^)]+\))?$/;
+  const SUBMODULE_STATUS_REGEX = /^([ +-])([a-f0-9]{40})\s+([^\x00-\x1f\x7f]+?)(?:\s+\([^)]+\))?$/;
 
   // Valid cases
   const validCases = [
@@ -426,7 +426,7 @@ function testRegexPatternStrictness(): void {
 
   for (const valid of validCases) {
     const match = valid.match(SUBMODULE_STATUS_REGEX);
-    assert.ok(match, `Valid case should match: "${valid.slice(0, 50)}..."`);
+    assert.ok(match, `Valid case should match: "${valid.substring(0, 50)}..."`);
   }
 
   // Invalid cases
@@ -449,7 +449,7 @@ function testRegexPatternStrictness(): void {
 
   for (const invalid of invalidCases) {
     const match = invalid.match(SUBMODULE_STATUS_REGEX);
-    assert.strictEqual(match, null, `Invalid case should not match: "${invalid.slice(0, 50)}..."`);
+    assert.strictEqual(match, null, `Invalid case should not match: "${invalid.substring(0, 50)}..."`);
   }
 
   console.log('  Regex pattern strictness tests passed');
@@ -1101,9 +1101,9 @@ async function testListSubmodulesRecursiveWithRealRepos(): Promise<void> {
     // 5. Test with depth=2 (should find level1 and level2)
     const depth2Results = await listSubmodulesRecursive(rootDir, 2);
     assert.strictEqual(depth2Results.length, 2, 'Depth 2 should find 2 submodules');
-    const paths = new Set(depth2Results.map(s => s.path).sort());
-    assert.ok(paths.has('libs/level1'), 'Should find level1');
-    assert.ok(paths.has('nested/level2'), 'Should find level2');
+    const paths = depth2Results.map(s => s.path).sort();
+    assert.ok(paths.includes('libs/level1'), 'Should find level1');
+    assert.ok(paths.includes('nested/level2'), 'Should find level2');
 
     // 6. Test with depth=3 (should still find 2, no more nesting)
     const depth3Results = await listSubmodulesRecursive(rootDir, 3);

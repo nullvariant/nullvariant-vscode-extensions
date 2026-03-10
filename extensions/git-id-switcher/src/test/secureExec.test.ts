@@ -323,7 +323,7 @@ function testGetCommandTimeout(): void {
 
   // Test invalid override (NaN) falls through
   {
-    const result = getCommandTimeout('git', Number.NaN);
+    const result = getCommandTimeout('git', NaN);
     assert.strictEqual(
       result,
       COMMAND_TIMEOUTS['git'],
@@ -713,7 +713,7 @@ function testIsTimeoutError(): void {
 
   // Test with undefined
   {
-    assert.strictEqual(isTimeoutError(), false, 'Undefined should not be timeout');
+    assert.strictEqual(isTimeoutError(undefined), false, 'Undefined should not be timeout');
   }
 
   // Test with string
@@ -1064,7 +1064,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
       get: <T>(key: string, defaultValue?: T): T => {
         if (key === 'commandTimeouts') {
           return {
-            git: Number.NaN,
+            git: NaN,
             'ssh-add': Infinity,
           } as T;
         }

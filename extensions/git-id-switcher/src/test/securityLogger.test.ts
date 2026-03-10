@@ -939,7 +939,7 @@ function testInitializeWithInvalidFilePath(): void {
         show: () => {},
         dispose: () => {},
       }),
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     workspace: {
       getConfiguration: () => ({
@@ -951,7 +951,7 @@ function testInitializeWithInvalidFilePath(): void {
       }),
     },
     extensions: {
-      getExtension: () => {},
+      getExtension: () => undefined,
     },
   };
 
@@ -990,7 +990,7 @@ function testShowWithMockOutputChannel(): void {
   const mockVSCode = {
     window: {
       createOutputChannel: () => mockOutputChannel,
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     workspace: {
       getConfiguration: () => ({
@@ -998,7 +998,7 @@ function testShowWithMockOutputChannel(): void {
       }),
     },
     extensions: {
-      getExtension: () => {},
+      getExtension: () => undefined,
     },
   };
 
@@ -1031,7 +1031,7 @@ function testLogActivationWithMockExtension(): void {
         show: () => {},
         dispose: () => {},
       }),
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     workspace: {
       getConfiguration: () => ({
@@ -1047,7 +1047,7 @@ function testLogActivationWithMockExtension(): void {
             },
           };
         }
-        return;
+        return undefined;
       },
     },
   };
@@ -1085,7 +1085,7 @@ function testLogActivationWithExtensionError(): void {
         show: () => {},
         dispose: () => {},
       }),
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     workspace: {
       getConfiguration: () => ({
@@ -1132,7 +1132,7 @@ function testLogActivationWithNullPackageJSON(): void {
         show: () => {},
         dispose: () => {},
       }),
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     workspace: {
       getConfiguration: () => ({
@@ -1146,7 +1146,7 @@ function testLogActivationWithNullPackageJSON(): void {
             packageJSON: null,
           };
         }
-        return;
+        return undefined;
       },
     },
   };
@@ -1187,7 +1187,7 @@ function testErrorNotificationShown(): void {
       showWarningMessage: (msg: string) => {
         warningMessageCalled = true;
         warningMessage = msg;
-        return Promise.resolve();
+        return Promise.resolve(undefined);
       },
     },
     workspace: {
@@ -1196,7 +1196,7 @@ function testErrorNotificationShown(): void {
       }),
     },
     extensions: {
-      getExtension: () => {},
+      getExtension: () => undefined,
     },
   };
 
@@ -1231,7 +1231,7 @@ function testFileLoggingEnabled(): void {
         show: () => {},
         dispose: () => {},
       }),
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     workspace: {
       getConfiguration: () => ({
@@ -1244,7 +1244,7 @@ function testFileLoggingEnabled(): void {
       }),
     },
     extensions: {
-      getExtension: () => {},
+      getExtension: () => undefined,
     },
   };
 
@@ -1284,7 +1284,7 @@ function testWriteToOutputChannelJsonError(): void {
         show: () => {},
         dispose: () => {},
       }),
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     workspace: {
       getConfiguration: () => ({
@@ -1292,7 +1292,7 @@ function testWriteToOutputChannelJsonError(): void {
       }),
     },
     extensions: {
-      getExtension: () => {},
+      getExtension: () => undefined,
     },
   };
 

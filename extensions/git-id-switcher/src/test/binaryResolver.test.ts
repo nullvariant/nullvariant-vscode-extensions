@@ -739,7 +739,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
           if (key === 'path') {
             return realGitPath;
           }
-          return;
+          return undefined;
         },
       };
 
@@ -748,7 +748,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
           if (section === 'git') {
             return mockConfig;
           }
-          return { get: () => {} };
+          return { get: () => undefined };
         },
       };
 
@@ -779,7 +779,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
         if (key === 'path') {
           return invalidPath;
         }
-        return;
+        return undefined;
       },
     };
 
@@ -788,7 +788,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
         if (section === 'git') {
           return mockConfig;
         }
-        return { get: () => {} };
+        return { get: () => undefined };
       },
     };
 
@@ -826,7 +826,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
         if (key === 'path') {
           return '';
         }
-        return;
+        return undefined;
       },
     };
 
@@ -835,7 +835,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
         if (section === 'git') {
           return mockConfig;
         }
-        return { get: () => {} };
+        return { get: () => undefined };
       },
     };
 

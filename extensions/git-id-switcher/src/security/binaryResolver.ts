@@ -53,8 +53,9 @@ export class BinaryResolutionError extends Error {
     this.command = command;
 
     /* c8 ignore start - Error.captureStackTrace availability depends on JS engine */
-    // eslint-disable-next-line no-empty -- captureStackTrace is V8-specific; empty block is intentional fallback
-    if (Error.captureStackTrace) {}
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, BinaryResolutionError);
+    }
     /* c8 ignore stop */
   }
 }

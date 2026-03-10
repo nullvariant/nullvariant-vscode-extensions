@@ -302,7 +302,7 @@ async function testSpecialFileTypes(): Promise<void> {
   try {
     // Create a FIFO (named pipe) if possible
     try {
-      const { execSync } = await import('node:child_process');
+      const { execSync } = await import('child_process');
       const fifoPath = path.join(tmpDir, 'fifo_key');
       execSync(`mkfifo "${fifoPath}"`);
 

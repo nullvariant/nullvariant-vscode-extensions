@@ -88,8 +88,9 @@ export class SecurityError extends Error {
     this.internalDetails = options.internalDetails ?? {};
 
     // Capture stack trace but exclude this constructor
-    // eslint-disable-next-line no-empty -- captureStackTrace is V8-specific; empty block is intentional fallback
-    if (Error.captureStackTrace) {}
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, SecurityError);
+    }
 
     // SECURITY: Override stack property to return sanitized stack by default
     // This prevents information leakage even if stack is accessed directly

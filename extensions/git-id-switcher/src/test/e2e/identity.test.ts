@@ -1217,7 +1217,7 @@ describe('Identity E2E Test Suite', function () {
         await config.update('identities', [existingIdentity], vscode.ConfigurationTarget.Global);
 
         // Clear service by setting to undefined
-        await updateIdentityInConfig('service-clear-identity', 'service');
+        await updateIdentityInConfig('service-clear-identity', 'service', undefined);
 
         // Verify service is cleared
         const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);

@@ -197,7 +197,7 @@ function testValidateIdentity(): void {
   {
     const hexEscape: Identity = {
       id: 'test',
-      name: String.raw`Test\x00User`,
+      name: 'Test\\x00User',
       email: 'test@example.com',
     };
     const result = validateIdentity(hexEscape);

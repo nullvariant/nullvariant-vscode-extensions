@@ -681,7 +681,7 @@ function waitForQuickPickSelection<T>(
       }),
       quickPick.onDidHide(() => {
         cleanup(disposables);
-        resolve();
+        resolve(undefined);
       }),
     ];
   });
@@ -731,7 +731,7 @@ function waitForInputBoxValue(
       }),
       inputBox.onDidHide(() => {
         cleanup(disposables);
-        resolve();
+        resolve(undefined);
       }),
     ];
   });

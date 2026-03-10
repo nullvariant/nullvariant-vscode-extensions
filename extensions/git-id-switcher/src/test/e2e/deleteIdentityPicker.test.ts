@@ -77,14 +77,14 @@ function createMockVSCode(options: {
           if (key === 'identities') {
             return options.identities ?? [];
           }
-          return;
+          return undefined;
         },
       }),
     },
     window: {
       showWarningMessage: async (message: string) => {
         showWarningMessageCalls.push(message);
-        return;
+        return undefined;
       },
       createQuickPick: <T extends { identity: unknown }>() => {
         let acceptCallback: (() => void) | undefined;

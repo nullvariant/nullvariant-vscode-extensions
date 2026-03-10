@@ -50,8 +50,8 @@ function createMockVSCode(options: {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(),
-      showInformationMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
+      showInformationMessage: () => Promise.resolve(undefined),
     },
     l10n: {
       t: (message: string) => message,
@@ -75,11 +75,11 @@ function createMockContext() {
     subscriptions,
     globalStorageUri: { fsPath: '/mock/global/storage' },
     workspaceState: {
-      get: () => {},
+      get: () => undefined,
       update: () => Promise.resolve(),
     },
     globalState: {
-      get: () => {},
+      get: () => undefined,
       update: () => Promise.resolve(),
     },
   } as unknown as import('vscode').ExtensionContext;
@@ -137,7 +137,7 @@ function testShowUntrustedWorkspaceWarning(): void {
       showWarningMessage: (message: string) => {
         warningShown = true;
         warningMessage = message;
-        return Promise.resolve();
+        return Promise.resolve(undefined);
       },
     },
     l10n: {
@@ -201,7 +201,7 @@ function testInitializeWorkspaceTrustUntrusted(): void {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     l10n: {
       t: (message: string) => message,
@@ -243,7 +243,7 @@ async function testInitializeWorkspaceTrustCallback(): Promise<void> {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     l10n: {
       t: (message: string) => message,
@@ -290,7 +290,7 @@ function testInitializeWorkspaceTrustIdempotent(): void {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     l10n: {
       t: (message: string) => message,
@@ -349,7 +349,7 @@ function testRequireWorkspaceTrustUntrusted(): void {
     window: {
       showWarningMessage: () => {
         warningShown = true;
-        return Promise.resolve();
+        return Promise.resolve(undefined);
       },
     },
     l10n: {
@@ -387,7 +387,7 @@ function testResetForTesting(): void {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     l10n: {
       t: (message: string) => message,
@@ -434,7 +434,7 @@ async function testCallbackErrorHandling(): Promise<void> {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     l10n: {
       t: (message: string) => message,
@@ -489,7 +489,7 @@ async function testHandlerDisposedAfterTrustGranted(): Promise<void> {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(),
+      showWarningMessage: () => Promise.resolve(undefined),
     },
     l10n: {
       t: (message: string) => message,
@@ -548,7 +548,7 @@ function testShowUntrustedWorkspaceWarningNoL10n(): void {
     window: {
       showWarningMessage: (message: string) => {
         warningMessage = message;
-        return Promise.resolve();
+        return Promise.resolve(undefined);
       },
     },
     // No l10n property
@@ -581,7 +581,7 @@ function testRequireWorkspaceTrustNoL10n(): void {
     window: {
       showWarningMessage: (message: string) => {
         warningMessage = message;
-        return Promise.resolve();
+        return Promise.resolve(undefined);
       },
     },
     // No l10n property

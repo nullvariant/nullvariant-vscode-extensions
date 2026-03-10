@@ -162,7 +162,7 @@ export async function showIdentityQuickPick(
     quickPick.onDidHide(() => {
       quickPick.dispose();
       if (!resolved) {
-        resolve();
+        resolve(undefined);
       }
     });
 
@@ -255,7 +255,7 @@ export async function showDeleteIdentityQuickPick(
 
     quickPick.onDidHide(() => {
       quickPick.dispose();
-      resolve();
+      resolve(undefined);
     });
 
     quickPick.show();

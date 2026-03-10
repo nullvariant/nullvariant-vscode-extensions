@@ -145,7 +145,7 @@ function createMockVSCode(options: {
           if (key === 'identities') {
             return options.identities ?? [];
           }
-          return;
+          return undefined;
         },
         update: async (key: string, value: unknown) => {
           if (options.configUpdateError) {
@@ -158,15 +158,15 @@ function createMockVSCode(options: {
     window: {
       showWarningMessage: async (message: string) => {
         showWarningMessageCalls.push(message);
-        return;
+        return undefined;
       },
       showInformationMessage: async (message: string) => {
         showInformationMessageCalls.push(message);
-        return;
+        return undefined;
       },
       showErrorMessage: async (message: string) => {
         showErrorMessageCalls.push(message);
-        return;
+        return undefined;
       },
       showQuickPick: async <T>(items: T[]): Promise<T | undefined> => {
         const result = options.showQuickPickResult;
@@ -305,7 +305,7 @@ function createMockVSCode(options: {
         if (result) {
           return [{ fsPath: result }];
         }
-        return;
+        return undefined;
       },
       createQuickPick: <T>() => {
         // Note: quickPickSelectionIndex is shared across all QuickPick instances (defined at mock level)

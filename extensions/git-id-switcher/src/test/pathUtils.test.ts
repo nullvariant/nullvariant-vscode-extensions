@@ -150,9 +150,7 @@ function testNormalizeAndValidatePath(): void {
   }
 
   // Unix absolute path test - skipped on Windows (Windows converts /path to D:\path)
-  if (process.platform === 'win32') {
-    console.log('  Skipped Unix absolute path test on Windows');
-  } else {
+  if (process.platform !== 'win32') {
     const result = normalizeAndValidatePath('/home/user/.ssh/id_rsa');
     assert.strictEqual(result.valid, true, 'Absolute path should pass');
     assert.strictEqual(
@@ -160,6 +158,8 @@ function testNormalizeAndValidatePath(): void {
       '/home/user/.ssh/id_rsa',
       'Should normalize absolute path'
     );
+  } else {
+    console.log('  Skipped Unix absolute path test on Windows');
   }
 
   console.log('✅ normalizeAndValidatePath basic tests passed!');
@@ -395,7 +395,7 @@ function testValidateSubmodulePath(): void {
 
   // Test path with control characters
   {
-    const result = validateSubmodulePath('path\u0000with\u0000nulls', workspacePath);
+    const result = validateSubmodulePath('path\x00with\x00nulls', workspacePath);
     assert.strictEqual(result.valid, false, 'Control chars should fail');
     assert.ok(
       result.reason?.includes('control'),
@@ -446,12 +446,12 @@ function testRequireExistsOption(): void {
   console.log('Testing requireExists option...');
 
   // Test with existing path (Unix only - Windows paths are rejected by design)
-  if (process.platform === 'win32') {
-    console.log('  [Windows] Skipping existing path test (Unix-style paths only)');
-  } else {
+  if (process.platform !== 'win32') {
     const homeDir = os.homedir();
     const result = normalizeAndValidatePath(homeDir, { requireExists: true });
     assert.strictEqual(result.valid, true, 'Existing path should pass');
+  } else {
+    console.log('  [Windows] Skipping existing path test (Unix-style paths only)');
   }
 
   // Test with non-existing path (works on all platforms)
@@ -535,9 +535,7 @@ function testResolveSymlinksOption(): void {
   console.log('Testing resolveSymlinks option...');
 
   // Tests with existing path (Unix only - Windows paths are rejected by design)
-  if (process.platform === 'win32') {
-    console.log('  [Windows] Skipping existing path tests (Unix-style paths only)');
-  } else {
+  if (process.platform !== 'win32') {
     const homeDir = os.homedir();
 
     // Test without resolveSymlinks
@@ -562,6 +560,8 @@ function testResolveSymlinksOption(): void {
         'symlinksResolved should be boolean'
       );
     }
+  } else {
+    console.log('  [Windows] Skipping existing path tests (Unix-style paths only)');
   }
 
   // Test with resolveSymlinks on non-existent path (works on all platforms)
@@ -662,7 +662,7 @@ function testSshKeyPathLocations(): void {
 
   // Test Windows-style path (if on Windows)
   if (process.platform === 'win32') {
-    const result = validateSshKeyPath(String.raw`C:\Users\test\.ssh\id_rsa`);
+    const result = validateSshKeyPath('C:\\Users\\test\\.ssh\\id_rsa');
     assert.strictEqual(typeof result.valid, 'boolean', 'Windows path should be processed');
   }
 
@@ -803,7 +803,7 @@ function testNullByteInjection(): void {
 
   // Test null byte in path
   {
-    const result = normalizeAndValidatePath('/path/to\u0000/file.txt');
+    const result = normalizeAndValidatePath('/path/to\x00/file.txt');
     assert.strictEqual(result.valid, false, 'Path with null byte should fail');
     assert.ok(
       result.reason?.toLowerCase().includes('null'),
@@ -813,7 +813,7 @@ function testNullByteInjection(): void {
 
   // Test null byte at end
   {
-    const result = normalizeAndValidatePath('/path/to/file.txt\u0000');
+    const result = normalizeAndValidatePath('/path/to/file.txt\x00');
     assert.strictEqual(result.valid, false, 'Path with trailing null should fail');
   }
 
@@ -865,11 +865,11 @@ function testControlCharacterPrevention(): void {
 
   // Test various control characters
   const controlChars = [
-    '\u0001', // SOH
-    '\u0007', // Bell
-    '\u0008', // Backspace
-    '\u001B', // Escape
-    '\u007F', // DEL
+    '\x01', // SOH
+    '\x07', // Bell
+    '\x08', // Backspace
+    '\x1b', // Escape
+    '\x7f', // DEL
   ];
 
   for (const char of controlChars) {
@@ -918,14 +918,14 @@ function testValidateWorkspacePath(): void {
 
   // Test null byte injection
   {
-    const result = validateWorkspacePath('/path/to\u0000file');
+    const result = validateWorkspacePath('/path/to\x00file');
     assert.strictEqual(result.valid, false, 'Null byte should fail');
     assert.ok(result.reason?.includes('null byte'), 'Should mention null byte');
   }
 
   // Test control characters
   {
-    const result = validateWorkspacePath('/path/to\u0007file');
+    const result = validateWorkspacePath('/path/to\x07file');
     assert.strictEqual(result.valid, false, 'Control char should fail');
     assert.ok(result.reason?.includes('control'), 'Should mention control characters');
   }
@@ -965,7 +965,7 @@ function testValidateWorkspacePath(): void {
   if (process.platform === 'win32') {
     // Windows: test drive letter paths
     {
-      const result = validateWorkspacePath(String.raw`C:\Users\test`);
+      const result = validateWorkspacePath('C:\\Users\\test');
       assert.strictEqual(result.valid, true, 'Windows drive path should be valid');
     }
 
@@ -983,7 +983,7 @@ function testValidateWorkspacePath(): void {
 
     // Unix: test paths with backslash (backslash is valid filename char on Unix)
     {
-      const result = validateWorkspacePath(String.raw`/path/with\backslash`);
+      const result = validateWorkspacePath('/path/with\\backslash');
       assert.strictEqual(result.valid, true, 'Unix path with backslash should be valid');
     }
   }

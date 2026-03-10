@@ -490,7 +490,7 @@ function testSanitizePathControlChars(): void {
 
   // Path with null byte
   assert.strictEqual(
-    sanitizePath('/path/to\u0000/file'),
+    sanitizePath('/path/to\x00/file'),
     '[REDACTED:CONTROL_CHARS]',
     'Path with null byte should be redacted'
   );
@@ -560,7 +560,7 @@ function testSanitizePathUNC(): void {
 
   // Standard UNC path - server name should be redacted
   assert.strictEqual(
-    sanitizePath(String.raw`\\server\share\file.txt`),
+    sanitizePath('\\\\server\\share\\file.txt'),
     '//[REDACTED]/share/file.txt',
     'UNC server name should be redacted'
   );
@@ -673,10 +673,10 @@ function testSanitizePathHomeUnix(): void {
     console.log('✅ sanitizePath (home replacement Unix) passed!');
   } finally {
     Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHome === undefined) {
-      delete process.env.HOME;
-    } else {
+    if (originalHome !== undefined) {
       process.env.HOME = originalHome;
+    } else {
+      delete process.env.HOME;
     }
   }
 }
@@ -697,12 +697,12 @@ function testSanitizePathHomeWindows(): void {
 
     // Test with HOMEDRIVE + HOMEPATH
     process.env.HOMEDRIVE = 'C:';
-    process.env.HOMEPATH = String.raw`\Users\testuser`;
+    process.env.HOMEPATH = '\\Users\\testuser';
     delete process.env.USERPROFILE;
 
     // Path with Windows backslashes
     assert.strictEqual(
-      sanitizePath(String.raw`C:\Users\testuser\Documents\file.txt`),
+      sanitizePath('C:\\Users\\testuser\\Documents\\file.txt'),
       '~/Documents/file.txt',
       'Windows home with HOMEDRIVE+HOMEPATH should be replaced'
     );
@@ -710,10 +710,10 @@ function testSanitizePathHomeWindows(): void {
     // Test with USERPROFILE fallback
     delete process.env.HOMEDRIVE;
     delete process.env.HOMEPATH;
-    process.env.USERPROFILE = String.raw`C:\Users\testuser`;
+    process.env.USERPROFILE = 'C:\\Users\\testuser';
 
     assert.strictEqual(
-      sanitizePath(String.raw`C:\Users\testuser\Desktop\file.txt`),
+      sanitizePath('C:\\Users\\testuser\\Desktop\\file.txt'),
       '~/Desktop/file.txt',
       'Windows home with USERPROFILE should be replaced'
     );
@@ -723,7 +723,7 @@ function testSanitizePathHomeWindows(): void {
     delete process.env.HOMEPATH;
     delete process.env.USERPROFILE;
 
-    const noHomeResult = sanitizePath(String.raw`C:\Users\testuser\file.txt`);
+    const noHomeResult = sanitizePath('C:\\Users\\testuser\\file.txt');
     assert.strictEqual(
       noHomeResult,
       'C:/Users/testuser/file.txt',
@@ -733,20 +733,20 @@ function testSanitizePathHomeWindows(): void {
     console.log('✅ sanitizePath (home replacement Windows) passed!');
   } finally {
     Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHomeDrive === undefined) {
-      delete process.env.HOMEDRIVE;
-    } else {
+    if (originalHomeDrive !== undefined) {
       process.env.HOMEDRIVE = originalHomeDrive;
-    }
-    if (originalHomePath === undefined) {
-      delete process.env.HOMEPATH;
     } else {
+      delete process.env.HOMEDRIVE;
+    }
+    if (originalHomePath !== undefined) {
       process.env.HOMEPATH = originalHomePath;
-    }
-    if (originalUserProfile === undefined) {
-      delete process.env.USERPROFILE;
     } else {
+      delete process.env.HOMEPATH;
+    }
+    if (originalUserProfile !== undefined) {
       process.env.USERPROFILE = originalUserProfile;
+    } else {
+      delete process.env.USERPROFILE;
     }
   }
 }
@@ -775,10 +775,10 @@ function testSanitizePathNoHomeUnix(): void {
     console.log('✅ sanitizePath (no HOME Unix) passed!');
   } finally {
     Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHome === undefined) {
-      delete process.env.HOME;
-    } else {
+    if (originalHome !== undefined) {
       process.env.HOME = originalHome;
+    } else {
+      delete process.env.HOME;
     }
   }
 }
@@ -879,10 +879,10 @@ function testSanitizePathEdgeCases(): void {
     console.log('✅ sanitizePath (edge cases) passed!');
   } finally {
     Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHome === undefined) {
-      delete process.env.HOME;
-    } else {
+    if (originalHome !== undefined) {
       process.env.HOME = originalHome;
+    } else {
+      delete process.env.HOME;
     }
   }
 }
@@ -933,14 +933,14 @@ function testSanitizePathNormalization(): void {
 
     // Windows-style backslashes should be converted to forward slashes
     assert.strictEqual(
-      sanitizePath(String.raw`/path\to\file.txt`),
+      sanitizePath('/path\\to\\file.txt'),
       '/path/to/file.txt',
       'Backslashes should be normalized to forward slashes'
     );
 
     // Mixed slashes
     assert.strictEqual(
-      sanitizePath(String.raw`/path/to\mixed\file.txt`),
+      sanitizePath('/path/to\\mixed\\file.txt'),
       '/path/to/mixed/file.txt',
       'Mixed slashes should be normalized'
     );
@@ -948,10 +948,10 @@ function testSanitizePathNormalization(): void {
     console.log('✅ sanitizePath (normalization) passed!');
   } finally {
     Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHome === undefined) {
-      delete process.env.HOME;
-    } else {
+    if (originalHome !== undefined) {
       process.env.HOME = originalHome;
+    } else {
+      delete process.env.HOME;
     }
   }
 }
@@ -1062,21 +1062,21 @@ function testSanitizePathUNCVariations(): void {
 
   // UNC with long server name
   assert.strictEqual(
-    sanitizePath(String.raw`\\very-long-server-name.domain.com\share\file.txt`),
+    sanitizePath('\\\\very-long-server-name.domain.com\\share\\file.txt'),
     '//[REDACTED]/share/file.txt',
     'UNC with long server name should redact server'
   );
 
   // UNC with IP address
   assert.strictEqual(
-    sanitizePath(String.raw`\\192.168.1.100\share\file.txt`),
+    sanitizePath('\\\\192.168.1.100\\share\\file.txt'),
     '//[REDACTED]/share/file.txt',
     'UNC with IP should redact IP'
   );
 
   // UNC with nested path
   assert.strictEqual(
-    sanitizePath(String.raw`\\server\share\path\to\deeply\nested\file.txt`),
+    sanitizePath('\\\\server\\share\\path\\to\\deeply\\nested\\file.txt'),
     '//[REDACTED]/share/path/to/deeply/nested/file.txt',
     'UNC with nested path should preserve path structure'
   );

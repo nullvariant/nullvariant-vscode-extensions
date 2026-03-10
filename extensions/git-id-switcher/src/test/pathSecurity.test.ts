@@ -33,7 +33,7 @@ import { isCommandAllowed } from '../security/commandAllowlist';
  * @returns The path with all backslashes replaced by forward slashes
  */
 function toForwardSlashes(p: string): string {
-  return p.replaceAll('\\', '/');
+  return p.replace(/\\/g, '/');
 }
 
 /**
@@ -55,8 +55,8 @@ function testPathTraversalAttacks(): void {
     // Standalone
     '..',
     // Windows style
-    String.raw`..\etc\passwd`,
-    String.raw`/home/user\..\..\etc\passwd`,
+    '..\\etc\\passwd',
+    '/home/user\\..\\..\\etc\\passwd',
     // Relative path with traversal
     './../etc/passwd',
     './../../etc/passwd',
@@ -165,16 +165,16 @@ function testWindowsPathAttacks(): void {
 
   const windowsAttacks = [
     // Drive letters
-    String.raw`C:\Windows\System32`,
+    'C:\\Windows\\System32',
     'C:/Windows/System32',
-    String.raw`D:\etc\passwd`,
+    'D:\\etc\\passwd',
     // UNC paths
-    String.raw`\\server\share`,
+    '\\\\server\\share',
     '//server/share',
-    String.raw`\\?\C:\Windows`,
+    '\\\\?\\C:\\Windows',
     // Device paths
-    String.raw`\\.\COM1`,
-    String.raw`\\.\PhysicalDrive0`,
+    '\\\\.\\COM1',
+    '\\\\.\\PhysicalDrive0',
     '//./COM1',
   ];
 
@@ -197,10 +197,10 @@ function testMixedPathSeparators(): void {
   console.log('Testing mixed path separator prevention...');
 
   const mixedPaths = [
-    String.raw`/home/user\file`,
-    String.raw`./path\to/file`,
-    String.raw`~/a\b`,
-    String.raw`/a/b\c/d`,
+    '/home/user\\file',
+    './path\\to/file',
+    '~/a\\b',
+    '/a/b\\c/d',
   ];
 
   for (const path of mixedPaths) {
@@ -261,10 +261,10 @@ function testNullByteInjection(): void {
   console.log('Testing null byte injection prevention...');
 
   const nullByteAttacks = [
-    '/home/user\u0000.txt',
-    '/home/user/file\u0000/etc/passwd',
-    '~/.ssh/id_rsa\u0000.pub',
-    './file\u0000.txt',
+    '/home/user\x00.txt',
+    '/home/user/file\x00/etc/passwd',
+    '~/.ssh/id_rsa\x00.pub',
+    './file\x00.txt',
   ];
 
   for (const attack of nullByteAttacks) {
@@ -290,10 +290,10 @@ function testControlCharacters(): void {
   console.log('Testing control character prevention...');
 
   const controlCharAttacks = [
-    '/home/user\u0001file',
-    '/home/user\u0007file', // Bell
-    '/home/user\u0008file', // Backspace
-    '/home/user\u001Bfile', // Escape
+    '/home/user\x01file',
+    '/home/user\x07file', // Bell
+    '/home/user\x08file', // Backspace
+    '/home/user\x1bfile', // Escape
   ];
 
   for (const attack of controlCharAttacks) {
@@ -495,8 +495,8 @@ function testIsPathArgumentEdgeCases(): void {
     '/home/user ',
     ' ~/.ssh',
     'C:',
-    String.raw`C:\Windows`,
-    String.raw`\\server\share`,
+    'C:\\Windows',
+    '\\\\server\\share',
   ];
   for (const arg of pathArgsWithWhitespace) {
     assert.strictEqual(isPathArgument(arg), true, `Should be path: "${JSON.stringify(arg)}"`);
@@ -671,7 +671,7 @@ function testCommandAllowedIntegration(): void {
 
   // Valid command with null byte attack
   {
-    const result = isCommandAllowed('ssh-keygen', ['-lf', '/home/user\u0000.txt']);
+    const result = isCommandAllowed('ssh-keygen', ['-lf', '/home/user\x00.txt']);
     assert.strictEqual(result.allowed, false, 'Command with null byte should be blocked');
   }
 
@@ -946,14 +946,14 @@ function testSecureLogPathBasicValidation(): void {
 
   // Null byte
   {
-    const result = isSecureLogPath('/home/user\u0000.log', allowedDir);
+    const result = isSecureLogPath('/home/user\x00.log', allowedDir);
     assert.strictEqual(result.valid, false, 'Null byte should be rejected');
     assert.ok(result.reason?.includes('null byte'), 'Should mention null byte');
   }
 
   // Control characters
   {
-    const result = isSecureLogPath('/home/user\u0001file.log', allowedDir);
+    const result = isSecureLogPath('/home/user\x01file.log', allowedDir);
     assert.strictEqual(result.valid, false, 'Control char should be rejected');
   }
 

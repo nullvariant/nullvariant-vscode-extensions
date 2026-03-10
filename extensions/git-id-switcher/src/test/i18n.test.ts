@@ -68,7 +68,7 @@ interface AggregatedKeyGap {
 // ============================================================================
 
 function readJsonFile(filePath: string): Record<string, string> {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, 'utf-8');
   return JSON.parse(content);
 }
 

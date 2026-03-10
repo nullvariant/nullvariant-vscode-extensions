@@ -421,7 +421,7 @@ export async function handleDeleteIdentity(
 
     // Clear workspace state and update status bar if current identity was deleted
     if (isCurrentIdentity) {
-      await context.workspaceState.update('currentIdentityId');
+      await context.workspaceState.update('currentIdentityId', undefined);
       statusBar.setNoIdentity();
     }
 

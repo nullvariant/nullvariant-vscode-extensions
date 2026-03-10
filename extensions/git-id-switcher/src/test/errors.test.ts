@@ -216,7 +216,7 @@ function testTypeGuards(): void {
   {
     assert.strictEqual(isSecurityError('string'), false);
     assert.strictEqual(isSecurityError(null), false);
-    assert.strictEqual(isSecurityError(), false);
+    assert.strictEqual(isSecurityError(undefined), false);
     assert.strictEqual(isSecurityError(123), false);
   }
 

@@ -40,7 +40,7 @@ interface ExtensionPackageJson {
 
 describe('Extension E2E Test Suite', function () {
   // Set suite-level timeout for all tests
-  this.timeout(10_000);
+  this.timeout(10000);
 
   let extension: vscode.Extension<unknown> | undefined;
 
