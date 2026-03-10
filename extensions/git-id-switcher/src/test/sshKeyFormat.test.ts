@@ -186,7 +186,7 @@ async function testInvalidFormats(): Promise<void> {
 
     // Test binary file
     const binaryFile = path.join(tmpDir, 'binary');
-    await fs.writeFile(binaryFile, Buffer.from([0x00, 0x01, 0x02, 0x03, 0xff, 0xfe]));
+    await fs.writeFile(binaryFile, Buffer.from([0x00, 0x01, 0x02, 0x03, 0xFF, 0xFE]));
     await fs.chmod(binaryFile, 0o600);
     assert.strictEqual(await isValidSshKeyFormat(binaryFile), false, 'Binary file should be invalid');
 

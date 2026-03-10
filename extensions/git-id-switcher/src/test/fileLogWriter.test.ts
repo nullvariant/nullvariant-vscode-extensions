@@ -75,7 +75,7 @@ import { LogLevel, FileLogConfig, StructuredLog } from '../logging/logTypes';
  * The FileLogWriter validates paths using isSecurePath which requires Unix-style paths.
  */
 function toForwardSlashes(p: string): string {
-  return p.replace(/\\/g, '/');
+  return p.replaceAll('\\', '/');
 }
 
 /**
@@ -424,7 +424,7 @@ async function testSecurityEdgeCases(): Promise<void> {
     // Test null byte injection - should be blocked
     const nullByteConfig: FileLogConfig = {
       enabled: true,
-      filePath: toForwardSlashes(path.join(tempDir, 'file\x00.log')),
+      filePath: toForwardSlashes(path.join(tempDir, 'file\u0000.log')),
       maxFileSizeBytes: 1024 * 1024,
       maxFiles: 5,
     };

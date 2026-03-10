@@ -27,7 +27,7 @@ function testPathJoinCrossPlatform(): void {
     assert.ok(result.includes('baz'), 'Result should contain baz');
     // Verify segments are properly separated
     assert.strictEqual(
-      result.split(path.sep).filter(s => s).length,
+      result.split(path.sep).filter(Boolean).length,
       3,
       'Should have 3 path segments'
     );
@@ -37,7 +37,7 @@ function testPathJoinCrossPlatform(): void {
   {
     const result = path.join('a', 'b', 'c', 'd', 'e');
     assert.strictEqual(
-      result.split(path.sep).filter(s => s).length,
+      result.split(path.sep).filter(Boolean).length,
       5,
       'Should have 5 path segments'
     );
@@ -48,7 +48,7 @@ function testPathJoinCrossPlatform(): void {
     const result = path.join('folder', 'subfolder', 'file.txt');
     assert.ok(result.endsWith('file.txt'), 'Should preserve filename');
     assert.strictEqual(
-      result.split(path.sep).filter(s => s).length,
+      result.split(path.sep).filter(Boolean).length,
       3,
       'Should have 3 path segments'
     );
@@ -66,7 +66,7 @@ function testPathNormalizeMixedSeparators(): void {
   // Forward slashes (Unix-style)
   {
     const normalized = path.normalize('foo/bar/baz');
-    const segments = normalized.split(path.sep).filter(s => s);
+    const segments = normalized.split(path.sep).filter(Boolean);
     assert.strictEqual(segments.length, 3, 'Forward slashes: should have 3 segments');
     assert.strictEqual(segments[0], 'foo', 'First segment should be foo');
     assert.strictEqual(segments[1], 'bar', 'Second segment should be bar');
@@ -76,7 +76,7 @@ function testPathNormalizeMixedSeparators(): void {
   // Double forward slashes
   {
     const normalized = path.normalize('foo//bar//baz');
-    const segments = normalized.split(path.sep).filter(s => s);
+    const segments = normalized.split(path.sep).filter(Boolean);
     assert.strictEqual(segments.length, 3, 'Double slashes: should normalize to 3 segments');
   }
 
@@ -84,8 +84,8 @@ function testPathNormalizeMixedSeparators(): void {
   // On Windows: backslash is a separator, so 'foo/bar\\baz' -> 3 segments
   // On Unix: backslash is a valid filename character, so 'foo/bar\\baz' -> 2 segments
   {
-    const normalized = path.normalize('foo/bar\\baz');
-    const segments = normalized.split(path.sep).filter(s => s);
+    const normalized = path.normalize(String.raw`foo/bar\baz`);
+    const segments = normalized.split(path.sep).filter(Boolean);
     if (process.platform === 'win32') {
       assert.strictEqual(segments.length, 3, 'Windows: Mixed separators should have 3 segments');
     } else {
@@ -97,8 +97,8 @@ function testPathNormalizeMixedSeparators(): void {
 
   // Backslashes only (platform-dependent)
   {
-    const normalized = path.normalize('foo\\bar\\baz');
-    const segments = normalized.split(path.sep).filter(s => s);
+    const normalized = path.normalize(String.raw`foo\bar\baz`);
+    const segments = normalized.split(path.sep).filter(Boolean);
     if (process.platform === 'win32') {
       assert.strictEqual(segments.length, 3, 'Windows: Backslashes should have 3 segments');
     } else {
@@ -122,7 +122,7 @@ function testPathSepPlatformDetection(): void {
   // path.sep should be either / or \
   assert.ok(
     path.sep === '/' || path.sep === '\\',
-    `path.sep should be / or \\, got: ${path.sep}`
+    String.raw`path.sep should be / or \, got: ${path.sep}`
   );
 
   // Verify platform consistency
@@ -151,7 +151,7 @@ function testRelativePathResolution(): void {
   // Parent directory reference
   {
     const normalized = path.normalize('foo/../bar');
-    const segments = normalized.split(path.sep).filter(s => s);
+    const segments = normalized.split(path.sep).filter(Boolean);
     assert.strictEqual(segments.length, 1, 'Should resolve to single segment');
     assert.strictEqual(segments[0], 'bar', 'Should resolve to bar');
   }
@@ -159,7 +159,7 @@ function testRelativePathResolution(): void {
   // Complex relative path
   {
     const normalized = path.normalize('a/b/../c/./d');
-    const segments = normalized.split(path.sep).filter(s => s);
+    const segments = normalized.split(path.sep).filter(Boolean);
     assert.strictEqual(segments.length, 3, 'Should resolve to a/c/d');
     assert.deepStrictEqual(segments, ['a', 'c', 'd'], 'Should be [a, c, d]');
   }
@@ -206,9 +206,9 @@ function testAbsolutePathDetection(): void {
 
   // Platform-specific absolute paths
   if (process.platform === 'win32') {
-    assert.strictEqual(path.isAbsolute('C:\\Users\\test'), true, 'Windows drive path is absolute');
-    assert.strictEqual(path.isAbsolute('\\\\server\\share'), true, 'UNC path is absolute');
-    assert.strictEqual(path.isAbsolute('relative\\path'), false, 'Relative path is not absolute');
+    assert.strictEqual(path.isAbsolute(String.raw`C:\Users\test`), true, 'Windows drive path is absolute');
+    assert.strictEqual(path.isAbsolute(String.raw`\\server\share`), true, 'UNC path is absolute');
+    assert.strictEqual(path.isAbsolute(String.raw`relative\path`), false, 'Relative path is not absolute');
   } else {
     assert.strictEqual(path.isAbsolute('/home/user'), true, 'Unix root path is absolute');
     assert.strictEqual(path.isAbsolute('relative/path'), false, 'Relative path is not absolute');
