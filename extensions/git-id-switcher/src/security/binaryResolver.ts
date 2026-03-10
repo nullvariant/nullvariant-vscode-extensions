@@ -53,6 +53,7 @@ export class BinaryResolutionError extends Error {
     this.command = command;
 
     /* c8 ignore start - Error.captureStackTrace availability depends on JS engine */
+    // eslint-disable-next-line no-empty -- captureStackTrace is V8-specific; empty block is intentional fallback
     if (Error.captureStackTrace) {}
     /* c8 ignore stop */
   }
@@ -81,6 +82,7 @@ async function isValidExecutable(binaryPath: string): Promise<boolean> {
     if (process.platform !== 'win32') {
       // Check if any execute bit is set (owner, group, or others)
       const executableBits = 0o111;
+      // eslint-disable-next-line no-bitwise -- file permission check requires bitwise AND
       if ((stats.mode & executableBits) === 0) {
         return false;
       }

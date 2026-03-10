@@ -84,6 +84,7 @@ export class TimeoutError extends Error {
 
     /* c8 ignore start - Error.captureStackTrace availability depends on JS engine */
     // Maintain proper stack trace
+    // eslint-disable-next-line no-empty -- captureStackTrace is V8-specific; empty block is intentional fallback
     if (Error.captureStackTrace) {}
     /* c8 ignore stop */
   }
@@ -339,7 +340,7 @@ export function getCommandTimeout(
 
   // Check user-configured timeouts from VS Code settings
   const userTimeouts = getUserConfiguredTimeouts();
-  if (userTimeouts[command] !== undefined) {
+  if (command in userTimeouts) {
     return userTimeouts[command];
   }
 

@@ -106,6 +106,30 @@ export default [
       "no-magic-numbers": "off",
       "no-restricted-syntax": "off",
       "no-console": "off",
+      "no-bitwise": "off",
+
+      // === sonarjs overrides (test-inappropriate rules) ===
+      "sonarjs/no-empty-test-file": "off", // sonarjs doesn't detect mocha describe/it blocks
+      "sonarjs/publicly-writable-directories": "off", // tests legitimately use /tmp paths
+      "sonarjs/no-hardcoded-passwords": "off", // tests contain test credentials by design
+      "sonarjs/file-permissions": "off", // tests validate permission behavior
+      "sonarjs/no-os-command-from-path": "off", // tests validate command execution
+      "sonarjs/deprecation": "off", // tests may exercise deprecated APIs intentionally
+      "sonarjs/no-nested-functions": "off", // helpers inside describe blocks are idiomatic
+      "sonarjs/no-redundant-jump": "off", // mock functions need explicit return for TS types
+      "sonarjs/no-redundant-optional": "off", // test type definitions use explicit | undefined
+      "sonarjs/prefer-regexp-exec": "off", // match() is readable in test assertions
+      "sonarjs/different-types-comparison": "off", // tests verify cross-type behavior
+      "sonarjs/no-alphabetical-sort": "off", // alphabetical sort in test assertions is intentional
+      "sonarjs/slow-regex": "off", // tests may mirror production regex patterns
+      "sonarjs/no-unused-collection": "off", // test setup arrays may appear unused
+
+      // === unicorn overrides (test-inappropriate rules) ===
+      "unicorn/consistent-function-scoping": "off", // helpers inside describe blocks are idiomatic
+      "unicorn/no-array-sort": "off", // toSorted() requires ES2023+ lib not in tsconfig
+      "unicorn/prefer-number-properties": "off", // isNaN() is clearer in test assertions
+      "unicorn/text-encoding-identifier-case": "off", // tests may use 'utf-8' matching external APIs
+      "unicorn/prefer-code-point": "off", // charCodeAt() in tests mirrors production code
     },
   },
   {

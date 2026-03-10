@@ -165,7 +165,7 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     // First-run welcome notification
     const hasShownWelcome = context.globalState.get<boolean>('hasShownWelcome', false);
     if (!hasShownWelcome && identities.length === 1 && identities[0].id === 'example') {
-      showWelcomeNotification();
+      void showWelcomeNotification();
       await context.globalState.update('hasShownWelcome', true);
     }
 

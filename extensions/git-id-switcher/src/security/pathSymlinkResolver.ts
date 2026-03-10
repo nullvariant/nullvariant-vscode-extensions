@@ -122,13 +122,9 @@ export function containsSymlinks(inputPath: string): boolean {
     const code = nodeError.code;
 
     // ELOOP indicates a symlink loop - treat as symlink detected (security concern)
-    if (code === 'ELOOP') {
-      return true;
-    }
-
     // ENOENT means file doesn't exist - can't determine if symlink, return false
     // Other errors (EACCES, etc.) - assume no symlinks for now
     // The error will be caught later during actual path resolution if needed
-    return false;
+    return code === 'ELOOP';
   } /* c8 ignore stop */
 }

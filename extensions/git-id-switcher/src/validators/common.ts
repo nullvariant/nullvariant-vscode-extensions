@@ -110,10 +110,7 @@ export function hasControlChars(s: string, strict = true): boolean {
  */
 export function hasPathTraversal(s: string): boolean {
   // Simple check for basic traversal
-  if (s.includes('..')) {
-    return true;
-  }
-  return false;
+  return s.includes('..');
 }
 
 /**

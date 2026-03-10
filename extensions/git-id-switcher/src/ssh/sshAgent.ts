@@ -221,6 +221,7 @@ export async function addSshKey(keyPath: string): Promise<void> {
   const platform = process.platform;
 
   try {
+    // eslint-disable-next-line unicorn/prefer-ternary -- security-critical: each branch has distinct SECURITY comments
     if (platform === 'darwin') {
       // macOS: Use Keychain integration
       // SECURITY: Using sshAgentExec with array args prevents injection
@@ -552,10 +553,10 @@ function validateKeyFilePermissions(mode: number): KeyFileValidationResult | nul
     return null;
   }
 
-  const modeString = (mode & 0o777).toString(8);
+  const modeString = (mode & 0o777).toString(8); // eslint-disable-line no-bitwise -- file permission extraction
 
   // Check if group or others have any permissions
-  if ((mode & INSECURE_PERMISSION_BITS) !== 0) {
+  if ((mode & INSECURE_PERMISSION_BITS) !== 0) { // eslint-disable-line no-bitwise -- permission check
     securityLogger.logValidationFailure(
       'ssh-key-file',
       `Insecure permissions: ${modeString} (group/others have access)`
@@ -564,7 +565,7 @@ function validateKeyFilePermissions(mode: number): KeyFileValidationResult | nul
   }
 
   // Check if owner execute bit is set (SSH keys should not be executable)
-  if ((mode & OWNER_EXECUTE_BIT) !== 0) {
+  if ((mode & OWNER_EXECUTE_BIT) !== 0) { // eslint-disable-line no-bitwise -- permission check
     securityLogger.logValidationFailure(
       'ssh-key-file',
       `Insecure permissions: ${modeString} (owner execute bit set)`
