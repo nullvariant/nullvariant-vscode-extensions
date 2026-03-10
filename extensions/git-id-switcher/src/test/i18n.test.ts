@@ -68,7 +68,7 @@ interface AggregatedKeyGap {
 // ============================================================================
 
 function readJsonFile(filePath: string): Record<string, string> {
-  const content = fs.readFileSync(filePath, 'utf-8');
+  const content = fs.readFileSync(filePath, 'utf8');
   return JSON.parse(content);
 }
 
@@ -91,7 +91,7 @@ function aggregateKeyGaps(gaps: KeyGap[]): AggregatedKeyGap[] {
       keyToLanguages.set(key, langs);
     }
   }
-  return Array.from(keyToLanguages.entries())
+  return [...keyToLanguages.entries()]
     .map(([key, languages]) => ({ key, languages }))
     .sort((a, b) => b.languages.length - a.languages.length);
 }
@@ -199,9 +199,9 @@ export function runI18nTests(): void {
   console.log('='.repeat(70));
 
   const errors: Error[] = [];
-  [testPackageNlsKeyCoverage, testBundleL10nKeyCoverage].forEach(test => {
-    try { test(); } catch (e) { errors.push(e instanceof Error ? e : new Error(String(e))); }
-  });
+  for (const test of [testPackageNlsKeyCoverage, testBundleL10nKeyCoverage]) {
+    try { test(); } catch (error) { errors.push(error instanceof Error ? error : new Error(String(error))); }
+  }
   testNoExtraKeysInTranslations();
 
   console.log('='.repeat(70));

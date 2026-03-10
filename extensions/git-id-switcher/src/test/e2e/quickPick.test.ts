@@ -55,7 +55,7 @@ function raceWithTimeout<T>(
   timeoutMs: number = 500
 ): Promise<T | undefined> {
   const timeoutPromise = new Promise<undefined>((resolve) => {
-    setTimeout(() => resolve(undefined), timeoutMs);
+    setTimeout(() => resolve(), timeoutMs);
   });
   return Promise.race([promise, timeoutPromise]);
 }
@@ -100,7 +100,7 @@ const TEST_IDENTITIES = {
 
 describe('QuickPick E2E Test Suite', function () {
   // Set suite-level timeout for all tests
-  this.timeout(10000);
+  this.timeout(10_000);
 
   let originalIdentities: unknown[];
   let originalShowNotifications: boolean | undefined;
@@ -246,10 +246,10 @@ describe('QuickPick E2E Test Suite', function () {
       assert.strictEqual(items.length, 4, 'Should create four items');
 
       // Each item should have the correct identity attached
-      for (let i = 0; i < allIdentities.length; i++) {
-        const item = items.find(it => it.identity.id === allIdentities[i].id);
-        assert.ok(item, `Item for identity ${allIdentities[i].id} should exist`);
-        assert.deepStrictEqual(item.identity, allIdentities[i], 'Identity should match');
+      for (const allIdentity of allIdentities) {
+        const item = items.find(it => it.identity.id === allIdentity.id);
+        assert.ok(item, `Item for identity ${allIdentity.id} should exist`);
+        assert.deepStrictEqual(item.identity, allIdentity, 'Identity should match');
       }
     });
 

@@ -407,7 +407,7 @@ function testValidateIdentitySchemaEdgeCases(): void {
 
   // Test 2: undefined input should fail
   {
-    const result = validateIdentitySchema(undefined);
+    const result = validateIdentitySchema();
     assert.strictEqual(result.valid, false, 'undefined input should fail');
   }
 

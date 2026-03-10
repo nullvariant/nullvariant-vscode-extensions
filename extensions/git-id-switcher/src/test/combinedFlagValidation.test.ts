@@ -268,7 +268,7 @@ function testNullByteDetection(): void {
 
   // Null byte in flag
   {
-    const result = validateCombinedFlags('-l\x00f', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u0000f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Null byte should be invalid');
     assert.ok(
       result.reason?.includes('null byte'),
@@ -278,13 +278,13 @@ function testNullByteDetection(): void {
 
   // Null byte at start
   {
-    const result = validateCombinedFlags('\x00-l', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('\u0000-l', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Null byte at start should be invalid');
   }
 
   // Null byte at end
   {
-    const result = validateCombinedFlags('-l\x00', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u0000', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Null byte at end should be invalid');
   }
 
@@ -299,7 +299,7 @@ function testControlCharacterDetection(): void {
 
   // Bell character (ASCII 7)
   {
-    const result = validateCombinedFlags('-l\x07f', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u0007f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Bell character should be invalid');
     assert.ok(
       result.reason?.includes('control character'),
@@ -309,19 +309,19 @@ function testControlCharacterDetection(): void {
 
   // Escape character (ASCII 27)
   {
-    const result = validateCombinedFlags('-l\x1bf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u001Bf', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Escape character should be invalid');
   }
 
   // Backspace character (ASCII 8)
   {
-    const result = validateCombinedFlags('-l\x08f', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u0008f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Backspace character should be invalid');
   }
 
   // Form feed (ASCII 12)
   {
-    const result = validateCombinedFlags('-l\x0cf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u000Cf', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Form feed should be invalid');
   }
 
@@ -342,7 +342,7 @@ function testInvisibleUnicodeDetection(): void {
 
   // Zero-width space (U+200B)
   {
-    const result = validateCombinedFlags('-l\u200bf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u200Bf', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Zero-width space should be invalid');
     assert.ok(
       result.reason?.includes('invisible Unicode'),
@@ -352,25 +352,25 @@ function testInvisibleUnicodeDetection(): void {
 
   // Zero-width non-joiner (U+200C)
   {
-    const result = validateCombinedFlags('-l\u200cf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u200Cf', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Zero-width non-joiner should be invalid');
   }
 
   // Zero-width joiner (U+200D)
   {
-    const result = validateCombinedFlags('-l\u200df', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u200Df', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Zero-width joiner should be invalid');
   }
 
   // Left-to-right mark (U+200E)
   {
-    const result = validateCombinedFlags('-l\u200ef', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u200Ef', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Left-to-right mark should be invalid');
   }
 
   // Right-to-left mark (U+200F)
   {
-    const result = validateCombinedFlags('-l\u200ff', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u200Ff', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Right-to-left mark should be invalid');
   }
 
@@ -382,7 +382,7 @@ function testInvisibleUnicodeDetection(): void {
 
   // Left-to-right embedding (U+202A)
   {
-    const result = validateCombinedFlags('-l\u202af', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u202Af', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Left-to-right embedding should be invalid');
   }
 
@@ -409,7 +409,7 @@ function testUnicodeNormalization(): void {
   // Fullwidth letters (should be rejected)
   // Fullwidth 'l' (U+FF4C)
   {
-    const result = validateCombinedFlags('-\uff4c', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-\uFF4C', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Fullwidth letter should be invalid');
   }
 
@@ -440,7 +440,7 @@ function testPathSeparatorDetection(): void {
 
   // Backslash in flag (Windows path injection)
   {
-    const result = validateCombinedFlags('-f\\Windows\\System32', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags(String.raw`-f\Windows\System32`, 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Backslash should be invalid');
   }
 
@@ -470,7 +470,7 @@ function testPathSeparatorDetection(): void {
 
   // Mixed path separators
   {
-    const result = validateCombinedFlags('-f\\path/to/file', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags(String.raw`-f\path/to/file`, 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Mixed path separators should be invalid');
   }
 
@@ -557,37 +557,37 @@ function testUnicodeAttackVectors(): void {
 
   // Byte order mark (BOM) - U+FEFF
   {
-    const result = validateCombinedFlags('-l\ufefff', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\uFEFFf', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'BOM should be invalid');
   }
 
   // Soft hyphen - U+00AD (invisible)
   {
-    const result = validateCombinedFlags('-l\u00adf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u00ADf', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Soft hyphen should be invalid');
   }
 
   // Mongolian vowel separator - U+180E
   {
-    const result = validateCombinedFlags('-l\u180ef', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u180Ef', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Mongolian vowel separator should be invalid');
   }
 
   // Right-to-left override - U+202E (can be used for display attacks)
   {
-    const result = validateCombinedFlags('-l\u202ef', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u202Ef', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'RTL override should be invalid');
   }
 
   // Zero-width no-break space / BOM - U+FEFF
   {
-    const result = validateCombinedFlags('\ufeff-l', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('\uFEFF-l', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Leading BOM should be invalid');
   }
 
   // Combining Grapheme Joiner - U+034F
   {
-    const result = validateCombinedFlags('-l\u034ff', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u034Ff', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Combining grapheme joiner should be invalid');
   }
 
@@ -732,7 +732,7 @@ function testWindowsSpecificFlags(): void {
 
   // Windows-style path in flag (backslash)
   {
-    const result = validateCombinedFlags('-fC:\\Users\\test', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags(String.raw`-fC:\Users\test`, 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Windows path in flag should be invalid');
     assert.ok(
       result.reason?.includes('path-like pattern'),
@@ -742,7 +742,7 @@ function testWindowsSpecificFlags(): void {
 
   // UNC path style
   {
-    const result = validateCombinedFlags('-f\\\\server\\share', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags(String.raw`-f\\server\share`, 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'UNC path in flag should be invalid');
   }
 
@@ -915,7 +915,7 @@ function testArgumentLimits(): void {
 
   // Too many arguments
   {
-    const manyArgs = Array(25).fill('-l');
+    const manyArgs = Array.from({length: 25}).fill('-l');
     const result = isCommandAllowed('ssh-add', manyArgs);
     assert.strictEqual(result.allowed, false, 'Too many arguments should be blocked');
     assert.ok(

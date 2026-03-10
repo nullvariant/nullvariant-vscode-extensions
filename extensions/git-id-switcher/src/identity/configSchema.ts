@@ -374,7 +374,7 @@ export function validateIdentitiesSchema(
 
   // Check for duplicate IDs
   const ids = new Set<string>();
-  identities.forEach((identity, index) => {
+  for (const [index, identity] of identities.entries()) {
     if (typeof identity === 'object' && identity !== null) {
       const id = (identity as Record<string, unknown>).id;
       if (typeof id === 'string') {
@@ -388,19 +388,19 @@ export function validateIdentitiesSchema(
         ids.add(id);
       }
     }
-  });
+  }
 
   // Validate each identity
-  identities.forEach((identity, index) => {
+  for (const [index, identity] of identities.entries()) {
     const result = validateIdentitySchema(identity);
-    result.errors.forEach(error => {
+    for (const error of result.errors) {
       errors.push({
         field: `identities[${index}].${error.field}`,
         message: error.message,
         value: error.value,
       });
-    });
-  });
+    }
+  }
 
   return {
     valid: errors.length === 0,

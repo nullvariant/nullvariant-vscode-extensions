@@ -80,12 +80,15 @@ export const DEFAULT_FILE_LOG_CONFIG: FileLogConfig = {
  */
 export function severityToLogLevel(severity: 'info' | 'warning' | 'error'): LogLevel {
   switch (severity) {
-    case 'info':
+    case 'info': {
       return LogLevel.INFO;
-    case 'warning':
+    }
+    case 'warning': {
       return LogLevel.WARN;
-    case 'error':
+    }
+    case 'error': {
       return LogLevel.ERROR;
+    }
   }
 }
 

@@ -208,22 +208,27 @@ async function handleManageIdentities(
     }
 
     switch (result.action) {
-      case 'add':
+      case 'add': {
         lastIndex = await handleManageAdd(lastIndex);
         break;
-      case 'edit':
+      }
+      case 'edit': {
         await handleManageEdit(result.identity, context, statusBar);
         lastIndex = result.index;
         break;
-      case 'delete':
+      }
+      case 'delete': {
         lastIndex = await handleManageDelete(result.identity, result.index, context, statusBar);
         break;
-      case 'moveUp':
+      }
+      case 'moveUp': {
         lastIndex = await handleManageMove(result.identity, result.index, 'up');
         break;
-      case 'moveDown':
+      }
+      case 'moveDown': {
         lastIndex = await handleManageMove(result.identity, result.index, 'down');
         break;
+      }
     }
   }
 
@@ -416,7 +421,7 @@ export async function handleDeleteIdentity(
 
     // Clear workspace state and update status bar if current identity was deleted
     if (isCurrentIdentity) {
-      await context.workspaceState.update('currentIdentityId', undefined);
+      await context.workspaceState.update('currentIdentityId');
       statusBar.setNoIdentity();
     }
 

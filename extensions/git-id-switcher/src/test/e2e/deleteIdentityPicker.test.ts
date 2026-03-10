@@ -77,14 +77,14 @@ function createMockVSCode(options: {
           if (key === 'identities') {
             return options.identities ?? [];
           }
-          return undefined;
+          return;
         },
       }),
     },
     window: {
       showWarningMessage: async (message: string) => {
         showWarningMessageCalls.push(message);
-        return undefined;
+        return;
       },
       createQuickPick: <T extends { identity: unknown }>() => {
         let acceptCallback: (() => void) | undefined;
@@ -124,10 +124,10 @@ function createMockVSCode(options: {
           },
           show: () => {
             // Simulate user selection
-            if (options.selectedIdentity !== undefined) {
-              setTimeout(() => acceptCallback?.(), 0);
-            } else {
+            if (options.selectedIdentity === undefined) {
               setTimeout(() => hideCallback?.(), 0);
+            } else {
+              setTimeout(() => acceptCallback?.(), 0);
             }
           },
           hide: () => {},
@@ -138,9 +138,9 @@ function createMockVSCode(options: {
     l10n: {
       t: (message: string, ...args: unknown[]) => {
         let result = message;
-        args.forEach((arg, index) => {
+        for (const [index, arg] of args.entries()) {
           result = result.replace(`{${index}}`, String(arg));
-        });
+        }
         return result;
       },
     },
@@ -155,7 +155,7 @@ function createMockVSCode(options: {
 
 describe('showDeleteIdentityQuickPick E2E Test Suite', function () {
   // Set suite-level timeout for all tests
-  this.timeout(10000);
+  this.timeout(10_000);
 
   beforeEach(() => {
     _resetCache();

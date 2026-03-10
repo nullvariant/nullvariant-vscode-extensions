@@ -106,7 +106,7 @@ function testGetSafeStack(): void {
       const safeStack = error.getSafeStack();
       assert.ok(safeStack);
       // Should not contain /Users/username pattern (if macOS)
-      assert.ok(!safeStack.match(/\/Users\/[a-zA-Z0-9_-]+\//));
+      assert.ok(!/\/Users\/[a-zA-Z0-9_-]+\//.test(safeStack));
     }
   }
 
@@ -216,7 +216,7 @@ function testTypeGuards(): void {
   {
     assert.strictEqual(isSecurityError('string'), false);
     assert.strictEqual(isSecurityError(null), false);
-    assert.strictEqual(isSecurityError(undefined), false);
+    assert.strictEqual(isSecurityError(), false);
     assert.strictEqual(isSecurityError(123), false);
   }
 

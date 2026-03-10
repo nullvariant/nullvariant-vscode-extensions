@@ -79,7 +79,7 @@ async function testSecureExecNoShellInterpretation(): Promise<void> {
     try {
       const { stdout } = await secureExec('echo', ['hello', 'world']);
       assert.strictEqual(stdout.trim(), 'hello world', 'Basic echo works');
-    } catch (error) {
+    } catch {
       // echo might not be available on Windows, skip
       console.log('  Skipping echo test (not available on this platform)');
     }
@@ -92,7 +92,7 @@ async function testSecureExecNoShellInterpretation(): Promise<void> {
       const { stdout } = await secureExec('echo', ['$(whoami)']);
       // The output should be the literal string "$(whoami)", not the actual username
       assert.strictEqual(stdout.trim(), '$(whoami)', 'Command substitution not executed');
-    } catch (error) {
+    } catch {
       console.log('  Skipping shell interpretation test');
     }
   }
@@ -106,7 +106,7 @@ async function testSecureExecNoShellInterpretation(): Promise<void> {
         stdout.includes('hello;echo injected'),
         'Semicolon treated as literal'
       );
-    } catch (error) {
+    } catch {
       console.log('  Skipping semicolon test');
     }
   }
@@ -117,7 +117,7 @@ async function testSecureExecNoShellInterpretation(): Promise<void> {
       const { stdout } = await secureExec('echo', ['hello | cat /etc/passwd']);
       // Should print the literal string, not pipe to cat
       assert.ok(stdout.includes('|'), 'Pipe treated as literal');
-    } catch (error) {
+    } catch {
       console.log('  Skipping pipe test');
     }
   }
@@ -128,7 +128,7 @@ async function testSecureExecNoShellInterpretation(): Promise<void> {
       const { stdout } = await secureExec('echo', ['`id`']);
       // Should print the literal backticks, not execute id command
       assert.strictEqual(stdout.trim(), '`id`', 'Backticks not executed');
-    } catch (error) {
+    } catch {
       console.log('  Skipping backticks test');
     }
   }
@@ -198,7 +198,7 @@ async function testTimeout(): Promise<void> {
     // Use a very short timeout with a command that might hang
     await secureExec('sleep', ['0.1'], { timeout: 100 });
     console.log('  Short command completed within timeout');
-  } catch (error) {
+  } catch {
     // This might timeout or fail depending on platform
     console.log('  Timeout or error handled correctly');
   }
@@ -234,7 +234,7 @@ function testTimeoutError(): void {
   // Test args array is frozen (immutable)
   {
     const args = ['push', 'origin'];
-    const error = new TimeoutError('git', args, 10000);
+    const error = new TimeoutError('git', args, 10_000);
     // Original array modification should not affect stored args
     args.push('main');
     assert.strictEqual(error.args.length, 2, 'Stored args should not be affected');
@@ -300,8 +300,8 @@ function testGetCommandTimeout(): void {
 
   // Test override at maximum boundary (300000ms)
   {
-    const result = getCommandTimeout('git', 300000);
-    assert.strictEqual(result, 300000, 'Maximum boundary should be accepted');
+    const result = getCommandTimeout('git', 300_000);
+    assert.strictEqual(result, 300_000, 'Maximum boundary should be accepted');
   }
 
   // Test invalid override (0 or negative) falls through
@@ -323,7 +323,7 @@ function testGetCommandTimeout(): void {
 
   // Test invalid override (NaN) falls through
   {
-    const result = getCommandTimeout('git', NaN);
+    const result = getCommandTimeout('git', Number.NaN);
     assert.strictEqual(
       result,
       COMMAND_TIMEOUTS['git'],
@@ -353,7 +353,7 @@ function testGetCommandTimeout(): void {
 
   // Test override above maximum (300001ms)
   {
-    const result = getCommandTimeout('git', 300001);
+    const result = getCommandTimeout('git', 300_001);
     assert.strictEqual(
       result,
       COMMAND_TIMEOUTS['git'],
@@ -384,7 +384,7 @@ async function testCommandBlocked(): Promise<void> {
     } catch (error) {
       assert.ok(error instanceof Error, 'Should throw Error');
       assert.ok(
-        (error as Error).message.includes('blocked'),
+        (error).message.includes('blocked'),
         'Error should mention blocked'
       );
     }
@@ -416,7 +416,7 @@ async function testSshWrappers(): Promise<void> {
       // If it succeeds, result should have stdout/stderr
       assert.ok('stdout' in result, 'Should have stdout');
       assert.ok('stderr' in result, 'Should have stderr');
-    } catch (error) {
+    } catch {
       // Expected if ssh-agent not running or command not available
       console.log('  ssh-add not available or agent not running (expected)');
     }
@@ -428,7 +428,7 @@ async function testSshWrappers(): Promise<void> {
       // Just test with help flag which should work
       const result = await sshKeygenExec(['-?']);
       assert.ok('stdout' in result || 'stderr' in result, 'Should have output');
-    } catch (error) {
+    } catch {
       // Expected if ssh-keygen not available
       console.log('  ssh-keygen not available (expected)');
     }
@@ -471,10 +471,10 @@ async function testTimeoutDetection(): Promise<void> {
 function testCommandTimeoutsConstants(): void {
   console.log('Testing COMMAND_TIMEOUTS constants...');
 
-  assert.strictEqual(COMMAND_TIMEOUTS['git'], 10000, 'git timeout should be 10s');
+  assert.strictEqual(COMMAND_TIMEOUTS['git'], 10_000, 'git timeout should be 10s');
   assert.strictEqual(COMMAND_TIMEOUTS['ssh-add'], 5000, 'ssh-add timeout should be 5s');
   assert.strictEqual(COMMAND_TIMEOUTS['ssh-keygen'], 5000, 'ssh-keygen timeout should be 5s');
-  assert.strictEqual(DEFAULT_TIMEOUT, 30000, 'Default timeout should be 30s');
+  assert.strictEqual(DEFAULT_TIMEOUT, 30_000, 'Default timeout should be 30s');
 
   // Verify object is readonly
   assert.ok(
@@ -496,7 +496,7 @@ async function testMaxBufferOption(): Promise<void> {
     try {
       const result = await secureExec('echo', ['hello']);
       assert.ok('stdout' in result, 'Should have stdout');
-    } catch (error) {
+    } catch {
       console.log('  echo not available');
     }
   }
@@ -506,7 +506,7 @@ async function testMaxBufferOption(): Promise<void> {
     try {
       const result = await secureExec('echo', ['hello'], { maxBuffer: 1024 });
       assert.ok('stdout' in result, 'Should work with custom maxBuffer');
-    } catch (error) {
+    } catch {
       console.log('  echo not available or buffer exceeded');
     }
   }
@@ -526,7 +526,7 @@ async function testCwdOption(): Promise<void> {
       const tempDir = os.tmpdir();
       const result = await secureExec('pwd', [], { cwd: tempDir });
       assert.ok(result.stdout.trim().length > 0, 'Should return current directory');
-    } catch (error) {
+    } catch {
       // pwd might not be available on all platforms
       console.log('  pwd not available');
     }
@@ -557,7 +557,7 @@ async function testSecureExecVariousCommands(): Promise<void> {
     try {
       const result = await secureExec('git', ['--version']);
       assert.ok(result.stdout.includes('git'), 'Should get git version');
-    } catch (error) {
+    } catch {
       console.log('  git not available');
     }
   }
@@ -612,7 +612,7 @@ function testTimeoutErrorInheritance(): void {
   {
     const error = new TimeoutError('cmd', [], 3000);
     assert.ok(error.stack !== undefined, 'Should have stack trace');
-    assert.ok(error.stack!.includes('TimeoutError'), 'Stack should mention TimeoutError');
+    assert.ok(error.stack.includes('TimeoutError'), 'Stack should mention TimeoutError');
   }
 
   console.log('✅ TimeoutError inheritance tests passed!');
@@ -632,7 +632,7 @@ function testGetCommandTimeoutEdgeCases(): void {
 
   // Test with very large number (above maximum)
   {
-    const result = getCommandTimeout('git', 999999999);
+    const result = getCommandTimeout('git', 999_999_999);
     assert.strictEqual(result, COMMAND_TIMEOUTS['git'], 'Above max should use built-in');
   }
 
@@ -713,7 +713,7 @@ function testIsTimeoutError(): void {
 
   // Test with undefined
   {
-    assert.strictEqual(isTimeoutError(undefined), false, 'Undefined should not be timeout');
+    assert.strictEqual(isTimeoutError(), false, 'Undefined should not be timeout');
   }
 
   // Test with string
@@ -781,17 +781,17 @@ async function testSecureExecBinaryResolutionError(): Promise<void> {
     // Verify error type and properties
     assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
     assert.strictEqual(
-      (error as BinaryResolutionError).command,
+      (error).command,
       'git',
       'Error should have command property set to git'
     );
     assert.strictEqual(
-      (error as BinaryResolutionError).code,
+      (error).code,
       'ENOENT_BINARY',
       'Error code should be ENOENT_BINARY'
     );
     assert.ok(
-      (error as BinaryResolutionError).message.includes('git'),
+      (error).message.includes('git'),
       'Error message should include command name'
     );
   }
@@ -828,12 +828,12 @@ async function testSecureExecSshAddResolutionError(): Promise<void> {
     // Verify error type and properties
     assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
     assert.strictEqual(
-      (error as BinaryResolutionError).command,
+      (error).command,
       'ssh-add',
       'Error should have command property set to ssh-add'
     );
     assert.strictEqual(
-      (error as BinaryResolutionError).code,
+      (error).code,
       'ENOENT_BINARY',
       'Error code should be ENOENT_BINARY'
     );
@@ -872,12 +872,12 @@ async function testSecureExecSshKeygenResolutionError(): Promise<void> {
     // Verify error type and properties
     assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
     assert.strictEqual(
-      (error as BinaryResolutionError).command,
+      (error).command,
       'ssh-keygen',
       'Error should have command property set to ssh-keygen'
     );
     assert.strictEqual(
-      (error as BinaryResolutionError).code,
+      (error).code,
       'ENOENT_BINARY',
       'Error code should be ENOENT_BINARY'
     );
@@ -907,7 +907,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
     const mockConfig = {
       get: <T>(key: string, defaultValue?: T): T => {
         if (key === 'commandTimeouts') {
-          return { git: 15000, 'ssh-add': 8000 } as T;
+          return { git: 15_000, 'ssh-add': 8000 } as T;
         }
         return defaultValue as T;
       },
@@ -930,7 +930,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
     try {
       // User-configured timeout should be used
       const gitTimeout = getCommandTimeout('git');
-      assert.strictEqual(gitTimeout, 15000, 'Should use user-configured git timeout');
+      assert.strictEqual(gitTimeout, 15_000, 'Should use user-configured git timeout');
 
       const sshAddTimeout = getCommandTimeout('ssh-add');
       assert.strictEqual(sshAddTimeout, 8000, 'Should use user-configured ssh-add timeout');
@@ -952,7 +952,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
         if (key === 'commandTimeouts') {
           return {
             git: 500, // Too low (min is 1000)
-            'ssh-add': 500000, // Too high (max is 300000)
+            'ssh-add': 500_000, // Too high (max is 300000)
           } as T;
         }
         return defaultValue as T;
@@ -994,7 +994,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
           return {
             '../../../etc/passwd': 5000, // Invalid: path traversal
             'git;rm -rf /': 5000, // Invalid: injection attempt
-            git: 12000, // Valid
+            git: 12_000, // Valid
           } as T;
         }
         return defaultValue as T;
@@ -1017,7 +1017,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
     try {
       // Valid config should be used
       const gitTimeout = getCommandTimeout('git');
-      assert.strictEqual(gitTimeout, 12000, 'Valid git config should be used');
+      assert.strictEqual(gitTimeout, 12_000, 'Valid git config should be used');
 
       console.log('  ✓ Invalid command names were filtered out');
     } finally {
@@ -1064,7 +1064,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
       get: <T>(key: string, defaultValue?: T): T => {
         if (key === 'commandTimeouts') {
           return {
-            git: NaN,
+            git: Number.NaN,
             'ssh-add': Infinity,
           } as T;
         }

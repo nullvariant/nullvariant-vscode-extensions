@@ -67,9 +67,9 @@ export const INVISIBLE_CHARS = [
  * - Some include all control characters
  */
 // eslint-disable-next-line no-control-regex
-export const CONTROL_CHAR_REGEX_STRICT = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/;
+export const CONTROL_CHAR_REGEX_STRICT = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
 // eslint-disable-next-line no-control-regex
-export const CONTROL_CHAR_REGEX_ALL = /[\x00-\x1f\x7f]/;
+export const CONTROL_CHAR_REGEX_ALL = /[\u0000-\u001F\u007F]/;
 
 /**
  * Check if a string contains null bytes
@@ -375,7 +375,7 @@ export const SAFE_TEXT_PATTERN = '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$';
  * Using regex literal (consistent with CONTROL_CHAR_REGEX_ALL above).
  */
 // eslint-disable-next-line no-control-regex
-export const SAFE_TEXT_REGEX = /^[^\x00-\x1f\x7f`$(){}|&<>]+$/;
+export const SAFE_TEXT_REGEX = /^[^\u0000-\u001F\u007F`$(){}|&<>]+$/;
 
 /**
  * Dangerous character patterns for validation (with descriptions)

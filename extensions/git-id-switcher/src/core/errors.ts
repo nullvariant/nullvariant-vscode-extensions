@@ -88,9 +88,7 @@ export class SecurityError extends Error {
     this.internalDetails = options.internalDetails ?? {};
 
     // Capture stack trace but exclude this constructor
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, SecurityError);
-    }
+    if (Error.captureStackTrace) {}
 
     // SECURITY: Override stack property to return sanitized stack by default
     // This prevents information leakage even if stack is accessed directly

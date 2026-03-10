@@ -50,8 +50,8 @@ function createMockVSCode(options: {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(undefined),
-      showInformationMessage: () => Promise.resolve(undefined),
+      showWarningMessage: () => Promise.resolve(),
+      showInformationMessage: () => Promise.resolve(),
     },
     l10n: {
       t: (message: string) => message,
@@ -75,11 +75,11 @@ function createMockContext() {
     subscriptions,
     globalStorageUri: { fsPath: '/mock/global/storage' },
     workspaceState: {
-      get: () => undefined,
+      get: () => {},
       update: () => Promise.resolve(),
     },
     globalState: {
-      get: () => undefined,
+      get: () => {},
       update: () => Promise.resolve(),
     },
   } as unknown as import('vscode').ExtensionContext;
@@ -137,7 +137,7 @@ function testShowUntrustedWorkspaceWarning(): void {
       showWarningMessage: (message: string) => {
         warningShown = true;
         warningMessage = message;
-        return Promise.resolve(undefined);
+        return Promise.resolve();
       },
     },
     l10n: {
@@ -201,7 +201,7 @@ function testInitializeWorkspaceTrustUntrusted(): void {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(undefined),
+      showWarningMessage: () => Promise.resolve(),
     },
     l10n: {
       t: (message: string) => message,
@@ -243,7 +243,7 @@ async function testInitializeWorkspaceTrustCallback(): Promise<void> {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(undefined),
+      showWarningMessage: () => Promise.resolve(),
     },
     l10n: {
       t: (message: string) => message,
@@ -290,7 +290,7 @@ function testInitializeWorkspaceTrustIdempotent(): void {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(undefined),
+      showWarningMessage: () => Promise.resolve(),
     },
     l10n: {
       t: (message: string) => message,
@@ -349,7 +349,7 @@ function testRequireWorkspaceTrustUntrusted(): void {
     window: {
       showWarningMessage: () => {
         warningShown = true;
-        return Promise.resolve(undefined);
+        return Promise.resolve();
       },
     },
     l10n: {
@@ -387,7 +387,7 @@ function testResetForTesting(): void {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(undefined),
+      showWarningMessage: () => Promise.resolve(),
     },
     l10n: {
       t: (message: string) => message,
@@ -422,7 +422,7 @@ async function testCallbackErrorHandling(): Promise<void> {
   const consoleLogs: string[] = [];
   const originalError = console.error;
   console.error = (...args: unknown[]) => {
-    consoleLogs.push(args.map(a => String(a)).join(' '));
+    consoleLogs.push(args.map(String).join(' '));
   };
 
   const mockVSCode = {
@@ -434,7 +434,7 @@ async function testCallbackErrorHandling(): Promise<void> {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(undefined),
+      showWarningMessage: () => Promise.resolve(),
     },
     l10n: {
       t: (message: string) => message,
@@ -489,7 +489,7 @@ async function testHandlerDisposedAfterTrustGranted(): Promise<void> {
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(undefined),
+      showWarningMessage: () => Promise.resolve(),
     },
     l10n: {
       t: (message: string) => message,
@@ -548,7 +548,7 @@ function testShowUntrustedWorkspaceWarningNoL10n(): void {
     window: {
       showWarningMessage: (message: string) => {
         warningMessage = message;
-        return Promise.resolve(undefined);
+        return Promise.resolve();
       },
     },
     // No l10n property
@@ -581,7 +581,7 @@ function testRequireWorkspaceTrustNoL10n(): void {
     window: {
       showWarningMessage: (message: string) => {
         warningMessage = message;
-        return Promise.resolve(undefined);
+        return Promise.resolve();
       },
     },
     // No l10n property
@@ -612,7 +612,7 @@ function testShowUntrustedWorkspaceWarningNoWindow(): void {
   const consoleLogs: string[] = [];
   const originalLog = console.log;
   console.log = (...args: unknown[]) => {
-    consoleLogs.push(args.map(a => String(a)).join(' '));
+    consoleLogs.push(args.map(String).join(' '));
   };
 
   // Should not throw and should log to console
@@ -642,7 +642,7 @@ function testInitializeWorkspaceTrustNoWorkspace(): void {
   const consoleLogs: string[] = [];
   const originalLog = console.log;
   console.log = (...args: unknown[]) => {
-    consoleLogs.push(args.map(a => String(a)).join(' '));
+    consoleLogs.push(args.map(String).join(' '));
   };
 
   const mockContext = createMockContext();

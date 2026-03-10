@@ -53,9 +53,7 @@ export class BinaryResolutionError extends Error {
     this.command = command;
 
     /* c8 ignore start - Error.captureStackTrace availability depends on JS engine */
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, BinaryResolutionError);
-    }
+    if (Error.captureStackTrace) {}
     /* c8 ignore stop */
   }
 }

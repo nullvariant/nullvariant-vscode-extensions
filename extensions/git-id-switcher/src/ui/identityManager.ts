@@ -265,16 +265,21 @@ function validateFieldInput(
       );
       return validateIdInput(vs, value, existingIds);
     }
-    case 'name':
+    case 'name': {
       return validateNameInput(vs, value);
-    case 'email':
+    }
+    case 'email': {
       return validateEmailInput(vs, value);
-    case 'sshKeyPath':
+    }
+    case 'sshKeyPath': {
       return validateSshKeyPathInput(vs, value);
-    case 'gpgKeyId':
+    }
+    case 'gpgKeyId': {
       return validateGpgKeyIdInput(vs, value);
-    case 'sshHost':
+    }
+    case 'sshHost': {
       return validateSshHostInput(vs, value);
+    }
     default: {
       // Use FIELD_METADATA validator for other fields (service, icon, description)
       const meta = getFieldMetadata(field);
@@ -641,7 +646,7 @@ function createDisposableCleanup(): {
     cleanup: (disposables: { dispose(): void }[]): void => {
       if (!resolved) {
         resolved = true;
-        disposables.forEach(d => d.dispose());
+        for (const d of disposables) d.dispose();
       }
     },
     isResolved: (): boolean => resolved,
@@ -676,7 +681,7 @@ function waitForQuickPickSelection<T>(
       }),
       quickPick.onDidHide(() => {
         cleanup(disposables);
-        resolve(undefined);
+        resolve();
       }),
     ];
   });
@@ -726,7 +731,7 @@ function waitForInputBoxValue(
       }),
       inputBox.onDidHide(() => {
         cleanup(disposables);
-        resolve(undefined);
+        resolve();
       }),
     ];
   });

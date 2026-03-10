@@ -289,7 +289,7 @@ async function testGetBinaryPathDisallowed(): Promise<void> {
         'Should not be BinaryResolutionError for disallowed command'
       );
       assert.ok(
-        (error as Error).message.includes('not in the allowed list'),
+        (error).message.includes('not in the allowed list'),
         'Should mention not allowed'
       );
     }
@@ -388,7 +388,7 @@ async function testCheckBinaryAvailability(): Promise<void> {
         `${cmd} should have path when available`
       );
       assert.ok(
-        path.isAbsolute(status.path!),
+        path.isAbsolute(status.path),
         `${cmd} path should be absolute`
       );
       console.log(`  ${cmd}: available at ${status.path}`);
@@ -476,7 +476,7 @@ async function testCachedFailureThrows(): Promise<void> {
       'Should throw BinaryResolutionError'
     );
     assert.ok(
-      (error as BinaryResolutionError).message.includes('Previously failed'),
+      (error).message.includes('Previously failed'),
       'Should mention previous failure'
     );
   }
@@ -592,7 +592,7 @@ async function testCheckBinaryAvailabilityWithFailures(): Promise<void> {
       `${cmd} should have error message`
     );
     assert.ok(
-      availability[cmd].error!.includes('Previously failed'),
+      availability[cmd].error.includes('Previously failed'),
       `${cmd} error should mention previous failure`
     );
     console.log(`  ${cmd}: ${availability[cmd].error}`);
@@ -632,9 +632,9 @@ async function testResolveAllBinaryPathsWithFailure(): Promise<void> {
   } catch (error) {
     // Expected when git resolution fails due to cached null
     assert.ok(error instanceof BinaryResolutionError, 'Should throw BinaryResolutionError');
-    assert.strictEqual((error as BinaryResolutionError).command, 'git', 'Command should be git');
+    assert.strictEqual((error).command, 'git', 'Command should be git');
     assert.ok(
-      (error as BinaryResolutionError).message.includes('Previously failed'),
+      (error).message.includes('Previously failed'),
       'Should indicate previous failure'
     );
     console.log('  Correctly caught BinaryResolutionError for git');
@@ -680,17 +680,17 @@ async function testGetBinaryPathDefensiveErrorWrapping(): Promise<void> {
       // Verify error is properly wrapped as BinaryResolutionError
       assert.ok(error instanceof BinaryResolutionError, `Should be BinaryResolutionError for ${cmd}`);
       assert.strictEqual(
-        (error as BinaryResolutionError).command,
+        (error).command,
         cmd,
         `Command property should be ${cmd}`
       );
       assert.strictEqual(
-        (error as BinaryResolutionError).code,
+        (error).code,
         'ENOENT_BINARY',
         'Error code should be ENOENT_BINARY'
       );
       assert.ok(
-        (error as BinaryResolutionError).message.includes(cmd),
+        (error).message.includes(cmd),
         `Message should include command name ${cmd}`
       );
     }
@@ -739,7 +739,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
           if (key === 'path') {
             return realGitPath;
           }
-          return undefined;
+          return;
         },
       };
 
@@ -748,7 +748,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
           if (section === 'git') {
             return mockConfig;
           }
-          return { get: () => undefined };
+          return { get: () => {} };
         },
       };
 
@@ -779,7 +779,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
         if (key === 'path') {
           return invalidPath;
         }
-        return undefined;
+        return;
       },
     };
 
@@ -788,7 +788,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
         if (section === 'git') {
           return mockConfig;
         }
-        return { get: () => undefined };
+        return { get: () => {} };
       },
     };
 
@@ -826,7 +826,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
         if (key === 'path') {
           return '';
         }
-        return undefined;
+        return;
       },
     };
 
@@ -835,7 +835,7 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
         if (section === 'git') {
           return mockConfig;
         }
-        return { get: () => undefined };
+        return { get: () => {} };
       },
     };
 

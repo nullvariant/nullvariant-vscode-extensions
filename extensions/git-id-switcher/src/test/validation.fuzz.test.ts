@@ -55,8 +55,8 @@ const maliciousStringArbitrary = fc.oneof(
   fc.constant('foo\0bar'),
   // Note: tabs (\t) are intentionally allowed in names
   // Hex escapes
-  fc.constant('foo\\x00bar'),
-  fc.constant('foo\\x0abar'),
+  fc.constant(String.raw`foo\x00bar`),
+  fc.constant(String.raw`foo\x0abar`),
   // Path traversal
   fc.constant('../../../etc/passwd'),
   fc.constant('/home/../etc/passwd'),
@@ -95,15 +95,15 @@ function testValidateIdentityReturnType(): void {
   fc.assert(
     fc.property(
       fc.record({
-        id: fc.oneof(fc.string(), fc.constant(undefined), fc.constant(null)),
-        name: fc.oneof(fc.string(), fc.constant(undefined), fc.constant(null)),
-        email: fc.oneof(fc.string(), fc.constant(undefined), fc.constant(null)),
+        id: fc.oneof(fc.string(), fc.constant(), fc.constant(null)),
+        name: fc.oneof(fc.string(), fc.constant(), fc.constant(null)),
+        email: fc.oneof(fc.string(), fc.constant(), fc.constant(null)),
       }),
       (obj) => {
         const result = validateIdentity(obj as Identity);
         assert.strictEqual(typeof result.valid, 'boolean');
         assert.ok(Array.isArray(result.errors));
-        result.errors.forEach(e => assert.strictEqual(typeof e, 'string'));
+        for (const e of result.errors) assert.strictEqual(typeof e, 'string');
       }
     ),
     { numRuns: 500, verbose: false }
@@ -224,7 +224,7 @@ function testPathShellMetacharacters(): void {
       const result = isPathSafe(maliciousPath);
       // Most malicious strings should be rejected
       // (some may be false positives, but that's acceptable for security)
-      if (maliciousPath.match(/[`$(){}|&<>\n\r\0]/)) {
+      if (/[`$(){}|&<>\n\r\0]/.test(maliciousPath)) {
         assert.strictEqual(result, false,
           `Should reject path with dangerous chars: "${maliciousPath}"`);
       }
@@ -380,7 +380,7 @@ function testVeryLongStrings(): void {
 
   fc.assert(
     fc.property(
-      fc.string({ minLength: 1000, maxLength: 10000 }),
+      fc.string({ minLength: 1000, maxLength: 10_000 }),
       (longString) => {
         const result = validateIdentity({
           id: 'test',

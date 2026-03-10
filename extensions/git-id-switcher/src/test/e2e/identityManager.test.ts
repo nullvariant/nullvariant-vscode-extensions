@@ -145,7 +145,7 @@ function createMockVSCode(options: {
           if (key === 'identities') {
             return options.identities ?? [];
           }
-          return undefined;
+          return;
         },
         update: async (key: string, value: unknown) => {
           if (options.configUpdateError) {
@@ -158,15 +158,15 @@ function createMockVSCode(options: {
     window: {
       showWarningMessage: async (message: string) => {
         showWarningMessageCalls.push(message);
-        return undefined;
+        return;
       },
       showInformationMessage: async (message: string) => {
         showInformationMessageCalls.push(message);
-        return undefined;
+        return;
       },
       showErrorMessage: async (message: string) => {
         showErrorMessageCalls.push(message);
-        return undefined;
+        return;
       },
       showQuickPick: async <T>(items: T[]): Promise<T | undefined> => {
         const result = options.showQuickPickResult;
@@ -305,7 +305,7 @@ function createMockVSCode(options: {
         if (result) {
           return [{ fsPath: result }];
         }
-        return undefined;
+        return;
       },
       createQuickPick: <T>() => {
         // Note: quickPickSelectionIndex is shared across all QuickPick instances (defined at mock level)
@@ -398,9 +398,9 @@ function createMockVSCode(options: {
     l10n: {
       t: (message: string, ...args: unknown[]) => {
         let result = message;
-        args.forEach((arg, index) => {
+        for (const [index, arg] of args.entries()) {
           result = result.replace(`{${index}}`, String(arg));
-        });
+        }
         return result;
       },
     },
@@ -427,7 +427,7 @@ function createMockVSCode(options: {
 
 describe('identityManager E2E Test Suite', function () {
   // Set suite-level timeout for all tests
-  this.timeout(10000);
+  this.timeout(10_000);
 
   beforeEach(() => {
     _resetCache();
@@ -462,7 +462,7 @@ describe('identityManager E2E Test Suite', function () {
       assert.ok(result !== undefined, 'Should return Identity on success');
       assert.strictEqual(result?.id, 'test-id', 'Should return created Identity with correct id');
       const infoCalls = mockVSCode._getShowInformationMessageCalls();
-      assert.ok(infoCalls.length >= 1, 'Should show success message');
+      assert.ok(infoCalls.length > 0, 'Should show success message');
     });
 
     it('should return undefined when cancelled (Esc)', async () => {
@@ -1996,7 +1996,7 @@ describe('identityManager E2E Test Suite', function () {
 
           // Set up Windows environment
           delete process.env.HOME;
-          process.env.USERPROFILE = 'C:\\Users\\testuser';
+          process.env.USERPROFILE = String.raw`C:\Users\testuser`;
 
           let capturedDefaultUri: { fsPath: string } | undefined;
 
@@ -2007,7 +2007,7 @@ describe('identityManager E2E Test Suite', function () {
               undefined,
             ],
             inputBoxSelections: [FILE_PICKER_CLICK, undefined],
-            showOpenDialogResult: 'C:\\Users\\testuser\\.ssh\\id_rsa',
+            showOpenDialogResult: String.raw`C:\Users\testuser\.ssh\id_rsa`,
             onShowOpenDialog: (dialogOptions) => {
               capturedDefaultUri = dialogOptions.defaultUri;
             },
@@ -2017,7 +2017,7 @@ describe('identityManager E2E Test Suite', function () {
           try {
             await showEditProfileFlow(TEST_IDENTITIES.work);
             assert.ok(capturedDefaultUri, 'showOpenDialog should have been called');
-            assert.strictEqual(capturedDefaultUri?.fsPath, 'C:\\Users\\testuser/.ssh',
+            assert.strictEqual(capturedDefaultUri?.fsPath, String.raw`C:\Users\testuser/.ssh`,
               'defaultUri should be USERPROFILE/.ssh');
           } finally {
             // Restore original env
@@ -2390,7 +2390,7 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // Should have Back button
-        assert.ok(capturedButtons.length >= 1, `Should have at least 1 button, got ${capturedButtons.length}`);
+        assert.ok(capturedButtons.length > 0, `Should have at least 1 button, got ${capturedButtons.length}`);
         assert.ok(capturedButtons.includes(BACK_BUTTON), 'InputBox should have Back button');
       });
 
@@ -2653,7 +2653,7 @@ describe('identityManager E2E Test Suite', function () {
 
         // Simulate Windows environment
         delete process.env.HOME;
-        process.env.USERPROFILE = 'C:\\Users\\testuser';
+        process.env.USERPROFILE = String.raw`C:\Users\testuser`;
 
         let inputBoxValueAfterFilePick: string | undefined;
 
@@ -2664,7 +2664,7 @@ describe('identityManager E2E Test Suite', function () {
             undefined,
           ],
           inputBoxSelections: [FILE_PICKER_CLICK, undefined],
-          showOpenDialogResult: 'C:\\Users\\testuser\\.ssh\\selected_key',
+          showOpenDialogResult: String.raw`C:\Users\testuser\.ssh\selected_key`,
         });
 
         const originalCreateInputBox = mockVSCode.window.createInputBox;
@@ -3198,7 +3198,7 @@ describe('identityManager E2E Test Suite', function () {
 
         assert.ok(result !== undefined, 'Should return new identity on success');
         const infoCalls = mockVSCode._getShowInformationMessageCalls();
-        assert.ok(infoCalls.length >= 1, 'Should show success message (indicates logConfigChange path was executed)');
+        assert.ok(infoCalls.length > 0, 'Should show success message (indicates logConfigChange path was executed)');
         assert.ok(infoCalls[0].includes('created'), 'Success message should mention creation');
       });
     });
@@ -3220,7 +3220,7 @@ describe('identityManager E2E Test Suite', function () {
 
         assert.strictEqual(result, true, 'Should return true on success');
         const infoCalls = mockVSCode._getShowInformationMessageCalls();
-        assert.ok(infoCalls.length >= 1, 'Should show success message (indicates logConfigChange path was executed)');
+        assert.ok(infoCalls.length > 0, 'Should show success message (indicates logConfigChange path was executed)');
         assert.ok(infoCalls[0].includes('updated'), 'Success message should mention update');
       });
     });

@@ -48,7 +48,7 @@ function testHasNullByte(): void {
   assert.strictEqual(hasNullByte(''), false, 'Empty string should not contain null byte');
   assert.strictEqual(hasNullByte('\0'), true, 'String with null byte should be detected');
   assert.strictEqual(hasNullByte('test\0string'), true, 'String with embedded null byte should be detected');
-  assert.strictEqual(hasNullByte('test\\x00'), false, 'Escaped null byte should not be detected');
+  assert.strictEqual(hasNullByte(String.raw`test\x00`), false, 'Escaped null byte should not be detected');
 
   console.log('✅ hasNullByte tests passed!');
 }
@@ -64,12 +64,12 @@ function testHasControlChars(): void {
   assert.strictEqual(hasControlChars('test123'), false, 'Alphanumeric string should not contain control chars');
 
   // Control characters (strict mode - excludes tab/newline)
-  assert.strictEqual(hasControlChars('\x00'), true, 'Null byte should be detected (strict)');
-  assert.strictEqual(hasControlChars('\x01'), true, 'SOH should be detected (strict)');
-  assert.strictEqual(hasControlChars('\x08'), true, 'BS should be detected (strict)');
-  assert.strictEqual(hasControlChars('\x0b'), true, 'VT should be detected (strict)');
-  assert.strictEqual(hasControlChars('\x1f'), true, 'US should be detected (strict)');
-  assert.strictEqual(hasControlChars('\x7f'), true, 'DEL should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u0000'), true, 'Null byte should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u0001'), true, 'SOH should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u0008'), true, 'BS should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u000B'), true, 'VT should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u001F'), true, 'US should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u007F'), true, 'DEL should be detected (strict)');
 
   // Tab and newline (allowed in strict mode)
   assert.strictEqual(hasControlChars('\t'), false, 'Tab should be allowed (strict)');
@@ -129,12 +129,12 @@ function testHasPathTraversalStrict(): void {
   assert.strictEqual(hasPathTraversalStrict('..../file'), true, 'Quadruple dots should be detected');
 
   // Windows-style paths
-  assert.strictEqual(hasPathTraversalStrict('..\\file'), true, 'Windows-style traversal should be detected');
-  assert.strictEqual(hasPathTraversalStrict('\\..\\file'), true, 'Windows absolute with traversal should be detected');
+  assert.strictEqual(hasPathTraversalStrict(String.raw`..\file`), true, 'Windows-style traversal should be detected');
+  assert.strictEqual(hasPathTraversalStrict(String.raw`\..\file`), true, 'Windows absolute with traversal should be detected');
 
   // Edge cases
   assert.strictEqual(hasPathTraversalStrict('/..'), true, 'Path ending with /.. should be detected');
-  assert.strictEqual(hasPathTraversalStrict('\\..'), true, 'Path ending with \\.. should be detected');
+  assert.strictEqual(hasPathTraversalStrict(String.raw`\..`), true, String.raw`Path ending with \.. should be detected`);
 
   console.log('✅ hasPathTraversalStrict tests passed!');
 }
@@ -350,7 +350,7 @@ function testHasDangerousChars(): void {
   assert.strictEqual(hasDangerousChars('a&b'), true, 'Ampersand should be dangerous');
   assert.strictEqual(hasDangerousChars('a\nb'), true, 'Newline should be dangerous');
   assert.strictEqual(hasDangerousChars('a\rb'), true, 'Carriage return should be dangerous');
-  assert.strictEqual(hasDangerousChars('\x00'), true, 'Null byte should be dangerous');
+  assert.strictEqual(hasDangerousChars('\u0000'), true, 'Null byte should be dangerous');
   assert.strictEqual(hasDangerousChars('a<b'), true, 'Less than should be dangerous');
   assert.strictEqual(hasDangerousChars('a>b'), true, 'Greater than should be dangerous');
   assert.strictEqual(hasDangerousChars('a{b}'), true, 'Braces should be dangerous');
@@ -434,18 +434,18 @@ function testIsWindowsAbsolutePath(): void {
 
   // Valid Windows absolute paths (should return true)
   assert.strictEqual(isWindowsAbsolutePath('C:'), true, 'C: should be valid');
-  assert.strictEqual(isWindowsAbsolutePath('C:\\'), true, 'C:\\ should be valid');
-  assert.strictEqual(isWindowsAbsolutePath('C:\\Users\\test'), true, 'C:\\Users\\test should be valid');
-  assert.strictEqual(isWindowsAbsolutePath('D:\\folder'), true, 'D:\\folder should be valid');
-  assert.strictEqual(isWindowsAbsolutePath('c:\\lowercase'), true, 'c:\\ lowercase should be valid');
-  assert.strictEqual(isWindowsAbsolutePath('Z:\\path'), true, 'Z:\\ should be valid');
+  assert.strictEqual(isWindowsAbsolutePath('C:\\'), true, String.raw`C:\ should be valid`);
+  assert.strictEqual(isWindowsAbsolutePath(String.raw`C:\Users\test`), true, String.raw`C:\Users\test should be valid`);
+  assert.strictEqual(isWindowsAbsolutePath(String.raw`D:\folder`), true, String.raw`D:\folder should be valid`);
+  assert.strictEqual(isWindowsAbsolutePath(String.raw`c:\lowercase`), true, String.raw`c:\ lowercase should be valid`);
+  assert.strictEqual(isWindowsAbsolutePath(String.raw`Z:\path`), true, String.raw`Z:\ should be valid`);
 
   // Invalid paths (should return false)
   assert.strictEqual(isWindowsAbsolutePath('/unix/path'), false, 'Unix path should be invalid');
   assert.strictEqual(isWindowsAbsolutePath('~/home'), false, 'Tilde path should be invalid');
   assert.strictEqual(isWindowsAbsolutePath('relative/path'), false, 'Relative path should be invalid');
   assert.strictEqual(isWindowsAbsolutePath(''), false, 'Empty string should be invalid');
-  assert.strictEqual(isWindowsAbsolutePath('1:\\invalid'), false, 'Number drive letter should be invalid');
+  assert.strictEqual(isWindowsAbsolutePath(String.raw`1:\invalid`), false, 'Number drive letter should be invalid');
   assert.strictEqual(isWindowsAbsolutePath('::invalid'), false, 'Double colon should be invalid');
 
   // Verify regex constants exist
