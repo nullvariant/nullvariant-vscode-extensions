@@ -83,6 +83,7 @@ async function isValidExecutable(binaryPath: string): Promise<boolean> {
     if (process.platform !== 'win32') {
       // Check if any execute bit is set (owner, group, or others)
       const executableBits = 0o111;
+      // eslint-disable-next-line no-bitwise -- file permission check requires bitwise AND
       if ((stats.mode & executableBits) === 0) {
         return false;
       }

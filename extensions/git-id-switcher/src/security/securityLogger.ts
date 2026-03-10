@@ -235,7 +235,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
    */
   private writeToOutputChannel(event: SecurityEvent): void {
     const severityIcon = { info: 'ℹ️', warning: '⚠️', error: '🚨' }[event.severity];
-    const MAX_MESSAGE_SIZE = 10000;
+    const MAX_MESSAGE_SIZE = 10_000;
     let message: string;
     try {
       const jsonStr = JSON.stringify(event.details);

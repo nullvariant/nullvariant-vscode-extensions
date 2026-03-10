@@ -385,8 +385,7 @@ export function getIdentitiesWithValidation(): Identity[] {
   const invalidIndices: number[] = [];
   const seenIds = new Set<string>();
 
-  for (let i = 0; i < rawIdentities.length; i++) {
-    const identity = rawIdentities[i];
+  for (const [i, identity] of rawIdentities.entries()) {
     const result = validateIdentitySchema(identity);
 
     if (!result.valid) {

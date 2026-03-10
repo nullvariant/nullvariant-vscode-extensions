@@ -425,7 +425,7 @@ function testDetectChangesDeepNesting(): void {
   // Test with nested commandTimeouts
   setDetectorSnapshot(detector, createTestSnapshot({ commandTimeouts: { git: 5000, ssh: 3000 } }));
   const changes = detector.detectChanges(
-    createTestSnapshot({ commandTimeouts: { git: 5000, ssh: 3000, npm: 10000 } })
+    createTestSnapshot({ commandTimeouts: { git: 5000, ssh: 3000, npm: 10_000 } })
   );
   assert.strictEqual(changes.length, 1, 'One change should be detected');
   assert.strictEqual(changes[0].key, 'commandTimeouts', 'Change key should be commandTimeouts');
@@ -658,7 +658,7 @@ function testValuesEqualLargeObjects(): void {
     const obj: Record<string, number> = {};
     const longKey = prefix.repeat(100);
     for (let i = 0; i < count; i++) {
-      obj[`${longKey}${i}`] = 1000000 + i;
+      obj[`${longKey}${i}`] = 1_000_000 + i;
     }
     return obj;
   };
@@ -677,7 +677,7 @@ function testValuesEqualLargeObjects(): void {
   assert.strictEqual(changes2.length, 1, 'Different large objects (different length) should be detected as changed');
 
   // Test 3: Different large objects (same length, different type)
-  const smallObject: Record<string, number> = { key0: 12345, key1: 12345, key2: 12345 };
+  const smallObject: Record<string, number> = { key0: 12_345, key1: 12_345, key2: 12_345 };
   const changes3 = detector.detectChanges(createTestSnapshot({ commandTimeouts: smallObject }));
   assert.strictEqual(changes3.length, 1, 'Different large objects (different type) should be detected as changed');
 
@@ -1017,7 +1017,7 @@ function testCreateSnapshotWithMockWorkspace(): void {
       return {
         get: <T>(key: string, defaultValue: T): T => {
           const value = mockConfig[key as keyof typeof mockConfig];
-          return (value !== undefined ? value : defaultValue) as T;
+          return (value === undefined ? defaultValue : value) as T;
         },
       };
     },

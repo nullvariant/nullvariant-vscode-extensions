@@ -40,7 +40,7 @@ class ConsoleCapture {
   start(): void {
     this.logs = [];
     console.log = (...args: unknown[]) => {
-      this.logs.push(args.map(a => String(a)).join(' '));
+      this.logs.push(args.map(String).join(' '));
     };
   }
 
@@ -928,7 +928,7 @@ function testInitializeWithInvalidFilePath(): void {
   const originalError = console.error;
   const errorLogs: string[] = [];
   console.error = (...args: unknown[]) => {
-    errorLogs.push(args.map(a => String(a)).join(' '));
+    errorLogs.push(args.map(String).join(' '));
   };
 
   // Create mock VS Code with invalid path configuration

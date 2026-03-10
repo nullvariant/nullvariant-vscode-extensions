@@ -508,7 +508,7 @@ function testPathDetection(): void {
 
   // Windows drive letters
   {
-    const result = sanitizeValue('C:\\Users\\test\\secret.key');
+    const result = sanitizeValue(String.raw`C:\Users\test\secret.key`);
     assert.strictEqual(
       typeof result,
       'string',
@@ -517,14 +517,14 @@ function testPathDetection(): void {
     // Windows paths go through sanitizePath
     assert.notStrictEqual(
       result,
-      'C:\\Users\\test\\secret.key',
+      String.raw`C:\Users\test\secret.key`,
       'Windows path should be sanitized (not returned as-is)'
     );
   }
 
   // Windows UNC paths
   {
-    const result = sanitizeValue('\\\\server\\share\\file.key');
+    const result = sanitizeValue(String.raw`\\server\share\file.key`);
     assert.strictEqual(
       typeof result,
       'string',
@@ -538,7 +538,7 @@ function testPathDetection(): void {
 
   // Lowercase drive letter
   {
-    const result = sanitizeValue('d:\\data\\config.json');
+    const result = sanitizeValue(String.raw`d:\data\config.json`);
     assert.strictEqual(
       typeof result,
       'string',
@@ -987,7 +987,7 @@ function testTruncationBoundaries(): void {
 
   // Very long string
   {
-    const veryLong = 'z'.repeat(10000);
+    const veryLong = 'z'.repeat(10_000);
     const result = sanitizeValue(veryLong) as string;
     assert.ok(
       result.endsWith('...[truncated]'),
@@ -1083,7 +1083,7 @@ function testPathSanitizationIntegration(): void {
 
   // Windows sensitive paths
   {
-    const windowsPath = 'C:\\Users\\test\\.ssh\\id_rsa';
+    const windowsPath = String.raw`C:\Users\test\.ssh\id_rsa`;
     const result = sanitizeValue(windowsPath) as string;
     // pathSanitizer should handle this
     assert.notStrictEqual(
@@ -1208,7 +1208,7 @@ function testSpecialJavaScriptTypes(): void {
 
   // BigInt (treated as object by typeof, but has special handling)
   {
-    const bigIntValue = BigInt(12345678901234567890n);
+    const bigIntValue = BigInt(12_345_678_901_234_567_890n);
     const result = sanitizeValue(bigIntValue);
     // BigInt is typeof 'bigint', not 'object', so it falls through to [bigint]
     assert.strictEqual(

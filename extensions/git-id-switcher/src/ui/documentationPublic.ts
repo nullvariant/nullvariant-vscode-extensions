@@ -44,7 +44,7 @@ export { generateNonce, buildCsp, getDocumentHtml, getLoadingHtml, getErrorHtml 
 const ASSET_BASE_URL = 'https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher';
 
 /** Fetch timeout in milliseconds */
-const FETCH_TIMEOUT_MS = 10000;
+const FETCH_TIMEOUT_MS = 10_000;
 
 /** Maximum content size in bytes (1MB) - DoS prevention */
 const MAX_CONTENT_SIZE = 1024 * 1024;
@@ -211,7 +211,7 @@ async function handleNavigation(
   const classification = classifyUrl(href, state.currentPath);
 
   switch (classification.type) {
-    case 'internal-md':
+    case 'internal-md': {
       if (classification.resolvedPath) {
         // Show loading
         panel.webview.html = getLoadingHtml(panel.webview);
@@ -253,6 +253,7 @@ async function handleNavigation(
         }
       }
       break;
+    }
 
     case 'external': {
       // Open external URLs in browser
@@ -268,9 +269,10 @@ async function handleNavigation(
       break;
     }
 
-    case 'anchor':
+    case 'anchor': {
       // Anchor links are handled in the Webview JS
       break;
+    }
   }
 }
 

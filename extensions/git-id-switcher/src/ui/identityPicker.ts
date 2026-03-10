@@ -322,7 +322,7 @@ export async function showManageIdentitiesQuickPick(
     });
   } else {
     // Add identity items with inline buttons
-    identities.forEach((identity, index) => {
+    for (const [index, identity] of identities.entries()) {
       items.push({
         label: getIdentityLabel(identity),
         detail: getIdentityDetail(identity),
@@ -330,7 +330,7 @@ export async function showManageIdentitiesQuickPick(
         index,
         buttons: [moveUpButton, moveDownButton, editButton, deleteButton],
       });
-    });
+    }
   }
 
   // Add separator and "New Identity" option
@@ -388,14 +388,28 @@ export async function showManageIdentitiesQuickPick(
       resolved = true;
       quickPick.hide();
 
-      if (e.button === moveUpButton) {
+      switch (e.button) {
+      case moveUpButton: {
         resolve({ action: 'moveUp', identity: item.identity, index: item.index });
-      } else if (e.button === moveDownButton) {
+
+      break;
+      }
+      case moveDownButton: {
         resolve({ action: 'moveDown', identity: item.identity, index: item.index });
-      } else if (e.button === editButton) {
+
+      break;
+      }
+      case editButton: {
         resolve({ action: 'edit', identity: item.identity, index: item.index });
-      } else if (e.button === deleteButton) {
+
+      break;
+      }
+      case deleteButton: {
         resolve({ action: 'delete', identity: item.identity, index: item.index });
+
+      break;
+      }
+      // No default
       }
     });
 

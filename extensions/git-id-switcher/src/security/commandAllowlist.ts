@@ -181,6 +181,7 @@ function resolveSubcommandConfig(
  *
  * @internal
  */
+// eslint-disable-next-line sonarjs/function-return-type -- discriminated union return is intentional for security validation flow
 function isArgumentValueForPrecedingFlag(
   arg: string,
   index: number,
@@ -205,6 +206,7 @@ function isArgumentValueForPrecedingFlag(
  * Validate a flag argument.
  * @internal
  */
+// eslint-disable-next-line sonarjs/function-return-type -- discriminated union return is intentional
 function validateFlagArgument(
   arg: string,
   command: string,
@@ -228,6 +230,7 @@ function validateFlagArgument(
  * Validate path safety for an argument.
  * @internal
  */
+// eslint-disable-next-line sonarjs/function-return-type -- discriminated union return is intentional
 function validatePathSafety(arg: string): AllowlistCheckResult | 'safe' {
   const looksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
   if (looksLikePathForSecurity) {
@@ -248,6 +251,7 @@ type ArgValidationResult = AllowlistCheckResult | 'continue';
  * Validate a single argument against allowlist rules.
  * @internal
  */
+// eslint-disable-next-line sonarjs/function-return-type -- discriminated union return is intentional
 function validateSingleArgument(
   arg: string,
   index: number,

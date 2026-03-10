@@ -94,7 +94,7 @@ export async function computeSha256Hash(content: string): Promise<string> {
 
   // Use Web Crypto API (available in both Node.js and browser)
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashArray = [...new Uint8Array(hashBuffer)];
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
@@ -226,7 +226,7 @@ export function escapeHtmlEntities(text: string): string {
 export function resolveRelativePath(basePath: string, relativePath: string): string {
   // Get directory of base path (remove filename)
   const baseDir = basePath.includes('/')
-    ? basePath.substring(0, basePath.lastIndexOf('/'))
+    ? basePath.slice(0, Math.max(0, basePath.lastIndexOf('/')))
     : '';
 
   // Split base directory into segments
@@ -294,7 +294,7 @@ export function classifyUrl(href: string, currentPath: string): {
  */
 export function getDocumentDisplayName(path: string): string {
   // Extract filename from path
-  const filename = path.includes('/') ? path.substring(path.lastIndexOf('/') + 1) : path;
+  const filename = path.includes('/') ? path.slice(Math.max(0, path.lastIndexOf('/') + 1)) : path;
   // Remove .md extension
   return filename.replace(/\.md$/i, '');
 }

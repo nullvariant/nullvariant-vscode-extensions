@@ -55,7 +55,7 @@ function gitSync(args: string[], cwd: string): string {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: GIT_ENV,
     }).trim();
-  } catch (error) {
+  } catch {
     return '';
   }
 }
@@ -81,7 +81,7 @@ function removeDirSync(dirPath: string): void {
 
 describe('Git Config E2E Test Suite', function () {
   // Set suite-level timeout for all tests (git operations may be slow)
-  this.timeout(15000);
+  this.timeout(15_000);
 
   let tempRepoPath: string;
   let extension: vscode.Extension<unknown> | undefined;
@@ -293,7 +293,7 @@ describe('Git Config E2E Test Suite', function () {
     });
 
     it('should read config with get-regexp', () => {
-      const userConfigs = gitSync(['config', '--get-regexp', '^user\\.'], tempRepoPath);
+      const userConfigs = gitSync(['config', '--get-regexp', String.raw`^user\.`], tempRepoPath);
 
       assert.ok(userConfigs.includes('user.name'), 'Should include user.name');
       assert.ok(userConfigs.includes('user.email'), 'Should include user.email');

@@ -51,7 +51,7 @@ export interface ConfigChangeDetail {
  * Security limits for DoS protection
  */
 const LIMITS = {
-  MAX_STRINGIFY_SIZE: 100000, // 100KB
+  MAX_STRINGIFY_SIZE: 100_000, // 100KB
 } as const;
 
 /**

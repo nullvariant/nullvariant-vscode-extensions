@@ -35,7 +35,7 @@ const execFilePromise = promisify(execFile);
  * Exported for testing purposes.
  */
 export const COMMAND_TIMEOUTS: Readonly<Record<string, number>> = {
-  git: 10000, // 10 seconds
+  git: 10_000, // 10 seconds
   'ssh-add': 5000, // 5 seconds
   'ssh-keygen': 5000, // 5 seconds
 } as const;
@@ -44,7 +44,7 @@ export const COMMAND_TIMEOUTS: Readonly<Record<string, number>> = {
  * Default timeout for commands not in COMMAND_TIMEOUTS map
  * Exported for testing purposes.
  */
-export const DEFAULT_TIMEOUT = 30000; // 30 seconds
+export const DEFAULT_TIMEOUT = 30_000; // 30 seconds
 
 /**
  * Custom error class for timeout errors
@@ -96,7 +96,7 @@ export class TimeoutError extends Error {
  */
 const TIMEOUT_LIMITS = {
   MIN: 1000, // 1 second minimum
-  MAX: 300000, // 5 minutes maximum
+  MAX: 300_000, // 5 minutes maximum
 } as const;
 
 /**
@@ -341,7 +341,7 @@ export function getCommandTimeout(
 
   // Check user-configured timeouts from VS Code settings
   const userTimeouts = getUserConfiguredTimeouts();
-  if (userTimeouts[command] !== undefined) {
+  if (command in userTimeouts) {
     return userTimeouts[command];
   }
 

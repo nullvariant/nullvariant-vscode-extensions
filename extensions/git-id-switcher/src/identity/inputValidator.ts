@@ -242,14 +242,14 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
   }
 
   // Validate each identity
-  identities.forEach((identity, index) => {
+  for (const [index, identity] of identities.entries()) {
     const result = validateIdentity(identity);
     if (!result.valid) {
-      result.errors.forEach(error => {
+      for (const error of result.errors) {
         errors.push(`identities[${index}] (${identity.id || 'unknown'}): ${error}`);
-      });
+      }
     }
-  });
+  }
 
   return {
     valid: errors.length === 0,

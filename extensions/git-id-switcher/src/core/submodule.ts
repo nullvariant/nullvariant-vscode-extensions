@@ -47,7 +47,7 @@ const HEX_CHARS = new Set('0123456789abcdef');
  * Check if a code point is a control character (0x00-0x1f or 0x7f).
  */
 function isControlCodePoint(codePoint: number): boolean {
-  return codePoint <= 0x1f || codePoint === 0x7f;
+  return codePoint <= 0x1F || codePoint === 0x7F;
 }
 
 /**

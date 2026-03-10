@@ -132,7 +132,7 @@ function createConfigChangeCapture(
 
 describe('Identity E2E Test Suite', function () {
   // Set suite-level timeout for all tests
-  this.timeout(10000);
+  this.timeout(10_000);
 
   let originalConfig: OriginalConfig;
 
@@ -528,8 +528,7 @@ describe('Identity E2E Test Suite', function () {
       const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
       const identities = config.get<TestIdentity[]>('identities', []);
 
-      for (let i = 0; i < identities.length; i++) {
-        const identity = identities[i];
+      for (const [i, identity] of identities.entries()) {
 
         // Required fields
         assert.ok(typeof identity.id === 'string', `identities[${i}].id should be a string`);

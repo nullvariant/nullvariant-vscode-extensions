@@ -79,7 +79,7 @@ const TEST_IDENTITIES = {
 
 describe('StatusBar E2E Test Suite', function () {
   // Set suite-level timeout for all tests
-  this.timeout(10000);
+  this.timeout(10_000);
 
   let statusBar: IdentityStatusBar | undefined;
 

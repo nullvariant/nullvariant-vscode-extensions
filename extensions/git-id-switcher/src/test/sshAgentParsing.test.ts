@@ -189,8 +189,8 @@ function testReDoSResistance(): void {
     '256 ' + 'a'.repeat(1000) + ' ' + 'b'.repeat(1000) + ' (type)',
     '256 SHA256:x ' + ' '.repeat(1000) + ' (RSA)',
     '256 SHA256:x comment' + ' comment'.repeat(100) + ' (RSA)',
-    'a'.repeat(10000),
-    ' '.repeat(10000),
+    'a'.repeat(10_000),
+    ' '.repeat(10_000),
   ];
 
   const startTime = Date.now();

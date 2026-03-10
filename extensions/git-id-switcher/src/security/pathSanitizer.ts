@@ -109,8 +109,8 @@ function componentsMatchAt(
   sensitiveComponents: string[],
   startIndex: number
 ): boolean {
-  for (let j = 0; j < sensitiveComponents.length; j++) {
-    if (pathComponents[startIndex + j] !== sensitiveComponents[j]) {
+  for (const [j, sensitiveComponent] of sensitiveComponents.entries()) {
+    if (pathComponents[startIndex + j] !== sensitiveComponent) {
       return false;
     }
   }

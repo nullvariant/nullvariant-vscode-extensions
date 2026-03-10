@@ -70,7 +70,7 @@ const SUPPORTED_LOCALE_PATTERNS = [
 
 describe('Documentation E2E Test Suite', function () {
   // Set suite-level timeout for all tests (network operations may take time)
-  this.timeout(15000);
+  this.timeout(15_000);
 
   let extension: vscode.Extension<unknown> | undefined;
 

@@ -60,12 +60,13 @@ export function resolveSymlinksSecurely(inputPath: string): SymlinkResolutionRes
     const code = nodeError.code;
 
     switch (code) {
-      case 'ELOOP':
+      case 'ELOOP': {
         return {
           valid: false,
           reason: 'Symlink loop detected (ELOOP) - possible infinite loop attack',
         };
-      case 'ENOENT':
+      }
+      case 'ENOENT': {
         // File doesn't exist - this might be OK depending on use case
         // SECURITY: inputPath is already normalized by normalizeAndValidatePath()
         // before this function is called, but we normalize again for defensive programming
@@ -75,26 +76,31 @@ export function resolveSymlinksSecurely(inputPath: string): SymlinkResolutionRes
           valid: true,
           resolvedPath: path.normalize(inputPath), // Already normalized, but safe to normalize again (idempotent)
         };
-      case 'EACCES':
+      }
+      case 'EACCES': {
         return {
           valid: false,
           reason: 'Permission denied while resolving symlinks (EACCES)',
         };
-      case 'ENAMETOOLONG':
+      }
+      case 'ENAMETOOLONG': {
         return {
           valid: false,
           reason: 'Path too long while resolving symlinks (ENAMETOOLONG)',
         };
-      case 'ENOTDIR':
+      }
+      case 'ENOTDIR': {
         return {
           valid: false,
           reason: 'A component of the path is not a directory (ENOTDIR)',
         };
-      default:
+      }
+      default: {
         return {
           valid: false,
           reason: `Error resolving symlinks: ${code || nodeError.message}`,
         };
+      }
     }
   } /* c8 ignore stop */
 }
@@ -116,13 +122,9 @@ export function containsSymlinks(inputPath: string): boolean {
     const code = nodeError.code;
 
     // ELOOP indicates a symlink loop - treat as symlink detected (security concern)
-    if (code === 'ELOOP') {
-      return true;
-    }
-
     // ENOENT means file doesn't exist - can't determine if symlink, return false
     // Other errors (EACCES, etc.) - assume no symlinks for now
     // The error will be caught later during actual path resolution if needed
-    return false;
+    return code === 'ELOOP';
   } /* c8 ignore stop */
 }

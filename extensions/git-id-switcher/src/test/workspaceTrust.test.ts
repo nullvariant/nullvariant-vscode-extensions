@@ -422,7 +422,7 @@ async function testCallbackErrorHandling(): Promise<void> {
   const consoleLogs: string[] = [];
   const originalError = console.error;
   console.error = (...args: unknown[]) => {
-    consoleLogs.push(args.map(a => String(a)).join(' '));
+    consoleLogs.push(args.map(String).join(' '));
   };
 
   const mockVSCode = {
@@ -612,7 +612,7 @@ function testShowUntrustedWorkspaceWarningNoWindow(): void {
   const consoleLogs: string[] = [];
   const originalLog = console.log;
   console.log = (...args: unknown[]) => {
-    consoleLogs.push(args.map(a => String(a)).join(' '));
+    consoleLogs.push(args.map(String).join(' '));
   };
 
   // Should not throw and should log to console
@@ -642,7 +642,7 @@ function testInitializeWorkspaceTrustNoWorkspace(): void {
   const consoleLogs: string[] = [];
   const originalLog = console.log;
   console.log = (...args: unknown[]) => {
-    consoleLogs.push(args.map(a => String(a)).join(' '));
+    consoleLogs.push(args.map(String).join(' '));
   };
 
   const mockContext = createMockContext();

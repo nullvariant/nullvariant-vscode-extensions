@@ -120,10 +120,10 @@ function createMockVSCode(options: {
           },
           show: () => {
             // Simulate user selection
-            if (options.showQuickPickResult !== undefined) {
-              setTimeout(() => callbacks.accept?.(), 0);
-            } else {
+            if (options.showQuickPickResult === undefined) {
               setTimeout(() => callbacks.hide?.(), 0);
+            } else {
+              setTimeout(() => callbacks.accept?.(), 0);
             }
           },
           hide: () => {},
@@ -138,9 +138,9 @@ function createMockVSCode(options: {
       t: (message: string, ...args: unknown[]) => {
         // Simple template replacement
         let result = message;
-        args.forEach((arg, index) => {
+        for (const [index, arg] of args.entries()) {
           result = result.replace(`{${index}}`, String(arg));
-        });
+        }
         return result;
       },
     },
@@ -347,9 +347,9 @@ function createAddMockVSCode(options: {
     l10n: {
       t: (message: string, ...args: unknown[]) => {
         let result = message;
-        args.forEach((arg, index) => {
+        for (const [index, arg] of args.entries()) {
           result = result.replace(`{${index}}`, String(arg));
-        });
+        }
         return result;
       },
     },
@@ -417,7 +417,7 @@ function createMockStatusBar() {
 
 describe('handleDeleteIdentity E2E Test Suite', function () {
   // Set suite-level timeout for all tests
-  this.timeout(10000);
+  this.timeout(10_000);
 
   beforeEach(() => {
     _resetCache();
@@ -615,7 +615,7 @@ describe('handleDeleteIdentity E2E Test Suite', function () {
 // =============================================================================
 
 describe('handleDeleteIdentity with targetIdentity E2E Test Suite', function () {
-  this.timeout(10000);
+  this.timeout(10_000);
 
   beforeEach(() => {
     _resetCache();
@@ -674,7 +674,7 @@ describe('handleDeleteIdentity with targetIdentity E2E Test Suite', function () 
 // =============================================================================
 
 describe('handleAddIdentity E2E Test Suite', function () {
-  this.timeout(10000);
+  this.timeout(10_000);
 
   beforeEach(() => {
     _resetCache();
@@ -712,7 +712,7 @@ describe('handleAddIdentity E2E Test Suite', function () {
 
       assert.strictEqual(result, true, 'Should return true on success');
       const configCalls = mockVSCode._getConfigUpdateCalls();
-      assert.ok(configCalls.length >= 1, 'Should save identity to config');
+      assert.ok(configCalls.length > 0, 'Should save identity to config');
     });
   });
 
@@ -737,7 +737,7 @@ describe('handleAddIdentity E2E Test Suite', function () {
 
       assert.strictEqual(result, false, 'Should return false when limit reached');
       const warnings = mockVSCode._getShowWarningMessageCalls();
-      assert.ok(warnings.length >= 1, 'Should show warning message');
+      assert.ok(warnings.length > 0, 'Should show warning message');
       assert.ok(
         warnings.some(w => w.includes(String(MAX_IDENTITIES))),
         'Warning should mention max limit'
@@ -751,7 +751,7 @@ describe('handleAddIdentity E2E Test Suite', function () {
 // =============================================================================
 
 describe('Security Logger Integration E2E Test Suite', function () {
-  this.timeout(10000);
+  this.timeout(10_000);
 
   beforeEach(() => {
     _resetCache();

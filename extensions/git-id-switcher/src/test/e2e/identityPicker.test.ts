@@ -185,9 +185,9 @@ function createMockVSCode(options: {
     l10n: {
       t: (message: string, ...args: unknown[]) => {
         let result = message;
-        args.forEach((arg, index) => {
+        for (const [index, arg] of args.entries()) {
           result = result.replace(`{${index}}`, String(arg));
-        });
+        }
         return result;
       },
     },
@@ -208,7 +208,7 @@ function createMockVSCode(options: {
 
 describe('showIdentityQuickPick E2E Test Suite', function () {
   // Set suite-level timeout for all tests
-  this.timeout(10000);
+  this.timeout(10_000);
 
   beforeEach(() => {
     _resetCache();
@@ -418,7 +418,7 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
       await showIdentityQuickPick();
 
       const buttons = mockVSCode._getCapturedButtons();
-      assert.ok(buttons.length >= 1, 'Should have at least one button');
+      assert.ok(buttons.length > 0, 'Should have at least one button');
       // Check that button has gear icon
       const gearButton = buttons.find((btn: unknown) => {
         const b = btn as { iconPath?: { id?: string }; tooltip?: string };
@@ -559,20 +559,29 @@ function createManageMockVSCode(options: {
           },
           show: () => {
             setTimeout(() => {
-              if (options.triggerAction === 'back') {
+              switch (options.triggerAction) {
+              case 'back': {
                 // Trigger back button
                 buttonCallback?.(capturedButtons[0]); // QuickInputButtons.Back
-              } else if (options.triggerAction === 'addButton') {
+
+              break;
+              }
+              case 'addButton': {
                 // Trigger add button in title bar (second button after Back)
                 if (buttonCallback && capturedButtons.length >= 2) {
                   buttonCallback(capturedButtons[1]); // Add button
                 }
-              } else if (options.triggerAction === 'edit' || options.triggerAction === 'delete'
-                || options.triggerAction === 'moveUp' || options.triggerAction === 'moveDown') {
+
+              break;
+              }
+              case 'edit':
+              case 'delete':
+              case 'moveUp':
+              case 'moveDown': {
                 // Trigger item button
                 const idx = options.actionIndex ?? 0;
                 const item = capturedItems.find(i => i.index === idx);
-                if (item && item.buttons && itemButtonCallback) {
+                if (item?.buttons && itemButtonCallback) {
                   // Find button by icon id
                   const iconMap: Record<string, string> = {
                     edit: 'pencil', delete: 'trash',
@@ -586,15 +595,29 @@ function createManageMockVSCode(options: {
                     itemButtonCallback({ item: item as T, button });
                   }
                 }
-              } else if (options.triggerAction === 'add') {
+
+              break;
+              }
+              case 'add': {
                 acceptCallback?.();
-              } else if (options.triggerAction === 'selectIdentity' || options.triggerAction === 'selectPlaceholder') {
+
+              break;
+              }
+              case 'selectIdentity':
+              case 'selectPlaceholder': {
                 // These selections should be ignored by the implementation
                 // After onDidAccept returns without action, trigger hide to end the test
                 acceptCallback?.();
                 setTimeout(() => hideCallback?.(), 10);
-              } else if (options.triggerAction === 'hide') {
+
+              break;
+              }
+              case 'hide': {
                 hideCallback?.();
+
+              break;
+              }
+              // No default
               }
             }, 0);
           },
@@ -606,9 +629,9 @@ function createManageMockVSCode(options: {
     l10n: {
       t: (message: string, ...args: unknown[]) => {
         let result = message;
-        args.forEach((arg, index) => {
+        for (const [index, arg] of args.entries()) {
           result = result.replace(`{${index}}`, String(arg));
-        });
+        }
         return result;
       },
     },
@@ -630,7 +653,7 @@ function createManageMockVSCode(options: {
 }
 
 describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
-  this.timeout(10000);
+  this.timeout(10_000);
 
   beforeEach(() => {
     _resetCache();
@@ -701,7 +724,7 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       await showManageIdentitiesQuickPick([TEST_IDENTITIES.work]);
 
       const buttons = mockVSCode._getCapturedButtons();
-      assert.ok(buttons.length >= 1, 'Should have at least one button (back)');
+      assert.ok(buttons.length > 0, 'Should have at least one button (back)');
       assert.ok(buttons[0] === (mockVSCode as never as { QuickInputButtons: { Back: unknown } }).QuickInputButtons.Back, 'First button should be Back');
     });
 
@@ -926,7 +949,7 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       await showManageIdentitiesQuickPick([TEST_IDENTITIES.work, TEST_IDENTITIES.personal], 1);
 
       const activeItems = mockVSCode._getCapturedActiveItems();
-      assert.ok(activeItems.length >= 1, 'Should have active item');
+      assert.ok(activeItems.length > 0, 'Should have active item');
       assert.strictEqual(activeItems[0]?.index, 1, 'Should focus on index 1');
     });
 
@@ -941,7 +964,7 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
       await showManageIdentitiesQuickPick([TEST_IDENTITIES.work], 10);
 
       const activeItems = mockVSCode._getCapturedActiveItems();
-      assert.ok(activeItems.length >= 1, 'Should have active item');
+      assert.ok(activeItems.length > 0, 'Should have active item');
       assert.strictEqual(activeItems[0]?.index, 0, 'Should clamp to max valid index (0)');
     });
   });

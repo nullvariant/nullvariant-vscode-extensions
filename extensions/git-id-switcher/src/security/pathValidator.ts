@@ -124,16 +124,14 @@ const validatePathMaxLength: Validator = (state) => {
  * Validates tilde patterns: only ~/ is allowed, not ~user
  */
 const validateTildePattern: Validator = (state) => {
-  if (state.path.startsWith('~')) {
-    // Allow '~' or '~/...', but reject '~user' patterns
-    if (state.path.length > 1 && !state.path.startsWith('~/')) {
+  if (state.path.startsWith('~') && // Allow '~' or '~/...', but reject '~user' patterns
+    state.path.length > 1 && !state.path.startsWith('~/')) {
       return {
         ...state,
         valid: false,
         reason: 'Tilde expansion to other users (~user) is not allowed, use ~/ only',
       };
     }
-  }
   return state;
 };
 
