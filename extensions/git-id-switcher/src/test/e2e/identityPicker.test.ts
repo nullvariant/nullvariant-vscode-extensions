@@ -563,7 +563,7 @@ function createManageMockVSCode(options: {
               case 'back': {
                 // Trigger back button
                 buttonCallback?.(capturedButtons[0]); // QuickInputButtons.Back
-              
+
               break;
               }
               case 'addButton': {
@@ -571,12 +571,12 @@ function createManageMockVSCode(options: {
                 if (buttonCallback && capturedButtons.length >= 2) {
                   buttonCallback(capturedButtons[1]); // Add button
                 }
-              
+
               break;
               }
-              case 'edit': 
-              case 'delete': 
-              case 'moveUp': 
+              case 'edit':
+              case 'delete':
+              case 'moveUp':
               case 'moveDown': {
                 // Trigger item button
                 const idx = options.actionIndex ?? 0;
@@ -595,26 +595,26 @@ function createManageMockVSCode(options: {
                     itemButtonCallback({ item: item as T, button });
                   }
                 }
-              
+
               break;
               }
               case 'add': {
                 acceptCallback?.();
-              
+
               break;
               }
-              case 'selectIdentity': 
+              case 'selectIdentity':
               case 'selectPlaceholder': {
                 // These selections should be ignored by the implementation
                 // After onDidAccept returns without action, trigger hide to end the test
                 acceptCallback?.();
                 setTimeout(() => hideCallback?.(), 10);
-              
+
               break;
               }
               case 'hide': {
                 hideCallback?.();
-              
+
               break;
               }
               // No default

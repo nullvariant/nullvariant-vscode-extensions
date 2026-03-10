@@ -391,22 +391,22 @@ export async function showManageIdentitiesQuickPick(
       switch (e.button) {
       case moveUpButton: {
         resolve({ action: 'moveUp', identity: item.identity, index: item.index });
-      
+
       break;
       }
       case moveDownButton: {
         resolve({ action: 'moveDown', identity: item.identity, index: item.index });
-      
+
       break;
       }
       case editButton: {
         resolve({ action: 'edit', identity: item.identity, index: item.index });
-      
+
       break;
       }
       case deleteButton: {
         resolve({ action: 'delete', identity: item.identity, index: item.index });
-      
+
       break;
       }
       // No default
