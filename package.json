@@ -21,7 +21,9 @@
     "prettier": "^3.8.1"
   },
   "overrides": {
-    "diff": "^8.0.3"
+    "diff": "^8.0.3",
+    "serialize-javascript": "^7.0.3",
+    "yauzl": "^3.2.1"
   },
   "lint-staged": {
     "*.md": "prettier --write"
