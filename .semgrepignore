@@ -1,0 +1,8 @@
+# Default semgrep ignores
+node_modules/
+.git/
+*.min.js
+
+# False positive: SHA-pinned commit hash misidentified as SonarQube API key
+# Rule: generic.secrets.security.detected-sonarqube-docs-api-key
+.github/workflows/sonarcloud.yml
