@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.20] - 2026-03-15
+
+### Security
+
+- **Supply Chain Security**: Added Cosign keyless VSIX signing, CycloneDX SBOM generation with attestation, and Trivy pre-publish vulnerability scan to the release pipeline
+- **Dependency Review**: Added license allowlist and CVE check for PRs via `dependency-review-action`
+- **Static Analysis**: Added Semgrep SAST (p/typescript, p/security-audit, p/secrets) and Socket.dev npm supply chain risk detection
+- **Anti-Impersonation**: Added Extension Fingerprint section to README, package.json URL validation in CI, and typosquat reporting procedure to SECURITY.md
+
+### Documentation
+
+- **STRIDE Threat Model**: New `docs/THREAT_MODEL.md` mapping all existing security mitigations to STRIDE categories (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege)
+- **Webview CSP Policy**: Documented nonce-based Content Security Policy for future Webview use in `docs/ARCHITECTURE.md`
+- **Extension Capabilities**: Documented granted and explicitly denied capabilities in `docs/ARCHITECTURE.md`
+- **OpenVEX Declaration**: New `.vex/vex.json` declaring zero production dependencies (devDependency CVEs do not affect end users)
+
 ## [0.16.19] - 2026-02-13
 
 ### Fixed
