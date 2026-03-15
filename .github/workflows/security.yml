@@ -254,6 +254,23 @@ jobs:
         with:
           sarif_file: results.sarif
 
+  # Separate job: scorecard-action requires all steps in its job to use `uses` only.
+  # Shell script steps cause workflow verification failure on result publication.
+  scorecard-threshold:
+    name: Scorecard Threshold Gate
+    runs-on: ubuntu-latest
+    needs: scorecard
+    # Only run on main branch (push, schedule) - not on PRs
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        with:
+          egress-policy: audit
+
       - name: Check Scorecard score threshold
         env:
           SCORECARD_THRESHOLD: ${{ vars.SCORECARD_THRESHOLD || '7.0' }}
