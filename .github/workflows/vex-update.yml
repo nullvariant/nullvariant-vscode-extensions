@@ -1,0 +1,192 @@
+name: VEX Auto-Update
+
+on:
+  schedule:
+    # Weekly on Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  vex-update:
+    name: Update VEX Document
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      # Install at root level for npm workspaces
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify zero production dependencies
+        working-directory: extensions/git-id-switcher
+        run: |
+          PROD_DEPS=$(jq -r '.dependencies // {} | keys | length' package.json)
+          if [ "$PROD_DEPS" != "0" ]; then
+            echo "::error::Production dependencies detected ($PROD_DEPS). Manual VEX review required."
+            jq -r '.dependencies | keys[]' package.json
+            exit 1
+          fi
+          echo "Zero production dependencies confirmed"
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'extensions/git-id-switcher'
+          format: 'json'
+          output: 'trivy-results.json'
+
+      - name: Generate OpenVEX document
+        id: generate
+        run: |
+          VEX_PATH="extensions/git-id-switcher/.vex/vex.json"
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          CURRENT_VERSION=$(jq -r '.version // 0' "$VEX_PATH")
+
+          # Extract unique CVEs from Trivy results, sorted by ID
+          CVES=$(jq -r '
+            [.Results[]? | .Vulnerabilities[]? | {
+              id: .VulnerabilityID,
+              pkg: .PkgName,
+              version: .InstalledVersion,
+              severity: .Severity,
+              title: (.Title // "No description")
+            }] | sort_by(.id) | unique_by(.id)
+          ' trivy-results.json)
+
+          CVE_COUNT=$(echo "$CVES" | jq 'length')
+          echo "Found $CVE_COUNT CVEs in devDependencies"
+
+          # Generate per-CVE VEX statements
+          CVE_STATEMENTS=$(echo "$CVES" | jq '
+            [.[] | {
+              vulnerability: {
+                "@id": .id,
+                name: .id,
+                description: "\(.severity): \(.title)"
+              },
+              products: [{
+                "@id": "pkg:npm/git-id-switcher",
+                identifiers: { purl: "pkg:npm/git-id-switcher" }
+              }],
+              status: "not_affected",
+              justification: "vulnerable_code_not_in_execute_path",
+              impact_statement: "CVE in devDependency \(.pkg)@\(.version). Not included in published VSIX."
+            }]
+          ')
+
+          # Build complete VEX document
+          jq -n \
+            --arg context "https://openvex.dev/ns/v0.2.0" \
+            --arg id "https://github.com/nullvariant/nullvariant-vscode-extensions/extensions/git-id-switcher/.vex/vex.json" \
+            --arg author "Null;Variant <null@nullvariant.com>" \
+            --arg timestamp "$TIMESTAMP" \
+            --argjson version "$CURRENT_VERSION" \
+            --argjson cve_statements "$CVE_STATEMENTS" \
+            '{
+              "@context": $context,
+              "@id": $id,
+              author: $author,
+              timestamp: $timestamp,
+              version: $version,
+              tooling: "trivy+automated",
+              statements: [
+                {
+                  vulnerability: {
+                    "@id": ($id + "#no-prod-deps"),
+                    name: "no-production-dependencies",
+                    description: "This extension has zero production dependencies. All npm packages in package.json are devDependencies used only during development and CI. The published VSIX contains only compiled JavaScript with no third-party code bundled."
+                  },
+                  products: [{
+                    "@id": "pkg:npm/git-id-switcher",
+                    identifiers: { purl: "pkg:npm/git-id-switcher" }
+                  }],
+                  status: "not_affected",
+                  justification: "vulnerable_code_not_in_execute_path",
+                  impact_statement: "All dependencies are devDependencies. No third-party code is included in the published VSIX package. CVEs in devDependencies do not affect end users."
+                }
+              ] + $cve_statements
+            }' > vex-new.json
+
+          # Compare statements only (ignore timestamp/version changes)
+          OLD_STATEMENTS=$(jq -S '.statements' "$VEX_PATH")
+          NEW_STATEMENTS=$(jq -S '.statements' vex-new.json)
+
+          if [ "$OLD_STATEMENTS" = "$NEW_STATEMENTS" ]; then
+            echo "No VEX changes detected"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            NEW_VERSION=$((CURRENT_VERSION + 1))
+            jq --argjson v "$NEW_VERSION" '.version = $v' vex-new.json > "$VEX_PATH"
+            echo "VEX updated (version $CURRENT_VERSION -> $NEW_VERSION, $CVE_COUNT CVEs)"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "cve_count=$CVE_COUNT" >> "$GITHUB_OUTPUT"
+          fi
+
+          rm -f vex-new.json
+
+      - name: Create Pull Request
+        if: steps.generate.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="automated/vex-update-$(date +%Y%m%d)"
+
+          # Skip if branch already exists (previous run this week)
+          if git ls-remote --heads origin "$BRANCH" | grep -q "$BRANCH"; then
+            echo "Branch $BRANCH already exists. Skipping."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+          git add extensions/git-id-switcher/.vex/vex.json
+          git commit -m "$(cat <<'COMMITEOF'
+          chore: update VEX document with latest CVE assessments
+
+          Automated weekly VEX update from Trivy scan results.
+          All CVEs are in devDependencies (not_affected).
+          COMMITEOF
+          )"
+
+          git push origin "$BRANCH"
+
+          CVE_COUNT="${{ steps.generate.outputs.cve_count }}"
+          gh pr create \
+            --title "chore: update VEX document ($CVE_COUNT CVEs assessed)" \
+            --body "$(cat <<'PREOF'
+          ## Summary
+
+          Automated weekly VEX (Vulnerability Exploitability eXchange) update.
+
+          - Trivy scanned devDependencies for known CVEs
+          - All findings declared as `not_affected` (`vulnerable_code_not_in_execute_path`)
+          - Zero production dependencies confirmed
+
+          This extension has no production dependencies. All CVEs are in devDependencies
+          used only during development/CI. The published VSIX contains only first-party code.
+
+          🤖 Generated automatically by VEX Auto-Update workflow
+          PREOF
+          )"
