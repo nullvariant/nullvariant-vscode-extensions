@@ -1,0 +1,132 @@
+name: Reproducible Builds
+
+on:
+  schedule:
+    # Weekly on Wednesday at 06:00 UTC
+    - cron: '0 6 * * 3'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  verify-reproducibility:
+    name: Verify VSIX Reproducibility
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      # Install at root level for npm workspaces
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set SOURCE_DATE_EPOCH from commit timestamp
+        run: |
+          COMMIT_EPOCH=$(git log -1 --format=%ct HEAD)
+          echo "SOURCE_DATE_EPOCH=$COMMIT_EPOCH" >> "$GITHUB_ENV"
+          echo "Using SOURCE_DATE_EPOCH=$COMMIT_EPOCH ($(date -d @"$COMMIT_EPOCH" -u '+%Y-%m-%dT%H:%M:%SZ'))"
+
+      - name: Build #1
+        working-directory: extensions/git-id-switcher
+        run: |
+          rm -rf out tsconfig.tsbuildinfo
+          npm run compile
+          npm run package
+          mv *.vsix /tmp/build1.vsix
+          sha256sum /tmp/build1.vsix | tee /tmp/build1.sha256
+
+      - name: Build #2
+        working-directory: extensions/git-id-switcher
+        run: |
+          rm -rf out tsconfig.tsbuildinfo
+          npm run compile
+          npm run package
+          mv *.vsix /tmp/build2.vsix
+          sha256sum /tmp/build2.vsix | tee /tmp/build2.sha256
+
+      - name: Compare builds
+        run: |
+          HASH1=$(cut -d' ' -f1 /tmp/build1.sha256)
+          HASH2=$(cut -d' ' -f1 /tmp/build2.sha256)
+
+          echo "## Reproducible Builds Verification" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build | SHA-256 |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|---------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build 1 | \`$HASH1\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build 2 | \`$HASH2\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$HASH1" = "$HASH2" ]; then
+            echo "**Result: Reproducible** — identical VSIX produced from same source." >> "$GITHUB_STEP_SUMMARY"
+            echo "Builds are reproducible: $HASH1"
+            exit 0
+          fi
+
+          echo "**Result: NOT Reproducible** — VSIX hashes differ." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::VSIX builds are not byte-identical. Analyzing differences..."
+
+          # Extract and compare contents
+          mkdir -p /tmp/extract1 /tmp/extract2
+          unzip -q /tmp/build1.vsix -d /tmp/extract1
+          unzip -q /tmp/build2.vsix -d /tmp/extract2
+
+          echo "### File-level differences" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+          CONTENT_DIFF=false
+          # Compare each file's content hash
+          (cd /tmp/extract1 && find . -type f | sort) > /tmp/files1.txt
+          (cd /tmp/extract2 && find . -type f | sort) > /tmp/files2.txt
+
+          # Check for file list differences
+          if ! diff -q /tmp/files1.txt /tmp/files2.txt > /dev/null 2>&1; then
+            echo "File lists differ:" >> "$GITHUB_STEP_SUMMARY"
+            diff /tmp/files1.txt /tmp/files2.txt >> "$GITHUB_STEP_SUMMARY"
+            CONTENT_DIFF=true
+          fi
+
+          # Compare individual files
+          while IFS= read -r file; do
+            if [ -f "/tmp/extract2/$file" ]; then
+              H1=$(sha256sum "/tmp/extract1/$file" | cut -d' ' -f1)
+              H2=$(sha256sum "/tmp/extract2/$file" | cut -d' ' -f1)
+              if [ "$H1" != "$H2" ]; then
+                echo "DIFFERS: $file" >> "$GITHUB_STEP_SUMMARY"
+                CONTENT_DIFF=true
+              fi
+            fi
+          done < /tmp/files1.txt
+
+          if [ "$CONTENT_DIFF" = "false" ]; then
+            echo "All file contents are identical." >> "$GITHUB_STEP_SUMMARY"
+            echo "Difference is in ZIP metadata only (timestamps, ordering)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+          # Fail only if actual file content differs
+          if [ "$CONTENT_DIFF" = "true" ]; then
+            echo "::error::VSIX file contents differ between builds"
+            exit 1
+          else
+            echo "ZIP metadata differs but all file contents are identical."
+            echo "Build is content-reproducible (ZIP-level metadata varies)."
+          fi
