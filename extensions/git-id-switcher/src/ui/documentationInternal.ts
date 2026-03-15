@@ -56,12 +56,12 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/docs/i18n/zh-CN/README.md': '63989f6f10ef4563b3369ff540789eec22d725812e95ed54a6237c2be82abdec',
   'extensions/git-id-switcher/docs/i18n/zh-TW/README.md': '2608cb3f44f5a79364c9a120f705154658c4e7c320373cf13318b0fffd05675b',
   'extensions/git-id-switcher/docs/LANGUAGES.md': 'da50222843094479fd826837038dd62d619ecbc87d67f0b2c299973587abe8e9',
-  'extensions/git-id-switcher/docs/THREAT_MODEL.md': '1d8e8c1e762ca1f4b2132e5e5d517dab1ab257a1b6e31e6de8dbd46257555eab',
+  'extensions/git-id-switcher/docs/THREAT_MODEL.md': '646768f56fc50124d5b0f2e34af81720b4601a6ce1b89c415862ba4aeeecf4d3',
   'extensions/git-id-switcher/LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
   'extensions/git-id-switcher/README.md': 'fae09340353a6be78d6396d9591a211060c1574a1439966c0f40339dc83ff8f5',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
-  'README.md': '678c18398cf0675d0b81fa0b637e1064cab39139a7b6e788d51ea97f69f08ca6',
-  'SECURITY.md': '87496fc22c667ebc9911a27ef520d1e2918229f7c44bb0f717151995dfd4893b',
+  'README.md': '5c649a148d824186e3851e39f3244cf0236db04ae040762ee822e42f359debee',
+  'SECURITY.md': 'b5df8a04b199315ccc25ff1421641411357de7ed3c2ec58d18b29edc45614550',
 };
 
 /** Supported locales for documentation */

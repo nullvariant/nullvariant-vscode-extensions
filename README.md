@@ -212,6 +212,20 @@ gh attestation verify git-id-switcher-<version>.vsix \
   --predicate-type https://cyclonedx.org/bom
 ```
 
+## Extension Fingerprint
+
+Use this information to verify you have the authentic Git ID Switcher extension:
+
+| Field        | Value                                                                             |
+| ------------ | --------------------------------------------------------------------------------- |
+| Publisher    | `nullvariant`                                                                     |
+| Extension ID | `nullvariant.git-id-switcher`                                                     |
+| Repository   | `https://github.com/nullvariant/nullvariant-vscode-extensions`                    |
+| Marketplace  | `https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher` |
+| Open VSX     | `https://open-vsx.org/extension/nullvariant/git-id-switcher`                      |
+
+If you find an extension with a similar name from a different publisher, please report it (see [SECURITY.md](SECURITY.md#reporting-typosquatting)).
+
 ## License
 
 MIT

@@ -27,6 +27,25 @@ If you discover a security vulnerability, please report it by:
 
 **Please do NOT open a public issue for security vulnerabilities.**
 
+## Reporting Typosquatting
+
+If you find a VS Code extension with a similar name to **Git ID Switcher** from a different publisher, it may be a typosquat attempt. Please report it:
+
+1. **Report to us** via [GitHub Security Advisory](https://github.com/nullvariant/nullvariant-vscode-extensions/security/advisories/new) or email `security@nullvariant.com`
+2. **Report to the marketplace**:
+   - VS Code Marketplace: Use the "Report" button on the extension page, or email `vscext@microsoft.com`
+   - Open VSX: File an issue at [open-vsx/publish-extensions](https://github.com/open-vsx/publish-extensions/issues)
+
+### How to Verify Authenticity
+
+| Check            | Expected Value                                                                      |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| Publisher        | `nullvariant`                                                                       |
+| Extension ID     | `nullvariant.git-id-switcher`                                                       |
+| Repository URL   | `https://github.com/nullvariant/nullvariant-vscode-extensions`                      |
+| VSIX signature   | Verifiable via `cosign verify-blob` (see [README](README.md#supply-chain-security)) |
+| Build provenance | Verifiable via `gh attestation verify` (SLSA Level 3)                               |
+
 ## Security Measures
 
 This repository contains VS Code extensions with the following security measures:
@@ -68,26 +87,26 @@ This section documents all secrets used in CI/CD workflows.
 
 ### Repository Secrets
 
-| Name | Purpose | Used In | Rotation | Sensitivity |
-| ---- | ------- | ------- | -------- | ----------- |
-| RELEASE_PAT | Tag push to trigger publish workflow | auto-tag.yml | 90 days | High |
-| VSCE_PAT | VS Code Marketplace publishing | publish.yml, unpublish.yml | Annual | High |
-| OVSX_PAT | Open VSX publishing | publish.yml, unpublish.yml | Annual | High |
-| SONAR_TOKEN | SonarCloud code analysis | sonarcloud.yml | As needed | Medium |
-| CLOUDFLARE_API_TOKEN | Cloudflare Pages/R2 deployment | deploy-docs.yml, publish.yml | Annual | High |
-| CLOUDFLARE_ACCOUNT_ID | Cloudflare account identifier (public) | deploy-docs.yml, publish.yml | Never | Low (public ID) |
-| SLACK_WEBHOOK | Bot monitoring alerts | bot-monitoring.yml | As needed | Medium |
+| Name                  | Purpose                                | Used In                      | Rotation  | Sensitivity     |
+| --------------------- | -------------------------------------- | ---------------------------- | --------- | --------------- |
+| RELEASE_PAT           | Tag push to trigger publish workflow   | auto-tag.yml                 | 90 days   | High            |
+| VSCE_PAT              | VS Code Marketplace publishing         | publish.yml, unpublish.yml   | Annual    | High            |
+| OVSX_PAT              | Open VSX publishing                    | publish.yml, unpublish.yml   | Annual    | High            |
+| SONAR_TOKEN           | SonarCloud code analysis               | sonarcloud.yml               | As needed | Medium          |
+| CLOUDFLARE_API_TOKEN  | Cloudflare Pages/R2 deployment         | deploy-docs.yml, publish.yml | Annual    | High            |
+| CLOUDFLARE_ACCOUNT_ID | Cloudflare account identifier (public) | deploy-docs.yml, publish.yml | Never     | Low (public ID) |
+| SLACK_WEBHOOK         | Bot monitoring alerts                  | bot-monitoring.yml           | As needed | Medium          |
 
 ### GitHub App Secrets (6 bots × 2 secrets each)
 
-| Bot | Secrets | Used In |
-| --- | ------- | ------- |
+| Bot     | Secrets                                     | Used In         |
+| ------- | ------------------------------------------- | --------------- |
 | Justice | JUSTICE_BOT_APP_ID, JUSTICE_BOT_PRIVATE_KEY | justice-bot.yml |
-| Luna | LUNA_BOT_APP_ID, LUNA_BOT_PRIVATE_KEY | luna-bot.yml |
-| Slow | SLOW_BOT_APP_ID, SLOW_BOT_PRIVATE_KEY | slow-bot.yml |
-| Blaze | BLAZE_BOT_APP_ID, BLAZE_BOT_PRIVATE_KEY | blaze-bot.yml |
-| Ciel | CIEL_BOT_APP_ID, CIEL_BOT_PRIVATE_KEY | ciel-bot.yml |
-| Mimi | MIMI_BOT_APP_ID, MIMI_BOT_PRIVATE_KEY | mimi-bot.yml |
+| Luna    | LUNA_BOT_APP_ID, LUNA_BOT_PRIVATE_KEY       | luna-bot.yml    |
+| Slow    | SLOW_BOT_APP_ID, SLOW_BOT_PRIVATE_KEY       | slow-bot.yml    |
+| Blaze   | BLAZE_BOT_APP_ID, BLAZE_BOT_PRIVATE_KEY     | blaze-bot.yml   |
+| Ciel    | CIEL_BOT_APP_ID, CIEL_BOT_PRIVATE_KEY       | ciel-bot.yml    |
+| Mimi    | MIMI_BOT_APP_ID, MIMI_BOT_PRIVATE_KEY       | mimi-bot.yml    |
 
 **Security Notes for GitHub Apps**:
 
@@ -114,15 +133,15 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 
 ### Provider Links
 
-| Secret | Provider | Management URL | Expiration |
-| ------ | -------- | -------------- | ---------- |
-| RELEASE_PAT | GitHub | [GitHub Fine-grained PAT](https://github.com/settings/tokens?type=beta) | 2026-04-17 |
-| VSCE_PAT | Azure DevOps | [Azure DevOps Tokens](https://dev.azure.com/nullvariant/_usersSettings/tokens) | 2027-01-08 |
-| OVSX_PAT | Open VSX | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens) | No expiration |
-| CLOUDFLARE_API_TOKEN | Cloudflare | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) | No expiration |
-| SONAR_TOKEN | SonarCloud | [SonarCloud Security](https://sonarcloud.io/account/security) | No expiration |
-| GitHub App Keys | GitHub | [GitHub Apps](https://github.com/settings/apps) | No expiration |
-| SLACK_WEBHOOK | Slack | [Slack Apps](https://api.slack.com/apps) | No expiration |
+| Secret               | Provider     | Management URL                                                                 | Expiration    |
+| -------------------- | ------------ | ------------------------------------------------------------------------------ | ------------- |
+| RELEASE_PAT          | GitHub       | [GitHub Fine-grained PAT](https://github.com/settings/tokens?type=beta)        | 2026-04-17    |
+| VSCE_PAT             | Azure DevOps | [Azure DevOps Tokens](https://dev.azure.com/nullvariant/_usersSettings/tokens) | 2027-01-08    |
+| OVSX_PAT             | Open VSX     | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens)                   | No expiration |
+| CLOUDFLARE_API_TOKEN | Cloudflare   | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)        | No expiration |
+| SONAR_TOKEN          | SonarCloud   | [SonarCloud Security](https://sonarcloud.io/account/security)                  | No expiration |
+| GitHub App Keys      | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
+| SLACK_WEBHOOK        | Slack        | [Slack Apps](https://api.slack.com/apps)                                       | No expiration |
 
 **Token Details**:
 

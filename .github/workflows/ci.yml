@@ -70,6 +70,28 @@ jobs:
         shell: bash
         run: ls -la extensions/git-id-switcher/*.vsix
 
+      - name: Verify package.json URLs (anti-impersonation)
+        shell: bash
+        run: |
+          cd extensions/git-id-switcher
+          REPO_URL=$(node -e "console.log(require('./package.json').repository.url)")
+          HOMEPAGE=$(node -e "console.log(require('./package.json').homepage)")
+
+          EXPECTED_REPO="https://github.com/nullvariant/nullvariant-vscode-extensions"
+          EXPECTED_HOME_PREFIX="https://github.com/nullvariant/nullvariant-vscode-extensions"
+
+          if [ "$REPO_URL" != "$EXPECTED_REPO" ]; then
+            echo "::error::repository.url mismatch: expected '$EXPECTED_REPO', got '$REPO_URL'"
+            exit 1
+          fi
+
+          if [[ "$HOMEPAGE" != "$EXPECTED_HOME_PREFIX"* ]]; then
+            echo "::error::homepage does not start with '$EXPECTED_HOME_PREFIX': got '$HOMEPAGE'"
+            exit 1
+          fi
+
+          echo "package.json URLs verified"
+
   e2e:
     name: E2E Tests (${{ matrix.os }})
     strategy:

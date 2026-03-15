@@ -57,6 +57,15 @@ This threat model covers the Git ID Switcher VS Code extension. The extension ma
 | **Existing Mitigations** | Path validation pipeline (null bytes, traversal, symlinks, control chars, invisible Unicode); key file type/size/permission validation; only regular files accepted |
 | **Residual Risk**        | Low — multi-layer path validation blocks traversal and symlink attacks                                                                                              |
 
+### S3: Extension Impersonation (Typosquatting)
+
+| Aspect                   | Detail                                                                                                                                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Threat**               | Attacker publishes a fake extension with a similar name to trick users into installing it                                                                                                                                                                                 |
+| **Attack Vector**        | VS Code Marketplace / Open VSX typosquatting (similar publisher name, extension name, or icon)                                                                                                                                                                            |
+| **Existing Mitigations** | Cosign keyless VSIX signing (users can cryptographically verify authenticity); SLSA Level 3 build provenance; README fingerprint section (Publisher ID, Extension ID, repository URL); SECURITY.md typosquat reporting procedure; CI-enforced package.json URL validation |
+| **Residual Risk**        | Medium — most users do not verify signatures; Verified Publisher badge planned for additional visual trust signal                                                                                                                                                         |
+
 ---
 
 ## Tampering (T)
@@ -189,8 +198,7 @@ This threat model covers the Git ID Switcher VS Code extension. The extension ma
 
 ## Unmitigated Threats (Future Work)
 
-| ID  | Threat                                  | Category        | Notes                                                                   |
-| --- | --------------------------------------- | --------------- | ----------------------------------------------------------------------- |
-| S3  | Extension impersonation (typosquatting) | Spoofing        | Partially mitigated by Cosign signing; Verified Publisher badge planned |
-| T4  | Malicious VS Code extension host        | Tampering       | Out of scope — requires VS Code platform-level mitigation               |
-| I3  | Memory inspection of loaded SSH keys    | Info Disclosure | Out of scope — OS-level memory protection required                      |
+| ID  | Threat                               | Category        | Notes                                                     |
+| --- | ------------------------------------ | --------------- | --------------------------------------------------------- |
+| T4  | Malicious VS Code extension host     | Tampering       | Out of scope — requires VS Code platform-level mitigation |
+| I3  | Memory inspection of loaded SSH keys | Info Disclosure | Out of scope — OS-level memory protection required        |
