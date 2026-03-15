@@ -190,17 +190,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Install Semgrep
-        run: pip install semgrep
-
       - name: Run Semgrep
-        run: |
-          semgrep scan \
-            --config p/typescript \
-            --config p/security-audit \
-            --config p/secrets \
-            --exclude-rule generic.secrets.security.detected-sonarqube-docs-api-key.detected-sonarqube-docs-api-key \
-            --error
+        uses: semgrep/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
+        with:
+          config: >-
+            p/typescript
+            p/security-audit
+            p/secrets
 
   socket-security:
     name: Socket.dev Security

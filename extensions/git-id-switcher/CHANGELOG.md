@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.21] - 2026-03-15
+
+### Fixed
+
+- **Semgrep OpenSSF Scorecard regression**: Reverted from `pip install semgrep` to SHA-pinned Docker action to restore Pinned-Dependencies score; added `.semgrepignore` for SonarCloud Action SHA pin false positive
+
+### Documentation
+
+- **Supply chain badges**: Added Sigstore (Cosign Signed) and SBOM (CycloneDX) badges to all 26 language READMEs and repository root README
+
 ## [0.16.20] - 2026-03-15
 
 ### Security
