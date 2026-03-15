@@ -26,5 +26,4 @@ allow-licenses:
 # These are CI-only tools (not bundled in VSIX), so license compatibility
 # with the extension's MIT license is not a concern.
 allow-dependencies-licenses:
-  - 'pkg:githubactions/semgrep/semgrep-action'
   - 'pkg:githubactions/SocketDev/action'
