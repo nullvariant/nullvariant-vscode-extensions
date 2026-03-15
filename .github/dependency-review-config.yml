@@ -1,0 +1,23 @@
+# Dependency Review configuration
+# https://github.com/actions/dependency-review-action
+#
+# Uses allow-list approach (recommended over deny-list).
+# Only explicitly permitted licenses pass the check.
+
+fail-on-severity: moderate
+
+# SPDX license identifiers compatible with MIT
+allow-licenses:
+  - '0BSD'
+  - 'Apache-2.0'
+  - 'BlueOak-1.0.0'
+  - 'BSD-2-Clause'
+  - 'BSD-3-Clause'
+  - 'CC0-1.0'
+  - 'CC-BY-3.0'
+  - 'CC-BY-4.0'
+  - 'ISC'
+  - 'MIT'
+  - 'PSF-2.0'
+  - 'Python-2.0'
+  - 'Unlicense'

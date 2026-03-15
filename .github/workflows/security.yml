@@ -172,6 +172,55 @@ jobs:
         with:
           category: "/language:typescript"
 
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    # Skip forked PRs (no SARIF upload permission)
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
+        with:
+          config: >-
+            p/typescript
+            p/security-audit
+            p/secrets
+
+  socket-security:
+    name: Socket.dev Security
+    runs-on: ubuntu-latest
+    # Only run on pull requests (analyzes dependency changes)
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Socket Security Review
+        uses: SocketDev/action@937f824ec476dfd164d4a4d9995751427b0be143 # v1
+        with:
+          mode: firewall
+
   scorecard:
     name: OpenSSF Scorecard
     runs-on: ubuntu-latest
