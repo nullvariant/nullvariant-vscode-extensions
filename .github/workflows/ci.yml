@@ -136,6 +136,119 @@ jobs:
         run: npm run test:e2e
         working-directory: extensions/git-id-switcher
 
+  vex-dependency-review:
+    name: VEX Dependency Review
+    runs-on: ubuntu-latest
+    # Only run on dependency update PRs (Dependabot or Renovate)
+    if: >
+      github.event_name == 'pull_request' &&
+      (github.actor == 'dependabot[bot]' || github.actor == 'renovate[bot]')
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Check for production dependency changes
+        id: check
+        run: |
+          BASE_REF="${{ github.event.pull_request.base.sha }}"
+          HEAD_REF="${{ github.event.pull_request.head.sha }}"
+
+          # Get production dependency count from base and head
+          BASE_DEPS=$(git show "${BASE_REF}:extensions/git-id-switcher/package.json" | jq -r '.dependencies // {} | keys | length')
+          HEAD_DEPS=$(git show "${HEAD_REF}:extensions/git-id-switcher/package.json" | jq -r '.dependencies // {} | keys | length')
+
+          echo "Base production deps: $BASE_DEPS"
+          echo "Head production deps: $HEAD_DEPS"
+
+          if [ "$HEAD_DEPS" != "0" ]; then
+            echo "has_prod_deps=true" >> "$GITHUB_OUTPUT"
+            NEW_DEPS=$(git show "${HEAD_REF}:extensions/git-id-switcher/package.json" | jq -r '.dependencies | keys[]')
+            echo "prod_deps<<DEPSEOF" >> "$GITHUB_OUTPUT"
+            echo "$NEW_DEPS" >> "$GITHUB_OUTPUT"
+            echo "DEPSEOF" >> "$GITHUB_OUTPUT"
+            echo "::error::Production dependencies detected. VEX must be manually reviewed."
+          else
+            echo "has_prod_deps=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post VEX assessment (devDependencies only)
+        if: steps.check.outputs.has_prod_deps == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Prevent duplicate comments on force-pushed PRs
+          EXISTING=$(gh pr view "${{ github.event.pull_request.number }}" --json comments \
+            --jq '.comments[] | select(.body | contains("VEX Assessment")) | .id' | head -1)
+
+          if [ -n "$EXISTING" ]; then
+            echo "VEX assessment comment already exists. Skipping."
+            exit 0
+          fi
+
+          gh pr comment "${{ github.event.pull_request.number }}" --body "$(cat <<'COMMENTEOF'
+          ### VEX Assessment: `not_affected`
+
+          This dependency update modifies **devDependencies only**.
+
+          - **Status**: `not_affected`
+          - **Justification**: `vulnerable_code_not_in_execute_path`
+          - **Impact**: Zero production dependencies. No third-party code is included in the published VSIX.
+
+          Any CVEs in updated devDependencies do not affect end users. The VEX document will be automatically updated by the weekly [VEX Auto-Update](.github/workflows/vex-update.yml) workflow.
+
+          🤖 Automated VEX assessment
+          COMMENTEOF
+          )"
+
+      - name: Warn about production dependencies
+        if: steps.check.outputs.has_prod_deps == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Prevent duplicate comments on force-pushed PRs
+          EXISTING=$(gh pr view "${{ github.event.pull_request.number }}" --json comments \
+            --jq '.comments[] | select(.body | contains("VEX Assessment")) | .id' | head -1)
+
+          if [ -n "$EXISTING" ]; then
+            echo "VEX assessment comment already exists. Skipping."
+          else
+            DEPS="${{ steps.check.outputs.prod_deps }}"
+            gh pr comment "${{ github.event.pull_request.number }}" --body "$(cat <<COMMENTEOF
+          ### ⚠️ VEX Assessment: Manual Review Required
+
+          This PR adds **production dependencies**:
+
+          \`\`\`
+          $DEPS
+          \`\`\`
+
+          Production dependencies are bundled into the published VSIX and may affect end users.
+          The current VEX blanket statement (\`not_affected\` for all CVEs) **no longer applies**.
+
+          **Action required:**
+          1. Review whether production dependencies are truly necessary
+          2. Update \`.vex/vex.json\` to reflect the new risk assessment
+          3. Consider the impact on supply chain security
+
+          🤖 Automated VEX assessment
+          COMMENTEOF
+          )"
+          fi
+
+          # Always fail when production dependencies are detected
+          exit 1
+
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
