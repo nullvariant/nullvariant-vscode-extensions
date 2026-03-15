@@ -30,6 +30,8 @@
 - [Command Execution Flow](#command-execution-flow)
 - [File Size Rationale](#file-size-rationale)
 - [Directory Structure](#directory-structure)
+- [Webview Content Security Policy](#webview-content-security-policy)
+- [Extension Capabilities](#extension-capabilities)
 
 ---
 
@@ -577,6 +579,66 @@ src/
 └── test/                          # Unit and E2E tests
     └── e2e/                       # End-to-end tests
 ```
+
+---
+
+## Webview Content Security Policy
+
+This extension currently does not use Webviews for rendering. If Webviews are added in the future, the following CSP **must** be applied:
+
+```
+default-src 'none';
+script-src 'nonce-${nonce}';
+style-src 'nonce-${nonce}';
+img-src ${webview.cspSource} data:;
+font-src ${webview.cspSource};
+```
+
+### Policy Rationale
+
+| Directive     | Value             | Why                                                      |
+| ------------- | ----------------- | -------------------------------------------------------- |
+| `default-src` | `'none'`          | Deny everything by default                               |
+| `script-src`  | `'nonce-...'`     | Only allow scripts with a per-render cryptographic nonce |
+| `style-src`   | `'nonce-...'`     | Only allow styles with a nonce (no `'unsafe-inline'`)    |
+| `img-src`     | `cspSource data:` | Allow VS Code resource images and inline SVG icons       |
+| `font-src`    | `cspSource`       | Allow VS Code bundled fonts only                         |
+
+### Prohibited Patterns
+
+- `'unsafe-inline'` — Enables XSS via injected `<script>` tags
+- `'unsafe-eval'` — Enables code injection via `eval()`
+- `*` or `https:` in any directive — Allows loading from arbitrary origins
+- `connect-src` — No network access from Webviews
+
+---
+
+## Extension Capabilities
+
+This extension follows the principle of least privilege. The following table documents what the extension can and cannot do:
+
+### Granted Capabilities
+
+| Capability            | Mechanism                         | Purpose                                                    |
+| --------------------- | --------------------------------- | ---------------------------------------------------------- |
+| Read/write Git config | `git config` via `secureExec`     | Set user.name, user.email, user.signingkey, commit.gpgsign |
+| SSH agent management  | `ssh-add` via `secureExec`        | Load/unload SSH keys when switching identity               |
+| SSH key inspection    | `ssh-keygen -lf` via `secureExec` | Validate key format and fingerprint                        |
+| File system read      | Node.js `fs` (validated paths)    | Read SSH key files, write log files                        |
+| VS Code settings      | Configuration API                 | Store identity definitions                                 |
+| Status bar            | StatusBarItem API                 | Display current identity                                   |
+
+### Explicitly Denied Capabilities
+
+| Capability                    | Why                                                                |
+| ----------------------------- | ------------------------------------------------------------------ |
+| Network access                | No telemetry, no external API calls, zero production dependencies  |
+| Webview content               | No HTML rendering (CSP policy defined above for future use)        |
+| Terminal access               | No terminal creation or terminal command execution                 |
+| Task execution                | No task providers registered                                       |
+| Debug adapter                 | No debugging capabilities                                          |
+| File system write (arbitrary) | Log paths validated via `isSecureLogPath()` with symlink detection |
+| Shell execution               | `execFile()` only; `exec()` is prohibited                          |
 
 ---
 
