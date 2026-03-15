@@ -176,6 +176,42 @@ git push origin git-id-switcher-v1.0.0
 
 The [publish workflow](.github/workflows/publish.yml) will automatically build and publish the extension to VS Code Marketplace and Open VSX.
 
+## Supply Chain Security
+
+Every release includes cryptographic verification artifacts:
+
+| Artifact              | Description                         |
+| --------------------- | ----------------------------------- |
+| `*.vsix`              | The extension package               |
+| `*.vsix.intoto.jsonl` | SLSA Level 3 build provenance       |
+| `*.vsix.bundle`       | Cosign keyless signature (Sigstore) |
+| `sbom-cyclonedx.json` | CycloneDX SBOM with attestation     |
+
+### Verify VSIX signature (Cosign)
+
+```bash
+# Download the VSIX and its .bundle from the GitHub Release, then:
+cosign verify-blob git-id-switcher-<version>.vsix \
+  --bundle git-id-switcher-<version>.vsix.bundle \
+  --certificate-identity-regexp="https://github.com/nullvariant/nullvariant-vscode-extensions/" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com"
+```
+
+### Verify SLSA provenance (GitHub CLI)
+
+```bash
+gh attestation verify git-id-switcher-<version>.vsix \
+  --repo nullvariant/nullvariant-vscode-extensions
+```
+
+### Verify SBOM attestation (GitHub CLI)
+
+```bash
+gh attestation verify git-id-switcher-<version>.vsix \
+  --repo nullvariant/nullvariant-vscode-extensions \
+  --predicate-type https://cyclonedx.org/bom
+```
+
 ## License
 
 MIT
