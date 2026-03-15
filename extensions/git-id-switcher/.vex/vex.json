@@ -1,0 +1,28 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/nullvariant/nullvariant-vscode-extensions/extensions/git-id-switcher/.vex/vex.json",
+  "author": "Null;Variant <null@nullvariant.com>",
+  "timestamp": "2026-03-15T12:00:00Z",
+  "version": 1,
+  "tooling": "manual",
+  "statements": [
+    {
+      "vulnerability": {
+        "@id": "https://github.com/nullvariant/nullvariant-vscode-extensions/extensions/git-id-switcher/.vex/vex.json#no-prod-deps",
+        "name": "no-production-dependencies",
+        "description": "This extension has zero production dependencies. All npm packages in package.json are devDependencies used only during development and CI. The published VSIX contains only compiled JavaScript with no third-party code bundled."
+      },
+      "products": [
+        {
+          "@id": "pkg:npm/git-id-switcher",
+          "identifiers": {
+            "purl": "pkg:npm/git-id-switcher"
+          }
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_in_execute_path",
+      "impact_statement": "All dependencies are devDependencies. No third-party code is included in the published VSIX package. CVEs in devDependencies do not affect end users."
+    }
+  ]
+}

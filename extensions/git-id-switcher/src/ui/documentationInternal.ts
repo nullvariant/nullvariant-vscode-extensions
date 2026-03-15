@@ -25,8 +25,8 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'AGENTS.md': 'cb8170851742743e584cf21ff3427c78dc1c9471fd56d25a19abc174ed4fdd61',
   'CODE_OF_CONDUCT.md': 'a5eb286c902437bbe0f6d409894f20e51c172fa869fe2f151bfa388f9d911b54',
   'CONTRIBUTING.md': '4150f8810aec7b2e8eff9f3c69ee1bae1374843f50a812efa6778cba27a833cd',
-  'extensions/git-id-switcher/CHANGELOG.md': '09ec3ba05e93b80cfaff401d0a35b3fb3816b26bd3432101e7d1a0e89e05b3d2',
-  'extensions/git-id-switcher/docs/ARCHITECTURE.md': 'a12dd717f83b28b648972a826701a29fcfd575e351c487f8c421402f80ac3d25',
+  'extensions/git-id-switcher/CHANGELOG.md': '3f236be3fb0cfb6c50a6c780524ef3a69c307582cc895e26ccf0f87e83734410',
+  'extensions/git-id-switcher/docs/ARCHITECTURE.md': 'c5ec5f8b57c8f43b0674684defd99de8383aa80c95cb52e56563b25c0a085bd5',
   'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
   'extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md': 'f9718b61ac161cb466dbc76845688e7acacf4e5fdc4b8b9553269dba4a094f6b',
   'extensions/git-id-switcher/docs/i18n/ain/README.md': '6f196c1560aea19a77d0323e87db0f0cda053c8585bf2f010f5a0e3bfd541f69',
@@ -56,11 +56,12 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/docs/i18n/zh-CN/README.md': '63989f6f10ef4563b3369ff540789eec22d725812e95ed54a6237c2be82abdec',
   'extensions/git-id-switcher/docs/i18n/zh-TW/README.md': '2608cb3f44f5a79364c9a120f705154658c4e7c320373cf13318b0fffd05675b',
   'extensions/git-id-switcher/docs/LANGUAGES.md': 'da50222843094479fd826837038dd62d619ecbc87d67f0b2c299973587abe8e9',
+  'extensions/git-id-switcher/docs/THREAT_MODEL.md': '646768f56fc50124d5b0f2e34af81720b4601a6ce1b89c415862ba4aeeecf4d3',
   'extensions/git-id-switcher/LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
   'extensions/git-id-switcher/README.md': 'fae09340353a6be78d6396d9591a211060c1574a1439966c0f40339dc83ff8f5',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
-  'README.md': 'e6c0c4e5924873eabd0e49973e29457abc5e8171ba4ff9da77700e6a19c28f9d',
-  'SECURITY.md': '87496fc22c667ebc9911a27ef520d1e2918229f7c44bb0f717151995dfd4893b',
+  'README.md': '5c649a148d824186e3851e39f3244cf0236db04ae040762ee822e42f359debee',
+  'SECURITY.md': 'b5df8a04b199315ccc25ff1421641411357de7ed3c2ec58d18b29edc45614550',
 };
 
 /** Supported locales for documentation */

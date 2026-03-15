@@ -70,6 +70,28 @@ jobs:
         shell: bash
         run: ls -la extensions/git-id-switcher/*.vsix
 
+      - name: Verify package.json URLs (anti-impersonation)
+        shell: bash
+        run: |
+          cd extensions/git-id-switcher
+          REPO_URL=$(node -e "console.log(require('./package.json').repository.url)")
+          HOMEPAGE=$(node -e "console.log(require('./package.json').homepage)")
+
+          EXPECTED_REPO="https://github.com/nullvariant/nullvariant-vscode-extensions"
+          EXPECTED_HOME_PREFIX="https://github.com/nullvariant/nullvariant-vscode-extensions"
+
+          if [ "$REPO_URL" != "$EXPECTED_REPO" ]; then
+            echo "::error::repository.url mismatch: expected '$EXPECTED_REPO', got '$REPO_URL'"
+            exit 1
+          fi
+
+          if [[ "$HOMEPAGE" != "$EXPECTED_HOME_PREFIX"* ]]; then
+            echo "::error::homepage does not start with '$EXPECTED_HOME_PREFIX': got '$HOMEPAGE'"
+            exit 1
+          fi
+
+          echo "package.json URLs verified"
+
   e2e:
     name: E2E Tests (${{ matrix.os }})
     strategy:
@@ -113,3 +135,27 @@ jobs:
         if: runner.os != 'Linux'
         run: npm run test:e2e
         working-directory: extensions/git-id-switcher
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    # Only run on pull requests (requires base/head comparison)
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          config-file: './.github/dependency-review-config.yml'
+          comment-summary-in-pr: always

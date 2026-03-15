@@ -50,6 +50,61 @@ jobs:
         id: version
         run: echo "version=${GITHUB_REF#refs/tags/git-id-switcher-v}" >> $GITHUB_OUTPUT
 
+      # Supply Chain Security: Trivy VSIX scan (post-package, pre-publish)
+      # Scans the packaged VSIX for known CVEs before any publishing step
+      - name: Scan VSIX with Trivy
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'extensions/git-id-switcher'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      # Supply Chain Security: Cosign keyless signing for VSIX
+      # Uses GitHub OIDC token (no secret key management required)
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@ba7bc0a3fef59531c69a25acd34668d6d3fe6f22 # v4.1.0
+
+      - name: Sign VSIX with Cosign (keyless)
+        id: cosign-sign
+        continue-on-error: true
+        run: |
+          VSIX_FILE="extensions/git-id-switcher/git-id-switcher-${{ steps.version.outputs.version }}.vsix"
+          VSIX_BASENAME=$(basename "$VSIX_FILE")
+
+          cosign sign-blob "$VSIX_FILE" \
+            --yes \
+            --bundle "extensions/git-id-switcher/${VSIX_BASENAME}.bundle"
+
+          echo "vsix_file=$VSIX_FILE" >> $GITHUB_OUTPUT
+          echo "bundle_file=extensions/git-id-switcher/${VSIX_BASENAME}.bundle" >> $GITHUB_OUTPUT
+
+      - name: Warn if Cosign signing failed
+        if: steps.cosign-sign.outcome == 'failure'
+        run: echo "::warning::Cosign VSIX signing failed. The VSIX will be published without a Cosign signature."
+
+      # Supply Chain Security: SBOM generation (CycloneDX via Syft)
+      - name: Generate SBOM (CycloneDX)
+        uses: anchore/sbom-action@57aae528053a48a3f6235f2d9461b05fbcb7366d # v0.23.1
+        with:
+          path: extensions/git-id-switcher
+          artifact-name: sbom-cyclonedx.json
+          output-file: extensions/git-id-switcher/sbom-cyclonedx.json
+          format: cyclonedx-json
+
+      # Supply Chain Security: SBOM attestation (signed with GitHub Attestation API)
+      - name: Attest SBOM
+        id: sbom-attest
+        continue-on-error: true
+        uses: actions/attest-sbom@07e74fc4e78d1aad915e867f9a094073a9f71527 # v4.0.0
+        with:
+          subject-path: extensions/git-id-switcher/*.vsix
+          sbom-path: extensions/git-id-switcher/sbom-cyclonedx.json
+
+      - name: Warn if SBOM attestation failed
+        if: steps.sbom-attest.outcome == 'failure'
+        run: echo "::warning::SBOM attestation failed. The SBOM will be included in the release without attestation."
+
       # SLSA Provenance: Generate attestation via GitHub Attestation API
       # This creates verifiable build provenance for supply chain security
       - name: Generate SLSA Provenance attestation
@@ -91,6 +146,8 @@ jobs:
           files: |
             extensions/git-id-switcher/*.vsix
             extensions/git-id-switcher/*.intoto.jsonl
+            extensions/git-id-switcher/sbom-cyclonedx.json
+            extensions/git-id-switcher/*.vsix.bundle
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
