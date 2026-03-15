@@ -253,3 +253,56 @@ jobs:
         uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4
         with:
           sarif_file: results.sarif
+
+      - name: Check Scorecard score threshold
+        env:
+          SCORECARD_THRESHOLD: ${{ vars.SCORECARD_THRESHOLD || '7.0' }}
+        run: |
+          REPO="${{ github.repository }}"
+
+          # Fetch latest published Scorecard results from REST API
+          HTTP_CODE=$(curl -s -o scorecard-api.json -w "%{http_code}" \
+            "https://api.scorecard.dev/projects/github.com/${REPO}")
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::warning::Could not fetch Scorecard results (HTTP ${HTTP_CODE}). Skipping threshold check."
+            echo "This may happen on the first run before results are published."
+            exit 0
+          fi
+
+          SCORE=$(jq -r '.score // empty' scorecard-api.json)
+
+          if [ -z "$SCORE" ]; then
+            echo "::warning::No score found in API response. Skipping threshold check."
+            exit 0
+          fi
+
+          echo "## OpenSSF Scorecard Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Overall score: ${SCORE} / 10.0** (threshold: ${SCORECARD_THRESHOLD})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Score | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          jq -r '.checks[] | "| \(.name) | \(if .score < 0 then "N/A" else "\(.score)/10" end) | \(if .score < 0 then "➖" elif .score >= 7 then "✅" elif .score >= 4 then "⚠️" else "❌" end) |"' \
+            scorecard-api.json | sort >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "Overall score: ${SCORE} / 10.0 (threshold: ${SCORECARD_THRESHOLD})"
+          echo ""
+          echo "Individual check scores:"
+          jq -r '.checks[] | "  \(if .score < 0 then "➖" elif .score >= 7 then "✅" elif .score >= 4 then "⚠️" else "❌" end) \(.name): \(if .score < 0 then "N/A" else "\(.score)/10" end)"' \
+            scorecard-api.json | sort
+          echo ""
+
+          # Compare scores using awk (bash does not support float comparison)
+          BELOW=$(echo "${SCORE} ${SCORECARD_THRESHOLD}" | awk '{print ($1 < $2) ? "1" : "0"}')
+
+          if [ "$BELOW" = "1" ]; then
+            echo "::error::Scorecard score ${SCORE} is below threshold ${SCORECARD_THRESHOLD}"
+            echo ""
+            echo "Checks needing attention (score < 7):"
+            jq -r '.checks[] | select(.score >= 0 and .score < 7) | "  ❌ \(.name): \(.score)/10 — \(.reason)"' scorecard-api.json
+            exit 1
+          fi
+
+          echo "✅ Scorecard score ${SCORE} meets threshold ${SCORECARD_THRESHOLD}"
