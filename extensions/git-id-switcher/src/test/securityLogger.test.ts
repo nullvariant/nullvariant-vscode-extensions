@@ -32,19 +32,21 @@ import {
 import { _resetCache, _setMockVSCode } from '../core/vscodeLoader';
 
 /**
- * Capture console.log and console.warn output for testing
+ * Capture console.log, console.warn, and console.error output for testing
  *
- * Security logger uses console.warn for audit output (per no-console ESLint rule),
- * so both channels must be captured.
+ * Security logger uses console.warn for audit output (per no-console ESLint rule)
+ * and console.error for config validation warnings during initialization.
  */
 class ConsoleCapture {
   private originalLog: typeof console.log;
   private originalWarn: typeof console.warn;
+  private originalError: typeof console.error;
   private logs: string[] = [];
 
   constructor() {
     this.originalLog = console.log;
     this.originalWarn = console.warn;
+    this.originalError = console.error;
   }
 
   start(): void {
@@ -55,11 +57,15 @@ class ConsoleCapture {
     console.warn = (...args: unknown[]) => {
       this.logs.push(args.map(String).join(' '));
     };
+    console.error = (...args: unknown[]) => {
+      this.logs.push(args.map(String).join(' '));
+    };
   }
 
   stop(): void {
     console.log = this.originalLog;
     console.warn = this.originalWarn;
+    console.error = this.originalError;
   }
 
   getOutput(): string[] {
@@ -1473,21 +1479,21 @@ function testValidateLogConfigRange(): void {
   assert.strictEqual(
     _validateLogConfigRange(
       _MIN_LOG_FILE_SIZE_BYTES, _MIN_LOG_FILE_SIZE_BYTES, _MAX_LOG_FILE_SIZE_BYTES,
-      10 * 1024 * 1024, 'maxFileSizeBytes'
+      10 * 1024 * 1024, 'maxFileSize'
     ),
     _MIN_LOG_FILE_SIZE_BYTES, 'Min log file size should be accepted'
   );
   assert.strictEqual(
     _validateLogConfigRange(
       _MAX_LOG_FILE_SIZE_BYTES, _MIN_LOG_FILE_SIZE_BYTES, _MAX_LOG_FILE_SIZE_BYTES,
-      10 * 1024 * 1024, 'maxFileSizeBytes'
+      10 * 1024 * 1024, 'maxFileSize'
     ),
     _MAX_LOG_FILE_SIZE_BYTES, 'Max log file size should be accepted'
   );
   assert.strictEqual(
     _validateLogConfigRange(
       50, _MIN_LOG_FILE_SIZE_BYTES, _MAX_LOG_FILE_SIZE_BYTES,
-      10 * 1024 * 1024, 'maxFileSizeBytes'
+      10 * 1024 * 1024, 'maxFileSize'
     ),
     10 * 1024 * 1024, 'Below-min log file size should return default'
   );
@@ -1501,10 +1507,10 @@ function testValidateLogConfigRange(): void {
 function testLogConfigConstants(): void {
   console.log('Testing log config validation constants...');
 
-  assert.strictEqual(_MIN_LOG_FILE_SIZE_BYTES, 102_400, 'Min log file size should be 100KB');
+  assert.strictEqual(_MIN_LOG_FILE_SIZE_BYTES, 1_048_576, 'Min log file size should be 1MB (aligned with package.json)');
   assert.strictEqual(_MAX_LOG_FILE_SIZE_BYTES, 104_857_600, 'Max log file size should be 100MB');
   assert.strictEqual(_MIN_LOG_FILES, 1, 'Min log files should be 1');
-  assert.strictEqual(_MAX_LOG_FILES, 100, 'Max log files should be 100');
+  assert.strictEqual(_MAX_LOG_FILES, 20, 'Max log files should be 20 (aligned with package.json)');
 
   console.log('✅ Log config constants tests passed!');
 }

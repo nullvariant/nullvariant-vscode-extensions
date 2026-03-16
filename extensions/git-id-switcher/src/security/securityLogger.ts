@@ -85,10 +85,11 @@ export interface ISecurityLogger {
  * Log file configuration validation constants
  * @security Prevents DoS via extreme log file settings from malicious workspace config
  */
-const MIN_LOG_FILE_SIZE_BYTES = 102_400;      // 100KB
-const MAX_LOG_FILE_SIZE_BYTES = 104_857_600;  // 100MB
-const MIN_LOG_FILES = 1;
-const MAX_LOG_FILES = 100;
+// Values aligned with package.json configuration schema
+const MIN_LOG_FILE_SIZE_BYTES = 1_048_576;    // 1MB  (package.json minimum)
+const MAX_LOG_FILE_SIZE_BYTES = 104_857_600;  // 100MB (package.json maximum)
+const MIN_LOG_FILES = 1;                      // (package.json minimum)
+const MAX_LOG_FILES = 20;                     // (package.json maximum)
 
 /**
  * Validate a numeric log config value is within allowed range.
@@ -215,7 +216,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
       filePath: secureFilePath,
       maxFileSizeBytes: validateLogConfigRange(
         rawMaxFileSizeBytes, MIN_LOG_FILE_SIZE_BYTES, MAX_LOG_FILE_SIZE_BYTES,
-        DEFAULT_FILE_LOG_CONFIG.maxFileSizeBytes, 'maxFileSizeBytes'
+        DEFAULT_FILE_LOG_CONFIG.maxFileSizeBytes, 'maxFileSize'
       ),
       maxFiles: validateLogConfigRange(
         rawMaxFiles, MIN_LOG_FILES, MAX_LOG_FILES,
