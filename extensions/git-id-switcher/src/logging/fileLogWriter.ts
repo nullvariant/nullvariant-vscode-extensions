@@ -71,6 +71,11 @@ export class FileLogWriter implements ILogWriter {
 
   /**
    * Open write stream for current log file
+   *
+   * @security Uses O_NOFOLLOW on non-Windows platforms to prevent symlink attacks
+   * (TOCTOU mitigation between isSecureLogPath check and actual file open).
+   * Additionally verifies via fstat() that the opened file is not a symlink
+   * (defense-in-depth).
    */
   private openWriteStream(): void {
     /* c8 ignore start - Close existing stream edge case (requires multiple openWriteStream calls) */
@@ -87,7 +92,25 @@ export class FileLogWriter implements ILogWriter {
         this.currentFileSize = 0;
       }
 
-      this.writeStream = fs.createWriteStream(this.currentFilePath, { flags: 'a' });
+      // SECURITY: Use O_NOFOLLOW to prevent symlink race (TOCTOU mitigation)
+      // On Windows, O_NOFOLLOW is undefined — symlink creation requires admin rights so risk is low
+      /* eslint-disable no-bitwise -- file open flag composition */
+      const openFlags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_APPEND
+        | (process.platform !== 'win32' && fs.constants.O_NOFOLLOW ? fs.constants.O_NOFOLLOW : 0);
+      /* eslint-enable no-bitwise */
+
+      const fd = fs.openSync(this.currentFilePath, openFlags, 0o600);
+
+      // defense-in-depth: verify via fstat() that the opened fd is not a symlink
+      const fdStats = fs.fstatSync(fd);
+      if (fdStats.isSymbolicLink()) {
+        fs.closeSync(fd);
+        console.error('[Git ID Switcher] Log file is a symlink, refusing to write');
+        this.writeStream = null;
+        return;
+      }
+
+      this.writeStream = fs.createWriteStream('', { fd, autoClose: true });
       /* c8 ignore start - Stream error handler for unexpected I/O errors */
       this.writeStream.on('error', (error) => {
         console.error('[Git ID Switcher] File log write error:', error);
@@ -97,10 +120,16 @@ export class FileLogWriter implements ILogWriter {
         this.initialized = false;
       });
       /* c8 ignore stop */
-    } catch (error) /* c8 ignore start */ {
-      console.error('[Git ID Switcher] Failed to open log file:', error);
+    } catch (error) {
+      // ELOOP: O_NOFOLLOW detected a symlink (expected security rejection)
+      const code = (error as NodeJS.ErrnoException)?.code;
+      if (code === 'ELOOP') {
+        console.error('[Git ID Switcher] Log file path is a symlink (O_NOFOLLOW), refusing to write');
+      } else /* c8 ignore start */ {
+        console.error('[Git ID Switcher] Failed to open log file:', error);
+      } /* c8 ignore stop */
       this.writeStream = null;
-    } /* c8 ignore stop */
+    }
   }
 
   /**

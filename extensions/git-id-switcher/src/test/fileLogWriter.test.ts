@@ -747,6 +747,71 @@ async function testLogWithoutMetadata(): Promise<void> {
 }
 
 /**
+ * Test symlink detection via O_NOFOLLOW (TOCTOU mitigation)
+ * defense-in-depth: prevents symlink race between path validation and file open
+ */
+async function testSymlinkDetection(): Promise<void> {
+  console.log('Testing symlink detection (O_NOFOLLOW)...');
+
+  const tempDir = createTempDir();
+  const targetPath = toForwardSlashes(path.join(tempDir, 'target.log'));
+  const symlinkPath = toForwardSlashes(path.join(tempDir, 'symlink.log'));
+
+  try {
+    // Create a real file and a symlink pointing to it
+    fs.writeFileSync(targetPath, 'target content\n');
+    fs.symlinkSync(targetPath, symlinkPath);
+
+    const config = createTestConfig(symlinkPath);
+    const writer = new FileLogWriter(config);
+
+    // Writing to symlink path should be rejected (O_NOFOLLOW → ELOOP)
+    writer.write(createTestLog('Should not be written via symlink'));
+    await waitForFileOps();
+    writer.dispose();
+    await waitForFileOps();
+
+    // Target file should NOT have the log message
+    const targetContent = fs.readFileSync(targetPath, 'utf8');
+    assert.strictEqual(
+      targetContent.includes('Should not be written via symlink'),
+      false,
+      'Log should NOT be written through symlink'
+    );
+
+    console.log('✅ Symlink detection test passed!');
+  } finally {
+    removeTempDir(tempDir);
+  }
+}
+
+/**
+ * Test that normal (non-symlink) files still work after O_NOFOLLOW change
+ */
+async function testNonSymlinkFileWorks(): Promise<void> {
+  console.log('Testing non-symlink file still works...');
+
+  const tempDir = createTempDir();
+  const logPath = toForwardSlashes(path.join(tempDir, 'normal.log'));
+
+  try {
+    const config = createTestConfig(logPath);
+    const writer = new FileLogWriter(config);
+
+    writer.write(createTestLog('Normal file test'));
+    await waitForFileOps();
+    writer.dispose();
+    await waitForFileOps();
+
+    assertLogContains(logPath, ['Normal file test'], 'Non-symlink file');
+
+    console.log('✅ Non-symlink file test passed!');
+  } finally {
+    removeTempDir(tempDir);
+  }
+}
+
+/**
  * Run all FileLogWriter tests
  */
 export async function runFileLogWriterTests(): Promise<void> {
@@ -781,6 +846,8 @@ export async function runFileLogWriterTests(): Promise<void> {
     await testMetadataSerializationTypes();
     await testLogWithoutMetadata();
     await testAllLogLevels();
+    await testSymlinkDetection();
+    await testNonSymlinkFileWorks();
 
     console.log('\n✅ All FileLogWriter tests passed!\n');
   } catch (error) {
