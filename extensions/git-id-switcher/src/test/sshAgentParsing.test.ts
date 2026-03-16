@@ -230,6 +230,10 @@ function isBasenameMatch(comment: string, basename: string): boolean {
   if (comment.includes('/' + basename + ' ') || comment.includes('\\' + basename + ' ')) {
     return true;
   }
+  // Token match: basename appears as a standalone space-delimited token
+  if (comment.includes(' ' + basename + ' ') || comment.endsWith(' ' + basename)) {
+    return true;
+  }
   return false;
 }
 
@@ -326,6 +330,17 @@ function testBasenameMatchEdgeCases(): void {
   // Multiple slashes
   assert.strictEqual(isBasenameMatch('/a/b/c/id_rsa', 'id_rsa'), true,
     'Deep path ending with basename should match');
+
+  // Token match: basename as standalone space-delimited token
+  // (handles listSshKeys() fallback where comment = entire ssh-add -l line)
+  assert.strictEqual(isBasenameMatch('256 SHA256:abc id_ed25519 (UNKNOWN)', 'id_ed25519'), true,
+    'Basename as space-delimited token in fallback line should match');
+  assert.strictEqual(isBasenameMatch('256 SHA256:abc id_ed25519', 'id_ed25519'), true,
+    'Basename as last space-delimited token should match');
+  assert.strictEqual(isBasenameMatch('256 SHA256:abc id_rsa_work (ED25519)', 'id_rsa'), false,
+    'Partial token match should NOT succeed in fallback line');
+  assert.strictEqual(isBasenameMatch('256 SHA256:abc id_rsa_work', 'id_rsa'), false,
+    'Partial endsWith token should NOT succeed');
 
   console.log('  Basename matching edge cases tests passed!');
 }

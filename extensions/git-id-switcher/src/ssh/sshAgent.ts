@@ -108,6 +108,12 @@ function isBasenameMatch(comment: string, basename: string): boolean {
   if (comment.includes('/' + basename + ' ') || comment.includes('\\' + basename + ' ')) {
     return true;
   }
+  // Token match: basename appears as a standalone space-delimited token
+  // defense-in-depth: handles fallback case where listSshKeys() uses entire
+  // ssh-add -l line as comment (e.g., "256 SHA256:xxx id_ed25519 (unknown)")
+  if (comment.includes(' ' + basename + ' ') || comment.endsWith(' ' + basename)) {
+    return true;
+  }
   return false;
 }
 
