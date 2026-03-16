@@ -61,8 +61,10 @@ export class FileLogWriter implements ILogWriter {
 
       this.currentFilePath = this.config.filePath;
       this.openWriteStream();
-      this.initialized = true;
-      return true;
+      // Only mark initialized if stream was actually created
+      // (openWriteStream sets writeStream=null on symlink rejection or other failures)
+      this.initialized = this.writeStream !== null;
+      return this.initialized;
     } catch (error) /* c8 ignore start */ {
       console.error('[Git ID Switcher] Failed to initialize file logger:', error);
       return false;
@@ -84,33 +86,32 @@ export class FileLogWriter implements ILogWriter {
     }
     /* c8 ignore stop */
 
+    // SECURITY: Use O_NOFOLLOW to prevent symlink race (TOCTOU mitigation)
+    // On Windows, O_NOFOLLOW is undefined — symlink creation requires admin rights so risk is low
+    /* eslint-disable no-bitwise -- file open flag composition */
+    const openFlags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_APPEND
+      | (process.platform !== 'win32' && fs.constants.O_NOFOLLOW ? fs.constants.O_NOFOLLOW : 0);
+    /* eslint-enable no-bitwise */
+
+    let fd: number | null = null;
     try {
-      if (fs.existsSync(this.currentFilePath)) {
-        const stats = fs.statSync(this.currentFilePath);
-        this.currentFileSize = stats.size;
-      } else {
-        this.currentFileSize = 0;
-      }
-
-      // SECURITY: Use O_NOFOLLOW to prevent symlink race (TOCTOU mitigation)
-      // On Windows, O_NOFOLLOW is undefined — symlink creation requires admin rights so risk is low
-      /* eslint-disable no-bitwise -- file open flag composition */
-      const openFlags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_APPEND
-        | (process.platform !== 'win32' && fs.constants.O_NOFOLLOW ? fs.constants.O_NOFOLLOW : 0);
-      /* eslint-enable no-bitwise */
-
-      const fd = fs.openSync(this.currentFilePath, openFlags, 0o600);
+      fd = fs.openSync(this.currentFilePath, openFlags, 0o600);
 
       // defense-in-depth: verify via fstat() that the opened fd is not a symlink
       const fdStats = fs.fstatSync(fd);
+      /* c8 ignore start - fstat symlink check: O_NOFOLLOW already blocks symlinks, this is defense-in-depth */
       if (fdStats.isSymbolicLink()) {
-        fs.closeSync(fd);
         console.error('[Git ID Switcher] Log file is a symlink, refusing to write');
         this.writeStream = null;
-        return;
+        return; // fd closed in finally
       }
+      /* c8 ignore stop */
+
+      // Get file size from fd (avoids TOCTOU between stat and open)
+      this.currentFileSize = fdStats.size;
 
       this.writeStream = fs.createWriteStream('', { fd, autoClose: true });
+      fd = null; // fd ownership transferred to writeStream (autoClose)
       /* c8 ignore start - Stream error handler for unexpected I/O errors */
       this.writeStream.on('error', (error) => {
         console.error('[Git ID Switcher] File log write error:', error);
@@ -129,6 +130,14 @@ export class FileLogWriter implements ILogWriter {
         console.error('[Git ID Switcher] Failed to open log file:', error);
       } /* c8 ignore stop */
       this.writeStream = null;
+    } finally {
+      // SECURITY: Close fd if ownership was NOT transferred to writeStream
+      // Prevents fd leak on fstatSync/createWriteStream failures or symlink rejection
+      /* c8 ignore start - fd cleanup on partial failure (requires mocking to trigger) */
+      if (fd !== null) {
+        try { fs.closeSync(fd); } catch { /* already closing, ignore */ }
+      }
+      /* c8 ignore stop */
     }
   }
 
