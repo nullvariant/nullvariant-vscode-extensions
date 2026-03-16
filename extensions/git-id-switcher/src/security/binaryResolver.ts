@@ -148,8 +148,8 @@ async function getWhichCommand(): Promise<string> {
       return knownPath;
     }
   }
-
   /* c8 ignore start - Fallback when known system paths don't exist (rare) */
+
   // Fallback: use command name (less secure, but better than failing)
   // This is logged for security audit
   securityLogger.logValidationFailure(
@@ -290,7 +290,14 @@ async function resolveCommandPath(command: AllowedCommand): Promise<string> {
     if (vscodeGitPath) {
       // Normalize and validate VS Code configured path
       const normalizedPath = path.normalize(vscodeGitPath);
-      if (await isValidExecutable(normalizedPath)) {
+
+      // Security: reject relative paths to prevent cwd-based ambiguity
+      if (!path.isAbsolute(normalizedPath)) {
+        securityLogger.logValidationFailure(
+          'binary-resolution',
+          'VS Code git.path is not an absolute path, falling back to PATH'
+        );
+      } else if (await isValidExecutable(normalizedPath)) {
         // defense-in-depth: verify this is actually a git binary, not a masquerading executable
         // Uses execFile directly (not secureExec) to avoid circular dependency:
         // secureExec → getBinaryPath → resolveCommandPath → (here)
@@ -316,13 +323,12 @@ async function resolveCommandPath(command: AllowedCommand): Promise<string> {
   if (resolvedPath) {
     return resolvedPath;
   }
-
-  /* c8 ignore next 4 - Command not found fallback */
+  /* c8 ignore start - Command not found fallback */
   throw new BinaryResolutionError(
     command,
     'Command not found in PATH or not executable'
   );
-}
+} /* c8 ignore stop */
 
 /**
  * Check if a command is in the allowed list.

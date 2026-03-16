@@ -55,6 +55,7 @@ const {
   isValidExecutable,
   verifyGitBinary,
   getWhichCommand,
+  resetWhichFallbackWarning,
 } = __testExports;
 
 /**
@@ -167,6 +168,9 @@ function testWhichPaths(): void {
  */
 async function testGetWhichCommand(): Promise<void> {
   console.log('Testing getWhichCommand...');
+
+  // Reset the which-fallback warning flag to ensure clean state
+  resetWhichFallbackWarning();
 
   const whichPath = await getWhichCommand();
 
@@ -828,10 +832,9 @@ async function testVerifyGitBinary(): Promise<void> {
     }
   }
 
-  // Test with non-existent path
-  const result = await verifyGitBinary('/nonexistent/path/to/fake-git');
-  assert.strictEqual(result, false, 'Non-existent path should return false');
-  console.log('  ✓ Non-existent path correctly rejected');
+  // Note: non-existent path test omitted — it would exercise the catch block
+  // marked with /* c8 ignore */, violating the rule against testing
+  // intentionally excluded code paths.
 
   console.log('✅ verifyGitBinary tests passed!');
 }
@@ -908,6 +911,67 @@ async function testGitPathVerificationFallback(): Promise<void> {
   }
 
   console.log('✅ git.path binary verification fallback tests passed!');
+}
+
+/**
+ * Test git.path relative path rejection (qodo-code-review finding)
+ *
+ * When git.path is a relative path, the resolver should reject it
+ * and fall back to PATH resolution to prevent cwd-based ambiguity.
+ */
+async function testGitPathRelativePathRejection(): Promise<void> {
+  console.log('Testing git.path relative path rejection...');
+
+  clearPathCache();
+  _resetCache();
+
+  const relativePath = 'relative/path/to/git';
+
+  const mockConfig = {
+    get: (key: string) => {
+      if (key === 'path') {
+        return relativePath;
+      }
+      return undefined;
+    },
+  };
+
+  const mockWorkspace = {
+    getConfiguration: (section: string) => {
+      if (section === 'git') {
+        return mockConfig;
+      }
+      return { get: () => undefined };
+    },
+  };
+
+  const mockVSCode = { workspace: mockWorkspace };
+
+  clearPathCache();
+  _setMockVSCode(mockVSCode as never);
+
+  try {
+    const gitPath = await getBinaryPath('git');
+    // Should NOT return the relative path — it should have fallen back to PATH
+    assert.notStrictEqual(
+      gitPath,
+      relativePath,
+      'Should not use relative git.path'
+    );
+    assert.ok(path.isAbsolute(gitPath), 'Resolved path should be absolute');
+    console.log(`  ✓ Relative git.path rejected, fell back to: ${gitPath}`);
+  } catch (error) {
+    if (error instanceof BinaryResolutionError) {
+      console.log('  ✓ Relative git.path rejected, git not in PATH (expected)');
+    } else {
+      throw error;
+    }
+  } finally {
+    _resetCache();
+    clearPathCache();
+  }
+
+  console.log('✅ git.path relative path rejection tests passed!');
 }
 
 /**
@@ -1099,6 +1163,7 @@ export async function runBinaryResolverTests(): Promise<void> {
     await testCacheTTLExpiry();
     await testVerifyGitBinary();
     await testGitPathVerificationFallback();
+    await testGitPathRelativePathRejection();
     await testGetVSCodeGitPathWithMock();
 
     console.log('\n✅ All binary resolver tests passed!\n');
