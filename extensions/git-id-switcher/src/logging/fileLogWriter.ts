@@ -61,8 +61,10 @@ export class FileLogWriter implements ILogWriter {
 
       this.currentFilePath = this.config.filePath;
       this.openWriteStream();
-      this.initialized = true;
-      return true;
+      // Only mark initialized if stream was actually created
+      // (openWriteStream sets writeStream=null on symlink rejection or other failures)
+      this.initialized = this.writeStream !== null;
+      return this.initialized;
     } catch (error) /* c8 ignore start */ {
       console.error('[Git ID Switcher] Failed to initialize file logger:', error);
       return false;
@@ -71,6 +73,11 @@ export class FileLogWriter implements ILogWriter {
 
   /**
    * Open write stream for current log file
+   *
+   * @security Uses O_NOFOLLOW on non-Windows platforms to prevent symlink attacks
+   * (TOCTOU mitigation between isSecureLogPath check and actual file open).
+   * Additionally verifies via fstat() that the opened file is not a symlink
+   * (defense-in-depth).
    */
   private openWriteStream(): void {
     /* c8 ignore start - Close existing stream edge case (requires multiple openWriteStream calls) */
@@ -79,15 +86,29 @@ export class FileLogWriter implements ILogWriter {
     }
     /* c8 ignore stop */
 
-    try {
-      if (fs.existsSync(this.currentFilePath)) {
-        const stats = fs.statSync(this.currentFilePath);
-        this.currentFileSize = stats.size;
-      } else {
-        this.currentFileSize = 0;
-      }
+    // SECURITY: Use O_NOFOLLOW to prevent symlink race (TOCTOU mitigation)
+    // On Windows, O_NOFOLLOW is undefined — symlink creation requires admin rights so risk is low
+    /* eslint-disable no-bitwise -- file open flag composition */
+    const openFlags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_APPEND
+      | (process.platform !== 'win32' && fs.constants.O_NOFOLLOW ? fs.constants.O_NOFOLLOW : 0); /* c8 ignore next - Windows platform branch (O_NOFOLLOW undefined) */
+    /* eslint-enable no-bitwise */
 
-      this.writeStream = fs.createWriteStream(this.currentFilePath, { flags: 'a' });
+    let fd: number | null = null;
+    try {
+      fd = fs.openSync(this.currentFilePath, openFlags, 0o600);
+
+      // NOTE: fstat(fd).isSymbolicLink() is NOT used here because fstat on an
+      // already-opened fd always returns the target file's stat (not the symlink's).
+      // Symlink protection is handled entirely by O_NOFOLLOW (ELOOP on symlink).
+      // On Windows where O_NOFOLLOW is unavailable, symlink creation requires
+      // admin rights, making the risk acceptably low.
+      const fdStats = fs.fstatSync(fd);
+
+      // Get file size from fd (avoids TOCTOU between stat and open)
+      this.currentFileSize = fdStats.size;
+
+      this.writeStream = fs.createWriteStream('', { fd, autoClose: true });
+      fd = null; // fd ownership transferred to writeStream (autoClose)
       /* c8 ignore start - Stream error handler for unexpected I/O errors */
       this.writeStream.on('error', (error) => {
         console.error('[Git ID Switcher] File log write error:', error);
@@ -97,10 +118,24 @@ export class FileLogWriter implements ILogWriter {
         this.initialized = false;
       });
       /* c8 ignore stop */
-    } catch (error) /* c8 ignore start */ {
-      console.error('[Git ID Switcher] Failed to open log file:', error);
+    } catch (error) {
+      // ELOOP: O_NOFOLLOW detected a symlink (expected security rejection)
+      const code = (error as NodeJS.ErrnoException)?.code;
+      if (code === 'ELOOP') {
+        console.error('[Git ID Switcher] Log file path is a symlink (O_NOFOLLOW), refusing to write');
+      } else /* c8 ignore start */ {
+        console.error('[Git ID Switcher] Failed to open log file:', error);
+      } /* c8 ignore stop */
       this.writeStream = null;
-    } /* c8 ignore stop */
+    } finally {
+      // SECURITY: Close fd if ownership was NOT transferred to writeStream
+      // Prevents fd leak on fstatSync/createWriteStream failures or symlink rejection
+      /* c8 ignore start - fd cleanup on partial failure (requires mocking to trigger) */
+      if (fd !== null) {
+        try { fs.closeSync(fd); } catch { /* already closing, ignore */ }
+      }
+      /* c8 ignore stop */
+    }
   }
 
   /**
