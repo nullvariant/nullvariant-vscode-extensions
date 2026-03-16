@@ -90,7 +90,7 @@ export class FileLogWriter implements ILogWriter {
     // On Windows, O_NOFOLLOW is undefined — symlink creation requires admin rights so risk is low
     /* eslint-disable no-bitwise -- file open flag composition */
     const openFlags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_APPEND
-      | (process.platform !== 'win32' && fs.constants.O_NOFOLLOW ? fs.constants.O_NOFOLLOW : 0);
+      | (process.platform !== 'win32' && fs.constants.O_NOFOLLOW ? fs.constants.O_NOFOLLOW : 0); /* c8 ignore next - Windows platform branch (O_NOFOLLOW undefined) */
     /* eslint-enable no-bitwise */
 
     let fd: number | null = null;
