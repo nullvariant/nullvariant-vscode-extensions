@@ -82,6 +82,53 @@ export interface ISecurityLogger {
 }
 
 /**
+ * Log file configuration validation constants
+ * @security Prevents DoS via extreme log file settings from malicious workspace config
+ */
+const MIN_LOG_FILE_SIZE_BYTES = 102_400;      // 100KB
+const MAX_LOG_FILE_SIZE_BYTES = 104_857_600;  // 100MB
+const MIN_LOG_FILES = 1;
+const MAX_LOG_FILES = 100;
+
+/**
+ * Validate a numeric log config value is within allowed range.
+ * Returns the default if out of range, and logs a security warning.
+ *
+ * @param value - The user-configured value
+ * @param min - Minimum allowed value (inclusive)
+ * @param max - Maximum allowed value (inclusive)
+ * @param defaultValue - Default to use if out of range
+ * @param fieldName - Name of the config field (for logging)
+ * @returns The validated value or default
+ */
+function validateLogConfigRange(
+  value: number,
+  min: number,
+  max: number,
+  defaultValue: number,
+  fieldName: string
+): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) {
+    // Log to console directly since the security logger may not be fully initialized yet
+    console.error(
+      `[Git ID Switcher Security] Log config '${fieldName}' out of range` +
+      ` (value: ${String(value)}, allowed: ${min}-${max}). Using default: ${defaultValue}`
+    );
+    return defaultValue;
+  }
+  return value;
+}
+
+// Export for testing
+export { validateLogConfigRange as _validateLogConfigRange };
+export {
+  MIN_LOG_FILE_SIZE_BYTES as _MIN_LOG_FILE_SIZE_BYTES,
+  MAX_LOG_FILE_SIZE_BYTES as _MAX_LOG_FILE_SIZE_BYTES,
+  MIN_LOG_FILES as _MIN_LOG_FILES,
+  MAX_LOG_FILES as _MAX_LOG_FILES,
+};
+
+/**
  * Security Logger class
  */
 class SecurityLoggerImpl implements ISecurityLogger {
@@ -160,11 +207,20 @@ class SecurityLoggerImpl implements ISecurityLogger {
       }
     } /* c8 ignore stop */
 
+    const rawMaxFileSizeBytes = config.get<number>('maxFileSize', DEFAULT_FILE_LOG_CONFIG.maxFileSizeBytes);
+    const rawMaxFiles = config.get<number>('maxFiles', DEFAULT_FILE_LOG_CONFIG.maxFiles);
+
     const fileConfig: FileLogConfig = {
       enabled: config.get<boolean>('fileEnabled', DEFAULT_FILE_LOG_CONFIG.enabled),
       filePath: secureFilePath,
-      maxFileSizeBytes: config.get<number>('maxFileSize', DEFAULT_FILE_LOG_CONFIG.maxFileSizeBytes),
-      maxFiles: config.get<number>('maxFiles', DEFAULT_FILE_LOG_CONFIG.maxFiles),
+      maxFileSizeBytes: validateLogConfigRange(
+        rawMaxFileSizeBytes, MIN_LOG_FILE_SIZE_BYTES, MAX_LOG_FILE_SIZE_BYTES,
+        DEFAULT_FILE_LOG_CONFIG.maxFileSizeBytes, 'maxFileSizeBytes'
+      ),
+      maxFiles: validateLogConfigRange(
+        rawMaxFiles, MIN_LOG_FILES, MAX_LOG_FILES,
+        DEFAULT_FILE_LOG_CONFIG.maxFiles, 'maxFiles'
+      ),
     };
 
     const levelStr = config.get<string>('level', 'INFO');
@@ -249,7 +305,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
     if (this.outputChannel) {
       this.outputChannel.appendLine(message);
     }
-    console.log(`[Git ID Switcher Security] ${message}`);
+    console.warn(`[Git ID Switcher Security] ${message}`);
   }
 
   /**

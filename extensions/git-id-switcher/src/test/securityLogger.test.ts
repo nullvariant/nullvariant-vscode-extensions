@@ -17,6 +17,11 @@ import {
   securityLogger,
   SecurityEventType,
   LogLevel,
+  _validateLogConfigRange,
+  _MIN_LOG_FILE_SIZE_BYTES,
+  _MAX_LOG_FILE_SIZE_BYTES,
+  _MIN_LOG_FILES,
+  _MAX_LOG_FILES,
 } from '../security/securityLogger';
 import {
   severityToLogLevel,
@@ -27,14 +32,19 @@ import {
 import { _resetCache, _setMockVSCode } from '../core/vscodeLoader';
 
 /**
- * Capture console.log output for testing
+ * Capture console.log and console.warn output for testing
+ *
+ * Security logger uses console.warn for audit output (per no-console ESLint rule),
+ * so both channels must be captured.
  */
 class ConsoleCapture {
   private originalLog: typeof console.log;
+  private originalWarn: typeof console.warn;
   private logs: string[] = [];
 
   constructor() {
     this.originalLog = console.log;
+    this.originalWarn = console.warn;
   }
 
   start(): void {
@@ -42,10 +52,14 @@ class ConsoleCapture {
     console.log = (...args: unknown[]) => {
       this.logs.push(args.map(String).join(' '));
     };
+    console.warn = (...args: unknown[]) => {
+      this.logs.push(args.map(String).join(' '));
+    };
   }
 
   stop(): void {
     console.log = this.originalLog;
+    console.warn = this.originalWarn;
   }
 
   getOutput(): string[] {
@@ -1396,6 +1410,106 @@ function testSanitizeConfigValueIdentities(): void {
 }
 
 /**
+ * Test validateLogConfigRange() for log file setting validation
+ */
+function testValidateLogConfigRange(): void {
+  console.log('Testing validateLogConfigRange...');
+
+  const defaultValue = 999;
+
+  // Valid values: should return the value unchanged
+  assert.strictEqual(
+    _validateLogConfigRange(500, 100, 1000, defaultValue, 'test'),
+    500, 'Valid value within range should be returned as-is'
+  );
+  assert.strictEqual(
+    _validateLogConfigRange(100, 100, 1000, defaultValue, 'test'),
+    100, 'Value at minimum boundary should be accepted'
+  );
+  assert.strictEqual(
+    _validateLogConfigRange(1000, 100, 1000, defaultValue, 'test'),
+    1000, 'Value at maximum boundary should be accepted'
+  );
+
+  // Out-of-range values: should return default
+  assert.strictEqual(
+    _validateLogConfigRange(99, 100, 1000, defaultValue, 'test'),
+    defaultValue, 'Value below minimum should return default'
+  );
+  assert.strictEqual(
+    _validateLogConfigRange(1001, 100, 1000, defaultValue, 'test'),
+    defaultValue, 'Value above maximum should return default'
+  );
+  assert.strictEqual(
+    _validateLogConfigRange(0, 100, 1000, defaultValue, 'test'),
+    defaultValue, 'Zero should return default'
+  );
+  assert.strictEqual(
+    _validateLogConfigRange(-1, 100, 1000, defaultValue, 'test'),
+    defaultValue, 'Negative value should return default'
+  );
+
+  // Non-finite values: should return default
+  assert.strictEqual(
+    _validateLogConfigRange(NaN, 100, 1000, defaultValue, 'test'),
+    defaultValue, 'NaN should return default'
+  );
+  assert.strictEqual(
+    _validateLogConfigRange(Infinity, 100, 1000, defaultValue, 'test'),
+    defaultValue, 'Infinity should return default'
+  );
+  assert.strictEqual(
+    _validateLogConfigRange(-Infinity, 100, 1000, defaultValue, 'test'),
+    defaultValue, '-Infinity should return default'
+  );
+
+  // Non-number type coercion: should return default
+  assert.strictEqual(
+    _validateLogConfigRange('500' as unknown as number, 100, 1000, defaultValue, 'test'),
+    defaultValue, 'String value should return default'
+  );
+
+  // Verify with actual log config ranges
+  assert.strictEqual(
+    _validateLogConfigRange(
+      _MIN_LOG_FILE_SIZE_BYTES, _MIN_LOG_FILE_SIZE_BYTES, _MAX_LOG_FILE_SIZE_BYTES,
+      10 * 1024 * 1024, 'maxFileSizeBytes'
+    ),
+    _MIN_LOG_FILE_SIZE_BYTES, 'Min log file size should be accepted'
+  );
+  assert.strictEqual(
+    _validateLogConfigRange(
+      _MAX_LOG_FILE_SIZE_BYTES, _MIN_LOG_FILE_SIZE_BYTES, _MAX_LOG_FILE_SIZE_BYTES,
+      10 * 1024 * 1024, 'maxFileSizeBytes'
+    ),
+    _MAX_LOG_FILE_SIZE_BYTES, 'Max log file size should be accepted'
+  );
+  assert.strictEqual(
+    _validateLogConfigRange(
+      50, _MIN_LOG_FILE_SIZE_BYTES, _MAX_LOG_FILE_SIZE_BYTES,
+      10 * 1024 * 1024, 'maxFileSizeBytes'
+    ),
+    10 * 1024 * 1024, 'Below-min log file size should return default'
+  );
+
+  console.log('✅ validateLogConfigRange tests passed!');
+}
+
+/**
+ * Test log config validation constants have expected values
+ */
+function testLogConfigConstants(): void {
+  console.log('Testing log config validation constants...');
+
+  assert.strictEqual(_MIN_LOG_FILE_SIZE_BYTES, 102_400, 'Min log file size should be 100KB');
+  assert.strictEqual(_MAX_LOG_FILE_SIZE_BYTES, 104_857_600, 'Max log file size should be 100MB');
+  assert.strictEqual(_MIN_LOG_FILES, 1, 'Min log files should be 1');
+  assert.strictEqual(_MAX_LOG_FILES, 100, 'Max log files should be 100');
+
+  console.log('✅ Log config constants tests passed!');
+}
+
+/**
  * Run all tests
  */
 export async function runSecurityLoggerTests(): Promise<void> {
@@ -1438,6 +1552,8 @@ export async function runSecurityLoggerTests(): Promise<void> {
     testWriteToOutputChannelJsonError();
     testSanitizeConfigValueIdentitiesNonArray();
     testSanitizeConfigValueIdentities();
+    testValidateLogConfigRange();
+    testLogConfigConstants();
 
     console.log('\n✅ All security logger tests passed!\n');
   } catch (error) {
