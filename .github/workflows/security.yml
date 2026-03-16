@@ -47,7 +47,13 @@ jobs:
         working-directory: .
         run: npm ci
 
-      - name: Run npm audit
+      # 2-tier dev audit: high → CI fail, moderate → warn only
+      # Prevents Dependabot PRs from being blocked by moderate-level advisories
+      # while ensuring high/critical vulnerabilities are never missed
+      - name: Run npm audit (dev, high+critical = fail)
+        run: npm audit --audit-level=high
+
+      - name: Run npm audit (dev, moderate = warn only)
         run: npm audit --audit-level=moderate
         continue-on-error: true
 
@@ -191,7 +197,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Run Semgrep
-        uses: semgrep/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
+        uses: semgrep/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1 (v0.58.0, verified 2026-03-17)
         with:
           config: >-
             p/typescript
