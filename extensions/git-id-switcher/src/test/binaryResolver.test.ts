@@ -18,15 +18,20 @@
  * - isValidExecutable validation
  *
  * Defense-in-depth code not covered (requires VS Code mocking):
- * - Lines 225-236: VS Code git.path validation path
+ * - VS Code git.path validation path
  *   - Requires VS Code workspace mock to test getVSCodeGitPath()
  *   - The path where git.path setting is configured but invalid
- * - Lines 244-249: resolveCommandPath throw path
+ * - resolveCommandPath throw path
  *   - Requires which/where to fail for an allowed command
  *   - Tested indirectly via cache manipulation
- * - Lines 301-312: Non-BinaryResolutionError wrapping
+ * - Non-BinaryResolutionError wrapping
  *   - Internal errors are already BinaryResolutionError
  *   - Defense-in-depth for unexpected error types
+ *
+ * PR 4 additions:
+ * - Cache TTL (MEDIUM-4): TTL expiry triggers re-resolution
+ * - git.path binary verification (MEDIUM-6): verifyGitBinary checks --version output
+ * - which fallback warning (MEDIUM-3): user warning on PATH fallback
  */
 
 import * as assert from 'node:assert';
@@ -43,10 +48,12 @@ import { _setMockVSCode, _resetCache } from '../core/vscodeLoader';
 
 const {
   ALLOWED_COMMANDS,
+  BINARY_CACHE_TTL_MS,
   WHICH_PATHS,
   pathCache,
   isAllowedCommand,
   isValidExecutable,
+  verifyGitBinary,
   getWhichCommand,
 } = __testExports;
 
@@ -348,7 +355,7 @@ function testClearPathCache(): void {
   console.log('Testing clearPathCache...');
 
   // Add some entries to cache manually for testing
-  pathCache.set('test-command', '/usr/bin/test');
+  pathCache.set('test-command', { path: '/usr/bin/test', resolvedAt: Date.now() });
   assert.ok(pathCache.has('test-command'), 'Should have test entry');
 
   // Clear cache
@@ -446,9 +453,9 @@ async function testFailedResolutionCaching(): Promise<void> {
   // ALLOWED_COMMANDS which is const.
 
   // Instead, verify that cache handles null values properly
-  pathCache.set('test-null', null);
+  pathCache.set('test-null', { path: null, resolvedAt: Date.now() });
   assert.ok(pathCache.has('test-null'), 'Should store null');
-  assert.strictEqual(pathCache.get('test-null'), null, 'Should return null');
+  assert.strictEqual(pathCache.get('test-null')?.path, null, 'Should return null path');
 
   // Clean up
   clearPathCache();
@@ -462,9 +469,9 @@ async function testFailedResolutionCaching(): Promise<void> {
 async function testCachedFailureThrows(): Promise<void> {
   console.log('Testing cached failure throws...');
 
-  // Clear cache and add a null entry
+  // Clear cache and add a null entry (within TTL)
   clearPathCache();
-  pathCache.set('git', null);
+  pathCache.set('git', { path: null, resolvedAt: Date.now() });
 
   // Should throw BinaryResolutionError for cached failure
   try {
@@ -540,7 +547,7 @@ async function testErrorWrapping(): Promise<void> {
   // in the normal code path. We test the cached failure path instead.
 
   // Test that cached null throws BinaryResolutionError
-  pathCache.set('git', null);
+  pathCache.set('git', { path: null, resolvedAt: Date.now() });
 
   try {
     await getBinaryPath('git');
@@ -574,9 +581,10 @@ async function testCheckBinaryAvailabilityWithFailures(): Promise<void> {
 
   // Set all commands to have null cache (simulating resolution failures)
   // When cache contains null, getBinaryPath throws BinaryResolutionError
-  pathCache.set('git', null);
-  pathCache.set('ssh-add', null);
-  pathCache.set('ssh-keygen', null);
+  const now = Date.now();
+  pathCache.set('git', { path: null, resolvedAt: now });
+  pathCache.set('ssh-add', { path: null, resolvedAt: now });
+  pathCache.set('ssh-keygen', { path: null, resolvedAt: now });
 
   const availability = await checkBinaryAvailability();
 
@@ -622,7 +630,7 @@ async function testResolveAllBinaryPathsWithFailure(): Promise<void> {
   assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
 
   // Set git to fail (first command in ALLOWED_COMMANDS)
-  pathCache.set('git', null);
+  pathCache.set('git', { path: null, resolvedAt: Date.now() });
 
   try {
     await resolveAllBinaryPaths();
@@ -671,7 +679,7 @@ async function testGetBinaryPathDefensiveErrorWrapping(): Promise<void> {
   // Test each allowed command to ensure consistent error handling
   for (const cmd of ['git', 'ssh-add', 'ssh-keygen'] as const) {
     // Set cache to null to simulate a failed resolution
-    pathCache.set(cmd, null);
+    pathCache.set(cmd, { path: null, resolvedAt: Date.now() });
 
     try {
       await getBinaryPath(cmd);
@@ -706,9 +714,206 @@ async function testGetBinaryPathDefensiveErrorWrapping(): Promise<void> {
 }
 
 /**
+ * Test cache TTL expiry (MEDIUM-4)
+ *
+ * Verifies that cached binary paths expire after BINARY_CACHE_TTL_MS
+ * and trigger re-resolution. This prevents stale cache from masking
+ * binary replacement attacks during long VS Code sessions.
+ */
+async function testCacheTTLExpiry(): Promise<void> {
+  console.log('Testing cache TTL expiry...');
+
+  // Clear cache
+  clearPathCache();
+
+  // Manually insert a cache entry with an expired timestamp
+  const expiredTimestamp = Date.now() - BINARY_CACHE_TTL_MS - 1;
+  pathCache.set('git', { path: '/old/path/to/git', resolvedAt: expiredTimestamp });
+
+  // getBinaryPath should detect TTL expiry and re-resolve
+  try {
+    const gitPath = await getBinaryPath('git');
+    // Should have re-resolved (not return the old cached path)
+    assert.notStrictEqual(
+      gitPath,
+      '/old/path/to/git',
+      'Should not return expired cached path'
+    );
+    assert.ok(path.isAbsolute(gitPath), 'Re-resolved path should be absolute');
+    console.log(`  ✓ Expired cache evicted, re-resolved: ${gitPath}`);
+  } catch (error) {
+    if (error instanceof BinaryResolutionError) {
+      // git not available — but the important thing is the old path was NOT returned
+      console.log('  ✓ Expired cache evicted, git not available (expected in some environments)');
+    } else {
+      throw error;
+    }
+  }
+
+  // Verify the old entry was evicted
+  const entry = pathCache.get('git');
+  if (entry) {
+    assert.ok(
+      entry.resolvedAt > expiredTimestamp,
+      'Cache entry should have a fresh timestamp'
+    );
+  }
+
+  // Test that non-expired cache is still used
+  clearPathCache();
+  const freshTimestamp = Date.now();
+  pathCache.set('git', { path: '/fresh/path/to/git', resolvedAt: freshTimestamp });
+
+  try {
+    const cachedPath = await getBinaryPath('git');
+    assert.strictEqual(
+      cachedPath,
+      '/fresh/path/to/git',
+      'Fresh cache should be returned'
+    );
+    console.log('  ✓ Fresh cache entry returned correctly');
+  } catch {
+    // This should not happen since we set a non-null path
+    assert.fail('Fresh cache with valid path should not throw');
+  }
+
+  // Verify TTL constant is 30 minutes
+  assert.strictEqual(
+    BINARY_CACHE_TTL_MS,
+    1_800_000,
+    'TTL should be 30 minutes'
+  );
+
+  // Clean up
+  clearPathCache();
+
+  console.log('✅ Cache TTL expiry tests passed!');
+}
+
+/**
+ * Test verifyGitBinary function (MEDIUM-6)
+ *
+ * Verifies that verifyGitBinary correctly identifies real git binaries
+ * and rejects non-git executables. This prevents git.path from being
+ * set to a masquerading executable.
+ */
+async function testVerifyGitBinary(): Promise<void> {
+  console.log('Testing verifyGitBinary...');
+
+  // Test with actual git binary (if available)
+  if (process.platform !== 'win32') {
+    // Try common git paths
+    const gitPaths = ['/usr/bin/git', '/usr/local/bin/git', '/opt/homebrew/bin/git'];
+    let testedReal = false;
+
+    for (const gitPath of gitPaths) {
+      if (await isValidExecutable(gitPath)) {
+        const result = await verifyGitBinary(gitPath);
+        assert.strictEqual(result, true, `Real git at ${gitPath} should be verified`);
+        console.log(`  ✓ Real git binary verified: ${gitPath}`);
+        testedReal = true;
+        break;
+      }
+    }
+
+    if (!testedReal) {
+      console.log('  No git binary found at known paths, skipping real binary test');
+    }
+
+    // Test with a non-git executable (e.g., /bin/sh)
+    if (await isValidExecutable('/bin/sh')) {
+      const result = await verifyGitBinary('/bin/sh');
+      assert.strictEqual(result, false, '/bin/sh should not be verified as git');
+      console.log('  ✓ Non-git binary (/bin/sh) correctly rejected');
+    }
+  }
+
+  // Test with non-existent path
+  const result = await verifyGitBinary('/nonexistent/path/to/fake-git');
+  assert.strictEqual(result, false, 'Non-existent path should return false');
+  console.log('  ✓ Non-existent path correctly rejected');
+
+  console.log('✅ verifyGitBinary tests passed!');
+}
+
+/**
+ * Test git.path binary verification fallback (MEDIUM-6)
+ *
+ * When git.path points to an executable that is NOT a valid git binary,
+ * the resolver should fall back to PATH resolution.
+ */
+async function testGitPathVerificationFallback(): Promise<void> {
+  console.log('Testing git.path binary verification fallback...');
+
+  // Clear caches
+  clearPathCache();
+  _resetCache();
+
+  // Set git.path to a non-git executable (e.g., /bin/sh)
+  if (process.platform === 'win32') {
+    console.log('  Skipping on Windows');
+    console.log('✅ git.path binary verification fallback tests passed!');
+    return;
+  }
+
+  const fakeGitPath = '/bin/sh'; // Valid executable but not git
+  if (!(await isValidExecutable(fakeGitPath))) {
+    console.log('  /bin/sh not available, skipping');
+    console.log('✅ git.path binary verification fallback tests passed!');
+    return;
+  }
+
+  const mockConfig = {
+    get: (key: string) => {
+      if (key === 'path') {
+        return fakeGitPath;
+      }
+      return undefined;
+    },
+  };
+
+  const mockWorkspace = {
+    getConfiguration: (section: string) => {
+      if (section === 'git') {
+        return mockConfig;
+      }
+      return { get: () => undefined };
+    },
+  };
+
+  const mockVSCode = { workspace: mockWorkspace };
+
+  clearPathCache();
+  _setMockVSCode(mockVSCode as never);
+
+  try {
+    const gitPath = await getBinaryPath('git');
+    // Should NOT return /bin/sh — it should have fallen back to PATH
+    assert.notStrictEqual(
+      gitPath,
+      fakeGitPath,
+      'Should not use non-git binary from git.path'
+    );
+    assert.ok(path.isAbsolute(gitPath), 'Fallback path should be absolute');
+    console.log(`  ✓ Fake git.path (${fakeGitPath}) rejected, fell back to: ${gitPath}`);
+  } catch (error) {
+    if (error instanceof BinaryResolutionError) {
+      console.log('  ✓ Fake git.path rejected, git not in PATH (expected)');
+    } else {
+      throw error;
+    }
+  } finally {
+    _resetCache();
+    clearPathCache();
+  }
+
+  console.log('✅ git.path binary verification fallback tests passed!');
+}
+
+/**
  * Test getVSCodeGitPath with mock VS Code workspace
  *
- * This tests the VS Code git.path setting handling (lines 225-236).
+ * This tests the VS Code git.path setting handling.
  * When git.path is configured in VS Code settings, it should be prioritized
  * over PATH resolution.
  *
@@ -891,6 +1096,9 @@ export async function runBinaryResolverTests(): Promise<void> {
     await testCheckBinaryAvailabilityWithFailures();
     await testResolveAllBinaryPathsWithFailure();
     await testGetBinaryPathDefensiveErrorWrapping();
+    await testCacheTTLExpiry();
+    await testVerifyGitBinary();
+    await testGitPathVerificationFallback();
     await testGetVSCodeGitPathWithMock();
 
     console.log('\n✅ All binary resolver tests passed!\n');

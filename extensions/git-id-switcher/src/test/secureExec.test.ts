@@ -772,7 +772,7 @@ async function testSecureExecBinaryResolutionError(): Promise<void> {
   assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
 
   // Set git to fail by caching null (simulates resolution failure)
-  pathCache.set('git', null);
+  pathCache.set('git', { path: null, resolvedAt: Date.now() });
 
   try {
     await secureExec('git', ['--version']);
@@ -819,7 +819,7 @@ async function testSecureExecSshAddResolutionError(): Promise<void> {
   assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
 
   // Set ssh-add to fail by caching null
-  pathCache.set('ssh-add', null);
+  pathCache.set('ssh-add', { path: null, resolvedAt: Date.now() });
 
   try {
     await sshAgentExec(['-l']);
@@ -862,7 +862,7 @@ async function testSecureExecSshKeygenResolutionError(): Promise<void> {
   assert.strictEqual(pathCache.size, 0, 'Cache should be empty before test');
 
   // Set ssh-keygen to fail by caching null
-  pathCache.set('ssh-keygen', null);
+  pathCache.set('ssh-keygen', { path: null, resolvedAt: Date.now() });
 
   try {
     // Use -lf with a dummy path (valid flags for ssh-keygen fingerprint operation)
