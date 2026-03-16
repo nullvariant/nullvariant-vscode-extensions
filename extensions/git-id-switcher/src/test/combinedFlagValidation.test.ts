@@ -675,10 +675,11 @@ function testCaseSensitivity(): void {
     assert.strictEqual(result.valid, false, '-Lf should be invalid (no pattern defined)');
   }
 
-  // ssh-add uses -D (upper case)
+  // ssh-add -D (remove all keys) is intentionally excluded from allowlist
+  // Only -d (remove specific key) is permitted (least privilege)
   {
     const result = isCommandAllowed('ssh-add', ['-D']);
-    assert.strictEqual(result.allowed, true, 'ssh-add -D should be allowed');
+    assert.strictEqual(result.allowed, false, 'ssh-add -D should be blocked (least privilege)');
   }
 
   console.log('✅ Case sensitivity tests passed!');
@@ -868,10 +869,11 @@ function testSshAddIntegration(): void {
     assert.strictEqual(result.allowed, true, 'ssh-add -l should be allowed');
   }
 
-  // Valid command: ssh-add -D
+  // Blocked command: ssh-add -D (remove all keys — least privilege violation)
   {
     const result = isCommandAllowed('ssh-add', ['-D']);
-    assert.strictEqual(result.allowed, true, 'ssh-add -D should be allowed');
+    assert.strictEqual(result.allowed, false, 'ssh-add -D should be blocked (least privilege)');
+    assert.ok(result.reason, 'ssh-add -D rejection should include reason');
   }
 
   // Valid command: ssh-add with path

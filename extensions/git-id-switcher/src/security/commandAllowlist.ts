@@ -118,7 +118,8 @@ export const ALLOWED_COMMANDS: Record<string, CommandConfig> = {
     description: 'SSH agent key management',
     // ssh-add takes key paths directly as positional args
     allowAnyPositional: true,
-    allowedArgs: ['-l', '-d', '-D', '--apple-use-keychain'],
+    // SECURITY: -D (remove all keys) intentionally excluded — only -d (remove specific key) is used
+    allowedArgs: ['-l', '-d', '--apple-use-keychain'],
   },
   'ssh-keygen': {
     allowed: true,
