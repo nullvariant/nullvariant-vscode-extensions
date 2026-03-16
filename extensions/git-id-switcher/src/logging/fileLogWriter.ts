@@ -97,15 +97,12 @@ export class FileLogWriter implements ILogWriter {
     try {
       fd = fs.openSync(this.currentFilePath, openFlags, 0o600);
 
-      // defense-in-depth: verify via fstat() that the opened fd is not a symlink
+      // NOTE: fstat(fd).isSymbolicLink() is NOT used here because fstat on an
+      // already-opened fd always returns the target file's stat (not the symlink's).
+      // Symlink protection is handled entirely by O_NOFOLLOW (ELOOP on symlink).
+      // On Windows where O_NOFOLLOW is unavailable, symlink creation requires
+      // admin rights, making the risk acceptably low.
       const fdStats = fs.fstatSync(fd);
-      /* c8 ignore start - fstat symlink check: O_NOFOLLOW already blocks symlinks, this is defense-in-depth */
-      if (fdStats.isSymbolicLink()) {
-        console.error('[Git ID Switcher] Log file is a symlink, refusing to write');
-        this.writeStream = null;
-        return; // fd closed in finally
-      }
-      /* c8 ignore stop */
 
       // Get file size from fd (avoids TOCTOU between stat and open)
       this.currentFileSize = fdStats.size;
