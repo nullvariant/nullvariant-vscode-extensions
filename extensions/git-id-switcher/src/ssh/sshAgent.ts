@@ -68,6 +68,55 @@ const VALID_SSH_KEY_HEADERS = [
  */
 const FORMAT_CHECK_BYTES = 64;
 
+/**
+ * Check if an ssh-agent key comment matches a given basename using
+ * exact or word-boundary matching.
+ *
+ * ssh-add stores the key file path as the comment by default.
+ * Possible comment formats:
+ * - Full path: "/home/user/.ssh/id_ed25519"
+ * - Basename only: "id_ed25519"
+ * - With user comment: "id_ed25519 user@host" (space-separated)
+ *
+ * @security Uses exact/word-boundary matching instead of substring includes()
+ * to prevent partial matches (e.g., "id_rsa" matching "id_rsa_work").
+ *
+ * @param comment - The ssh-agent key comment
+ * @param basename - The SSH key file basename to match
+ * @returns true if the comment matches the basename
+ */
+function isBasenameMatch(comment: string, basename: string): boolean {
+  // defense-in-depth: empty basename would false-positive on paths ending with '/'
+  if (basename.length === 0) {
+    return false;
+  }
+  // Exact match: comment is just the basename
+  if (comment === basename) {
+    return true;
+  }
+  // Path match: comment ends with /<basename>
+  if (comment.endsWith('/' + basename) || comment.endsWith('\\' + basename)) {
+    return true;
+  }
+  // Space-separated match: comment starts with <basename> followed by space
+  // (ssh-keygen comments like "id_ed25519 user@host")
+  if (comment.startsWith(basename + ' ')) {
+    return true;
+  }
+  // Path + space match: comment contains /<basename> followed by space
+  // (full path with additional comment like "/home/user/.ssh/id_ed25519 user@host")
+  if (comment.includes('/' + basename + ' ') || comment.includes('\\' + basename + ' ')) {
+    return true;
+  }
+  // Token match: basename appears as a standalone space-delimited token
+  // defense-in-depth: handles fallback case where listSshKeys() uses entire
+  // ssh-add -l line as comment (e.g., "256 SHA256:xxx id_ed25519 (unknown)")
+  if (comment.includes(' ' + basename + ' ') || comment.endsWith(' ' + basename)) {
+    return true;
+  }
+  return false;
+}
+
 export interface SshKeyInfo {
   fingerprint: string;
   comment: string;
@@ -310,11 +359,13 @@ export async function checkKeyLoadedInAgent(keyPath: string): Promise<boolean> {
   const expandedPath = expandPath(keyPath);
   const keys = await listSshKeys();
 
-  // Check if any loaded key's comment contains the key path
+  // Check if any loaded key's comment matches the key path basename
   // (ssh-add uses the key path as comment by default)
+  // defense-in-depth: use exact/word-boundary matching to prevent
+  // partial matches (e.g., "id_rsa" matching "id_rsa_work")
   return keys.some(key => {
     const keyPathBasename = path.basename(expandedPath);
-    return key.comment.includes(keyPathBasename);
+    return isBasenameMatch(key.comment, keyPathBasename);
   });
 }
 
@@ -352,7 +403,8 @@ export async function detectCurrentIdentityFromSsh(
     }
 
     const keyPathBasename = path.basename(expandPath(identity.sshKeyPath));
-    const isLoaded = keys.some(key => key.comment.includes(keyPathBasename));
+    // defense-in-depth: exact/word-boundary matching (see isBasenameMatch)
+    const isLoaded = keys.some(key => isBasenameMatch(key.comment, keyPathBasename));
     if (isLoaded) {
       return identity;
     }

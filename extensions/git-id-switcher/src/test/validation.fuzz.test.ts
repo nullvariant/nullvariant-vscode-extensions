@@ -18,6 +18,7 @@
 import * as assert from 'node:assert';
 import * as fc from 'fast-check';
 import { validateIdentity, validateIdentities, isPathSafe } from '../identity/inputValidator';
+import { hasInvisibleUnicode, INVISIBLE_CHARS } from '../validators/common';
 import { Identity } from '../identity/identity';
 
 /**
@@ -403,6 +404,113 @@ function testVeryLongStrings(): void {
 }
 
 /**
+ * Test: Bidi override characters should be detected by hasInvisibleUnicode
+ * defense-in-depth: CVE-2021-42574 (Trojan Source) prevention
+ */
+function testBidiCharacterDetection(): void {
+  console.log('  Fuzzing: Bidi characters should be detected in all positions...');
+
+  // All Bidi-related characters that must be detected
+  const bidiChars = [
+    '\u202A', // LRE
+    '\u202B', // RLE
+    '\u202C', // PDF
+    '\u202D', // LRO
+    '\u202E', // RLO
+    '\u2066', // LRI
+    '\u2067', // RLI
+    '\u2068', // FSI
+    '\u2069', // PDI
+    '\u180E', // Mongolian Vowel Separator
+    '\u2028', // Line Separator
+    '\u2029', // Paragraph Separator
+  ];
+
+  fc.assert(
+    fc.property(
+      fc.constantFrom(...bidiChars),
+      fc.string(),
+      fc.string(),
+      (bidiChar, prefix, suffix) => {
+        const input = prefix + bidiChar + suffix;
+        assert.strictEqual(hasInvisibleUnicode(input), true,
+          `Bidi char U+${bidiChar.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')} should be detected`);
+      }
+    ),
+    { numRuns: 200, verbose: false }
+  );
+
+  console.log('    ✅ Passed (200 runs)');
+}
+
+/**
+ * Test: Bidi characters should be detected by hasInvisibleUnicode in any string context
+ * defense-in-depth: prevents Trojan Source attacks (CVE-2021-42574)
+ *
+ * Note: hasInvisibleUnicode is used by path validators and command allowlist,
+ * not directly by validateIdentity for text fields. This test verifies the
+ * detection function itself works correctly with Bidi characters.
+ */
+function testBidiInStringContexts(): void {
+  console.log('  Fuzzing: Bidi characters should be detected in string contexts...');
+
+  const bidiChars = [
+    '\u202A', '\u202B', '\u202C', '\u202D', '\u202E',
+    '\u2066', '\u2067', '\u2068', '\u2069',
+  ];
+
+  fc.assert(
+    fc.property(
+      fc.constantFrom(...bidiChars),
+      fc.string(),
+      fc.string(),
+      (bidiChar, prefix, suffix) => {
+        // Bidi characters should be detected in any string context
+        const testStrings = [
+          bidiChar,                           // standalone
+          prefix + bidiChar + suffix,         // embedded
+          '~/.ssh/' + bidiChar + 'id_rsa',   // in path context
+          'user' + bidiChar + '@example.com', // in email context
+        ];
+        for (const s of testStrings) {
+          assert.strictEqual(hasInvisibleUnicode(s), true,
+            `Bidi char U+${bidiChar.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')} should be detected in "${s.slice(0, 30)}"`);
+        }
+      }
+    ),
+    { numRuns: 100, verbose: false }
+  );
+
+  console.log('    ✅ Passed (100 runs)');
+}
+
+/**
+ * Test: All INVISIBLE_CHARS entries should be detected by hasInvisibleUnicode
+ * Ensures no regression when new characters are added
+ */
+function testAllInvisibleCharsDetected(): void {
+  console.log('  Fuzzing: all INVISIBLE_CHARS entries should be detected...');
+
+  fc.assert(
+    fc.property(
+      fc.constantFrom(...INVISIBLE_CHARS),
+      fc.string(),
+      (invisibleChar, surrounding) => {
+        // Character alone
+        assert.strictEqual(hasInvisibleUnicode(invisibleChar), true,
+          `Invisible char U+${invisibleChar.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')} should be detected alone`);
+        // Character embedded in string
+        assert.strictEqual(hasInvisibleUnicode(surrounding + invisibleChar), true,
+          `Invisible char should be detected when embedded`);
+      }
+    ),
+    { numRuns: 200, verbose: false }
+  );
+
+  console.log('    ✅ Passed (200 runs)');
+}
+
+/**
  * Run all fuzzing tests
  */
 export function runFuzzingTests(): void {
@@ -422,6 +530,9 @@ export function runFuzzingTests(): void {
     testVeryLongStrings();
     testGpgKeyIdValidation();
     testSshHostValidation();
+    testBidiCharacterDetection();
+    testBidiInStringContexts();
+    testAllInvisibleCharsDetected();
 
     console.log('\n✅ All fuzzing tests passed!\n');
   } catch (error) {

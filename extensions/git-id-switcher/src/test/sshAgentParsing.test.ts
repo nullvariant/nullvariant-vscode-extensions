@@ -207,6 +207,145 @@ function testReDoSResistance(): void {
 }
 
 /**
+ * Check if an ssh-agent key comment matches a given basename using
+ * exact or word-boundary matching.
+ * (Mirrors the logic in sshAgent.ts isBasenameMatch)
+ *
+ * @security Prevents partial matches (e.g., "id_rsa" matching "id_rsa_work")
+ */
+function isBasenameMatch(comment: string, basename: string): boolean {
+  // defense-in-depth: empty basename would false-positive on paths ending with '/'
+  if (basename.length === 0) {
+    return false;
+  }
+  if (comment === basename) {
+    return true;
+  }
+  if (comment.endsWith('/' + basename) || comment.endsWith('\\' + basename)) {
+    return true;
+  }
+  if (comment.startsWith(basename + ' ')) {
+    return true;
+  }
+  if (comment.includes('/' + basename + ' ') || comment.includes('\\' + basename + ' ')) {
+    return true;
+  }
+  // Token match: basename appears as a standalone space-delimited token
+  if (comment.includes(' ' + basename + ' ') || comment.endsWith(' ' + basename)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Test SSH key basename matching - exact/word-boundary matching
+ * defense-in-depth: prevents partial match spoofing (e.g., id_rsa matching id_rsa_work)
+ */
+function testBasenameExactMatching(): void {
+  console.log('Testing SSH key basename exact matching...');
+
+  // Exact match: comment is just the basename
+  assert.strictEqual(isBasenameMatch('id_ed25519', 'id_ed25519'), true,
+    'Exact basename match should succeed');
+
+  // Path match: comment is a full path ending with basename
+  assert.strictEqual(isBasenameMatch('/home/user/.ssh/id_ed25519', 'id_ed25519'), true,
+    'Full path ending with basename should match');
+  assert.strictEqual(isBasenameMatch('/Users/test/.ssh/id_rsa', 'id_rsa'), true,
+    'macOS path ending with basename should match');
+  assert.strictEqual(isBasenameMatch(String.raw`C:\Users\test\.ssh\id_rsa`, 'id_rsa'), true,
+    'Windows path ending with basename should match');
+
+  // Space-separated match: comment starts with basename followed by user comment
+  assert.strictEqual(isBasenameMatch('id_ed25519 user@host', 'id_ed25519'), true,
+    'Basename with space-separated comment should match');
+
+  // Path + space match: full path with additional comment
+  assert.strictEqual(isBasenameMatch('/home/user/.ssh/id_ed25519 user@host', 'id_ed25519'), true,
+    'Full path with space-separated comment should match');
+
+  console.log('  Basename exact matching tests passed!');
+}
+
+/**
+ * Test that similar key names do NOT falsely match
+ * This is the core regression test for HIGH-2
+ */
+function testBasenameNoPartialMatch(): void {
+  console.log('Testing SSH key basename partial match prevention...');
+
+  // id_rsa should NOT match id_rsa_work
+  assert.strictEqual(isBasenameMatch('id_rsa_work', 'id_rsa'), false,
+    'id_rsa should NOT match id_rsa_work');
+  assert.strictEqual(isBasenameMatch('/home/user/.ssh/id_rsa_work', 'id_rsa'), false,
+    'id_rsa should NOT match path ending with id_rsa_work');
+
+  // id_ed25519 should NOT match id_ed25519_github
+  assert.strictEqual(isBasenameMatch('id_ed25519_github', 'id_ed25519'), false,
+    'id_ed25519 should NOT match id_ed25519_github');
+  assert.strictEqual(isBasenameMatch('/home/user/.ssh/id_ed25519_github', 'id_ed25519'), false,
+    'id_ed25519 should NOT match path ending with id_ed25519_github');
+
+  // id_rsa_work should NOT match id_rsa
+  assert.strictEqual(isBasenameMatch('id_rsa', 'id_rsa_work'), false,
+    'id_rsa_work should NOT match shorter id_rsa');
+
+  // Similar prefix should NOT match
+  assert.strictEqual(isBasenameMatch('id_ed25519_personal', 'id_ed25519'), false,
+    'id_ed25519 should NOT match id_ed25519_personal');
+
+  // With path context
+  assert.strictEqual(isBasenameMatch('id_rsa_work user@host', 'id_rsa'), false,
+    'id_rsa should NOT match id_rsa_work even with user comment');
+
+  console.log('  Basename partial match prevention tests passed!');
+}
+
+/**
+ * Test basename matching with various comment formats
+ */
+function testBasenameMatchEdgeCases(): void {
+  console.log('Testing SSH key basename matching edge cases...');
+
+  // Empty inputs
+  assert.strictEqual(isBasenameMatch('', 'id_rsa'), false,
+    'Empty comment should not match');
+  assert.strictEqual(isBasenameMatch('id_rsa', ''), false,
+    'Empty basename should not match basename-only comment');
+  assert.strictEqual(isBasenameMatch('', ''), false,
+    'Empty basename and comment should not match');
+  assert.strictEqual(isBasenameMatch('/home/user/', ''), false,
+    'Empty basename should not match path with trailing slash');
+  assert.strictEqual(isBasenameMatch(' ', ''), false,
+    'Empty basename should not match space-only comment');
+
+  // Comment with only spaces
+  assert.strictEqual(isBasenameMatch('  ', 'id_rsa'), false,
+    'Whitespace comment should not match');
+
+  // Basename appears in the middle (should NOT match)
+  assert.strictEqual(isBasenameMatch('prefix_id_rsa_suffix', 'id_rsa'), false,
+    'Basename in middle of string should not match');
+
+  // Multiple slashes
+  assert.strictEqual(isBasenameMatch('/a/b/c/id_rsa', 'id_rsa'), true,
+    'Deep path ending with basename should match');
+
+  // Token match: basename as standalone space-delimited token
+  // (handles listSshKeys() fallback where comment = entire ssh-add -l line)
+  assert.strictEqual(isBasenameMatch('256 SHA256:abc id_ed25519 (UNKNOWN)', 'id_ed25519'), true,
+    'Basename as space-delimited token in fallback line should match');
+  assert.strictEqual(isBasenameMatch('256 SHA256:abc id_ed25519', 'id_ed25519'), true,
+    'Basename as last space-delimited token should match');
+  assert.strictEqual(isBasenameMatch('256 SHA256:abc id_rsa_work (ED25519)', 'id_rsa'), false,
+    'Partial token match should NOT succeed in fallback line');
+  assert.strictEqual(isBasenameMatch('256 SHA256:abc id_rsa_work', 'id_rsa'), false,
+    'Partial endsWith token should NOT succeed');
+
+  console.log('  Basename matching edge cases tests passed!');
+}
+
+/**
  * Run all SSH agent parsing tests
  */
 export async function runSshAgentParsingTests(): Promise<void> {
@@ -217,6 +356,9 @@ export async function runSshAgentParsingTests(): Promise<void> {
   testKeygenOutputParsing();
   testKeygenEdgeCases();
   testReDoSResistance();
+  testBasenameExactMatching();
+  testBasenameNoPartialMatch();
+  testBasenameMatchEdgeCases();
 
   console.log('\n✅ All SSH agent parsing tests passed!\n');
 }
