@@ -54,6 +54,22 @@ export const INVISIBLE_CHARS = [
   '\u2064', // Invisible plus
   '\uFEFF', // Byte order mark (BOM)
   '\u00AD', // Soft hyphen
+  // Bidirectional Override characters (CVE-2021-42574: Trojan Source)
+  '\u202A', // Left-to-Right Embedding (LRE)
+  '\u202B', // Right-to-Left Embedding (RLE)
+  '\u202C', // Pop Directional Formatting (PDF)
+  '\u202D', // Left-to-Right Override (LRO)
+  '\u202E', // Right-to-Left Override (RLO)
+  // Bidirectional Isolate characters
+  '\u2066', // Left-to-Right Isolate (LRI)
+  '\u2067', // Right-to-Left Isolate (RLI)
+  '\u2068', // First Strong Isolate (FSI)
+  '\u2069', // Pop Directional Isolate (PDI)
+  // Mongolian Vowel Separator
+  '\u180E', // Mongolian Vowel Separator
+  // Line/Paragraph Separators
+  '\u2028', // Line Separator
+  '\u2029', // Paragraph Separator
 ] as const;
 
 /**
