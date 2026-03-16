@@ -22,7 +22,22 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
         with:
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >
+            api.cloudflare.com:443
+            api.github.com:443
+            fulcio.sigstore.dev:443
+            ghcr.io:443
+            github.com:443
+            marketplace.visualstudio.com:443
+            oauth2.sigstore.dev:443
+            objects.githubusercontent.com:443
+            open-vsx.org:443
+            pkg-containers.githubusercontent.com:443
+            registry.npmjs.org:443
+            rekor.sigstore.dev:443
+            tuf-repo-cdn.sigstore.dev:443
+            uploads.github.com:443
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -65,9 +80,10 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@ba7bc0a3fef59531c69a25acd34668d6d3fe6f22 # v4.1.0
 
+      # SECURITY: Cosign signing failure aborts the entire release.
+      # Sigstore infrastructure is mature — failure indicates an anomaly.
       - name: Sign VSIX with Cosign (keyless)
         id: cosign-sign
-        continue-on-error: true
         run: |
           VSIX_FILE="extensions/git-id-switcher/git-id-switcher-${{ steps.version.outputs.version }}.vsix"
           VSIX_BASENAME=$(basename "$VSIX_FILE")
@@ -78,10 +94,6 @@ jobs:
 
           echo "vsix_file=$VSIX_FILE" >> $GITHUB_OUTPUT
           echo "bundle_file=extensions/git-id-switcher/${VSIX_BASENAME}.bundle" >> $GITHUB_OUTPUT
-
-      - name: Warn if Cosign signing failed
-        if: steps.cosign-sign.outcome == 'failure'
-        run: echo "::warning::Cosign VSIX signing failed. The VSIX will be published without a Cosign signature."
 
       # Supply Chain Security: SBOM generation (CycloneDX via Syft)
       - name: Generate SBOM (CycloneDX)
