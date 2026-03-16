@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
         with:
           egress-policy: audit
 
@@ -42,10 +42,10 @@ jobs:
           git checkout -B "$HEAD_REF"
 
       - name: Setup Restyled
-        uses: restyled-io/actions/setup@86f275863a8904f45ea3bd9bb9728edce7facc48 # v4.4.14
+        uses: restyled-io/actions/setup@89c8d2bfc628357c1780f09120d290f10e36a317 # v4.4.15
 
       - name: Run Restyled
-        uses: restyled-io/actions/run@86f275863a8904f45ea3bd9bb9728edce7facc48 # v4.4.14
+        uses: restyled-io/actions/run@89c8d2bfc628357c1780f09120d290f10e36a317 # v4.4.15
         with:
           fail-on-differences: false
           suggestions: true
