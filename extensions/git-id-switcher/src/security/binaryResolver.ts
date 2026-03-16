@@ -17,7 +17,7 @@ import { execFile } from 'node:child_process';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { promisify } from 'node:util';
-import { getWorkspace } from '../core/vscodeLoader';
+import { getWindow, getWorkspace } from '../core/vscodeLoader';
 import { securityLogger } from './securityLogger';
 
 const execFilePromise = promisify(execFile);
@@ -30,15 +30,38 @@ const ALLOWED_COMMANDS = ['git', 'ssh-add', 'ssh-keygen'] as const;
 type AllowedCommand = (typeof ALLOWED_COMMANDS)[number];
 
 /**
- * Cache for resolved binary paths.
- * Key: command name, Value: absolute path or null if resolution failed
+ * Cache entry with TTL support.
+ * Stores the resolved path and the timestamp when it was resolved.
+ * defense-in-depth: TTL prevents stale cache from masking binary replacement attacks
+ * during long-running VS Code sessions.
  */
-const pathCache = new Map<string, string | null>();
+interface CacheEntry {
+  readonly path: string | null;
+  readonly resolvedAt: number;
+}
+
+/**
+ * TTL for cached binary paths (30 minutes).
+ * VS Code sessions can last days; this limits the window for binary replacement attacks.
+ */
+const BINARY_CACHE_TTL_MS = 1_800_000;
+
+/**
+ * Cache for resolved binary paths.
+ * Key: command name, Value: cache entry with path and timestamp
+ */
+const pathCache = new Map<string, CacheEntry>();
 
 /**
  * Timeout for path resolution (5 seconds)
  */
 const RESOLUTION_TIMEOUT = 5000;
+
+/**
+ * Flag to prevent repeated which-fallback warnings within a session.
+ * Set to true after the first warning is shown to the user.
+ */
+let whichFallbackWarningShown = false;
 
 /**
  * Error thrown when a binary path cannot be resolved
@@ -125,14 +148,27 @@ async function getWhichCommand(): Promise<string> {
       return knownPath;
     }
   }
-
   /* c8 ignore start - Fallback when known system paths don't exist (rare) */
+
   // Fallback: use command name (less secure, but better than failing)
   // This is logged for security audit
   securityLogger.logValidationFailure(
     'binary-resolution',
     `No known absolute path for which/where on ${platform}, falling back to PATH`
   );
+
+  // defense-in-depth: warn user about degraded security (once per session)
+  if (!whichFallbackWarningShown) {
+    whichFallbackWarningShown = true;
+    const window = getWindow();
+    if (window) {
+      window.showWarningMessage(
+        'Git ID Switcher: The "which" command was not found at known system paths. ' +
+          'Falling back to PATH resolution, which may reduce security.'
+      );
+    }
+  }
+
   return platform === 'win32' ? 'where' : 'which';
   /* c8 ignore stop */
 }
@@ -213,6 +249,28 @@ function getVSCodeGitPath(): string | null {
 }
 
 /**
+ * Verify that a binary at the given path is actually a git binary.
+ *
+ * Executes `<path> --version` and checks that the output starts with "git version".
+ * Uses execFile directly (not secureExec) to avoid circular dependency:
+ * secureExec → getBinaryPath → resolveCommandPath → verifyGitBinary
+ *
+ * @param absolutePath - Absolute path to the binary to verify
+ * @returns true if the binary produces valid git version output
+ */
+async function verifyGitBinary(absolutePath: string): Promise<boolean> {
+  try {
+    const { stdout } = await execFilePromise(absolutePath, ['--version'], {
+      timeout: RESOLUTION_TIMEOUT,
+      maxBuffer: 1024,
+    });
+    return stdout.trim().startsWith('git version');
+  } catch /* c8 ignore start */ {
+    return false;
+  } /* c8 ignore stop */
+}
+
+/**
  * Resolve the absolute path for a command.
  *
  * Resolution priority:
@@ -232,14 +290,31 @@ async function resolveCommandPath(command: AllowedCommand): Promise<string> {
     if (vscodeGitPath) {
       // Normalize and validate VS Code configured path
       const normalizedPath = path.normalize(vscodeGitPath);
-      if (await isValidExecutable(normalizedPath)) {
-        return normalizedPath;
+
+      // Security: reject relative paths to prevent cwd-based ambiguity
+      if (!path.isAbsolute(normalizedPath)) {
+        securityLogger.logValidationFailure(
+          'binary-resolution',
+          'VS Code git.path is not an absolute path, falling back to PATH'
+        );
+      } else if (await isValidExecutable(normalizedPath)) {
+        // defense-in-depth: verify this is actually a git binary, not a masquerading executable
+        // Uses execFile directly (not secureExec) to avoid circular dependency:
+        // secureExec → getBinaryPath → resolveCommandPath → (here)
+        if (await verifyGitBinary(normalizedPath)) {
+          return normalizedPath;
+        }
+        securityLogger.logValidationFailure(
+          'binary-resolution',
+          `VS Code git.path (${normalizedPath}) is executable but not a valid git binary, falling back to PATH`
+        );
+      } else {
+        // Log warning but continue to try PATH resolution
+        securityLogger.logValidationFailure(
+          'binary-resolution',
+          'VS Code git.path is not a valid executable, falling back to PATH'
+        );
       }
-      // Log warning but continue to try PATH resolution
-      securityLogger.logValidationFailure(
-        'binary-resolution',
-        'VS Code git.path is not a valid executable, falling back to PATH'
-      );
     }
   }
 
@@ -248,13 +323,12 @@ async function resolveCommandPath(command: AllowedCommand): Promise<string> {
   if (resolvedPath) {
     return resolvedPath;
   }
-
-  /* c8 ignore next 4 - Command not found fallback */
+  /* c8 ignore start - Command not found fallback */
   throw new BinaryResolutionError(
     command,
     'Command not found in PATH or not executable'
   );
-}
+} /* c8 ignore stop */
 
 /**
  * Check if a command is in the allowed list.
@@ -289,25 +363,30 @@ export async function getBinaryPath(command: string): Promise<string> {
     throw new Error(`Command '${command}' is not in the allowed list`);
   }
 
-  // Check cache first
-  const cachedPath = pathCache.get(command);
-  if (cachedPath !== undefined) {
-    if (cachedPath === null) {
-      throw new BinaryResolutionError(command, 'Previously failed to resolve');
+  // Check cache first (with TTL validation)
+  const cached = pathCache.get(command);
+  if (cached !== undefined) {
+    const age = Date.now() - cached.resolvedAt;
+    if (age < BINARY_CACHE_TTL_MS) {
+      if (cached.path === null) {
+        throw new BinaryResolutionError(command, 'Previously failed to resolve');
+      }
+      return cached.path;
     }
-    return cachedPath;
+    // TTL expired — evict and re-resolve
+    pathCache.delete(command);
   }
 
   try {
     const resolvedPath = await resolveCommandPath(command);
 
-    // Cache successful resolution
-    pathCache.set(command, resolvedPath);
+    // Cache successful resolution with timestamp
+    pathCache.set(command, { path: resolvedPath, resolvedAt: Date.now() });
 
     return resolvedPath;
   } catch (error) /* c8 ignore start */ {
     // Cache failure to avoid repeated resolution attempts
-    pathCache.set(command, null);
+    pathCache.set(command, { path: null, resolvedAt: Date.now() });
 
     if (error instanceof BinaryResolutionError) {
       throw error;
@@ -389,11 +468,16 @@ export async function checkBinaryAvailability(): Promise<
  */
 export const __testExports = {
   ALLOWED_COMMANDS,
+  BINARY_CACHE_TTL_MS,
   WHICH_PATHS,
   pathCache,
   isValidExecutable,
   resolveWithWhich,
+  verifyGitBinary,
   getVSCodeGitPath,
   getWhichCommand,
   isAllowedCommand,
+  resetWhichFallbackWarning: (): void => {
+    whichFallbackWarningShown = false;
+  },
 };
