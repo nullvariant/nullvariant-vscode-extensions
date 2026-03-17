@@ -1447,6 +1447,28 @@ function testEmailDetection(): void {
     'user@x without dot should NOT be detected'
   );
 
+  // SSH/Git URLs should NOT be detected as emails
+  assert.strictEqual(
+    looksLikeEmail('git@github.com:org/repo'),
+    false,
+    'SCP-style git URL should NOT be detected (colon after @)'
+  );
+  assert.strictEqual(
+    looksLikeEmail('ssh://git@github.com/repo'),
+    false,
+    'SSH URL should NOT be detected (has ://)'
+  );
+  assert.strictEqual(
+    looksLikeEmail('git@github.com/repo.git'),
+    false,
+    'Git URL with slash should NOT be detected (slash after @)'
+  );
+  assert.strictEqual(
+    looksLikeEmail('ftp://user@files.example.com/data'),
+    false,
+    'FTP URL should NOT be detected (has ://)'
+  );
+
   console.log('✅ Email detection passed!');
 }
 

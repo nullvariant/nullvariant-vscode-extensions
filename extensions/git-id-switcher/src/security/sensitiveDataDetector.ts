@@ -46,9 +46,13 @@ const PII_COMMAND_ARGS = new Set([
  * @returns true if the string appears to contain an email address
  */
 export function looksLikeEmail(value: string): boolean {
+  // URLs with protocol (ssh://, ftp://) are not emails
+  if (value.includes('://')) return false;
   const atIndex = value.indexOf('@');
   if (atIndex <= 0) return false;
   const afterAt = value.slice(atIndex + 1);
+  // URL-like patterns after @ (colon for SCP/port, slash for path) are not emails
+  if (afterAt.includes('/') || afterAt.includes(':')) return false;
   return afterAt.includes('.') && afterAt.length > 1;
 }
 
