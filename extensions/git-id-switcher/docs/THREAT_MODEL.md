@@ -2,7 +2,7 @@
 
 > Based on the [STRIDE](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats) framework.
 >
-> Last updated: 2026-03-15
+> Last updated: 2026-03-17
 
 ---
 
@@ -50,12 +50,12 @@ This threat model covers the Git ID Switcher VS Code extension. The extension ma
 
 ### S2: SSH Key Substitution
 
-| Aspect                   | Detail                                                                                                                                                              |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Threat**               | Attacker replaces SSH key path to load a malicious key                                                                                                              |
-| **Attack Vector**        | Modified `sshKeyPath` in configuration                                                                                                                              |
-| **Existing Mitigations** | Path validation pipeline (null bytes, traversal, symlinks, control chars, invisible Unicode); key file type/size/permission validation; only regular files accepted |
-| **Residual Risk**        | Low — multi-layer path validation blocks traversal and symlink attacks                                                                                              |
+| Aspect                   | Detail                                                                                                                                                                                                                        |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Threat**               | Attacker replaces SSH key path to load a malicious key                                                                                                                                                                        |
+| **Attack Vector**        | Modified `sshKeyPath` in configuration                                                                                                                                                                                        |
+| **Existing Mitigations** | Path validation pipeline (null bytes, traversal, symlinks, control chars, invisible Unicode incl. Bidi override — CVE-2021-42574); SSH key basename exact-match; key file type/size/permission validation; regular files only |
+| **Residual Risk**        | Very low — multi-layer path validation blocks traversal, symlink, and Trojan Source attacks; SSH key matching is exact                                                                                                        |
 
 ### S3: Extension Impersonation (Typosquatting)
 
@@ -72,12 +72,12 @@ This threat model covers the Git ID Switcher VS Code extension. The extension ma
 
 ### T1: Configuration File Tampering
 
-| Aspect                   | Detail                                                                                                                              |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Threat**               | Attacker modifies VS Code settings to inject malicious config                                                                       |
-| **Attack Vector**        | Direct modification of `.vscode/settings.json`                                                                                      |
-| **Existing Mitigations** | JSON schema validation (`configSchema.ts`); field length limits; type enforcement; identity duplicate detection at schema + runtime |
-| **Residual Risk**        | Low — VS Code Workspace Trust gates untrusted workspace settings                                                                    |
+| Aspect                   | Detail                                                                                                                                                                                                                                         |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Threat**               | Attacker modifies VS Code settings to inject malicious config                                                                                                                                                                                  |
+| **Attack Vector**        | Direct modification of `.vscode/settings.json`                                                                                                                                                                                                 |
+| **Existing Mitigations** | JSON schema validation (`configSchema.ts`); field length limits; type enforcement; identity duplicate detection at schema + runtime; prototype pollution defense (`__proto__`, `constructor`, `prototype` keys rejected via `Object.hasOwn()`) |
+| **Residual Risk**        | Low — VS Code Workspace Trust gates untrusted workspace settings                                                                                                                                                                               |
 
 ### T2: Command Argument Injection
 
@@ -90,12 +90,12 @@ This threat model covers the Git ID Switcher VS Code extension. The extension ma
 
 ### T3: VSIX Binary Tampering
 
-| Aspect                   | Detail                                                                                                              |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| **Threat**               | Supply chain attack replaces legitimate VSIX with malicious version                                                 |
-| **Attack Vector**        | Compromised marketplace, CDN, or download source                                                                    |
-| **Existing Mitigations** | SLSA Level 3 build provenance; Cosign keyless VSIX signing; Trivy pre-publish scan; CycloneDX SBOM with attestation |
-| **Residual Risk**        | Very low — cryptographic verification available via `cosign verify-blob` and `gh attestation verify`                |
+| Aspect                   | Detail                                                                                                                                                                                                                                                                 |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Threat**               | Supply chain attack replaces legitimate VSIX with malicious version                                                                                                                                                                                                    |
+| **Attack Vector**        | Compromised marketplace, CDN, or download source                                                                                                                                                                                                                       |
+| **Existing Mitigations** | SLSA Level 3 build provenance; Cosign keyless VSIX signing (failure blocks release); Harden Runner egress-policy `block` on publish job with explicit allowed-endpoints; Trivy pre-publish scan; CycloneDX SBOM with attestation; npm audit `high` severity gate in CI |
+| **Residual Risk**        | Very low — cryptographic verification available via `cosign verify-blob` and `gh attestation verify`; egress blocking limits exfiltration during build                                                                                                                 |
 
 ---
 
@@ -147,21 +147,21 @@ This threat model covers the Git ID Switcher VS Code extension. The extension ma
 
 ### D2: Command Execution Hang
 
-| Aspect                   | Detail                                                                                                                                                    |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Threat**               | External binary hangs, blocking extension                                                                                                                 |
-| **Attack Vector**        | Unresponsive git server, ssh-agent deadlock                                                                                                               |
-| **Existing Mitigations** | Command-specific timeouts (git: 10s, ssh-add: 5s, ssh-keygen: 5s); custom `TimeoutError` class; user-configurable timeouts with range validation (1-300s) |
-| **Residual Risk**        | Very low — all external calls have timeouts                                                                                                               |
+| Aspect                   | Detail                                                                                                                                                                                                                                                            |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Threat**               | External binary hangs, blocking extension                                                                                                                                                                                                                         |
+| **Attack Vector**        | Unresponsive git server, ssh-agent deadlock                                                                                                                                                                                                                       |
+| **Existing Mitigations** | Command-specific timeouts (git: 10s, ssh-add: 5s, ssh-keygen: 5s); custom `TimeoutError` class; user-configurable timeouts with range validation (1-300s); `ssh-add -D` (bulk key deletion) removed from allowlist — only individual key removal (`-d`) permitted |
+| **Residual Risk**        | Very low — all external calls have timeouts                                                                                                                                                                                                                       |
 
 ### D3: Log File Growth
 
-| Aspect                   | Detail                                                                                                                           |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Threat**               | Log files consume excessive disk space                                                                                           |
-| **Attack Vector**        | High-frequency operations triggering repeated logging                                                                            |
-| **Existing Mitigations** | Configurable `maxFileSize` (default 10MB) and `maxFiles` (default 5) with rotation; file logging is opt-in (disabled by default) |
-| **Residual Risk**        | Very low — rotation prevents unbounded growth                                                                                    |
+| Aspect                   | Detail                                                                                                                                                                                                                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Threat**               | Log files consume excessive disk space or symlink-based log tampering                                                                                                                                                                                                               |
+| **Attack Vector**        | High-frequency operations triggering repeated logging; symlink replacement of log file between check and open                                                                                                                                                                       |
+| **Existing Mitigations** | Configurable `maxFileSize` and `maxFiles` with rotation (range-validated: 100KB-100MB, 1-100 files); file logging is opt-in; per-event-type rate limiter (10 events/10s window) prevents log flooding; `O_NOFOLLOW` flag on file open + `fstat()` symlink check (TOCTOU mitigation) |
+| **Residual Risk**        | Very low — rotation + rate limiting + symlink protection prevent abuse                                                                                                                                                                                                              |
 
 ---
 
@@ -169,21 +169,21 @@ This threat model covers the Git ID Switcher VS Code extension. The extension ma
 
 ### E1: Command Injection via Shell
 
-| Aspect                   | Detail                                                                                                                                                                                               |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Threat**               | Attacker executes arbitrary commands through the extension                                                                                                                                           |
-| **Attack Vector**        | Shell metacharacters in user input passed to `exec()`                                                                                                                                                |
-| **Existing Mitigations** | `execFile()` used exclusively (no shell); strict command allowlist (`git`, `ssh-add`, `ssh-keygen` only); binary path resolution prevents PATH pollution; argument validation with allowlisted flags |
-| **Residual Risk**        | Very low — no shell interpretation path exists                                                                                                                                                       |
+| Aspect                   | Detail                                                                                                                                                                                                                                                                           |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Threat**               | Attacker executes arbitrary commands through the extension                                                                                                                                                                                                                       |
+| **Attack Vector**        | Shell metacharacters in user input passed to `exec()`                                                                                                                                                                                                                            |
+| **Existing Mitigations** | `execFile()` used exclusively (no shell); strict command allowlist (`git`, `ssh-add`, `ssh-keygen` only); binary path resolution prevents PATH pollution; argument validation with allowlisted flags; ESLint `no-restricted-imports` enforces `exec`/`execSync` ban at lint time |
+| **Residual Risk**        | Very low — no shell interpretation path exists; lint-time enforcement prevents regressions                                                                                                                                                                                       |
 
 ### E2: PATH Pollution
 
-| Aspect                   | Detail                                                                                                                                                                                       |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Threat**               | Attacker places malicious binary earlier in PATH                                                                                                                                             |
-| **Attack Vector**        | Modified PATH environment variable                                                                                                                                                           |
-| **Existing Mitigations** | `binaryResolver.ts` resolves absolute paths using system `which`/`where` from hardcoded locations (`/usr/bin/which`, `C:\Windows\System32\where.exe`); resolved paths are cached per session |
-| **Residual Risk**        | Low — hardcoded resolver paths minimize attack surface                                                                                                                                       |
+| Aspect                   | Detail                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Threat**               | Attacker places malicious binary earlier in PATH                                                                                                                                                                                                                                                                                                                                                                          |
+| **Attack Vector**        | Modified PATH environment variable                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Existing Mitigations** | `binaryResolver.ts` resolves absolute paths using system `which`/`where` from hardcoded locations (`/usr/bin/which`, `C:\Windows\System32\where.exe`); resolved paths cached with 30-minute TTL (re-verified periodically); `git.path` setting validated via `git --version` output check; `which` fallback triggers user-visible warning (session-once); ESLint `no-restricted-imports` blocks `exec`/`execSync` imports |
+| **Residual Risk**        | Very low — TTL-based cache prevents stale binary paths; `git.path` spoofing detected by version check                                                                                                                                                                                                                                                                                                                     |
 
 ### E3: Workspace Trust Bypass
 

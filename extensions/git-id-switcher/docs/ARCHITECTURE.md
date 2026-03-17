@@ -151,6 +151,57 @@ try {
 
 Surfacing these errors would confuse users with irrelevant messages.
 
+### Binary Path Cache with TTL
+
+`security/binaryResolver.ts` caches resolved binary paths with a **30-minute TTL**:
+
+```typescript
+interface CacheEntry {
+  path: string;
+  resolvedAt: number;
+}
+```
+
+**Why TTL?** VS Code sessions can last days. Without TTL, a binary replaced after initial resolution would continue to be trusted. The 30-minute window balances security (periodic re-verification) with performance (no per-command filesystem checks).
+
+`clearPathCache()` ignores TTL and clears immediately (used during identity switching).
+
+### Security Event Rate Limiter
+
+`security/securityLogger.ts` includes a per-event-type rate limiter:
+
+- **Window**: 10 seconds, **Max events**: 10 per event type
+- Excess events are dropped with a count; next allowed event includes `dropped: N events`
+
+**Why?** Prevents log flooding from rapid validation failures (e.g., malformed config triggering repeated errors). Without rate limiting, an attacker could cause I/O exhaustion via log writes.
+
+### O_NOFOLLOW Symlink Protection
+
+`logging/fileLogWriter.ts` uses `O_NOFOLLOW` when opening log files:
+
+```typescript
+fs.constants.O_WRONLY |
+  fs.constants.O_CREAT |
+  fs.constants.O_APPEND |
+  fs.constants.O_NOFOLLOW;
+```
+
+Combined with post-open `fstat()` symlink verification. This mitigates TOCTOU between `isSecureLogPath()` and the actual file open.
+
+**Platform note**: `O_NOFOLLOW` is Unix-only. On Windows, symlink creation requires admin privileges, making the risk inherently lower.
+
+### git.path Binary Verification
+
+When `git.path` VS Code setting provides a binary path, `binaryResolver.ts` verifies it by running `execFile(absolutePath, ['--version'])` and checking the output starts with `git version`. This prevents a user-configured path from pointing to a non-git binary.
+
+**Note**: Uses `execFile()` directly (not `secureExec()`) to avoid circular dependency.
+
+### ESLint `no-restricted-imports` for child_process
+
+`eslint.config.mjs` prohibits importing `exec` and `execSync` from `child_process`/`node:child_process`. Only `execFile` and `execFileSync` are permitted.
+
+This is a lint-time enforcement of the architectural decision to never use shell-based execution. The grep-based CI check remains as defense-in-depth.
+
 ---
 
 ## Code Markers
@@ -185,6 +236,16 @@ These exclusions are intentional and should not be removed:
 | `@typescript-eslint/no-unsafe-member-access` | `security/securityLogger.ts` | Dynamic property access for log sanitization              |
 
 **Do not strip comments** for "cleaner code."
+
+### ESLint Security Enforcement
+
+These rules actively prevent dangerous patterns:
+
+| Rule                    | Target                                      | Reason                                                            |
+| ----------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
+| `no-restricted-imports` | `exec`, `execSync` from `child_process`     | Shell-based execution enables command injection; use `execFile()` |
+| `no-eval`               | `eval()`, `new Function()`                  | Dynamic code execution enables injection                          |
+| `no-implied-eval`       | `setTimeout(string)`, `setInterval(string)` | Implicit eval via string arguments                                |
 
 ---
 
