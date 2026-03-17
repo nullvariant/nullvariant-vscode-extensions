@@ -585,6 +585,34 @@ function testValidateIdentitiesSchema(): void {
     assert.strictEqual(result.valid, true, 'Array with empty optional fields should pass');
   }
 
+  // Test 7: Array with non-object elements should fail (covers extractIdentityId edge case)
+  {
+    const identities = [
+      'not-an-object',
+      42,
+      null,
+      { id: 'valid', name: 'Valid User', email: 'valid@example.com' },
+    ];
+    const result = validateIdentitiesSchema(identities);
+    assert.strictEqual(result.valid, false, 'Array with non-object elements should fail');
+  }
+
+  // Test 8: Array with identity missing id (covers checkDuplicateIds undefined-id path)
+  {
+    const identities = [
+      { name: 'No ID User', email: 'noid@example.com' },
+      { id: 'valid', name: 'Valid User', email: 'valid@example.com' },
+    ];
+    const result = validateIdentitiesSchema(identities);
+    // Should fail because first identity is missing required 'id'
+    assert.strictEqual(result.valid, false, 'Identity missing id should fail');
+    // But should not crash in duplicate ID detection
+    assert.ok(
+      result.errors.some(e => e.message.includes('Required')),
+      'Error should indicate required field is missing'
+    );
+  }
+
   console.log('  validateIdentitiesSchema tests passed!');
 }
 

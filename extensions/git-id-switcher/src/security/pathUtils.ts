@@ -480,10 +480,12 @@ export function isUnderSshDirectory(value: string): boolean {
   // os.homedir() handles platform differences internally (HOME on Unix, USERPROFILE on Windows)
   const homeDir = os.homedir();
 
+  /* c8 ignore start - defense-in-depth: os.homedir() always returns a string, but guard against edge cases */
   if (!homeDir) {
     // Home directory unavailable: only accept ~/.ssh/ format for safety
     return false;
   }
+  /* c8 ignore stop */
 
   // Build the expected SSH directory path
   const sshDir = path.normalize(path.join(homeDir, '.ssh'));
