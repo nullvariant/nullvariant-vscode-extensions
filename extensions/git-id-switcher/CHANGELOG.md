@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.22] - 2026-03-17
+
+### Security
+
+- **Webview CSP hardening**: Removed `'unsafe-inline'` from `style-src` directive and migrated all inline `<style>` tags to nonce-based CSP, matching the existing nonce-only `script-src` policy
+
 ## [0.16.21] - 2026-03-15
 
 ### Fixed
