@@ -22,6 +22,9 @@ import {
   _MAX_LOG_FILE_SIZE_BYTES,
   _MIN_LOG_FILES,
   _MAX_LOG_FILES,
+  _RATE_LIMIT_WINDOW_MS,
+  _RATE_LIMIT_MAX_EVENTS,
+  _resetRateLimitState,
 } from '../security/securityLogger';
 import {
   severityToLogLevel,
@@ -1516,6 +1519,189 @@ function testLogConfigConstants(): void {
 }
 
 /**
+ * Test rate limit constants have expected values
+ */
+function testRateLimitConstants(): void {
+  console.log('Testing rate limit constants...');
+
+  assert.strictEqual(_RATE_LIMIT_WINDOW_MS, 10_000, 'Rate limit window should be 10 seconds');
+  assert.strictEqual(_RATE_LIMIT_MAX_EVENTS, 10, 'Rate limit max events should be 10 per window');
+
+  console.log('✅ Rate limit constants tests passed!');
+}
+
+/**
+ * Test that events within the rate limit are all logged
+ */
+function testRateLimitAllowsWithinLimit(): void {
+  console.log('Testing rate limit allows events within limit...');
+
+  _resetRateLimitState();
+
+  const consoleCapture = new ConsoleCapture();
+  consoleCapture.start();
+
+  // Log exactly RATE_LIMIT_MAX_EVENTS events — all should pass
+  for (let i = 0; i < _RATE_LIMIT_MAX_EVENTS; i++) {
+    securityLogger.logValidationFailure('field', `reason-${i}`);
+  }
+
+  consoleCapture.stop();
+
+  const output = consoleCapture.getOutput();
+  const validationEvents = output.filter(line => line.includes('VALIDATION_FAILURE'));
+  assert.strictEqual(
+    validationEvents.length, _RATE_LIMIT_MAX_EVENTS,
+    `All ${_RATE_LIMIT_MAX_EVENTS} events within limit should be logged`
+  );
+
+  _resetRateLimitState();
+
+  console.log('✅ Rate limit allows events within limit passed!');
+}
+
+/**
+ * Test that events exceeding the rate limit are dropped
+ */
+function testRateLimitDropsExcessEvents(): void {
+  console.log('Testing rate limit drops excess events...');
+
+  _resetRateLimitState();
+
+  const consoleCapture = new ConsoleCapture();
+  consoleCapture.start();
+
+  // Log more than the limit — excess should be dropped
+  const totalEvents = _RATE_LIMIT_MAX_EVENTS + 5;
+  for (let i = 0; i < totalEvents; i++) {
+    securityLogger.logValidationFailure('field', `reason-${i}`);
+  }
+
+  consoleCapture.stop();
+
+  const output = consoleCapture.getOutput();
+  const validationEvents = output.filter(line => line.includes('VALIDATION_FAILURE'));
+  assert.strictEqual(
+    validationEvents.length, _RATE_LIMIT_MAX_EVENTS,
+    `Only ${_RATE_LIMIT_MAX_EVENTS} events should be logged, excess dropped`
+  );
+
+  _resetRateLimitState();
+
+  console.log('✅ Rate limit drops excess events passed!');
+}
+
+/**
+ * Test that rate limiting is per event type (independent counters)
+ */
+function testRateLimitPerEventType(): void {
+  console.log('Testing rate limit is per event type...');
+
+  _resetRateLimitState();
+
+  const consoleCapture = new ConsoleCapture();
+  consoleCapture.start();
+
+  // Exhaust VALIDATION_FAILURE limit
+  for (let i = 0; i < _RATE_LIMIT_MAX_EVENTS + 3; i++) {
+    securityLogger.logValidationFailure('field', `reason-${i}`);
+  }
+
+  // COMMAND_BLOCKED should still be allowed (separate counter)
+  securityLogger.logCommandBlocked('git', ['push'], 'blocked');
+
+  consoleCapture.stop();
+
+  const output = consoleCapture.getOutput();
+  const blockedEvents = output.filter(line => line.includes('COMMAND_BLOCKED'));
+  assert.strictEqual(blockedEvents.length, 1, 'COMMAND_BLOCKED should not be affected by VALIDATION_FAILURE rate limit');
+
+  _resetRateLimitState();
+
+  console.log('✅ Rate limit per event type passed!');
+}
+
+/**
+ * Test that dropped event count is reported on the next allowed event
+ */
+function testRateLimitDroppedCountReported(): void {
+  console.log('Testing rate limit dropped count is reported...');
+
+  _resetRateLimitState();
+
+  // Use a mock to control Date.now for time manipulation
+  const originalDateNow = Date.now;
+  let mockNow = 1_000_000;
+  Date.now = () => mockNow;
+
+  try {
+    const consoleCapture = new ConsoleCapture();
+    consoleCapture.start();
+
+    // Fill up the rate limit window
+    for (let i = 0; i < _RATE_LIMIT_MAX_EVENTS; i++) {
+      securityLogger.logValidationFailure('field', `reason-${i}`);
+    }
+
+    // These 3 events should be dropped
+    securityLogger.logValidationFailure('field', 'dropped-1');
+    securityLogger.logValidationFailure('field', 'dropped-2');
+    securityLogger.logValidationFailure('field', 'dropped-3');
+
+    // Advance time past the window to allow new events
+    mockNow += _RATE_LIMIT_WINDOW_MS + 1;
+
+    // This event should be allowed and include dropped count
+    securityLogger.logValidationFailure('field', 'after-window');
+
+    consoleCapture.stop();
+
+    const output = consoleCapture.getOutput();
+    const droppedLine = output.find(line => line.includes('dropped: 3 events'));
+    assert.ok(droppedLine, 'Should report 3 dropped events on next allowed event');
+  } finally {
+    Date.now = originalDateNow;
+    _resetRateLimitState();
+  }
+
+  console.log('✅ Rate limit dropped count reported passed!');
+}
+
+/**
+ * Test that rate limit state is cleared on dispose
+ */
+function testRateLimitClearedOnDispose(): void {
+  console.log('Testing rate limit state cleared on dispose...');
+
+  _resetRateLimitState();
+
+  const consoleCapture = new ConsoleCapture();
+
+  // Fill up the rate limit
+  consoleCapture.start();
+  for (let i = 0; i < _RATE_LIMIT_MAX_EVENTS + 5; i++) {
+    securityLogger.logValidationFailure('field', `reason-${i}`);
+  }
+  consoleCapture.stop();
+
+  // Dispose should clear rate limit state
+  securityLogger.dispose();
+
+  // After dispose, rate limit should be fresh — events should be allowed again
+  consoleCapture.start();
+  securityLogger.logValidationFailure('field', 'after-dispose');
+  consoleCapture.stop();
+
+  const output = consoleCapture.getOutput();
+  const validationEvents = output.filter(line => line.includes('VALIDATION_FAILURE'));
+  assert.strictEqual(validationEvents.length, 1, 'After dispose, rate limit should be reset');
+
+  _resetRateLimitState();
+
+  console.log('✅ Rate limit cleared on dispose passed!');
+}
+
+/**
  * Run all tests
  */
 export async function runSecurityLoggerTests(): Promise<void> {
@@ -1524,6 +1710,8 @@ export async function runSecurityLoggerTests(): Promise<void> {
   console.log('╚════════════════════════════════════════════╝\n');
 
   try {
+    // Reset rate limit state before running tests to ensure clean state
+    _resetRateLimitState();
     testSecurityEventTypeEnum();
     testLogLevelEnum();
     testSeverityToLogLevel();
@@ -1560,6 +1748,12 @@ export async function runSecurityLoggerTests(): Promise<void> {
     testSanitizeConfigValueIdentities();
     testValidateLogConfigRange();
     testLogConfigConstants();
+    testRateLimitConstants();
+    testRateLimitAllowsWithinLimit();
+    testRateLimitDropsExcessEvents();
+    testRateLimitPerEventType();
+    testRateLimitDroppedCountReported();
+    testRateLimitClearedOnDispose();
 
     console.log('\n✅ All security logger tests passed!\n');
   } catch (error) {

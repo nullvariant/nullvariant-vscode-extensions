@@ -82,6 +82,23 @@ export interface ISecurityLogger {
 }
 
 /**
+ * Rate limiting constants for security event logging
+ * @security Prevents I/O DoS from rapid-fire validation failures or attack attempts
+ */
+const RATE_LIMIT_WINDOW_MS = 10_000;  // 10-second sliding window
+const RATE_LIMIT_MAX_EVENTS = 10;     // Max events per window per event type
+
+/**
+ * Per-event-type rate limiter state
+ */
+interface RateLimitState {
+  /** Timestamps of events within the current window */
+  timestamps: number[];
+  /** Count of events dropped since last allowed event */
+  droppedCount: number;
+}
+
+/**
  * Log file configuration validation constants
  * @security Prevents DoS via extreme log file settings from malicious workspace config
  */
@@ -127,6 +144,8 @@ export {
   MAX_LOG_FILE_SIZE_BYTES as _MAX_LOG_FILE_SIZE_BYTES,
   MIN_LOG_FILES as _MIN_LOG_FILES,
   MAX_LOG_FILES as _MAX_LOG_FILES,
+  RATE_LIMIT_WINDOW_MS as _RATE_LIMIT_WINDOW_MS,
+  RATE_LIMIT_MAX_EVENTS as _RATE_LIMIT_MAX_EVENTS,
 };
 
 /**
@@ -139,6 +158,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
   private minLogLevel: LogLevel = LogLevel.INFO;
   private globalStorageUri: string | null = null;
   private sanitizeOptions: SanitizeOptions = {};
+  private readonly rateLimitState = new Map<SecurityEventType, RateLimitState>();
 
   /**
    * Initialize with extension context for secure file logging
@@ -241,9 +261,53 @@ class SecurityLoggerImpl implements ISecurityLogger {
       this.fileLogWriter.dispose();
       this.fileLogWriter = null;
     }
+    this.rateLimitState.clear();
   }
 
-  private log(event: Omit<SecurityEvent, 'timestamp'>): void {
+  /**
+   * Check rate limit for an event type.
+   * @returns The number of previously dropped events if this event is allowed, or -1 if rate-limited
+   */
+  private checkRateLimit(eventType: SecurityEventType): number {
+    const now = Date.now();
+    let state = this.rateLimitState.get(eventType);
+    if (!state) {
+      state = { timestamps: [], droppedCount: 0 };
+      this.rateLimitState.set(eventType, state);
+    }
+
+    // Evict timestamps outside the sliding window
+    const windowStart = now - RATE_LIMIT_WINDOW_MS;
+    while (state.timestamps.length > 0 && state.timestamps[0] < windowStart) {
+      state.timestamps.shift();
+    }
+
+    if (state.timestamps.length >= RATE_LIMIT_MAX_EVENTS) {
+      // Rate limited — drop this event
+      state.droppedCount++;
+      return -1;
+    }
+
+    // Allowed — record timestamp and return dropped count
+    state.timestamps.push(now);
+    const dropped = state.droppedCount;
+    state.droppedCount = 0;
+    return dropped;
+  }
+
+  private log(event: Omit<SecurityEvent, 'timestamp'>, skipRateLimit = false): void {
+    // defense-in-depth: rate limit to prevent I/O DoS from rapid-fire events
+    if (!skipRateLimit) {
+      const droppedCount = this.checkRateLimit(event.type);
+      if (droppedCount === -1) {
+        return; // Rate limited — silently drop
+      }
+
+      if (droppedCount > 0) {
+        event = { ...event, details: { ...event.details, _rateLimitDropped: `dropped: ${droppedCount} events` } };
+      }
+    }
+
     const sanitizedDetails = sanitizeDetails(event.details, this.sanitizeOptions);
     const timestamp = new Date().toISOString();
     const fullEvent: SecurityEvent = {
@@ -438,14 +502,15 @@ class SecurityLoggerImpl implements ISecurityLogger {
   logConfigChanges(changes: ConfigChangeDetail[]): void {
     if (changes.length === 0) return;
     const MAX_CHANGES = 100;
+    // Skip rate limit for config change batch — already bounded by MAX_CHANGES
     for (const change of changes.slice(0, MAX_CHANGES)) {
       const details = change.key === 'identities'
         ? this.buildIdentityChangeDetails(change)
         : { configKey: change.key, previousValue: this.sanitizeConfigValue(change.key, change.previousValue), newValue: this.sanitizeConfigValue(change.key, change.newValue) };
-      this.log({ type: SecurityEventType.CONFIG_CHANGE, severity: 'info', details });
+      this.log({ type: SecurityEventType.CONFIG_CHANGE, severity: 'info', details }, true);
     }
     if (changes.length > MAX_CHANGES) {
-      this.log({ type: SecurityEventType.CONFIG_CHANGE, severity: 'warning', details: { message: `Truncated (${changes.length})` } });
+      this.log({ type: SecurityEventType.CONFIG_CHANGE, severity: 'warning', details: { message: `Truncated (${changes.length})` } }, true);
     }
   }
 
@@ -497,3 +562,8 @@ class SecurityLoggerImpl implements ISecurityLogger {
 }
 
 export const securityLogger = new SecurityLoggerImpl();
+
+// Export for testing — allows resetting rate limiter state between tests
+export function _resetRateLimitState(): void {
+  (securityLogger as unknown as { rateLimitState: Map<SecurityEventType, RateLimitState> }).rateLimitState.clear();
+}
