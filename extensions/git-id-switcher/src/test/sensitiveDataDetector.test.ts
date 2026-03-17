@@ -39,6 +39,7 @@
 import * as assert from 'node:assert';
 import {
   looksLikeSensitiveData,
+  looksLikeEmail,
   sanitizeValue,
   sanitizeDetails,
   type SanitizeOptions,
@@ -1392,6 +1393,161 @@ function testUndefinedProperties(): void {
 }
 
 /**
+ * Test email address detection (looksLikeEmail)
+ */
+function testEmailDetection(): void {
+  console.log('Testing email detection...');
+
+  // Valid email addresses
+  assert.strictEqual(
+    looksLikeEmail('user@example.com'),
+    true,
+    'Standard email should be detected'
+  );
+  assert.strictEqual(
+    looksLikeEmail('john.doe@company.co.jp'),
+    true,
+    'Email with subdomain should be detected'
+  );
+  assert.strictEqual(
+    looksLikeEmail('test+tag@gmail.com'),
+    true,
+    'Email with + tag should be detected'
+  );
+
+  // NOT email addresses
+  assert.strictEqual(
+    looksLikeEmail('@types/node'),
+    false,
+    'npm scope should NOT be detected (@ at start)'
+  );
+  assert.strictEqual(
+    looksLikeEmail('hello'),
+    false,
+    'Normal string without @ should NOT be detected'
+  );
+  assert.strictEqual(
+    looksLikeEmail(''),
+    false,
+    'Empty string should NOT be detected'
+  );
+  assert.strictEqual(
+    looksLikeEmail('@'),
+    false,
+    'Bare @ should NOT be detected (nothing before @)'
+  );
+  assert.strictEqual(
+    looksLikeEmail('user@'),
+    false,
+    'user@ with nothing after should NOT be detected (no dot)'
+  );
+  assert.strictEqual(
+    looksLikeEmail('user@x'),
+    false,
+    'user@x without dot should NOT be detected'
+  );
+
+  // SSH/Git URLs should NOT be detected as emails
+  assert.strictEqual(
+    looksLikeEmail('git@github.com:org/repo'),
+    false,
+    'SCP-style git URL should NOT be detected (colon after @)'
+  );
+  assert.strictEqual(
+    looksLikeEmail('ssh://git@github.com/repo'),
+    false,
+    'SSH URL should NOT be detected (has ://)'
+  );
+  assert.strictEqual(
+    looksLikeEmail('git@github.com/repo.git'),
+    false,
+    'Git URL with slash should NOT be detected (slash after @)'
+  );
+  assert.strictEqual(
+    looksLikeEmail('ftp://user@files.example.com/data'),
+    false,
+    'FTP URL should NOT be detected (has ://)'
+  );
+
+  console.log('✅ Email detection passed!');
+}
+
+/**
+ * Test PII command argument detection
+ */
+function testPiiCommandArgDetection(): void {
+  console.log('Testing PII command argument detection...');
+
+  // Known PII git config keys
+  assert.strictEqual(
+    looksLikeSensitiveData('user.email'),
+    true,
+    'user.email should be detected as PII'
+  );
+  assert.strictEqual(
+    looksLikeSensitiveData('user.name'),
+    true,
+    'user.name should be detected as PII'
+  );
+
+  // Non-PII git config keys should NOT match
+  assert.strictEqual(
+    looksLikeSensitiveData('user.signingkey'),
+    false,
+    'user.signingkey should NOT be detected as PII command arg'
+  );
+  assert.strictEqual(
+    looksLikeSensitiveData('core.autocrlf'),
+    false,
+    'core.autocrlf should NOT be detected'
+  );
+
+  console.log('✅ PII command argument detection passed!');
+}
+
+/**
+ * Test sanitizeValue with email addresses
+ */
+function testSanitizeValueEmail(): void {
+  console.log('Testing sanitizeValue with emails...');
+
+  // Email should be redacted
+  assert.strictEqual(
+    sanitizeValue('john@example.com'),
+    '[REDACTED:EMAIL]',
+    'Email address should be redacted'
+  );
+
+  // PII command arg should be redacted as sensitive
+  assert.strictEqual(
+    sanitizeValue('user.email'),
+    '[REDACTED:SENSITIVE_VALUE]',
+    'user.email config key should be redacted as sensitive'
+  );
+  assert.strictEqual(
+    sanitizeValue('user.name'),
+    '[REDACTED:SENSITIVE_VALUE]',
+    'user.name config key should be redacted as sensitive'
+  );
+
+  // sanitizeDetails with email value
+  const details = { config: 'john@example.com', key: 'user.email' };
+  const result = sanitizeDetails(details);
+  assert.strictEqual(
+    result.config,
+    '[REDACTED:EMAIL]',
+    'Email in details should be redacted'
+  );
+  assert.strictEqual(
+    result.key,
+    '[REDACTED:SENSITIVE_VALUE]',
+    'user.email key value in details should be redacted'
+  );
+
+  console.log('✅ sanitizeValue email tests passed!');
+}
+
+/**
  * Test redactAllSensitive option (maximum privacy mode)
  */
 function testRedactAllSensitiveOption(): void {
@@ -1569,6 +1725,9 @@ export async function runSensitiveDataDetectorTests(): Promise<void> {
     testKeywordVariations();
     testUndefinedProperties();
     testRedactAllSensitiveOption();
+    testEmailDetection();
+    testPiiCommandArgDetection();
+    testSanitizeValueEmail();
 
     console.log('\n✅ All sensitive data detector tests passed!\n');
   } catch (error) {
