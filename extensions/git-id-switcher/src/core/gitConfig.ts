@@ -292,6 +292,17 @@ export async function detectCurrentIdentity(
 
 /**
  * Get Git author string for commit --author flag
+ *
+ * @security This function builds a shell-quoted `--author` flag using template literals.
+ * The return value MUST be passed as an element of the args array to execFile(),
+ * never concatenated into a shell command string. Shell concatenation would enable
+ * command injection via crafted identity fields.
+ *
+ * @deprecated Prefer building the args array directly with `formatGitAuthor()`:
+ * ```ts
+ * await secureExec('git', ['commit', `--author=${formatGitAuthor(identity)}`]);
+ * ```
+ * This avoids the embedded double-quotes that are unnecessary when using execFile().
  */
 export function getGitAuthorFlag(identity: Identity): string {
   return `--author="${formatGitAuthor(identity)}"`;

@@ -53,6 +53,27 @@ export default [
       "unicorn/numeric-separators-style": "error",
       "@typescript-eslint/no-unnecessary-type-assertion": "error",
 
+      // === INFO-16: Dangerous child_process imports ===
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "node:child_process",
+              importNames: ["exec", "execSync"],
+              message:
+                "exec()/execSync() pass commands through a shell, enabling injection. Use execFile() via security/secureExec.ts instead.",
+            },
+            {
+              name: "child_process",
+              importNames: ["exec", "execSync"],
+              message:
+                "exec()/execSync() pass commands through a shell, enabling injection. Use execFile() via security/secureExec.ts instead.",
+            },
+          ],
+        },
+      ],
+
       // === Project-specific security rules ===
       "no-magic-numbers": [
         "error",
