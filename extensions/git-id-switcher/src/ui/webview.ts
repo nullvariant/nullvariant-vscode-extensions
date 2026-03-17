@@ -40,23 +40,19 @@ export function generateNonce(): string {
  * Build Content Security Policy header value
  *
  * @param webview - Webview instance for cspSource
- * @param nonce - Optional nonce for script-src (required when enableScripts: true)
+ * @param nonce - Nonce for style-src and script-src (required for inline styles/scripts)
  * @returns CSP header string
  */
-export function buildCsp(webview: vscode.Webview, nonce?: string): string {
+export function buildCsp(webview: vscode.Webview, nonce: string): string {
   const directives = [
     `default-src 'none'`,
     // Allow images from: VSCode, our CDN, shields.io badges, GitHub avatars
     `img-src ${webview.cspSource} https://assets.nullvariant.com https://img.shields.io https://*.githubusercontent.com`,
-    `style-src ${webview.cspSource} 'unsafe-inline'`,
+    `style-src ${webview.cspSource} 'nonce-${nonce}'`,
+    `script-src 'nonce-${nonce}'`,
     `connect-src https://assets.nullvariant.com`,
     `font-src ${webview.cspSource}`,
   ];
-
-  // Add script-src with nonce when scripts are enabled
-  if (nonce) {
-    directives.push(`script-src 'nonce-${nonce}'`);
-  }
 
   return directives.join('; ');
 }
@@ -72,7 +68,7 @@ export function buildCsp(webview: vscode.Webview, nonce?: string): string {
  * @param content - Rendered HTML content
  * @param locale - Current locale
  * @param currentPath - Current document path (for relative link resolution)
- * @param nonce - CSP nonce for inline scripts
+ * @param nonce - CSP nonce for inline styles and scripts
  * @param canGoBack - Whether back navigation is available
  * @returns Complete HTML document
  */
@@ -131,7 +127,7 @@ export function getDocumentHtml(
   <meta http-equiv="Content-Security-Policy" content="${csp}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Git ID Switcher Documentation</title>
-  <style>
+  <style nonce="${nonce}">
     body {
       font-family: var(--vscode-font-family);
       font-size: var(--vscode-font-size);
@@ -267,17 +263,18 @@ export function getDocumentHtml(
  * Generate loading state HTML
  *
  * @param webview - Webview instance
+ * @param nonce - CSP nonce for inline styles
  * @returns Loading HTML document
  */
-export function getLoadingHtml(webview: vscode.Webview): string {
-  const csp = buildCsp(webview);
+export function getLoadingHtml(webview: vscode.Webview, nonce: string): string {
+  const csp = buildCsp(webview, nonce);
 
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="${csp}">
-  <style>
+  <style nonce="${nonce}">
     body {
       font-family: var(--vscode-font-family);
       color: var(--vscode-foreground);
@@ -320,13 +317,15 @@ export function getLoadingHtml(webview: vscode.Webview): string {
  *
  * @param webview - Webview instance
  * @param errorType - Type of error
+ * @param nonce - CSP nonce for inline styles
  * @returns Error HTML document
  */
 export function getErrorHtml(
   webview: vscode.Webview,
-  errorType: ErrorType
+  errorType: ErrorType,
+  nonce: string
 ): string {
-  const csp = buildCsp(webview);
+  const csp = buildCsp(webview, nonce);
 
   const messages = {
     network: {
@@ -349,7 +348,7 @@ export function getErrorHtml(
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="${csp}">
-  <style>
+  <style nonce="${nonce}">
     body {
       font-family: var(--vscode-font-family);
       color: var(--vscode-foreground);

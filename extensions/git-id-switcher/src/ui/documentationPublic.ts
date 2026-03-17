@@ -215,7 +215,7 @@ async function handleNavigation(
     case 'internal-md': {
       if (classification.resolvedPath) {
         // Show loading
-        panel.webview.html = getLoadingHtml(panel.webview);
+        panel.webview.html = getLoadingHtml(panel.webview, nonce);
 
         // Try to fetch the document
         const content = await fetchDocumentByPath(classification.resolvedPath);
@@ -292,12 +292,12 @@ async function handleBack(
     // Update panel title to show current document name
     panel.title = getDocumentDisplayName(state.currentPath);
 
-    panel.webview.html = getLoadingHtml(panel.webview);
+    panel.webview.html = getLoadingHtml(panel.webview, nonce);
     const success = await updateWebviewContent(panel, state, nonce);
 
     if (!success) {
       // Document no longer available - show error
-      panel.webview.html = getErrorHtml(panel.webview, 'network');
+      panel.webview.html = getErrorHtml(panel.webview, 'network', nonce);
     }
   }
 }
@@ -339,7 +339,7 @@ export async function showDocumentation(
   };
 
   // Show loading state
-  panel.webview.html = getLoadingHtml(panel.webview);
+  panel.webview.html = getLoadingHtml(panel.webview, nonce);
 
   // Handle messages from Webview
   panel.webview.onDidReceiveMessage(
@@ -376,10 +376,10 @@ export async function showDocumentation(
         false
       );
     } else {
-      panel.webview.html = getErrorHtml(panel.webview, 'network');
+      panel.webview.html = getErrorHtml(panel.webview, 'network', nonce);
     }
   } catch (error) {
     console.error('[Git ID Switcher] Documentation fetch error:', error);
-    panel.webview.html = getErrorHtml(panel.webview, 'server');
+    panel.webview.html = getErrorHtml(panel.webview, 'server', nonce);
   }
 }
