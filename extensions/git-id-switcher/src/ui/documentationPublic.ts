@@ -127,8 +127,9 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
     }
 
     return content;
-  } catch {
+  } catch (error) {
     clearTimeout(timeoutId);
+    console.warn('[Git ID Switcher] Documentation fetch failed:', error instanceof Error ? error.message : String(error));
     return null;
   }
 }
