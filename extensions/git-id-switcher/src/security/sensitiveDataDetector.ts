@@ -30,6 +30,29 @@ const SENSITIVE_KEYWORDS = [
 ] as const;
 
 /**
+ * Git config keys and command arguments that contain or reveal PII.
+ * Exact-match only (these are specific config key names).
+ */
+const PII_COMMAND_ARGS = new Set([
+  'user.email',
+  'user.name',
+]);
+
+/**
+ * Check if a string looks like an email address.
+ * Uses String methods instead of regex to avoid ReDoS risk.
+ *
+ * @param value - The string to check
+ * @returns true if the string appears to contain an email address
+ */
+export function looksLikeEmail(value: string): boolean {
+  const atIndex = value.indexOf('@');
+  if (atIndex <= 0) return false;
+  const afterAt = value.slice(atIndex + 1);
+  return afterAt.includes('.') && afterAt.length > 1;
+}
+
+/**
  * Check if a string looks like it might contain sensitive data
  *
  * @param value - The string to check
@@ -41,6 +64,11 @@ export function looksLikeSensitiveData(value: string): boolean {
     value.length > MAX_PATTERN_CHECK_LENGTH
       ? value.slice(0, MAX_PATTERN_CHECK_LENGTH)
       : value;
+
+  // Check PII command arguments (exact match)
+  if (PII_COMMAND_ARGS.has(checkValue)) {
+    return true;
+  }
 
   for (const keyword of SENSITIVE_KEYWORDS) {
     if (keyword.test(checkValue)) {
@@ -106,6 +134,11 @@ function sanitizeStringValue(value: string): string {
   // Sanitize paths first (Windows UNC paths, drive letters, Unix paths)
   if (looksLikePath(value)) {
     return sanitizePath(value);
+  }
+
+  // Check for email addresses (PII protection)
+  if (looksLikeEmail(value)) {
+    return '[REDACTED:EMAIL]';
   }
 
   // Check for sensitive-looking data
