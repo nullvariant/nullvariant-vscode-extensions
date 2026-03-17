@@ -1090,6 +1090,9 @@ function testIsUnderSshDirectory(): void {
   }
 
   // Test when HOME and USERPROFILE are both undefined
+  // NOTE: os.homedir() falls back to /etc/passwd on Unix even without HOME,
+  // so it still returns the real home directory. The test verifies that
+  // isUnderSshDirectory() works correctly regardless of env var state.
   {
     const originalHome = process.env.HOME;
     const originalUserProfile = process.env.USERPROFILE;
@@ -1102,14 +1105,15 @@ function testIsUnderSshDirectory(): void {
       assert.strictEqual(
         isUnderSshDirectory('~/.ssh/id_rsa'),
         true,
-        '~/.ssh/id_rsa should be valid even without HOME'
+        '~/.ssh/id_rsa should be valid even without HOME env var'
       );
 
-      // Expanded path format should be rejected (cannot verify against home)
+      // Expanded path with non-matching home should be rejected
+      // os.homedir() falls back to /etc/passwd, so use a path that won't match any real home
       assert.strictEqual(
-        isUnderSshDirectory('/home/user/.ssh/id_rsa'),
+        isUnderSshDirectory('/nonexistent-home-dir-12345/.ssh/id_rsa'),
         false,
-        'Expanded path should be invalid when HOME is undefined'
+        'Expanded path with non-matching home should be invalid'
       );
     } finally {
       // Restore environment

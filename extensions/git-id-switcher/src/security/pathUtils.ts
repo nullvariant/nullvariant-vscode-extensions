@@ -9,6 +9,7 @@
  * - pathSymlinkResolver.ts: Symlink resolution and detection
  */
 
+import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { PATH_MAX } from '../core/constants';
@@ -475,13 +476,16 @@ export function isUnderSshDirectory(value: string): boolean {
   // Normalize the path for comparison
   const normalizedValue = path.normalize(value);
 
-  // Get home directory from environment
-  const homeDir = process.env.HOME ?? process.env.USERPROFILE;
+  // SECURITY: Use os.homedir() for consistent, robust home directory resolution
+  // os.homedir() handles platform differences internally (HOME on Unix, USERPROFILE on Windows)
+  const homeDir = os.homedir();
 
+  /* c8 ignore start - defense-in-depth: os.homedir() always returns a string, but guard against edge cases */
   if (!homeDir) {
-    // Environment variable undefined: only accept ~/.ssh/ format for safety
+    // Home directory unavailable: only accept ~/.ssh/ format for safety
     return false;
   }
+  /* c8 ignore stop */
 
   // Build the expected SSH directory path
   const sshDir = path.normalize(path.join(homeDir, '.ssh'));
