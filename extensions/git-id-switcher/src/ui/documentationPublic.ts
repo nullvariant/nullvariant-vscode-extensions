@@ -101,7 +101,7 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
       headers['X-Test-Environment'] = 'true';
     }
 
-    const response = await fetch(url, { signal: controller.signal, headers });
+    const response = await fetch(url, { signal: controller.signal, headers, redirect: 'error' });
     clearTimeout(timeoutId);
 
     if (!response.ok) {
@@ -111,7 +111,7 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
     const contentLength = response.headers.get('content-length');
     const content = await response.text();
 
-    if (!isContentSizeValid(contentLength, content.length, MAX_CONTENT_SIZE)) {
+    if (!isContentSizeValid(contentLength, Buffer.byteLength(content, 'utf8'), MAX_CONTENT_SIZE)) {
       return null;
     }
 
