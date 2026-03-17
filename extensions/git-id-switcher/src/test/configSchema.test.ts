@@ -973,6 +973,104 @@ function testFormatValidation(): void {
 }
 
 /**
+ * Test prototype pollution prevention
+ *
+ * SECURITY: Objects with __proto__, constructor, or prototype keys
+ * must be explicitly rejected to prevent prototype pollution attacks.
+ */
+function testPrototypePollutionPrevention(): void {
+  console.log('Testing prototype pollution prevention...');
+
+  // Test 1: __proto__ key should be rejected
+  {
+    // Use Object.create(null) to ensure __proto__ is an own property
+    // (object literal __proto__ sets the prototype, not an own property)
+    const obj = Object.create(null);
+    obj.id = 'test';
+    obj.name = 'Test User';
+    obj.email = 'test@example.com';
+    obj['__proto__'] = { admin: true };
+
+    const result = validateIdentitySchema(obj);
+    assert.strictEqual(result.valid, false, '__proto__ key should fail validation');
+    assert.ok(
+      result.errors.some(e => e.field === '__proto__' && e.message.includes('Dangerous')),
+      'Error should mention dangerous property name for __proto__'
+    );
+  }
+
+  // Test 2: constructor key should be rejected
+  {
+    const obj = Object.create(null);
+    obj.id = 'test';
+    obj.name = 'Test User';
+    obj.email = 'test@example.com';
+    obj['constructor'] = { prototype: { admin: true } };
+
+    const result = validateIdentitySchema(obj);
+    assert.strictEqual(result.valid, false, 'constructor key should fail validation');
+    assert.ok(
+      result.errors.some(e => e.field === 'constructor' && e.message.includes('Dangerous')),
+      'Error should mention dangerous property name for constructor'
+    );
+  }
+
+  // Test 3: prototype key should be rejected
+  {
+    const obj = Object.create(null);
+    obj.id = 'test';
+    obj.name = 'Test User';
+    obj.email = 'test@example.com';
+    obj['prototype'] = { admin: true };
+
+    const result = validateIdentitySchema(obj);
+    assert.strictEqual(result.valid, false, 'prototype key should fail validation');
+    assert.ok(
+      result.errors.some(e => e.field === 'prototype' && e.message.includes('Dangerous')),
+      'Error should mention dangerous property name for prototype'
+    );
+  }
+
+  // Test 4: JSON.parse with __proto__ should be rejected
+  {
+    const parsed = JSON.parse('{"id":"test","name":"Test","email":"t@e.com","__proto__":{"polluted":true}}');
+    const result = validateIdentitySchema(parsed);
+    assert.strictEqual(result.valid, false, 'JSON.parse __proto__ should fail');
+    assert.ok(
+      result.errors.some(e => e.field === '__proto__'),
+      'Error should flag __proto__ from JSON.parse'
+    );
+  }
+
+  // Test 5: Value of dangerous key should not be exposed in error
+  {
+    const obj = Object.create(null);
+    obj.id = 'test';
+    obj.name = 'Test User';
+    obj.email = 'test@example.com';
+    obj['__proto__'] = 'malicious-payload';
+
+    const result = validateIdentitySchema(obj);
+    const protoError = result.errors.find(e => e.field === '__proto__');
+    assert.ok(protoError, 'Should have __proto__ error');
+    assert.strictEqual(protoError?.value, undefined, 'Value of dangerous key should not be exposed');
+  }
+
+  // Test 6: Normal valid identity should still pass (regression check)
+  {
+    const identity = {
+      id: 'valid',
+      name: 'Valid User',
+      email: 'valid@example.com',
+    };
+    const result = validateIdentitySchema(identity);
+    assert.strictEqual(result.valid, true, 'Normal identity should still pass after pollution check');
+  }
+
+  console.log('  Prototype pollution prevention tests passed!');
+}
+
+/**
  * Test type validation
  */
 function testTypeValidation(): void {
@@ -1026,6 +1124,7 @@ export function runConfigSchemaTests(): void {
     testLengthConstraints();
     testFormatValidation();
     testTypeValidation();
+    testPrototypePollutionPrevention();
 
     console.log('\n  All configSchema tests passed!\n');
   } catch (error) {

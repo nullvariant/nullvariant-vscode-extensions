@@ -117,6 +117,14 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
 } as const;
 
 /**
+ * SECURITY: Keys that indicate prototype pollution attempts.
+ * Rejected unconditionally regardless of field count limits.
+ * defense-in-depth: Even though Object.keys() skips prototype chain,
+ * __proto__ can exist as an own property via JSON.parse or object literal.
+ */
+const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+/**
  * Schema validation result
  */
 export interface SchemaValidationResult {
@@ -318,8 +326,20 @@ export function validateIdentitySchema(identity: unknown): SchemaValidationResul
 
   // Check for unknown fields
   // SECURITY: Object.keys() prevents prototype chain traversal
-  const knownFields = Object.keys(IDENTITY_SCHEMA);
+  const knownFields = new Set(Object.keys(IDENTITY_SCHEMA));
   const objKeys = Object.keys(obj);
+
+  // SECURITY: Check dangerous keys BEFORE field count limit
+  // defense-in-depth: prevents __proto__ bypass via excessive fields
+  for (const field of objKeys) {
+    if (DANGEROUS_KEYS.has(field)) {
+      errors.push({
+        field,
+        message: 'Dangerous property name rejected',
+        value: undefined,
+      });
+    }
+  }
 
   // SECURITY: Limit number of fields to prevent DoS via excessive unknown fields
   const MAX_FIELDS = 100;
@@ -332,7 +352,7 @@ export function validateIdentitySchema(identity: unknown): SchemaValidationResul
     // Continue validation but skip unknown field check for performance
   } else {
     for (const field of objKeys) {
-      if (!knownFields.includes(field)) {
+      if (!DANGEROUS_KEYS.has(field) && !knownFields.has(field)) {
         errors.push({
           field,
           message: 'Unknown field',
@@ -343,14 +363,53 @@ export function validateIdentitySchema(identity: unknown): SchemaValidationResul
   }
 
   // Validate each known field
+  // SECURITY: Use Object.hasOwn() to safely check property existence
+  // defense-in-depth: prevents prototype chain access for property lookup
   for (const [field, schema] of Object.entries(IDENTITY_SCHEMA)) {
-    validateProperty(field, obj[field], schema, errors);
+    const value = Object.hasOwn(obj, field) ? obj[field] : undefined;
+    validateProperty(field, value, schema, errors);
   }
 
   return {
     valid: errors.length === 0,
     errors,
   };
+}
+
+/**
+ * Extract ID from an identity object safely.
+ * @internal
+ */
+function extractIdentityId(identity: unknown): string | undefined {
+  if (typeof identity !== 'object' || identity === null) {
+    return undefined;
+  }
+  // SECURITY: Use Object.hasOwn() to prevent prototype chain access
+  const obj = identity as Record<string, unknown>;
+  const id = Object.hasOwn(obj, 'id') ? obj.id : undefined;
+  return typeof id === 'string' ? id : undefined;
+}
+
+/**
+ * Check for duplicate IDs in identities array.
+ * @internal
+ */
+function checkDuplicateIds(identities: unknown[], errors: SchemaError[]): void {
+  const ids = new Set<string>();
+  for (const [index, identity] of identities.entries()) {
+    const id = extractIdentityId(identity);
+    if (id === undefined) {
+      continue;
+    }
+    if (ids.has(id)) {
+      errors.push({
+        field: `identities[${index}].id`,
+        message: `Duplicate ID: ${id}`,
+        value: id,
+      });
+    }
+    ids.add(id);
+  }
 }
 
 /**
@@ -372,23 +431,7 @@ export function validateIdentitiesSchema(
     };
   }
 
-  // Check for duplicate IDs
-  const ids = new Set<string>();
-  for (const [index, identity] of identities.entries()) {
-    if (typeof identity === 'object' && identity !== null) {
-      const id = (identity as Record<string, unknown>).id;
-      if (typeof id === 'string') {
-        if (ids.has(id)) {
-          errors.push({
-            field: `identities[${index}].id`,
-            message: `Duplicate ID: ${id}`,
-            value: id,
-          });
-        }
-        ids.add(id);
-      }
-    }
-  }
+  checkDuplicateIds(identities, errors);
 
   // Validate each identity
   for (const [index, identity] of identities.entries()) {
