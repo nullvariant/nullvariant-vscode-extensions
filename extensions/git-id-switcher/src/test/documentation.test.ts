@@ -909,6 +909,40 @@ function testIsContentSizeValid(): void {
     'One over limit in header should be invalid'
   );
 
+  // Multibyte character validation: Buffer.byteLength vs string.length
+  // This test documents the security fix: callers must pass byte length, not character count.
+  // Japanese "あ" = 1 character but 3 bytes in UTF-8
+  const multibyteContent = 'あいうえお'; // 5 chars, 15 bytes in UTF-8
+  const charLength = multibyteContent.length; // 5
+  const byteLength = Buffer.byteLength(multibyteContent, 'utf8'); // 15
+  assert.strictEqual(charLength, 5, 'String length should count characters');
+  assert.strictEqual(byteLength, 15, 'Buffer.byteLength should count bytes');
+
+  // With a limit of 10: character count passes but byte count correctly rejects
+  assert.strictEqual(
+    isContentSizeValid(null, charLength, 10),
+    true,
+    'Character count (5) incorrectly passes limit of 10'
+  );
+  assert.strictEqual(
+    isContentSizeValid(null, byteLength, 10),
+    false,
+    'Byte count (15) correctly rejects limit of 10'
+  );
+
+  // Emoji: "😀" = 1 character (2 UTF-16 code units) but 4 bytes in UTF-8
+  const emojiContent = '😀😀😀'; // 3 emoji, .length=6 (surrogate pairs), 12 bytes
+  assert.strictEqual(
+    Buffer.byteLength(emojiContent, 'utf8'),
+    12,
+    'Emoji byte length should be 12'
+  );
+  assert.strictEqual(
+    isContentSizeValid(null, Buffer.byteLength(emojiContent, 'utf8'), 10),
+    false,
+    'Emoji content (12 bytes) should be rejected at limit 10'
+  );
+
   console.log('  isContentSizeValid passed!');
 }
 
