@@ -25,6 +25,8 @@ jobs:
     if: >
       github.event_name == 'pull_request_target' &&
       (github.actor == 'dependabot[bot]' || github.actor == 'renovate[bot]')
+    env:
+      GH_REPO: ${{ github.repository }}
     permissions:
       contents: read
       pull-requests: write
