@@ -1,0 +1,12 @@
+{
+  "description": "Slow-bot code quality review rules",
+  "version": "1.0.0",
+  "file_length": {
+    "max_lines": 300,
+    "extensions": [".ts", ".tsx", ".js", ".mjs"],
+    "reason": "Split it up... reading long files is exhausting."
+  },
+  "empty_catch": {
+    "reason": "Silently swallowing errors is not laziness, it is negligence."
+  }
+}
