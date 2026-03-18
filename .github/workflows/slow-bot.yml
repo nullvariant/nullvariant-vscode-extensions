@@ -77,7 +77,7 @@ jobs:
           CATCH_REASON=$(jq -r '.empty_catch.reason' "$RULES")
 
           # === Get changed files ===
-          CHANGED_FILES=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" \
+          CHANGED_FILES=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" \
             --jq '.[].filename' 2>/dev/null || true)
 
           # === Check file length ===
@@ -122,7 +122,7 @@ jobs:
           # Look for added lines containing empty catch blocks
           # Patterns: catch { }, catch (e) { }, catch(err){ }
           EMPTY_CATCHES=$(echo "$PR_DIFF" | grep '^+' | grep -v '^+++' | \
-            grep -nE 'catch\s*(\([^)]*\))?\s*\{\s*\}' || true)
+            grep -E 'catch\s*(\([^)]*\))?\s*\{\s*\}' || true)
 
           if [ -n "$EMPTY_CATCHES" ]; then
             {
