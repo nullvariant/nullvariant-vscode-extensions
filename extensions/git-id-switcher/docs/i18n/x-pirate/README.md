@@ -49,6 +49,7 @@ While many Git profile switchin' tools sail the seven seas, **Git ID Switcher** 
 - **Profile Management UI**: Add, edit, delete, an' reorder profiles without editin' settings.json — no need to swab the deck manually!
 - **One-Click Profile Switch**: Change yer Git user.name an' user.email faster than ye can say "shiver me timbers!"
 - **Status Bar Integration**: Always see yer current profile at a glance from the crow's nest
+- **Sync Check**: Real-time detection o' mismatches between yer profile an' git config, with a warnin' in the status bar
 - **Submodule Support**: Automatically propagate yer profile to Git submodules across yer fleet
 - **SSH Key Management**: Automatically switch yer SSH keys in ssh-agent, like changin' sails in a storm
 - **GPG Signin' Support**: Configure yer GPG key fer commit signin' (optional, but a true pirate always signs their plunder)
@@ -290,6 +291,8 @@ Ye can also delete profiles from the command palette: `Git ID Switcher: Delete I
 | `gitIdSwitcher.applyToSubmodules`          | `true`      | Propagate profile to Git submodules                                                            |
 | `gitIdSwitcher.submoduleDepth`             | `1`         | Max depth fer nested submodules (1-5)                                                          |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Include emoji in Git config `user.name`                                                        |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`      | Check whether selected profile matches the actual git config, savvy?                           |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`      | Run sync check when the editor window regains focus                                            |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`     | Save audit logs to file (records profile switches, SSH key operations, etc.)                   |
 | `gitIdSwitcher.logging.filePath`           | `""`        | Log file path (e.g., `~/.git-id-switcher/security.log`). Empty = default path                  |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Max file size before rotation (bytes, 1MB-100MB)                                               |
@@ -346,6 +349,32 @@ When ye switch profiles, the extension does these things (in order):
 2. **SSH Key** (when `sshKeyPath` be set): Removes other keys from ssh-agent, adds selected key
 3. **GPG Key** (when `gpgKeyId` be set): Sets `git config --local user.signingkey` an' enables signin'
 4. **Submodules** (when enabled): Propagates settings to all submodules (default: depth 1)
+5. **Sync Check**: Verifies that the applied profile matches the actual git config, arrr!
+
+### Sync Check
+
+Compares yer selected profile against the actual `git config --local` values (`user.name`, `user.email`, `user.signingkey`) an' shows a status bar warnin' when a mismatch be detected.
+
+**When checks be runnin':**
+
+- Right after applyin' a profile
+- When the workspace folder changes course
+- When the configuration be changed
+- When the editor window regains focus (debounced 500ms)
+
+**When a mismatch be found:**
+
+- The status bar shows a ⚠️ icon with a warnin' background color — danger ahead!
+- The tooltip displays a table showin' the mismatched fields (field, expected value, actual value)
+- Clickin' the status bar presents resolution options:
+  - **Re-apply profile** — Re-apply the current profile to git config
+  - **Select different profile** — Open the identity picker
+  - **Dismiss** — Suppress the warnin' until the next check
+
+**To disable, ye scallywag:**
+
+Set `gitIdSwitcher.syncCheck.enabled` to `false` to disable all sync checks.
+To disable only the focus-return check, set `gitIdSwitcher.syncCheck.onFocusReturn` to `false`.
 
 ### Submodule Propagation
 

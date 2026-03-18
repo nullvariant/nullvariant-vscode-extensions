@@ -51,6 +51,7 @@ Git profile switchers law' tu'lu', 'ach **Git ID Switcher** latlh tools complex 
 - **Profile Management UI**: settings.json edit without, profiles add, edit, delete, reorder possible
 - **wa' weQ profile switch**: Git user.name 'ej user.email instant change
 - **Status bar integration**: DaH profile always leghlaH
+- **Sync Check**: Profile je git config mismatch real-time detect, status bar warning show
 - **Submodule support**: Git submodules automatic profiles propagate
 - **SSH key management**: ssh-agent SSH keys automatic switch
 - **GPG signing support**: Commit signing GPG keys configure (optional)
@@ -292,6 +293,8 @@ Command Palette `Git ID Switcher: Delete Identity` profile teq je Datu'.
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | Git submodules profiles propagate                                                         |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | Nested submodules max depth (1-5)                                                         |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Icon emoji Git config `user.name` include                                                 |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`     | Profile wIvta' git config actual match check                                              |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | Editor window focus return sync check run                                                 |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`    | Audit logs file save (profile switches, SSH key operations record)                        |
 | `gitIdSwitcher.logging.filePath`           | `""`       | Log file path (e.g., `~/.git-id-switcher/security.log`). Empty default use                |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Rotation before max file size (bytes, 1MB-100MB)                                          |
@@ -348,6 +351,32 @@ Profile DachoH, extension (order) vum:
 2. **SSH key** (`sshKeyPath` toghta'): latlh keys ssh-agent teq, wIvta' chel
 3. **GPG key** (`gpgKeyId` toghta'): `git config --local user.signingkey` Datogh, signing chu'
 4. **Submodules** (chu'ta'): Hoch submodules config ngeH (default: depth 1)
+5. **Sync Check**: Profile applied git config actual match verify
+
+### Sync Check
+
+Profile wIvta' `git config --local` values (`user.name`, `user.email`, `user.signingkey`) actual compare, mismatch detect status bar warning show.
+
+**ghorgh checks run:**
+
+- Profile apply immediately after
+- Workspace folder change
+- Configuration change
+- Editor window focus return (debounce 500ms)
+
+**Mismatch detect:**
+
+- Status bar ⚠️ icon warning background color show
+- Tooltip mismatch fields table show (field, expected value, actual value)
+- Status bar click resolution options show:
+  - **Profile reapply** — DaH profile git config reapply
+  - **latlh profile wIv** — Profile picker open
+  - **Dismiss** — Warning suppress next check until
+
+**Disable:**
+
+`gitIdSwitcher.syncCheck.enabled` `false` set, Hoch sync checks disable.
+Focus-return check only disable, `gitIdSwitcher.syncCheck.onFocusReturn` `false` set.
 
 ### Submodule ngeH mIw
 

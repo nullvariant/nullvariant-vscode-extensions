@@ -45,6 +45,7 @@ I když existuje mnoho nástrojů pro přepínání Git profilů, **Git ID Switc
 - **UI pro správu profilů**: Přidávejte, upravujte, mažte a přeřazujte profily bez úpravy settings.json
 - **Přepnutí profilu jedním klikem**: Okamžitá změna Git user.name a user.email
 - **Integrace do stavového řádku**: Vždy vidíte aktuální profil
+- **Kontrola synchronizace**: Detekce nesouladu mezi profilem a git config v reálném čase s varováním ve stavovém řádku
 - **Podpora submodulů**: Automatická propagace profilu do Git submodulů
 - **Správa SSH klíčů**: Automatické přepínání SSH klíčů v ssh-agent
 - **Podpora GPG podepisování**: Konfigurace GPG klíče pro podepisování commitů (volitelné)
@@ -287,6 +288,8 @@ Profily můžete také mazat z palety příkazů pomocí `Git ID Switcher: Delet
 | `gitIdSwitcher.applyToSubmodules`          | `true`      | Aplikovat profil na Git submoduly                                                            |
 | `gitIdSwitcher.submoduleDepth`             | `1`         | Maximální hloubka pro vnořené submoduly (1-5)                                                |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Zahrnout emoji ikonu do Git config `user.name`                                               |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`      | Kontrola, zda vybraný profil odpovídá skutečnému git config                                  |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`      | Spustit kontrolu synchronizace při návratu fokusu do okna editoru                            |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`     | Zapnout auditní logování (změny profilu, operace SSH atd.)                                   |
 | `gitIdSwitcher.logging.filePath`           | `""`        | Cesta k souboru logu (např.: `~/.git-id-switcher/security.log`). Prázdné = výchozí umístění  |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Maximální velikost souboru před rotací (bajty, 1MB-100MB)                                    |
@@ -343,6 +346,32 @@ Při přepnutí profilu rozšíření provede (v pořadí):
 2. **SSH klíč** (pokud je nastaven `sshKeyPath`): Odstraní ostatní klíče z ssh-agent, přidá vybraný
 3. **GPG klíč** (pokud je nastaven `gpgKeyId`): Nastaví `git config --local user.signingkey` a povolí podepisování
 4. **Submoduly** (pokud povoleno): Propaguje konfiguraci do všech submodulů (výchozí: hloubka 1)
+5. **Kontrola synchronizace**: Ověří, že aplikovaný profil odpovídá skutečnému git config
+
+### Kontrola synchronizace
+
+Porovnává vybraný profil se skutečnými hodnotami `git config --local` (`user.name`, `user.email`, `user.signingkey`) a při zjištění nesouladu zobrazí varování ve stavovém řádku.
+
+**Kdy se kontrola spouští:**
+
+- Ihned po aplikaci profilu
+- Při změně složky pracovního prostoru
+- Při změně konfigurace
+- Při návratu fokusu do okna editoru (debounce 500ms)
+
+**Při zjištění nesouladu:**
+
+- Stavový řádek zobrazí ikonu ⚠️ s varovnou barvou pozadí
+- Nápověda zobrazí tabulku s nesouladnými poli (pole, očekávaná hodnota, skutečná hodnota)
+- Kliknutím na stavový řádek se zobrazí možnosti řešení:
+  - **Znovu aplikovat profil** — Znovu aplikovat aktuální profil na git config
+  - **Vybrat jiný profil** — Otevřít výběr profilu
+  - **Ignorovat** — Skrýt varování do příští kontroly
+
+**Vypnutí:**
+
+Nastavením `gitIdSwitcher.syncCheck.enabled` na `false` vypnete všechny kontroly synchronizace.
+Pokud chcete vypnout pouze kontrolu při návratu fokusu, nastavte `gitIdSwitcher.syncCheck.onFocusReturn` na `false`.
 
 ### Mechanismus propagace do submodulů
 

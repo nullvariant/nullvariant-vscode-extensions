@@ -45,6 +45,7 @@ Existem muitas ferramentas para alternar perfis Git, mas o **Git ID Switcher** r
 - **UI de gerenciamento de perfis**: Adicione, edite, exclua e reordene perfis sem editar o settings.json
 - **Troca de perfil com um clique**: Altere Git user.name e user.email instantaneamente
 - **Integração na barra de status**: Veja seu perfil atual de relance a qualquer momento
+- **Verificação de sincronização**: Detecção em tempo real de discrepâncias entre o perfil e a configuração git, com aviso na barra de status
 - **Suporte a submódulos**: Propague automaticamente o perfil aos submódulos Git
 - **Gerenciamento de chaves SSH**: Alterne automaticamente as chaves SSH no ssh-agent
 - **Suporte a assinatura GPG**: Configure a chave GPG para assinar commits (opcional)
@@ -287,6 +288,8 @@ Também é possível excluir um perfil pela paleta de comandos com `Git ID Switc
 | `gitIdSwitcher.applyToSubmodules`          | `true`       | Propagar o perfil aos submódulos Git                                                                   |
 | `gitIdSwitcher.submoduleDepth`             | `1`          | Profundidade máxima para submódulos aninhados (1-5)                                                    |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`      | Incluir o emoji do ícone no `user.name` do Git config                                                  |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`       | Verificar se o perfil selecionado corresponde à configuração git atual                                 |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`       | Executar verificação de sincronização ao recuperar o foco da janela do editor                          |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`      | Salvar log de auditoria em arquivo (mudanças de perfil, operações SSH, etc.)                           |
 | `gitIdSwitcher.logging.filePath`           | `""`         | Caminho do arquivo de log (ex.: `~/.git-id-switcher/security.log`). Vazio = local padrão               |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | Tamanho máximo do arquivo antes da rotação (bytes, 1 MB–100 MB)                                        |
@@ -343,6 +346,32 @@ Ao trocar de perfil, a extensão executa (em ordem):
 2. **Chave SSH** (se `sshKeyPath` configurado): Remove outras chaves do ssh-agent e adiciona a selecionada
 3. **Chave GPG** (se `gpgKeyId` configurado): Define `git config --local user.signingkey` e ativa a assinatura
 4. **Submódulos** (se ativado): Propaga a configuração para todos os submódulos (padrão: profundidade 1)
+5. **Verificação de sincronização**: Verifica se o perfil aplicado corresponde à configuração git atual
+
+### Verificação de sincronização
+
+Compara o perfil selecionado com os valores reais de `git config --local` (`user.name`, `user.email`, `user.signingkey`) e exibe um aviso na barra de status quando uma discrepância é detectada.
+
+**Quando as verificações são executadas:**
+
+- Imediatamente após aplicar um perfil
+- Ao alterar a pasta do workspace
+- Ao alterar a configuração
+- Ao recuperar o foco da janela do editor (com debounce de 500 ms)
+
+**Quando uma discrepância é detectada:**
+
+- A barra de status exibe um ícone ⚠️ com cor de fundo de aviso
+- O tooltip mostra uma tabela com os campos discrepantes (campo, valor esperado, valor atual)
+- Ao clicar na barra de status, são apresentadas opções de resolução:
+  - **Reaplicar perfil** — Reaplicar o perfil atual à configuração git
+  - **Selecionar outro perfil** — Abrir o seletor de perfis
+  - **Descartar** — Suprimir o aviso até a próxima verificação
+
+**Para desativar:**
+
+Defina `gitIdSwitcher.syncCheck.enabled` como `false` para desativar todas as verificações de sincronização.
+Para desativar apenas a verificação ao recuperar o foco, defina `gitIdSwitcher.syncCheck.onFocusReturn` como `false`.
 
 ### Propagação para submódulos
 

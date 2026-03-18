@@ -67,6 +67,7 @@ Git プロフィール ウコイタㇰ ツール ポㇿ アン、**Git ID Switch
 - **プロフィール 管理 UI**: settings.json エトゥㇾ ソモ、プロフィール エレㇷ゚・エトゥㇾ・エオㇷ゚キ・並べ替え UI オロワ
 - **シネㇷ゚ クリㇰ プロフィール ウコイタㇰ**: Git user.name ウン user.email ホㇱキノ エトゥㇾ
 - **ステータスバー**: エネアン プロフィール エヌカㇻ
+- **Sync Check**: プロフィール ウン git config ウコイタㇰ ソモ ヤㇰ ステータスバー 警告
 - **サブモジュール 対応**: Git サブモジュール オロワノ プロフィール 自動伝播
 - **SSH キー 管理**: ssh-agent SSH キー 自動ウコイタㇰ
 - **GPG サイン 対応**: commit サイン GPG キー（オプション）
@@ -309,6 +310,8 @@ Host gitlab-oss
 | `gitIdSwitcher.applyToSubmodules`          | `true`       | Git サブモジュール プロフィール 伝播                                              |
 | `gitIdSwitcher.submoduleDepth`             | `1`          | ネスト サブモジュール 設定 最大深度（1-5）                                        |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`      | アイコン 絵文字 Git config `user.name` オロワ                                     |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`       | プロフィール ウン git config ウコイタㇰ 確認                                      |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`       | エディタ ウィンドウ フォーカス 戻り Sync Check                                    |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`      | 監査ログ ファイル 保存（ID 切り替え、SSH キー 操作 記録）                         |
 | `gitIdSwitcher.logging.filePath`           | `""`         | ログファイル パス（例：`~/.git-id-switcher/security.log`）。空 = デフォルト       |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | ローテーション 最大ファイルサイズ（バイト、1MB-100MB）                            |
@@ -365,6 +368,32 @@ Git 設定 3 レイヤー; ハヨㇰペ 設定 リㇰンペ 上書き:
 2. **SSH キー**（`sshKeyPath` 設定時）: ホッカ キー ssh-agent オロワ 削除、選択 キー 追加
 3. **GPG キー**（`gpgKeyId` 設定時）: `git config --local user.signingkey` 設定、サイン 有効化
 4. **サブモジュール**（有効時）: オㇿ サブモジュール 設定 伝播（デフォルト：深度 1）
+5. **Sync Check**: プロフィール ウン git config ウコイタㇰ 確認
+
+### Sync Check
+
+プロフィール ウン `git config --local` 値（`user.name`, `user.email`, `user.signingkey`）ウコイタㇰ、ソモ ヤㇰ ステータスバー 警告。
+
+**確認 タイミング:**
+
+- プロフィール 適用 直後
+- ワークスペース フォルダ 変更時
+- 設定 変更時
+- エディタ ウィンドウ フォーカス 戻り（500 ミリ秒 デバウンス）
+
+**ウコイタㇰ ソモ ヤㇰ:**
+
+- ステータスバー ⚠️ アイコン 警告色 オロワ
+- ツールチップ ウコイタㇰ ソモ フィールド テーブル（フィールド、期待値、実際値）
+- ステータスバー クリㇰ 解決オプション:
+  - **プロフィール 再適用** — エネアン プロフィール git config オロワ 再適用
+  - **ホッカ プロフィール 選択** — プロフィール ピッカー
+  - **エレㇷ゚** — 次 確認 マデ 警告 非表示
+
+**無効化:**
+
+`gitIdSwitcher.syncCheck.enabled` `false` 設定、オㇿ Sync Check 無効。
+フォーカス 戻り 確認 ワノ 無効、`gitIdSwitcher.syncCheck.onFocusReturn` `false` 設定。
 
 ### サブモジュール 伝播 仕組み
 

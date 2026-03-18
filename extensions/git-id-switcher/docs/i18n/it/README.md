@@ -45,6 +45,7 @@ Esistono molti strumenti per cambiare profilo Git, ma **Git ID Switcher** risolv
 - **UI Gestione Profili**: Aggiungi, modifica, elimina e riordina i profili senza modificare settings.json
 - **Cambio profilo con un clic**: Modifica Git user.name e user.email istantaneamente
 - **Integrazione barra di stato**: Visualizza sempre il profilo corrente a colpo d'occhio
+- **Sync Check**: Rilevamento in tempo reale delle discrepanze tra profilo e configurazione git, con avviso nella barra di stato
 - **Supporto sottomoduli**: Propaga automaticamente il profilo ai sottomoduli Git
 - **Gestione chiavi SSH**: Cambia automaticamente le chiavi SSH in ssh-agent
 - **Supporto firma GPG**: Configura la chiave GPG per firmare i commit (opzionale)
@@ -287,6 +288,8 @@ Puoi anche eliminare profili dalla palette comandi con `Git ID Switcher: Delete 
 | `gitIdSwitcher.applyToSubmodules`          | `true`       | Propaga il profilo ai sottomoduli Git                                                                                |
 | `gitIdSwitcher.submoduleDepth`             | `1`          | Profondità massima per i sottomoduli annidati (1-5)                                                                  |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`      | Includi l'emoji icona nel Git config `user.name`                                                                     |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`       | Verifica se il profilo selezionato corrisponde alla configurazione git effettiva                                     |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`       | Esegui sync check quando la finestra dell'editor riacquista il focus                                                 |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`      | Salva log di audit su file (cambio profilo, operazioni chiavi SSH, ecc.)                                             |
 | `gitIdSwitcher.logging.filePath`           | `""`         | Percorso file di log (es: `~/.git-id-switcher/security.log`). Vuoto = posizione predefinita                          |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | Dimensione massima file prima della rotazione (byte, 1MB-100MB)                                                      |
@@ -343,6 +346,32 @@ Quando cambi profilo, l'estensione esegue (in ordine):
 2. **Chiave SSH** (se `sshKeyPath` impostato): Rimuove altre chiavi da ssh-agent, aggiunge quella selezionata
 3. **Chiave GPG** (se `gpgKeyId` impostato): Imposta `git config --local user.signingkey` e abilita la firma
 4. **Sottomoduli** (se abilitato): Propaga la configurazione a tutti i sottomoduli (predefinito: profondità 1)
+5. **Sync Check**: Verifica che il profilo applicato corrisponda alla configurazione git effettiva
+
+### Sync Check
+
+Confronta il profilo selezionato con i valori effettivi di `git config --local` (`user.name`, `user.email`, `user.signingkey`) e mostra un avviso nella barra di stato quando viene rilevata una discrepanza.
+
+**Quando vengono eseguiti i controlli:**
+
+- Subito dopo l'applicazione del profilo
+- Al cambio della cartella del workspace
+- Al cambio di configurazione
+- Quando la finestra dell'editor riacquista il focus (con debounce di 500 ms)
+
+**Quando viene rilevata una discrepanza:**
+
+- La barra di stato mostra un'icona ⚠️ con un colore di sfondo di avviso
+- Il tooltip mostra una tabella con i campi discordanti (campo, valore atteso, valore effettivo)
+- Cliccando sulla barra di stato vengono presentate le opzioni di risoluzione:
+  - **Riapplica profilo** — Riapplica il profilo corrente alla configurazione git
+  - **Seleziona un profilo diverso** — Apri il selettore profili
+  - **Ignora** — Sopprime l'avviso fino al prossimo controllo
+
+**Per disabilitare:**
+
+Imposta `gitIdSwitcher.syncCheck.enabled` su `false` per disabilitare tutti i sync check.
+Per disabilitare solo il controllo al ritorno del focus, imposta `gitIdSwitcher.syncCheck.onFocusReturn` su `false`.
 
 ### Come Funziona la Propagazione ai Sottomoduli
 

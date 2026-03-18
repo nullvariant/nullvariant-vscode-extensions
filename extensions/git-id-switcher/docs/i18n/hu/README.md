@@ -45,6 +45,7 @@ Bár sok Git-profil váltó létezik, a **Git ID Switcher** olyan összetett pro
 - **Profilkezelő UI**: Profilok hozzáadása, szerkesztése, törlése és átrendezése a settings.json szerkesztése nélkül
 - **Egykattintásos profilváltás**: Git user.name és user.email azonnali módosítása
 - **Állapotsáv-integráció**: Aktuális profil mindig egy pillantásra látható
+- **Szinkronizáció-ellenőrzés**: Profil és git config közötti eltérés valós idejű észlelése, állapotsáv-figyelmeztetéssel
 - **Almodul-támogatás**: Profil automatikus alkalmazása a Git-almodulokra
 - **SSH-kulcs kezelés**: SSH-kulcsok automatikus váltása az ssh-agent-ben
 - **GPG-aláírás támogatás**: GPG-kulcs konfigurálása commit aláíráshoz (opcionális)
@@ -287,6 +288,8 @@ A profilokat a Parancspalettából is törölheti a `Git ID Switcher: Delete Ide
 | `gitIdSwitcher.applyToSubmodules`          | `true`          | Profil alkalmazása Git-almodulokra                                                              |
 | `gitIdSwitcher.submoduleDepth`             | `1`             | Max. mélység beágyazott almodulokhoz (1-5)                                                      |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`         | Ikon emoji beírása a Git config `user.name`-be                                                  |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`          | Kiválasztott profil és a tényleges git config egyezésének ellenőrzése                           |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`          | Szinkronizáció-ellenőrzés futtatása, amikor a szerkesztőablak visszakapja a fókuszt             |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`         | Audit naplózás fájlba (profilváltások, SSH műveletek, stb.)                                     |
 | `gitIdSwitcher.logging.filePath`           | `""`            | Naplófájl elérési útja (pl.: `~/.git-id-switcher/security.log`). Üres = alapértelmezett hely    |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`      | Max. fájlméret rotálás előtt (bájt, 1MB-100MB)                                                  |
@@ -343,6 +346,32 @@ Profil váltásakor a bővítmény a következőket hajtja végre (sorrendben):
 2. **SSH-kulcs** (ha `sshKeyPath` be van állítva): Eltávolítja a többi kulcsot az ssh-agent-ből, hozzáadja a kiválasztottat
 3. **GPG-kulcs** (ha `gpgKeyId` be van állítva): Beállítja a `git config --local user.signingkey` értéket és engedélyezi az aláírást
 4. **Almodulok** (ha engedélyezve): Propagálja a konfigurációt az összes almodulba (alapértelmezett: mélység 1)
+5. **Szinkronizáció-ellenőrzés**: Ellenőrzi, hogy az alkalmazott profil megegyezik-e a tényleges git configgal
+
+### Szinkronizáció-ellenőrzés
+
+Összehasonlítja a kiválasztott profilt a tényleges `git config --local` értékekkel (`user.name`, `user.email`, `user.signingkey`), és eltérés észlelése esetén figyelmeztetést jelenít meg az állapotsávon.
+
+**Mikor fut az ellenőrzés:**
+
+- Profil alkalmazása után azonnal
+- Munkaterület mappa változásakor
+- Konfiguráció változásakor
+- Szerkesztőablak fókusz-visszatérésekor (500ms debounce)
+
+**Eltérés észlelése esetén:**
+
+- Az állapotsáv ⚠️ ikont jelenít meg figyelmeztető háttérszínnel
+- A tooltip táblázatban mutatja az eltérő mezőket (mező, várt érték, tényleges érték)
+- Az állapotsávra kattintva megjelennek a megoldási lehetőségek:
+  - **Profil újraalkalmazása** — Az aktuális profil újraalkalmazása a git configra
+  - **Másik profil választása** — A profilválasztó megnyitása
+  - **Figyelmen kívül hagyás** — A figyelmeztetés elrejtése a következő ellenőrzésig
+
+**Letiltás:**
+
+Állítsa a `gitIdSwitcher.syncCheck.enabled` értékét `false`-ra az összes szinkronizáció-ellenőrzés letiltásához.
+Ha csak a fókusz-visszatérési ellenőrzést szeretné letiltani, állítsa a `gitIdSwitcher.syncCheck.onFocusReturn` értékét `false`-ra.
 
 ### Almodul-propagáció mechanizmusa
 
