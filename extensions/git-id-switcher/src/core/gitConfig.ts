@@ -38,7 +38,7 @@ function t(message: string): string {
  * Check if icon should be included in Git config user.name
  * @returns true if icon should be included, false otherwise (default: false)
  */
-function shouldIncludeIconInGitConfig(): boolean {
+export function shouldIncludeIconInGitConfig(): boolean {
   const workspace = getWorkspace();
   if (!workspace) {
     return false;

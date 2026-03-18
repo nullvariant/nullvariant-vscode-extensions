@@ -28,6 +28,7 @@ import { runSubmoduleTests } from './submodule.test';
 import { runPathSeparatorTests } from './pathSeparator.test';
 import { runDisplayLimitsTests } from './displayLimits.test';
 import { runSshAgentParsingTests } from './sshAgentParsing.test';
+import { runSyncCheckerTests } from './syncChecker.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -106,6 +107,9 @@ async function main(): Promise<void> {
 
     // Run SSH agent parsing tests (ReDoS-safe split-based parsing)
     await runSshAgentParsingTests();
+
+    // Run sync checker tests (profile vs git config comparison)
+    await runSyncCheckerTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
