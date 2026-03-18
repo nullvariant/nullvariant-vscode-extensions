@@ -138,7 +138,7 @@ jobs:
 
             printf '%s zoo members have reviewed this PR.\n\n' "$TOTAL"
             cat /tmp/ciel-findings.md
-            printf '---\n\n'
+            printf '\n---\n\n'
             printf '> まあまあ、ほどほどに。\n\n'
             printf '*This mediation was peacefully delivered by nullvariant-ciel[bot]*\n'
           } > /tmp/ciel-comment.md
