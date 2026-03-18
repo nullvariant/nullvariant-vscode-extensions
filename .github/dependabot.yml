@@ -34,6 +34,11 @@ updates:
       - "npm"
     open-pull-requests-limit: 5
     rebase-strategy: "auto"
+    # @types/vscode must match engines.vscode.
+    # Bumping it forces engines.vscode up, cutting off fork editors
+    # (Cursor, Windsurf, etc.) that lag behind VS Code stable.
+    ignore:
+      - dependency-name: "@types/vscode"
     # Group minor and patch updates together
     groups:
       dev-dependencies:
