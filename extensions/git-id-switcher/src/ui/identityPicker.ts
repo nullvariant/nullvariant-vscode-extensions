@@ -263,6 +263,57 @@ export async function showDeleteIdentityQuickPick(
 }
 
 /**
+ * Result from sync resolution quick pick
+ */
+export type SyncResolutionResult = 'reapply' | 'select' | 'dismiss';
+
+/**
+ * Show sync mismatch resolution quick pick
+ *
+ * Presents options to resolve a profile-git config mismatch:
+ * 1. Re-apply profile - Re-apply the current profile to git config
+ * 2. Select different profile - Open identity selection
+ * 3. Dismiss - Ignore until next check
+ *
+ * @returns Selected resolution action, or undefined if cancelled
+ */
+export async function showSyncResolutionQuickPick(): Promise<SyncResolutionResult | undefined> {
+  const vs = getVSCode();
+  if (!vs) {
+    return undefined;
+  }
+
+  const items: vscodeTypes.QuickPickItem[] = [
+    {
+      label: `$(sync) ${vs.l10n.t('Re-apply profile')}`,
+      description: vs.l10n.t('Re-apply the current profile to git config'),
+    },
+    {
+      label: `$(list-selection) ${vs.l10n.t('Select different profile')}`,
+      description: vs.l10n.t('Choose a different identity profile'),
+    },
+    {
+      label: `$(close) ${vs.l10n.t('Dismiss')}`,
+      description: vs.l10n.t('Ignore until next sync check'),
+    },
+  ];
+
+  const selected = await vs.window.showQuickPick(items, {
+    title: vs.l10n.t('Profile out of sync'),
+    placeHolder: vs.l10n.t('How would you like to resolve this?'),
+  });
+
+  if (!selected) {
+    return undefined;
+  }
+
+  // Match by index position (stable regardless of l10n)
+  const index = items.indexOf(selected);
+  const actions: SyncResolutionResult[] = ['reapply', 'select', 'dismiss'];
+  return actions[index];
+}
+
+/**
  * Show manage identities quick pick
  *
  * Displays a list of identities with inline move up/down, edit, and delete buttons.

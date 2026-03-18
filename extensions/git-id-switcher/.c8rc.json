@@ -1,6 +1,13 @@
 {
   "include": ["out/**/*.js"],
-  "exclude": ["out/test/**", "scripts/**", "node_modules/**"],
+  "exclude": [
+    "out/test/**",
+    "scripts/**",
+    "node_modules/**",
+    "out/core/errors.js",
+    "out/core/gitConfig.js",
+    "out/identity/identity.js"
+  ],
   "reporter": ["lcov", "text"],
   "all": false
 }

@@ -29,8 +29,9 @@
 
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { createStatusBar, IdentityStatusBar } from '../../ui/identityStatusBar';
+import { createStatusBar, IdentityStatusBar, buildMismatchTooltip } from '../../ui/identityStatusBar';
 import { Identity } from '../../identity/identity';
+import type { SyncCheckResult } from '../../core/syncChecker';
 
 const EXTENSION_ID = 'nullvariant.git-id-switcher';
 
@@ -333,6 +334,174 @@ describe('StatusBar E2E Test Suite', function () {
         'test-icon',
         'Should recover from error state'
       );
+    });
+  });
+
+  describe('State Transitions: setSyncState', () => {
+    it('should set synced state without error', () => {
+      statusBar = createStatusBar();
+      statusBar.setIdentity(TEST_IDENTITIES.basic);
+
+      const syncResult: SyncCheckResult = { state: 'synced', mismatches: [] };
+      assert.doesNotThrow(() => {
+        statusBar!.setSyncState(syncResult);
+      }, 'setSyncState(synced) should not throw');
+
+      const syncState = statusBar.getSyncState();
+      assert.ok(syncState, 'Sync state should be set');
+      assert.strictEqual(syncState.state, 'synced');
+    });
+
+    it('should set out_of_sync state without error', () => {
+      statusBar = createStatusBar();
+      statusBar.setIdentity(TEST_IDENTITIES.basic);
+
+      const syncResult: SyncCheckResult = {
+        state: 'out_of_sync',
+        mismatches: [
+          { field: 'name', expected: 'Test User', actual: 'Wrong Name' },
+        ],
+      };
+
+      assert.doesNotThrow(() => {
+        statusBar!.setSyncState(syncResult);
+      }, 'setSyncState(out_of_sync) should not throw');
+
+      const syncState = statusBar.getSyncState();
+      assert.ok(syncState, 'Sync state should be set');
+      assert.strictEqual(syncState.state, 'out_of_sync');
+      assert.strictEqual(syncState.mismatches.length, 1);
+    });
+
+    it('should handle unknown state without changing display', () => {
+      statusBar = createStatusBar();
+      statusBar.setIdentity(TEST_IDENTITIES.basic);
+
+      const syncResult: SyncCheckResult = { state: 'unknown', mismatches: [] };
+      assert.doesNotThrow(() => {
+        statusBar!.setSyncState(syncResult);
+      }, 'setSyncState(unknown) should not throw');
+
+      // Identity should be preserved
+      const currentIdentity = statusBar.getCurrentIdentity();
+      assert.ok(currentIdentity, 'Current identity should still be set');
+      assert.strictEqual(currentIdentity.id, 'test-basic');
+    });
+
+    it('should be no-op when no identity is set', () => {
+      statusBar = createStatusBar();
+
+      // No identity set, setSyncState should not throw
+      const syncResult: SyncCheckResult = {
+        state: 'out_of_sync',
+        mismatches: [
+          { field: 'email', expected: 'a@b.com', actual: 'c@d.com' },
+        ],
+      };
+
+      assert.doesNotThrow(() => {
+        statusBar!.setSyncState(syncResult);
+      }, 'setSyncState without identity should not throw');
+    });
+
+    it('should clear sync state when setIdentity is called', () => {
+      statusBar = createStatusBar();
+      statusBar.setIdentity(TEST_IDENTITIES.basic);
+
+      // Set out_of_sync
+      statusBar.setSyncState({
+        state: 'out_of_sync',
+        mismatches: [{ field: 'name', expected: 'A', actual: 'B' }],
+      });
+      assert.strictEqual(statusBar.getSyncState()?.state, 'out_of_sync');
+
+      // Set a new identity - should clear sync state
+      statusBar.setIdentity(TEST_IDENTITIES.withIcon);
+      assert.strictEqual(statusBar.getSyncState(), undefined, 'Sync state should be cleared after setIdentity');
+    });
+
+    it('should handle out_of_sync with multiple mismatches', () => {
+      statusBar = createStatusBar();
+      statusBar.setIdentity(TEST_IDENTITIES.withAllFields);
+
+      const syncResult: SyncCheckResult = {
+        state: 'out_of_sync',
+        mismatches: [
+          { field: 'name', expected: 'Full Test User', actual: 'Wrong Name' },
+          { field: 'email', expected: 'full@example.com', actual: 'wrong@example.com' },
+          { field: 'signingKey', expected: 'ABCD1234', actual: 'EFGH5678' },
+        ],
+      };
+
+      assert.doesNotThrow(() => {
+        statusBar!.setSyncState(syncResult);
+      }, 'setSyncState with multiple mismatches should not throw');
+
+      assert.strictEqual(statusBar.getSyncState()?.mismatches.length, 3);
+    });
+
+    it('should handle identity with icon in out_of_sync state', () => {
+      statusBar = createStatusBar();
+      statusBar.setIdentity(TEST_IDENTITIES.withIcon);
+
+      const syncResult: SyncCheckResult = {
+        state: 'out_of_sync',
+        mismatches: [
+          { field: 'email', expected: 'test@example.com', actual: 'other@example.com' },
+        ],
+      };
+
+      assert.doesNotThrow(() => {
+        statusBar!.setSyncState(syncResult);
+      }, 'setSyncState with icon identity should not throw');
+    });
+
+    it('should restore normal display when transitioning from out_of_sync to synced', () => {
+      statusBar = createStatusBar();
+      statusBar.setIdentity(TEST_IDENTITIES.basic);
+
+      // First set out_of_sync
+      statusBar.setSyncState({
+        state: 'out_of_sync',
+        mismatches: [{ field: 'name', expected: 'A', actual: 'B' }],
+      });
+
+      // Then set synced
+      statusBar.setSyncState({ state: 'synced', mismatches: [] });
+
+      assert.strictEqual(statusBar.getSyncState()?.state, 'synced');
+      assert.ok(statusBar.getCurrentIdentity(), 'Identity should be preserved');
+    });
+  });
+
+  describe('buildMismatchTooltip', () => {
+    it('should generate markdown with single mismatch', () => {
+      const tooltip = buildMismatchTooltip([
+        { field: 'name', expected: 'John', actual: 'Jane' },
+      ]);
+
+      assert.ok(tooltip.includes('name'), 'Should contain field name');
+      assert.ok(tooltip.includes('John'), 'Should contain expected value');
+      assert.ok(tooltip.includes('Jane'), 'Should contain actual value');
+      assert.ok(tooltip.includes('|'), 'Should contain table markers');
+    });
+
+    it('should generate markdown with multiple mismatches', () => {
+      const tooltip = buildMismatchTooltip([
+        { field: 'name', expected: 'John', actual: 'Jane' },
+        { field: 'email', expected: 'j@a.com', actual: 'j@b.com' },
+      ]);
+
+      assert.ok(tooltip.includes('name'), 'Should contain name field');
+      assert.ok(tooltip.includes('email'), 'Should contain email field');
+    });
+
+    it('should include signingKey field label', () => {
+      const tooltip = buildMismatchTooltip([
+        { field: 'signingKey', expected: 'KEY1', actual: 'KEY2' },
+      ]);
+
+      assert.ok(tooltip.includes('signingKey'), 'Should contain signingKey field');
     });
   });
 

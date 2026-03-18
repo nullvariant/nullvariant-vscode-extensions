@@ -3,10 +3,12 @@
  *
  * Displays the current identity in VS Code's status bar.
  * Clicking opens the identity selection quick pick.
+ * Shows visual warning when profile is out of sync with git config.
  */
 
 import * as vscode from 'vscode';
 import { Identity, getIdentityLabel } from '../identity/identity';
+import type { SyncCheckResult, SyncMismatch } from '../core/syncChecker';
 import { truncateForStatusBar } from './displayLimits';
 
 /**
@@ -15,6 +17,7 @@ import { truncateForStatusBar } from './displayLimits';
 export class IdentityStatusBar implements vscode.Disposable {
   private readonly statusBarItem: vscode.StatusBarItem;
   private currentIdentity: Identity | undefined;
+  private currentSyncState: SyncCheckResult | undefined;
 
   constructor() {
     // Create status bar item on the right side with high priority
@@ -39,15 +42,64 @@ export class IdentityStatusBar implements vscode.Disposable {
    */
   setIdentity(identity: Identity): void {
     this.currentIdentity = identity;
-    // Truncate for status bar to avoid taking too much horizontal space
-    const displayText = truncateForStatusBar(
-      identity.icon ? `${identity.icon} ${identity.name}` : identity.name
-    );
-    this.statusBarItem.text = displayText;
+    this.currentSyncState = undefined;
+    this.statusBarItem.text = truncateForStatusBar(this.buildDisplayText(identity));
     this.statusBarItem.tooltip = new vscode.MarkdownString(
       this.buildTooltip(identity)
     );
     this.statusBarItem.backgroundColor = undefined;
+    this.statusBarItem.command = 'git-id-switcher.selectIdentity';
+  }
+
+  /**
+   * Update status bar to reflect sync state between profile and git config.
+   *
+   * - synced: normal display with sync confirmation in tooltip
+   * - out_of_sync: warning background, ⚠️ prefix, mismatch details in tooltip
+   * - unknown: no change (preserves current display)
+   */
+  setSyncState(result: SyncCheckResult): void {
+    this.currentSyncState = result;
+
+    if (!this.currentIdentity) {
+      return;
+    }
+
+    if (result.state === 'unknown') {
+      return;
+    }
+
+    if (result.state === 'synced') {
+      // Restore normal display
+      this.statusBarItem.text = truncateForStatusBar(
+        this.buildDisplayText(this.currentIdentity)
+      );
+      this.statusBarItem.tooltip = new vscode.MarkdownString(
+        this.buildTooltip(this.currentIdentity)
+      );
+      this.statusBarItem.backgroundColor = undefined;
+      this.statusBarItem.command = 'git-id-switcher.selectIdentity';
+      return;
+    }
+
+    // out_of_sync: show warning
+    this.statusBarItem.text = truncateForStatusBar(
+      `⚠️ ${this.buildDisplayText(this.currentIdentity)}`
+    );
+    this.statusBarItem.tooltip = new vscode.MarkdownString(
+      buildMismatchTooltip(result.mismatches)
+    );
+    this.statusBarItem.backgroundColor = new vscode.ThemeColor(
+      'statusBarItem.warningBackground'
+    );
+    this.statusBarItem.command = 'git-id-switcher.resolveSyncMismatch';
+  }
+
+  /**
+   * Get current sync state
+   */
+  getSyncState(): SyncCheckResult | undefined {
+    return this.currentSyncState;
   }
 
   /**
@@ -86,6 +138,13 @@ export class IdentityStatusBar implements vscode.Disposable {
    */
   getCurrentIdentity(): Identity | undefined {
     return this.currentIdentity;
+  }
+
+  /**
+   * Build display text for the status bar (icon + name)
+   */
+  private buildDisplayText(identity: Identity): string {
+    return identity.icon ? `${identity.icon} ${identity.name}` : identity.name;
   }
 
   /**
@@ -128,6 +187,47 @@ export class IdentityStatusBar implements vscode.Disposable {
   dispose(): void {
     this.statusBarItem.dispose();
   }
+}
+
+// ============================================================================
+// Pure Functions (exported for testing)
+// ============================================================================
+
+/**
+ * Field display labels for mismatch tooltip.
+ * Maps internal field names to user-facing labels.
+ */
+const FIELD_LABELS: Readonly<Record<SyncMismatch['field'], string>> = {
+  name: 'name',
+  email: 'email',
+  signingKey: 'signingKey',
+};
+
+/**
+ * Build markdown tooltip content showing mismatch details.
+ *
+ * Uses vscode.l10n.t() for localization of header text.
+ *
+ * @param mismatches - Array of field mismatches between profile and git config
+ * @returns Markdown string with mismatch table
+ */
+export function buildMismatchTooltip(mismatches: readonly SyncMismatch[]): string {
+  const lines = [
+    `⚠️ **${vscode.l10n.t('Profile out of sync')}**`,
+    '',
+    `| ${vscode.l10n.t('Field')} | ${vscode.l10n.t('Profile')} | ${vscode.l10n.t('Git Config')} |`,
+    '|-------|---------|------------|',
+  ];
+
+  for (const mismatch of mismatches) {
+    lines.push(
+      `| ${FIELD_LABELS[mismatch.field]} | ${mismatch.expected} | ${mismatch.actual} |`
+    );
+  }
+
+  lines.push('', vscode.l10n.t('*Click to resolve*'));
+
+  return lines.join('\n');
 }
 
 /**

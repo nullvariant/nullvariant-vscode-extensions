@@ -24,6 +24,7 @@ import {
   showErrorNotification,
   showManageIdentitiesQuickPick,
   showDeleteIdentityQuickPick,
+  showSyncResolutionQuickPick,
 } from '../ui/identityPicker';
 import {
   showAddIdentityForm,
@@ -442,5 +443,71 @@ export async function handleDeleteIdentity(
     }
 
     return false;
+  }
+}
+
+/**
+ * Command: Resolve sync mismatch
+ *
+ * Shows a QuickPick with resolution options when the profile is out of sync
+ * with git config. Dispatches to the appropriate action based on user selection.
+ *
+ * Actions:
+ * - reapply: Re-apply the current profile to git config
+ * - select: Open identity selection (delegates to selectIdentityCommand)
+ * - dismiss: Clear the warning until the next sync check
+ */
+export async function resolveSyncMismatchCommand(
+  context: vscode.ExtensionContext,
+  statusBar: IdentityStatusBar,
+  getCurrentIdentity: () => Identity | undefined,
+  setCurrentIdentity: (identity: Identity) => void
+): Promise<void> {
+  // SECURITY: Block command execution in untrusted workspaces
+  if (!requireWorkspaceTrust()) {
+    return;
+  }
+
+  const resolution = await showSyncResolutionQuickPick();
+
+  if (!resolution) {
+    return;
+  }
+
+  switch (resolution) {
+    case 'reapply': {
+      const currentIdentity = getCurrentIdentity();
+      if (!currentIdentity) {
+        return;
+      }
+
+      try {
+        await switchToIdentity(
+          currentIdentity,
+          context,
+          statusBar,
+          getCurrentIdentity,
+          setCurrentIdentity
+        );
+      } catch (error) {
+        const safeMessage = getUserSafeMessage(error);
+        showErrorNotification(vscode.l10n.t('Failed to re-apply profile: {0}', safeMessage));
+        statusBar.setError(safeMessage);
+
+        if (isFatalError(error)) {
+          throw error;
+        }
+      }
+      break;
+    }
+    case 'select': {
+      await selectIdentityCommand(context, statusBar, getCurrentIdentity, setCurrentIdentity);
+      break;
+    }
+    case 'dismiss': {
+      // Clear the warning by setting sync state to synced
+      statusBar.setSyncState({ state: 'synced', mismatches: [] });
+      break;
+    }
   }
 }
