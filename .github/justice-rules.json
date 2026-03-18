@@ -1,0 +1,23 @@
+{
+  "description": "Justice-bot dependency safety review rules",
+  "version": "1.0.0",
+  "blocked_packages": [
+    {
+      "name": "@types/vscode",
+      "reason": "Bumping @types/vscode forces engines.vscode up, cutting off fork editors (Cursor, Windsurf, etc.). Permanently blocked due to prior compatibility incident."
+    }
+  ],
+  "blocked_field_changes": [
+    {
+      "file": "extensions/git-id-switcher/package.json",
+      "field_path": ".engines.vscode",
+      "reason": "Changing engines.vscode breaks compatibility with fork editors that lag behind VS Code stable."
+    }
+  ],
+  "major_update_review": {
+    "eslint_packages": ["eslint", "typescript-eslint"],
+    "eslint_prefixes": ["@typescript-eslint/", "eslint-"],
+    "eslint_reason": "ESLint ecosystem major updates require mutual compatibility verification.",
+    "default_reason": "Major version updates may contain breaking changes. Manual review required."
+  }
+}
