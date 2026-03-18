@@ -1,3 +1,4 @@
+// TEMPORARY: Zoo bot integration test marker (delete after testing)
 /**
  * Shared Constants
  *
