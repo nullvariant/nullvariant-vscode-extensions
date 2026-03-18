@@ -13,11 +13,16 @@ import { getUserSafeMessage, isFatalError } from './errors';
 import { initializeWorkspaceTrust } from './workspaceTrust';
 import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetectedIdentity } from '../services/detection';
 import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotification, handleDeleteIdentity, resolveSyncMismatchCommand } from '../commands/handlers';
+import { checkSync } from './syncChecker';
 
 // Global state
 let statusBar: IdentityStatusBar;
 let currentIdentity: Identity | undefined;
 let initializeCancellation: vscode.CancellationTokenSource | undefined;
+let syncCheckDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** Debounce delay for sync check on focus return (ms) */
+const SYNC_CHECK_DEBOUNCE_MS = 500;
 
 // State accessors for dependency injection
 const getCurrentIdentity = (): Identity | undefined => currentIdentity;
@@ -75,29 +80,77 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 /**
+ * Run sync check for the current identity and update the status bar.
+ *
+ * Reads `syncCheck.enabled` from configuration. When disabled, restores
+ * the status bar to normal (synced) state to clear any lingering warning.
+ *
+ * @sideeffect Executes `git config --local` via checkSync()
+ */
+async function performSyncCheck(): Promise<void> {
+  if (!currentIdentity) {
+    return;
+  }
+
+  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  if (!config.get<boolean>('syncCheck.enabled', true)) {
+    // Clear any existing warning when sync check is disabled
+    statusBar.setSyncState({ state: 'synced', mismatches: [] });
+    return;
+  }
+
+  try {
+    const result = await checkSync(currentIdentity);
+    statusBar.setSyncState(result);
+  } catch {
+    // Non-fatal: sync check failure should not disrupt the extension
+    console.debug('[Git ID Switcher] Sync check failed silently');
+  }
+}
+
+/**
+ * Debounced sync check for focus-return events.
+ * Prevents multiple rapid invocations when the window focus changes quickly.
+ */
+function debouncedSyncCheck(): void {
+  if (syncCheckDebounceTimer !== undefined) {
+    clearTimeout(syncCheckDebounceTimer);
+  }
+  syncCheckDebounceTimer = setTimeout(() => {
+    syncCheckDebounceTimer = undefined;
+    performSyncCheck().catch(error => {
+      const safeMessage = getUserSafeMessage(error);
+      console.debug('[Git ID Switcher] Debounced sync check failed:', safeMessage);
+    });
+  }, SYNC_CHECK_DEBOUNCE_MS);
+}
+
+/**
  * Perform initialization that requires workspace trust.
  * SECURITY: Only call after confirming workspace is trusted.
  */
 async function performTrustedInitialization(context: vscode.ExtensionContext): Promise<void> {
   await initializeState(context);
 
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeWorkspaceFolders(() => {
-      initializeState(context).catch(error => {
-        const safeMessage = getUserSafeMessage(error);
-        console.error('[Git ID Switcher] Failed to initialize after workspace change:', safeMessage);
-        if (isFatalError(error)) {
-          vscode.window.showErrorMessage(
-            vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
-          );
-        }
-      });
-    })
-  );
+  // Run initial sync check after state is loaded
+  await performSyncCheck();
 
   securityLogger.storeConfigSnapshot();
 
   context.subscriptions.push(
+    vscode.workspace.onDidChangeWorkspaceFolders(() => {
+      initializeState(context)
+        .then(() => performSyncCheck())
+        .catch(error => {
+          const safeMessage = getUserSafeMessage(error);
+          console.error('[Git ID Switcher] Failed to initialize after workspace change:', safeMessage);
+          if (isFatalError(error)) {
+            vscode.window.showErrorMessage(
+              vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
+            );
+          }
+        });
+    }),
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
       if (e.affectsConfiguration('gitIdSwitcher')) {
         try {
@@ -117,17 +170,30 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
         }
 
         resetValidationNotificationFlag();
-        initializeState(context).catch(error => {
-          const safeMessage = getUserSafeMessage(error);
-          console.error('[Git ID Switcher] Failed to initialize after config change:', safeMessage);
-          if (isFatalError(error)) {
-            vscode.window.showErrorMessage(
-              vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
-            );
-          }
-        });
+        initializeState(context)
+          .then(() => performSyncCheck())
+          .catch(error => {
+            const safeMessage = getUserSafeMessage(error);
+            console.error('[Git ID Switcher] Failed to initialize after config change:', safeMessage);
+            if (isFatalError(error)) {
+              vscode.window.showErrorMessage(
+                vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
+              );
+            }
+          });
       }
-    })
+    }),
+    // Sync check on window focus return
+    vscode.window.onDidChangeWindowState((state: vscode.WindowState) => {
+      if (!state.focused) {
+        return;
+      }
+      const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+      if (!config.get<boolean>('syncCheck.onFocusReturn', true)) {
+        return;
+      }
+      debouncedSyncCheck();
+    }),
   );
 }
 
@@ -135,6 +201,10 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
  * Extension deactivation
  */
 export function deactivate(): void {
+  if (syncCheckDebounceTimer !== undefined) {
+    clearTimeout(syncCheckDebounceTimer);
+    syncCheckDebounceTimer = undefined;
+  }
   if (initializeCancellation) {
     initializeCancellation.cancel();
     initializeCancellation.dispose();

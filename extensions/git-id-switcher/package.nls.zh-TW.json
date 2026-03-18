@@ -34,6 +34,9 @@
   "config.logging.maxFileSize": "輪換前的最大檔案大小（位元組，預設：10MB）",
   "config.logging.maxFiles": "保留的輪換檔案最大數量（預設：5）",
   "config.logging.redactAllSensitive": "啟用後，日誌中的所有值都將被遮蔽（最大隱私模式）",
+  "config.category.syncCheck": "Git ID Switcher: 同步檢查",
+  "config.syncCheck.enabled": "檢查所選的設定檔是否與實際的 git config 一致。偵測到不一致時，狀態列會顯示警告。",
+  "config.syncCheck.onFocusReturn": "當編輯器視窗重新取得焦點時執行同步檢查（例如，從可能變更了 git config 的終端機切換回來後）。",
   "config.commandTimeouts": "命令的自訂逾時值（毫秒）",
   "config.commandTimeouts.markdown": "覆寫預設命令逾時。範例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n預設值：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、其他=30000ms"
 }

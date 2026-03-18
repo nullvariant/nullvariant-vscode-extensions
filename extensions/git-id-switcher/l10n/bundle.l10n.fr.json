@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "Appuyez sur 'Entrée' pour enregistrer (laisser vide pour effacer)",
   "Move up": "Déplacer vers le haut",
   "Move down": "Déplacer vers le bas",
-  "Failed to reorder identity: {0}": "Échec du réordonnancement du profil : {0}"
+  "Failed to reorder identity: {0}": "Échec du réordonnancement du profil : {0}",
+  "Profile out of sync": "Profil désynchronisé",
+  "Field": "Champ",
+  "Profile": "Profil",
+  "Git Config": "Config Git",
+  "*Click to resolve*": "*Cliquez pour résoudre*",
+  "Re-apply profile": "Réappliquer le profil",
+  "Re-apply the current profile to git config": "Réappliquer le profil actuel à la configuration git",
+  "Select different profile": "Sélectionner un autre profil",
+  "Choose a different identity profile": "Choisir un profil d'identité différent",
+  "Dismiss": "Ignorer",
+  "Ignore until next sync check": "Ignorer jusqu'à la prochaine vérification de synchronisation",
+  "How would you like to resolve this?": "Comment souhaitez-vous résoudre ceci ?",
+  "Failed to re-apply profile: {0}": "Échec de la réapplication du profil : {0}"
 }

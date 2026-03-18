@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "Naciśnij 'Enter', aby zapisać (pozostaw puste, aby wyczyścić)",
   "Move up": "Przesuń w górę",
   "Move down": "Przesuń w dół",
-  "Failed to reorder identity: {0}": "Nie udało się zmienić kolejności profilu: {0}"
+  "Failed to reorder identity: {0}": "Nie udało się zmienić kolejności profilu: {0}",
+  "Profile out of sync": "Profil niesynchronizowany",
+  "Field": "Pole",
+  "Profile": "Profil",
+  "Git Config": "Konfiguracja Git",
+  "*Click to resolve*": "*Kliknij, aby rozwiązać*",
+  "Re-apply profile": "Ponownie zastosuj profil",
+  "Re-apply the current profile to git config": "Ponownie zastosuj bieżący profil do konfiguracji gita",
+  "Select different profile": "Wybierz inny profil",
+  "Choose a different identity profile": "Wybierz inny profil tożsamości",
+  "Dismiss": "Odrzuć",
+  "Ignore until next sync check": "Ignoruj do następnego sprawdzenia synchronizacji",
+  "How would you like to resolve this?": "Jak chcesz to rozwiązać?",
+  "Failed to re-apply profile: {0}": "Nie udało się ponownie zastosować profilu: {0}"
 }

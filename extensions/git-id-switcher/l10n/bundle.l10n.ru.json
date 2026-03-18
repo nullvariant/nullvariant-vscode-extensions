@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "Нажмите 'Enter' для сохранения (оставьте пустым для очистки)",
   "Move up": "Переместить вверх",
   "Move down": "Переместить вниз",
-  "Failed to reorder identity: {0}": "Не удалось изменить порядок профиля: {0}"
+  "Failed to reorder identity: {0}": "Не удалось изменить порядок профиля: {0}",
+  "Profile out of sync": "Профиль не синхронизирован",
+  "Field": "Поле",
+  "Profile": "Профиль",
+  "Git Config": "Конфигурация Git",
+  "*Click to resolve*": "*Нажмите для устранения*",
+  "Re-apply profile": "Повторно применить профиль",
+  "Re-apply the current profile to git config": "Повторно применить текущий профиль к конфигурации git",
+  "Select different profile": "Выбрать другой профиль",
+  "Choose a different identity profile": "Выберите другой профиль идентификации",
+  "Dismiss": "Отклонить",
+  "Ignore until next sync check": "Игнорировать до следующей проверки синхронизации",
+  "How would you like to resolve this?": "Как вы хотите это решить?",
+  "Failed to re-apply profile: {0}": "Не удалось повторно применить профиль: {0}"
 }

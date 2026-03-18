@@ -17,6 +17,7 @@ import { showIdentitySwitchedNotification } from '../ui/identityPicker';
 import { securityLogger } from '../security/securityLogger';
 import { getUserSafeMessage } from '../core/errors';
 import { IdentityStatusBar } from '../ui/identityStatusBar';
+import { checkSync } from '../core/syncChecker';
 
 /**
  * Switch to a specific identity
@@ -56,6 +57,17 @@ export async function switchToIdentity(
 
     // Log identity switch
     securityLogger.logIdentitySwitch(previousIdentityId, identity.id);
+
+    // Run sync check after applying identity (if enabled)
+    if (config.get<boolean>('syncCheck.enabled', true)) {
+      try {
+        const syncResult = await checkSync(identity);
+        statusBar.setSyncState(syncResult);
+      } catch {
+        // Non-fatal: sync check failure should not disrupt the switch
+        console.debug('[Git ID Switcher] Post-switch sync check failed silently');
+      }
+    }
 
     // Show notification
     showIdentitySwitchedNotification(identity);

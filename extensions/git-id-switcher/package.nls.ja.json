@@ -34,6 +34,9 @@
   "config.logging.maxFileSize": "ローテーション前の最大ファイルサイズ（バイト単位、デフォルト：10MB）",
   "config.logging.maxFiles": "保持するローテーションファイルの最大数（デフォルト：5）",
   "config.logging.redactAllSensitive": "有効にすると、ログ内の全ての値をマスクします（最大プライバシーモード）",
+  "config.category.syncCheck": "Git ID Switcher: 同期チェック",
+  "config.syncCheck.enabled": "選択中のプロフィールと実際のgit configが一致しているかをチェックします。不一致が検出されると、ステータスバーに警告が表示されます。",
+  "config.syncCheck.onFocusReturn": "エディタウィンドウにフォーカスが戻ったときに同期チェックを実行します（例：ターミナルでgit configを変更した後）。",
   "config.commandTimeouts": "コマンドのカスタムタイムアウト値（ミリ秒単位）",
   "config.commandTimeouts.markdown": "デフォルトのコマンドタイムアウトを上書きします。例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nデフォルト値：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、その他=30000ms"
 }

@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "Mentéshez nyomja meg az 'Enter'-t (hagyja üresen a törléshez)",
   "Move up": "Mozgatás felfelé",
   "Move down": "Mozgatás lefelé",
-  "Failed to reorder identity: {0}": "Nem sikerült átrendezni a profilt: {0}"
+  "Failed to reorder identity: {0}": "Nem sikerült átrendezni a profilt: {0}",
+  "Profile out of sync": "Profil nincs szinkronban",
+  "Field": "Mező",
+  "Profile": "Profil",
+  "Git Config": "Git konfiguráció",
+  "*Click to resolve*": "*Kattintson a megoldáshoz*",
+  "Re-apply profile": "Profil újraalkalmazása",
+  "Re-apply the current profile to git config": "Az aktuális profil újraalkalmazása a git konfigurációra",
+  "Select different profile": "Másik profil kiválasztása",
+  "Choose a different identity profile": "Válasszon másik identitásprofilt",
+  "Dismiss": "Elvetés",
+  "Ignore until next sync check": "Figyelmen kívül hagyás a következő szinkronizáció-ellenőrzésig",
+  "How would you like to resolve this?": "Hogyan szeretné megoldani?",
+  "Failed to re-apply profile: {0}": "A profil újraalkalmazása sikertelen: {0}"
 }

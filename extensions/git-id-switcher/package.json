@@ -2,7 +2,7 @@
   "name": "git-id-switcher",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.16.22",
+  "version": "0.17.0",
   "publisher": "nullvariant",
   "icon": "images/icon.png",
   "engines": {
@@ -194,8 +194,26 @@
         }
       },
       {
-        "title": "%config.category.logging%",
+        "title": "%config.category.syncCheck%",
         "order": 4,
+        "properties": {
+          "gitIdSwitcher.syncCheck.enabled": {
+            "order": 1,
+            "type": "boolean",
+            "default": true,
+            "description": "%config.syncCheck.enabled%"
+          },
+          "gitIdSwitcher.syncCheck.onFocusReturn": {
+            "order": 2,
+            "type": "boolean",
+            "default": true,
+            "description": "%config.syncCheck.onFocusReturn%"
+          }
+        }
+      },
+      {
+        "title": "%config.category.logging%",
+        "order": 5,
         "properties": {
           "gitIdSwitcher.logging.fileEnabled": {
             "order": 1,
@@ -248,7 +266,7 @@
       },
       {
         "title": "%config.category.advanced%",
-        "order": 5,
+        "order": 6,
         "properties": {
           "gitIdSwitcher.commandTimeouts": {
             "order": 1,

@@ -25,6 +25,7 @@ const EXTENSION_COMMANDS = [
   'git-id-switcher.showCurrentIdentity',
   'git-id-switcher.showDocumentation',
   'git-id-switcher.deleteIdentity',
+  'git-id-switcher.resolveSyncMismatch',
 ] as const;
 
 const VALID_LOG_LEVELS = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'SECURITY'] as const;
@@ -243,6 +244,22 @@ describe('Extension E2E Test Suite', function () {
         'boolean',
         'includeIconInGitConfig should be a boolean'
       );
+    });
+
+    it('should have syncCheck.enabled as a boolean with default true', () => {
+      const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+      const syncCheckEnabled = config.get<boolean>('syncCheck.enabled');
+
+      assert.strictEqual(typeof syncCheckEnabled, 'boolean', 'syncCheck.enabled should be a boolean');
+      assert.strictEqual(syncCheckEnabled, true, 'syncCheck.enabled should default to true');
+    });
+
+    it('should have syncCheck.onFocusReturn as a boolean with default true', () => {
+      const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+      const onFocusReturn = config.get<boolean>('syncCheck.onFocusReturn');
+
+      assert.strictEqual(typeof onFocusReturn, 'boolean', 'syncCheck.onFocusReturn should be a boolean');
+      assert.strictEqual(onFocusReturn, true, 'syncCheck.onFocusReturn should default to true');
     });
   });
 

@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "Натиснете 'Enter' за запазване (оставете празно за изчистване)",
   "Move up": "Преместване нагоре",
   "Move down": "Преместване надолу",
-  "Failed to reorder identity: {0}": "Неуспешно пренареждане на профил: {0}"
+  "Failed to reorder identity: {0}": "Неуспешно пренареждане на профил: {0}",
+  "Profile out of sync": "Профилът не е синхронизиран",
+  "Field": "Поле",
+  "Profile": "Профил",
+  "Git Config": "Git конфигурация",
+  "*Click to resolve*": "*Натиснете за решаване*",
+  "Re-apply profile": "Повторно прилагане на профил",
+  "Re-apply the current profile to git config": "Повторно прилагане на текущия профил към git конфигурацията",
+  "Select different profile": "Избор на друг профил",
+  "Choose a different identity profile": "Изберете различен профил за самоличност",
+  "Dismiss": "Отхвърляне",
+  "Ignore until next sync check": "Игнориране до следващата проверка за синхронизация",
+  "How would you like to resolve this?": "Как бихте искали да разрешите това?",
+  "Failed to re-apply profile: {0}": "Неуспешно повторно прилагане на профила: {0}"
 }

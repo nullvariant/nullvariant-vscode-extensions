@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "Kaydetmek için 'Enter'a basın (temizlemek için boş bırakın)",
   "Move up": "Yukarı taşı",
   "Move down": "Aşağı taşı",
-  "Failed to reorder identity: {0}": "Profil yeniden sıralanamadı: {0}"
+  "Failed to reorder identity: {0}": "Profil yeniden sıralanamadı: {0}",
+  "Profile out of sync": "Profil senkronize değil",
+  "Field": "Alan",
+  "Profile": "Profil",
+  "Git Config": "Git Yapılandırması",
+  "*Click to resolve*": "*Çözmek için tıklayın*",
+  "Re-apply profile": "Profili yeniden uygula",
+  "Re-apply the current profile to git config": "Mevcut profili git yapılandırmasına yeniden uygula",
+  "Select different profile": "Farklı profil seç",
+  "Choose a different identity profile": "Farklı bir kimlik profili seçin",
+  "Dismiss": "Kapat",
+  "Ignore until next sync check": "Sonraki senkronizasyon kontrolüne kadar yoksay",
+  "How would you like to resolve this?": "Bunu nasıl çözmek istersiniz?",
+  "Failed to re-apply profile: {0}": "Profil yeniden uygulanamadı: {0}"
 }
