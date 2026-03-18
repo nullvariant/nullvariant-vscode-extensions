@@ -45,6 +45,7 @@ Existen muchas herramientas para cambiar perfiles Git, pero **Git ID Switcher** 
 - **UI de gestión de perfiles**: Añade, edita, elimina y reordena perfiles sin editar settings.json
 - **Cambio de perfil con un clic**: Cambia Git user.name y user.email instantáneamente
 - **Integración en la barra de estado**: Consulta tu perfil actual de un vistazo en todo momento
+- **Verificación de sincronización**: Detección en tiempo real de discrepancias entre el perfil y la configuración git, con advertencia en la barra de estado
 - **Soporte de submódulos**: Propaga automáticamente el perfil a los submódulos Git
 - **Gestión de claves SSH**: Cambia automáticamente las claves SSH en ssh-agent
 - **Soporte de firma GPG**: Configura la clave GPG para firmar commits (opcional)
@@ -287,6 +288,8 @@ También puedes eliminar un perfil desde la paleta de comandos con `Git ID Switc
 | `gitIdSwitcher.applyToSubmodules`          | `true`         | Propagar el perfil a los submódulos Git                                                                       |
 | `gitIdSwitcher.submoduleDepth`             | `1`            | Profundidad máxima para submódulos anidados (1-5)                                                             |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`        | Incluir el emoji del icono en `user.name` de Git config                                                       |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`         | Verificar si el perfil seleccionado coincide con la configuración git actual                                  |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`         | Ejecutar verificación de sincronización al recuperar el foco de la ventana del editor                         |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`        | Guardar registro de auditoría en archivo (cambios de perfil, operaciones SSH, etc.)                           |
 | `gitIdSwitcher.logging.filePath`           | `""`           | Ruta del archivo de registro (ej.: `~/.git-id-switcher/security.log`). Vacío = ubicación predeterminada       |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`     | Tamaño máximo del archivo antes de rotación (bytes, 1 MB–100 MB)                                              |
@@ -343,6 +346,32 @@ Al cambiar de perfil, la extensión ejecuta (en orden):
 2. **Clave SSH** (si `sshKeyPath` está configurado): Elimina otras claves de ssh-agent y añade la seleccionada
 3. **Clave GPG** (si `gpgKeyId` está configurado): Establece `git config --local user.signingkey` y activa la firma
 4. **Submódulos** (si está activado): Propaga la configuración a todos los submódulos (predeterminado: profundidad 1)
+5. **Verificación de sincronización**: Comprueba que el perfil aplicado coincide con la configuración git actual
+
+### Verificación de sincronización
+
+Compara el perfil seleccionado con los valores reales de `git config --local` (`user.name`, `user.email`, `user.signingkey`) y muestra una advertencia en la barra de estado cuando se detecta una discrepancia.
+
+**Cuándo se ejecutan las verificaciones:**
+
+- Inmediatamente después de aplicar un perfil
+- Al cambiar la carpeta del workspace
+- Al cambiar la configuración
+- Al recuperar el foco de la ventana del editor (con debounce de 500 ms)
+
+**Cuando se detecta una discrepancia:**
+
+- La barra de estado muestra un icono ⚠️ con color de fondo de advertencia
+- El tooltip muestra una tabla con los campos discrepantes (campo, valor esperado, valor actual)
+- Al hacer clic en la barra de estado se presentan opciones de resolución:
+  - **Reaplicar perfil** — Reaplicar el perfil actual a la configuración git
+  - **Seleccionar otro perfil** — Abrir el selector de perfiles
+  - **Descartar** — Suprimir la advertencia hasta la próxima verificación
+
+**Para desactivar:**
+
+Establece `gitIdSwitcher.syncCheck.enabled` en `false` para desactivar todas las verificaciones de sincronización.
+Para desactivar solo la verificación al recuperar el foco, establece `gitIdSwitcher.syncCheck.onFocusReturn` en `false`.
 
 ### Propagación a submódulos
 

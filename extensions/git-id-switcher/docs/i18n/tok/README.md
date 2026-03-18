@@ -51,6 +51,7 @@ ilo ante mute li lon. taso **Git ID Switcher** li pona tan ni: ona li weka e ike
 - **nimi ante UI**: settings.json ante ala la, nimi sin, ante, weka, nanpa ante li ken
 - **luka wan la nimi ante**: Git user.name en user.email li ante lon tenpo lili
 - **status bar**: nimi sina li lon status bar lon tenpo ale
+- **Sync Check**: nimi en git config li sama ala la, status bar li toki e ike
 - **submodule pona**: Git submodule li kama jo e nimi
 - **SSH key**: ssh-agent SSH key li ante
 - **GPG sitelen**: GPG key li pona tawa commit sitelen (wile ala)
@@ -292,6 +293,8 @@ command palette la, `Git ID Switcher: Delete Identity` li ken weka e nimi.
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | submodule li kama jo e nimi                         |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | submodule suli (1-5)                                |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`    | sitelen li tawa Git config `user.name`              |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`     | nimi en git config li sama ala li sama              |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | window li kama la, sync check li open               |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`    | file logging li open (tawa lukin)                   |
 | `gitIdSwitcher.logging.filePath`           | `""`       | nasin file log                                      |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760` | file log suli (bytes, 1MB-100MB)                    |
@@ -348,6 +351,32 @@ nimi ante la, ilo li pali (nanpa):
 2. **SSH Key** (`sshKeyPath` li lon): ssh-agent li kama jo e key ni, weka e key ante
 3. **GPG Key** (`gpgKeyId` li lon): `git config --local user.signingkey` li ante, sitelen li open
 4. **Submodule** (open): submodule ale li kama jo e settings (open: linja wan)
+5. **Sync Check**: nimi pana li sama git config ala li sama
+
+### Sync Check
+
+nimi sina en `git config --local` ijo (`user.name`, `user.email`, `user.signingkey`) li sama ala la, status bar li toki e ike.
+
+**tenpo seme la lukin li open:**
+
+- nimi pana la
+- ma pali ante la
+- settings ante la
+- window li kama la (tenpo lili 500ms)
+
+**sama ala li lon la:**
+
+- status bar li jo e ⚠️ sitelen en kule ike
+- tooltip li jo e table: ijo seme, ijo wile, ijo lon
+- status bar o luka la, nasin pona li lon:
+  - **nimi o pana sin** — nimi sina li tawa git config sin
+  - **nimi ante o kama jo** — nimi picker o open
+  - **o weka** — ike toki li weka tawa tenpo lukin sin
+
+**o pini:**
+
+`gitIdSwitcher.syncCheck.enabled` li `false` la, sync check ale li pini.
+window kama taso li pini la, `gitIdSwitcher.syncCheck.onFocusReturn` li `false`.
 
 ### submodule pana (Submodule Propagation Mechanism)
 

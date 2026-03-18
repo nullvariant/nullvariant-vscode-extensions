@@ -45,6 +45,7 @@
 - **身分檔案管理 UI**: 無需編輯 settings.json，即可新增、編輯、刪除和重新排序身分檔案
 - **一鍵切換身分檔案**: 即時變更 Git user.name 和 user.email
 - **狀態列整合**: 隨時一目了然地查看目前身分檔案
+- **同步檢查**: 即時偵測身分檔案與 git config 之間的不一致，並在狀態列中發出警告
 - **子模組支援**: 自動將身分檔案傳播到 Git 子模組
 - **SSH 金鑰管理**: 自動在 ssh-agent 中切換 SSH 金鑰
 - **GPG 簽署支援**: 設定用於提交簽署的 GPG 金鑰（選用）
@@ -287,6 +288,8 @@ Host gitlab-oss
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | 將身分檔案傳播到 Git 子模組                                                       |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | 巢狀子模組設定的最大深度（1-5）                                                   |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`    | 在 Git config `user.name` 中包含圖示表情符號                                      |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`     | 檢查所選身分檔案是否與實際 git config 一致                                        |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | 編輯器視窗重新取得焦點時執行同步檢查                                              |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`    | 將稽核日誌儲存到檔案（記錄身分檔案切換、SSH 金鑰操作等）                          |
 | `gitIdSwitcher.logging.filePath`           | `""`       | 日誌檔案路徑（如 `~/.git-id-switcher/security.log`）。空字串使用預設路徑          |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760` | 輪換前的最大檔案大小（位元組，1MB-100MB）                                         |
@@ -343,6 +346,32 @@ Git 設定有三個層次，下層的設定會覆蓋上層：
 2. **SSH 金鑰**（如果設定了 `sshKeyPath`）: 從 ssh-agent 移除其他金鑰，加入選定的金鑰
 3. **GPG 金鑰**（如果設定了 `gpgKeyId`）: 設定 `git config --local user.signingkey` 並啟用簽署
 4. **子模組**（如果啟用）: 將設定傳播到所有子模組（預設：深度 1）
+5. **同步檢查**: 驗證所套用的身分檔案是否與實際 git config 一致
+
+### 同步檢查
+
+將所選身分檔案與實際的 `git config --local` 值（`user.name`、`user.email`、`user.signingkey`）進行比較，當偵測到不一致時在狀態列中顯示警告。
+
+**檢查執行時機：**
+
+- 套用身分檔案後立即執行
+- 工作區資料夾變更時
+- 設定變更時
+- 編輯器視窗重新取得焦點時（500ms 防抖）
+
+**偵測到不一致時：**
+
+- 狀態列顯示帶有警告背景色的 ⚠️ 圖示
+- 工具提示顯示不一致欄位的表格（欄位、預期值、實際值）
+- 點擊狀態列會顯示解決方案選項：
+  - **重新套用身分檔案** — 將目前身分檔案重新套用到 git config
+  - **選擇其他身分檔案** — 開啟身分檔案選擇器
+  - **忽略** — 在下次檢查前暫時忽略警告
+
+**停用方式：**
+
+將 `gitIdSwitcher.syncCheck.enabled` 設為 `false` 可停用所有同步檢查。
+若僅停用焦點恢復檢查，將 `gitIdSwitcher.syncCheck.onFocusReturn` 設為 `false`。
 
 ### 子模組傳播的運作原理
 

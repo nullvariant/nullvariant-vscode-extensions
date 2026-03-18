@@ -45,6 +45,7 @@
 - **身份管理 UI**: 无需编辑 settings.json，即可添加、编辑、删除和重新排序身份
 - **一键切换身份**: 即时更改 Git user.name 和 user.email
 - **状态栏集成**: 随时一目了然地查看当前身份
+- **同步检查**: 实时检测身份配置与 git config 之间的不匹配，并在状态栏中发出警告
 - **子模块支持**: 自动将身份传播到 Git 子模块
 - **SSH 密钥管理**: 自动在 ssh-agent 中切换 SSH 密钥
 - **GPG 签名支持**: 配置用于提交签名的 GPG 密钥（可选）
@@ -287,6 +288,8 @@ Host gitlab-oss
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | 将身份传播到 Git 子模块                                                             |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | 嵌套子模块配置的最大深度（1-5）                                                     |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`    | 在 Git config `user.name` 中包含图标表情符号                                        |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`     | 检查所选身份配置是否与实际 git config 一致                                          |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | 编辑器窗口重新获得焦点时运行同步检查                                                |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`    | 将审计日志保存到文件（记录身份切换、SSH 密钥操作等）                                |
 | `gitIdSwitcher.logging.filePath`           | `""`       | 日志文件路径（如 `~/.git-id-switcher/security.log`）。空字符串使用默认路径          |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760` | 轮换前的最大文件大小（字节，1MB-100MB）                                             |
@@ -343,6 +346,32 @@ Git 配置有三个层次，下层的设置会覆盖上层：
 2. **SSH 密钥**（如果设置了 `sshKeyPath`）: 从 ssh-agent 移除其他密钥，添加选定的密钥
 3. **GPG 密钥**（如果设置了 `gpgKeyId`）: 设置 `git config --local user.signingkey` 并启用签名
 4. **子模块**（如果启用）: 将配置传播到所有子模块（默认：深度 1）
+5. **同步检查**: 验证所应用的身份配置是否与实际 git config 一致
+
+### 同步检查
+
+将所选身份配置与实际的 `git config --local` 值（`user.name`、`user.email`、`user.signingkey`）进行比较，当检测到不匹配时在状态栏中显示警告。
+
+**检查运行时机：**
+
+- 应用身份配置后立即执行
+- 工作区文件夹变更时
+- 配置变更时
+- 编辑器窗口重新获得焦点时（500ms 防抖）
+
+**检测到不匹配时：**
+
+- 状态栏显示带有警告背景色的 ⚠️ 图标
+- 工具提示显示不匹配字段的表格（字段、预期值、实际值）
+- 点击状态栏会显示解决方案选项：
+  - **重新应用身份配置** — 将当前身份配置重新应用到 git config
+  - **选择其他身份配置** — 打开身份选择器
+  - **忽略** — 在下次检查前暂时忽略警告
+
+**禁用方式：**
+
+将 `gitIdSwitcher.syncCheck.enabled` 设为 `false` 可禁用所有同步检查。
+若仅禁用焦点恢复检查，将 `gitIdSwitcher.syncCheck.onFocusReturn` 设为 `false`。
 
 ### 子模块传播的工作原理
 

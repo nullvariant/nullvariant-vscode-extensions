@@ -65,6 +65,7 @@
 - **UI Hoʻoponopono ID**: Hiki ke hoʻohui, hoʻoponopono, holoi, a hoʻonohonoho i nā ID me ʻole ka hoʻoponopono ʻana i settings.json
 - **Hoʻololi ID me ke Kaomi Hoʻokahi**: E hoʻololi wikiwiki i ka Git user.name a me user.email
 - **Hoʻohui Pahu Status**: E ʻike mau i kou ID i kēia manawa
+- **Sync Check**: E ʻike koke i ka ʻokoʻa ma waena o ka ID a me ka git config, me ka hoʻomaopopo ma ka pahu status
 - **Kākoʻo Submodule**: E hoʻopili ʻia ka ID i nā Git submodule
 - **Hoʻoponopono Kī SSH**: E hoʻololi ʻia nā kī SSH ma ka ssh-agent
 - **Kākoʻo GPG**: E hoʻonohonoho i ke kī GPG no ke kākau inoa commit (koho)
@@ -307,6 +308,8 @@ Hiki ke holoi i nā ID mai ka command palette me `Git ID Switcher: Delete Identi
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | Hoʻopili i ka ID i nā Git submodule                                                     |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | Hohonu nui loa no nā submodule nested (1-5)                                             |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Kākau i ka emoji icon i ka Git config `user.name`                                       |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`     | E nānā inā like ka ID i koho ʻia me ka git config maoli                                 |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | E hana i ka sync check ke hoʻi mai ka focus i ka pukaaniani                             |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`    | Hoʻohana i ka logging i faila no ka audit (ID hoʻololi, SSH kī hana, etc.)              |
 | `gitIdSwitcher.logging.filePath`           | `""`       | Ala faila log pilikino (laʻa: `~/.git-id-switcher/security.log`). Hakahaka = paʻamau    |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Nui loa o ka faila log ma mua o ka rotation (bytes, 1MB-100MB)                          |
@@ -363,6 +366,32 @@ I ka hoʻololi ʻana i ka ID, hana ka extension (ma ka ʻokoʻa):
 2. **Kī SSH** (inā hoʻonohonoho ʻia ka `sshKeyPath`): Holoi i nā kī ʻē aʻe mai ka ssh-agent, hoʻohui i ka mea i koho ʻia
 3. **Kī GPG** (inā hoʻonohonoho ʻia ka `gpgKeyId`): Hoʻonohonoho i ka `git config --local user.signingkey` a hoʻohana i ke kākau inoa
 4. **Submodule** (inā hoʻohana ʻia): Hoʻolaha i ka hoʻonohonoho i nā submodule āpau (paʻamau: hohonu 1)
+5. **Sync Check**: E hoʻoiaʻiʻo e like ka ID i hoʻopili ʻia me ka git config maoli
+
+### Sync Check
+
+E hoʻohālikelike i ka ID i koho ʻia me nā waiwai maoli o `git config --local` (`user.name`, `user.email`, `user.signingkey`) a hōʻike i ka hoʻomaopopo ma ka pahu status ke ʻike ʻia ka ʻokoʻa.
+
+**Ke hana nei nā nānā:**
+
+- Ma hope koke o ka hoʻopili ID
+- I ka hoʻololi ʻana i ka waihona hana
+- I ka hoʻololi ʻana i ka hoʻonohonoho
+- Ke hoʻi mai ka focus i ka pukaaniani (debounced 500ms)
+
+**Ke ʻike ʻia ka ʻokoʻa:**
+
+- Ka pahu status e hōʻike i ka ⚠️ icon me ke kala hoʻomaopopo
+- Ka tooltip e hōʻike i ka papa hōʻike me nā kahua ʻokoʻa (kahua, waiwai i manaʻo ʻia, waiwai maoli)
+- E kaomi i ka pahu status no nā koho hoʻoponopono:
+  - **Hoʻopili hou i ka ID** — E hoʻopili hou i ka ID i kēia manawa i ka git config
+  - **Koho i ID ʻē aʻe** — E wehe i ke koho ID
+  - **Hoʻopaʻa** — E uhi i ka hoʻomaopopo a hiki i ka nānā aʻe
+
+**No ka hoʻopau:**
+
+E hoʻonohonoho i `gitIdSwitcher.syncCheck.enabled` i `false` no ka hoʻopau ʻana i nā sync check āpau.
+No ka hoʻopau wale ʻana i ka nānā focus-hoʻi, e hoʻonohonoho i `gitIdSwitcher.syncCheck.onFocusReturn` i `false`.
 
 ### Hana Hoʻolaha Submodule
 

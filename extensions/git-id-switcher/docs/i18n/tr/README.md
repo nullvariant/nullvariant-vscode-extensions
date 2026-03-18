@@ -45,6 +45,7 @@ Birçok Git profil değiştirici olmasına rağmen, **Git ID Switcher** diğerle
 - **Profil Yönetimi UI**: settings.json'ı düzenlemeden profil ekleme, düzenleme, silme ve sıralama
 - **Tek Tıkla Profil Değiştirme**: Git user.name ve user.email'i anında değiştirin
 - **Durum Çubuğu Entegrasyonu**: Mevcut profilinizi her zaman bir bakışta görün
+- **Senkronizasyon Kontrolü**: Profil ile git config arasındaki uyumsuzlukları gerçek zamanlı tespit eder ve durum çubuğunda uyarı gösterir
 - **Alt Modül Desteği**: Profili Git alt modüllerine otomatik olarak yayın
 - **SSH Anahtar Yönetimi**: ssh-agent'ta SSH anahtarlarını otomatik olarak değiştirin
 - **GPG İmzalama Desteği**: Commit imzalamak için GPG anahtarını yapılandırın (isteğe bağlı)
@@ -287,6 +288,8 @@ Profilleri silmek için Komut Paleti'nden `Git ID Switcher: Delete Identity` kom
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | Profili Git alt modüllerine uygula                                                             |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | İç içe alt modüller için maks. derinlik (1-5)                                                  |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Emoji ikonunu Git config `user.name`'e yaz                                                     |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`     | Seçilen profilin gerçek git config ile eşleşip eşleşmediğini kontrol et                        |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | Editör penceresi odağı geri aldığında senkronizasyon kontrolü çalıştır                         |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`    | Denetim günlüğünü dosyaya kaydet (profil değişiklikleri, SSH işlemleri vb.)                    |
 | `gitIdSwitcher.logging.filePath`           | `""`       | Günlük dosyası yolu (örn.: `~/.git-id-switcher/security.log`). Boş = varsayılan konum          |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Döndürmeden önce maks. dosya boyutu (bayt, 1MB-100MB)                                          |
@@ -343,6 +346,32 @@ Profil değiştirirken, eklenti şunları yapar (sırayla):
 2. **SSH Anahtarı** (`sshKeyPath` ayarlanmışsa): Diğer anahtarları ssh-agent'tan kaldırır, seçileni ekler
 3. **GPG Anahtarı** (`gpgKeyId` ayarlanmışsa): `git config --local user.signingkey`'i ayarlar ve imzalamayı etkinleştirir
 4. **Alt Modüller** (etkinse): Yapılandırmayı tüm alt modüllere yayar (varsayılan: derinlik 1)
+5. **Senkronizasyon Kontrolü**: Uygulanan profilin gerçek git config ile eşleştiğini doğrular
+
+### Senkronizasyon Kontrolü
+
+Seçilen profili gerçek `git config --local` değerleriyle (`user.name`, `user.email`, `user.signingkey`) karşılaştırır ve uyumsuzluk tespit edildiğinde durum çubuğunda uyarı gösterir.
+
+**Kontroller ne zaman çalışır:**
+
+- Profil uygulandıktan hemen sonra
+- Çalışma alanı klasörü değiştiğinde
+- Yapılandırma değiştiğinde
+- Editör penceresi odağı geri aldığında (debounce 500ms)
+
+**Uyumsuzluk tespit edildiğinde:**
+
+- Durum çubuğu uyarı arka plan rengiyle ⚠️ ikonu gösterir
+- Araç ipucu uyumsuz alanları gösteren bir tablo görüntüler (alan, beklenen değer, gerçek değer)
+- Durum çubuğuna tıklamak çözüm seçeneklerini gösterir:
+  - **Profili yeniden uygula** — Mevcut profili git config'e yeniden uygula
+  - **Farklı profil seç** — Profil seçiciyi aç
+  - **Yoksay** — Bir sonraki kontrole kadar uyarıyı gizle
+
+**Devre dışı bırakma:**
+
+Tüm senkronizasyon kontrollerini devre dışı bırakmak için `gitIdSwitcher.syncCheck.enabled` değerini `false` olarak ayarlayın.
+Yalnızca odak dönüşü kontrolünü devre dışı bırakmak için `gitIdSwitcher.syncCheck.onFocusReturn` değerini `false` olarak ayarlayın.
 
 ### Alt Modüllere Yayılım Mekanizması
 

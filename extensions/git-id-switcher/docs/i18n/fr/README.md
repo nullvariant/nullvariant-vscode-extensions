@@ -45,6 +45,7 @@ Il existe de nombreux outils de changement de profil Git, mais **Git ID Switcher
 - **UI de gestion des profils** : Ajoutez, modifiez, supprimez et réorganisez les profils sans éditer settings.json
 - **Changement de profil en un clic** : Modifiez instantanément Git user.name et user.email
 - **Intégration à la barre d'état** : Voyez toujours votre profil actuel d'un coup d'œil
+- **Sync Check** : Détection en temps réel des écarts entre le profil et la configuration git, avec avertissement dans la barre d'état
 - **Support des sous-modules** : Propagez automatiquement le profil aux sous-modules Git
 - **Gestion des clés SSH** : Basculez automatiquement les clés SSH dans ssh-agent
 - **Support de signature GPG** : Configurez la clé GPG pour signer les commits (optionnel)
@@ -287,6 +288,8 @@ Vous pouvez également supprimer un profil via la palette de commandes avec `Git
 | `gitIdSwitcher.applyToSubmodules`          | `true`        | Propager le profil aux sous-modules Git                                                                  |
 | `gitIdSwitcher.submoduleDepth`             | `1`           | Profondeur max pour les sous-modules imbriqués (1-5)                                                     |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`       | Inclure l'emoji icône dans le Git config `user.name`                                                     |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`        | Vérifier si le profil sélectionné correspond à la configuration git réelle                               |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`        | Exécuter le sync check lorsque la fenêtre de l'éditeur retrouve le focus                                 |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`       | Enregistrer le journal d'audit dans un fichier (changements de profil, opérations SSH, etc.)             |
 | `gitIdSwitcher.logging.filePath`           | `""`          | Chemin du fichier journal (ex : `~/.git-id-switcher/security.log`). Vide = emplacement par défaut        |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`    | Taille max du fichier avant rotation (octets, 1 Mo–100 Mo)                                               |
@@ -343,6 +346,32 @@ Lors du changement de profil, l'extension effectue (dans l'ordre) :
 2. **Clé SSH** (si `sshKeyPath` défini) : Supprime les autres clés de ssh-agent, ajoute celle sélectionnée
 3. **Clé GPG** (si `gpgKeyId` défini) : Définit `git config --local user.signingkey` et active la signature
 4. **Sous-modules** (si activé) : Propage la configuration à tous les sous-modules (par défaut : profondeur 1)
+5. **Sync Check** : Vérifie que le profil appliqué correspond à la configuration git réelle
+
+### Sync Check
+
+Compare le profil sélectionné aux valeurs réelles de `git config --local` (`user.name`, `user.email`, `user.signingkey`) et affiche un avertissement dans la barre d'état lorsqu'un écart est détecté.
+
+**Quand les vérifications s'exécutent :**
+
+- Immédiatement après l'application du profil
+- Lors du changement de dossier de l'espace de travail
+- Lors d'un changement de configuration
+- Lorsque la fenêtre de l'éditeur retrouve le focus (temporisé 500 ms)
+
+**Lorsqu'un écart est détecté :**
+
+- La barre d'état affiche une icône ⚠️ avec une couleur de fond d'avertissement
+- L'info-bulle affiche un tableau montrant les champs en écart (champ, valeur attendue, valeur réelle)
+- Cliquer sur la barre d'état présente les options de résolution :
+  - **Réappliquer le profil** — Réappliquer le profil actuel à la configuration git
+  - **Sélectionner un autre profil** — Ouvrir le sélecteur de profils
+  - **Ignorer** — Supprimer l'avertissement jusqu'à la prochaine vérification
+
+**Pour désactiver :**
+
+Définissez `gitIdSwitcher.syncCheck.enabled` sur `false` pour désactiver toutes les vérifications de synchronisation.
+Pour désactiver uniquement la vérification au retour du focus, définissez `gitIdSwitcher.syncCheck.onFocusReturn` sur `false`.
 
 ### Fonctionnement de la propagation aux sous-modules
 

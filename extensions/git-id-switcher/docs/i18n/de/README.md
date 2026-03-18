@@ -45,6 +45,7 @@ Es gibt viele Tools zum Wechseln von Git-Profilen, aber **Git ID Switcher** lös
 - **Profilverwaltungs-UI**: Profile hinzufügen, bearbeiten, löschen und umordnen — ohne settings.json zu bearbeiten
 - **Ein-Klick-Profilwechsel**: Git user.name und user.email sofort ändern
 - **Statusleisten-Integration**: Aktuelles Profil immer auf einen Blick sehen
+- **Sync Check**: Echtzeit-Erkennung von Abweichungen zwischen Profil und Git-Konfiguration mit Statusleisten-Warnung
 - **Submodul-Unterstützung**: Profil automatisch auf Git-Submodule übertragen
 - **SSH-Schlüsselverwaltung**: SSH-Schlüssel im ssh-agent automatisch wechseln
 - **GPG-Signierungsunterstützung**: GPG-Schlüssel für Commit-Signierung konfigurieren (optional)
@@ -287,6 +288,8 @@ Sie können ein Profil auch über die Befehlspalette mit `Git ID Switcher: Delet
 | `gitIdSwitcher.applyToSubmodules`          | `true`         | Profil auf Git-Submodule übertragen                                                                     |
 | `gitIdSwitcher.submoduleDepth`             | `1`            | Maximale Tiefe für verschachtelte Submodul-Konfiguration (1-5)                                          |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`        | Icon-Emoji in Git config `user.name` einschließen                                                       |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`         | Prüfen, ob das ausgewählte Profil mit der tatsächlichen Git-Konfiguration übereinstimmt                 |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`         | Sync Check ausführen, wenn das Editor-Fenster den Fokus wiedererlangt                                   |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`        | Audit-Protokoll in Datei speichern (Profilwechsel, SSH-Schlüsseloperationen usw.)                       |
 | `gitIdSwitcher.logging.filePath`           | `""`           | Protokolldateipfad (z. B. `~/.git-id-switcher/security.log`). Leer = Standardort                        |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`     | Maximale Dateigröße vor Rotation (Bytes, 1 MB–100 MB)                                                   |
@@ -343,6 +346,32 @@ Beim Wechsel des Profils führt die Erweiterung folgendes aus (in dieser Reihenf
 2. **SSH-Schlüssel** (wenn `sshKeyPath` gesetzt): Entfernt andere Schlüssel aus ssh-agent und fügt den ausgewählten hinzu
 3. **GPG-Schlüssel** (wenn `gpgKeyId` gesetzt): Setzt `git config --local user.signingkey` und aktiviert Signierung
 4. **Submodule** (wenn aktiviert): Überträgt Konfiguration auf alle Submodule (Standard: Tiefe 1)
+5. **Sync Check**: Überprüft, ob das angewendete Profil mit der tatsächlichen Git-Konfiguration übereinstimmt
+
+### Sync Check
+
+Vergleicht das ausgewählte Profil mit den tatsächlichen `git config --local`-Werten (`user.name`, `user.email`, `user.signingkey`) und zeigt eine Statusleisten-Warnung an, wenn eine Abweichung erkannt wird.
+
+**Wann Prüfungen ausgeführt werden:**
+
+- Unmittelbar nach dem Anwenden des Profils
+- Bei Wechsel des Arbeitsbereichsordners
+- Bei Konfigurationsänderung
+- Wenn das Editor-Fenster den Fokus wiedererlangt (entprellt 500 ms)
+
+**Wenn eine Abweichung erkannt wird:**
+
+- Die Statusleiste zeigt ein ⚠️-Symbol mit einer Warnhintergrundfarbe
+- Der Tooltip zeigt eine Tabelle mit den abweichenden Feldern (Feld, erwarteter Wert, tatsächlicher Wert)
+- Ein Klick auf die Statusleiste bietet Lösungsoptionen:
+  - **Profil erneut anwenden** — Das aktuelle Profil erneut auf die Git-Konfiguration anwenden
+  - **Anderes Profil auswählen** — Die Profilauswahl öffnen
+  - **Verwerfen** — Die Warnung bis zur nächsten Prüfung unterdrücken
+
+**Zum Deaktivieren:**
+
+Setzen Sie `gitIdSwitcher.syncCheck.enabled` auf `false`, um alle Sync Checks zu deaktivieren.
+Um nur die Fokus-Rückkehr-Prüfung zu deaktivieren, setzen Sie `gitIdSwitcher.syncCheck.onFocusReturn` auf `false`.
 
 ### Wie die Submodul-Übertragung funktioniert
 

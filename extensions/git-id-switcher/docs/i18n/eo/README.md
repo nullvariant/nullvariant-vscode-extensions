@@ -50,6 +50,7 @@ Kvankam multaj Git-profilo-ŝanĝiloj ekzistas, **Git ID Switcher** solvas kompl
 - **Profila Administra UI**: Aldonu, redaktu, forigu kaj reordigu profilojn sen redakti settings.json
 - **Unu-klaka Profilo-Ŝanĝo**: Ŝanĝu vian Git user.name kaj user.email tuj
 - **Statusbreto-Integriĝo**: Ĉiam vidu vian nunan profilon per unu rigardo
+- **Sync Check**: Realtempa detekto de malkongruoj inter profilo kaj git-agordo, kun statusa averto
 - **Submodula Subteno**: Aŭtomate disvastigu vian profilon al Git-submoduloj
 - **SSH-Ŝlosila Administrado**: Aŭtomate ŝanĝu SSH-ŝlosilojn en ssh-agent
 - **GPG-Subskriba Subteno**: Agordu vian GPG-ŝlosilon por commit-subskribo (laŭvola)
@@ -292,6 +293,8 @@ Vi ankaŭ povas forigi profilon el komand-paleto per `Git ID Switcher: Delete Id
 | `gitIdSwitcher.applyToSubmodules`          | `true`       | Apliku profilon al Git-submoduloj                                               |
 | `gitIdSwitcher.submoduleDepth`             | `1`          | Maks. profundeco por nestitaj submoduloj (1-5)                                  |
 | `gitIdSwitcher.includeIconInGitConfig`     | `false`      | Skribu emoji-ikonon al Git-agordo `user.name`                                   |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`       | Kontroli ĉu elektita profilo kongruas kun reala git-agordo                      |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`       | Ruli sync-kontrolon kiam la redaktilo-fenestro rericevos fokuson                |
 | `gitIdSwitcher.logging.fileEnabled`        | `false`      | Konservu reviziajn protokolojn en dosiero (ID-ŝanĝoj, SSH-operacioj ktp.)       |
 | `gitIdSwitcher.logging.filePath`           | `""`         | Protokol-dosiera vojo (ekz: `~/.git-id-switcher/security.log`). Malplena = def  |
 | `gitIdSwitcher.logging.maxFileSize`        | `10485760`   | Maks. dosiera grandeco antaŭ rotacio (bajtoj, 1MB-100MB)                        |
@@ -348,6 +351,32 @@ Kiam vi ŝanĝas profilon, la etendo plenumas (en ordo):
 2. **SSH-Ŝlosilo** (se `sshKeyPath` agordita): Forigas aliajn ŝlosilojn el ssh-agent, aldonas la elektitan
 3. **GPG-Ŝlosilo** (se `gpgKeyId` agordita): Agordas `git config --local user.signingkey` kaj ebligas subskribon
 4. **Submoduloj** (se ebligita): Disvastigas agordon al ĉiuj submoduloj (defaŭlte: profundeco 1)
+5. **Sync Check**: Kontrolas ĉu la aplikita profilo kongruas kun la reala git-agordo
+
+### Sync Check
+
+Komparas la elektitan profilon kun la realaj `git config --local`-valoroj (`user.name`, `user.email`, `user.signingkey`) kaj montras statusbretan averton kiam malkongruo estas detektita.
+
+**Kiam kontroloj rulas:**
+
+- Tuj post profilo-apliko
+- Ĉe laborspaca dosieruja ŝanĝo
+- Ĉe agorda ŝanĝo
+- Kiam la redaktilo-fenestro rericevos fokuson (malrapidita 500ms)
+
+**Kiam malkongruo estas detektita:**
+
+- La statusbreto montras ⚠️-ikonon kun avertan fondokoloron
+- La konsileto montras tabelon kun la malkongruaj kampoj (kampo, atendita valoro, reala valoro)
+- Klaki la statusbreton prezentas solvajn eblojn:
+  - **Reapliki profilon** — Reapliki la nunan profilon al git-agordo
+  - **Elekti alian profilon** — Malfermi la profilo-elektilon
+  - **Ignori** — Kaŝi la averton ĝis la sekva kontrolo
+
+**Por malebligi:**
+
+Agordu `gitIdSwitcher.syncCheck.enabled` al `false` por malebligi ĉiujn sync-kontrolojn.
+Por malebligi nur la fokuso-reveno-kontrolon, agordu `gitIdSwitcher.syncCheck.onFocusReturn` al `false`.
 
 ### Submodula Disvastiga Mekanismo
 
