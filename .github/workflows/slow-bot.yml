@@ -6,6 +6,13 @@ name: 🦥 Slow Bot
 permissions: {}
 
 on:
+  pull_request_target:
+    types: [opened, synchronize]
+    paths:
+      - '**.ts'
+      - '**.tsx'
+      - '**.js'
+      - '**.mjs'
   workflow_dispatch:
     inputs:
       message:
@@ -14,9 +21,173 @@ on:
         default: '...zzz...'
 
 jobs:
+  code-review:
+    name: 🦥 Code Quality Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
+        with:
+          app_id: ${{ secrets.SLOW_BOT_APP_ID }}
+          private_key: ${{ secrets.SLOW_BOT_PRIVATE_KEY }}
+
+      # SECURITY: No code checkout. All file reads use the GitHub Contents API.
+      # This avoids OpenSSF Scorecard "Dangerous-Workflow" alerts.
+
+      - name: 🦥 Analyze code quality (reluctantly)
+        id: analyze
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+
+          : > /tmp/slow-findings.md
+          FOUND_ISSUES=false
+
+          # === Load rules from base branch via API ===
+          RULES_CONTENT=$(gh api "repos/${GITHUB_REPOSITORY}/contents/.github/slow-rules.json?ref=${BASE_SHA}" \
+            --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || true)
+
+          if [ -z "$RULES_CONTENT" ]; then
+            echo "Rules file not found on base branch. Skipping."
+            echo "should_comment=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "$RULES_CONTENT" > /tmp/slow-rules.json
+          RULES="/tmp/slow-rules.json"
+
+          MAX_LINES=$(jq -r '.file_length.max_lines' "$RULES")
+          EXTENSIONS=$(jq -r '.file_length.extensions[]' "$RULES")
+          LENGTH_REASON=$(jq -r '.file_length.reason' "$RULES")
+          CATCH_REASON=$(jq -r '.empty_catch.reason' "$RULES")
+
+          # === Get changed files ===
+          CHANGED_FILES=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" \
+            --jq '.[].filename' 2>/dev/null || true)
+
+          # === Check file length ===
+          LONG_FILES=""
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            # Check if file matches configured extensions
+            MATCH=false
+            for ext in $EXTENSIONS; do
+              if echo "$file" | grep -q "${ext}$"; then
+                MATCH=true
+                break
+              fi
+            done
+            [ "$MATCH" = false ] && continue
+
+            # Get file content from HEAD and count lines
+            LINE_COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${file}?ref=${HEAD_SHA}" \
+              --jq '.content' 2>/dev/null | base64 -d 2>/dev/null | wc -l 2>/dev/null || echo "0")
+            LINE_COUNT=$(echo "$LINE_COUNT" | tr -d '[:space:]')
+
+            if [ "$LINE_COUNT" -gt "$MAX_LINES" ]; then
+              LONG_FILES="${LONG_FILES}\n| \`${file}\` | ${LINE_COUNT} |"
+              FOUND_ISSUES=true
+            fi
+          done <<< "$CHANGED_FILES"
+
+          if [ -n "$LONG_FILES" ]; then
+            {
+              printf '⚠️ **TOO LONG**... I can barely keep my eyes open reading these:\n\n'
+              printf '| File | Lines |\n'
+              printf '| --- | --- |\n'
+              printf '%b\n' "$LONG_FILES"
+              printf '\n%s\n\n' "$LENGTH_REASON"
+            } >> /tmp/slow-findings.md
+          fi
+
+          # === Check for empty catch blocks in PR diff ===
+          PR_DIFF=$(gh pr diff "$PR_NUMBER" 2>/dev/null || true)
+
+          # Look for added lines containing empty catch blocks
+          # Patterns: catch { }, catch (e) { }, catch(err){ }
+          EMPTY_CATCHES=$(echo "$PR_DIFF" | grep '^+' | grep -v '^+++' | \
+            grep -nE 'catch\s*(\([^)]*\))?\s*\{\s*\}' || true)
+
+          if [ -n "$EMPTY_CATCHES" ]; then
+            {
+              printf '🔴 **EMPTY CATCH**: Found empty catch block(s) in the changes.\n\n'
+              printf '```\n'
+              echo "$EMPTY_CATCHES" | head -5 | sed 's/^+//'
+              printf '```\n\n'
+              printf '%s\n\n' "$CATCH_REASON"
+            } >> /tmp/slow-findings.md
+            FOUND_ISSUES=true
+          fi
+
+          # === Build verdict ===
+          if [ "$FOUND_ISSUES" = true ]; then
+            echo "should_comment=true" >> "$GITHUB_OUTPUT"
+            echo "has_issues=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_comment=true" >> "$GITHUB_OUTPUT"
+            echo "has_issues=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 📬 Post review comment
+        if: steps.analyze.outputs.should_comment == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HAS_ISSUES: ${{ steps.analyze.outputs.has_issues }}
+        run: |
+          set -euo pipefail
+
+          {
+            if [ "$HAS_ISSUES" = "true" ]; then
+              printf '## 🦥 Slow'"'"'s Code Review 😩\n\n'
+              printf '*...yawn... Do I really have to review this?*\n\n'
+              cat /tmp/slow-findings.md
+            else
+              printf '## 🦥 Slow'"'"'s Code Review 😴\n\n'
+              printf 'Nothing to complain about... can I go back to sleep now? 💤\n'
+            fi
+            printf '\n---\n\n'
+            printf '> 働きたくないでござる\n\n'
+            printf '*This review was reluctantly filed by nullvariant-slow[bot]*\n'
+          } > /tmp/slow-comment.md
+
+          # Find existing Slow comment (update if exists, create if not)
+          EXISTING_ID=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select(.user.login == "nullvariant-slow[bot]") | select(.body | contains("Slow\u0027s Code Review")) | .id' 2>/dev/null | head -1 || true)
+
+          if [ -n "$EXISTING_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${EXISTING_ID}" \
+              -X PATCH -F body=@/tmp/slow-comment.md
+            echo "Updated existing Slow review comment."
+          else
+            gh pr comment "$PR_NUMBER" --body-file /tmp/slow-comment.md
+            echo "Posted new Slow review comment."
+          fi
+
+      - name: 😴 Back to sleep
+        run: |
+          echo "That was exhausting... 💤"
+
   slow-commit:
     name: 🦥 Make a lazy commit
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
 
