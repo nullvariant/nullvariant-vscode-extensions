@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "zoo-bot-rules.schema.json",
+  "title": "Zoo Bot Rules",
+  "description": "Schema for nullvariant-zoo bot review rule files",
+  "oneOf": [
+    { "$ref": "#/$defs/justice-rules" },
+    { "$ref": "#/$defs/slow-rules" }
+  ],
+  "$defs": {
+    "base": {
+      "type": "object",
+      "required": ["description", "version"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of this rule file"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version of the rule definitions"
+        }
+      }
+    },
+    "justice-rules": {
+      "description": "Rules for Justice-bot dependency safety review",
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": ["blocked_packages", "blocked_field_changes", "major_update_review"],
+          "properties": {
+            "description": true,
+            "version": true,
+            "blocked_packages": {
+              "type": "array",
+              "description": "Packages that must never be updated",
+              "items": {
+                "type": "object",
+                "required": ["name", "reason"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "npm package name to block"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Why this package is blocked"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "blocked_field_changes": {
+              "type": "array",
+              "description": "Fields in package.json that must not change",
+              "items": {
+                "type": "object",
+                "required": ["file", "field_path", "reason"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "Relative path to the package.json file"
+                  },
+                  "field_path": {
+                    "type": "string",
+                    "pattern": "^\\.",
+                    "description": "jq-style field path (e.g. .engines.vscode)"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Why this field must not change"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "major_update_review": {
+              "type": "object",
+              "required": ["eslint_packages", "eslint_prefixes", "eslint_reason", "default_reason"],
+              "properties": {
+                "eslint_packages": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Exact package names treated as ESLint ecosystem"
+                },
+                "eslint_prefixes": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Package name prefixes treated as ESLint ecosystem"
+                },
+                "eslint_reason": {
+                  "type": "string",
+                  "description": "Reason shown for ESLint major updates"
+                },
+                "default_reason": {
+                  "type": "string",
+                  "description": "Reason shown for non-ESLint major updates"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "slow-rules": {
+      "description": "Rules for Slow-bot code quality review",
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": ["file_length", "empty_catch"],
+          "properties": {
+            "description": true,
+            "version": true,
+            "file_length": {
+              "type": "object",
+              "required": ["max_lines", "extensions", "reason"],
+              "properties": {
+                "max_lines": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Maximum allowed lines per file"
+                },
+                "extensions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^\\."
+                  },
+                  "description": "File extensions to check (e.g. .ts, .tsx)"
+                },
+                "reason": {
+                  "type": "string",
+                  "description": "Message shown when a file exceeds the limit"
+                }
+              },
+              "additionalProperties": false
+            },
+            "empty_catch": {
+              "type": "object",
+              "required": ["reason"],
+              "properties": {
+                "reason": {
+                  "type": "string",
+                  "description": "Message shown when empty catch blocks are found"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}
