@@ -1,0 +1,237 @@
+# TEMPORARY: Smoke test for Justice-bot dependency review
+# This file should be deleted after testing is complete.
+
+name: 👮 Justice Bot (TEST)
+
+permissions: {}
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to analyze'
+        required: true
+        type: number
+
+jobs:
+  dependency-review-test:
+    name: 👮 Dependency Safety Review (TEST)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
+        with:
+          app_id: ${{ secrets.JUSTICE_BOT_APP_ID }}
+          private_key: ${{ secrets.JUSTICE_BOT_PRIVATE_KEY }}
+
+      - name: 📥 Checkout base branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 👮 Analyze dependency changes
+        id: analyze
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        run: |
+          set -euo pipefail
+
+          # Get HEAD SHA from PR
+          HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')
+          echo "Analyzing PR #${PR_NUMBER} (head: ${HEAD_SHA})"
+
+          VERDICT="approve"
+          : > /tmp/justice-findings.md
+
+          # === Check for security labels ===
+          SECURITY_LABELS=$(gh pr view "$PR_NUMBER" --json labels \
+            --jq '[.labels[].name | select(test("security"; "i"))] | length' 2>/dev/null || echo "0")
+          if [ "$SECURITY_LABELS" -gt 0 ]; then
+            printf '🔴 **PRIORITY**: Security advisory detected. Expedite review and merge.\n\n' >> /tmp/justice-findings.md
+            VERDICT="security"
+          fi
+
+          # === Get changed package.json files ===
+          CHANGED_FILES=$(gh pr diff "$PR_NUMBER" --name-only 2>/dev/null || true)
+          PKG_FILES=$(echo "$CHANGED_FILES" | grep 'package\.json$' || true)
+
+          if [ -z "$PKG_FILES" ]; then
+            echo "No package.json changes detected."
+            echo "should_comment=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Changed package.json files:"
+          echo "$PKG_FILES"
+
+          # === Load rules ===
+          RULES=".github/justice-rules.json"
+
+          # === Check blocked packages ===
+          PKG_PATCHES=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" \
+            --jq '[.[] | select(.filename | endswith("package.json")) | .patch // ""] | join("\n")' 2>/dev/null || true)
+
+          while IFS= read -r pkg; do
+            [ -z "$pkg" ] && continue
+            if echo "$PKG_PATCHES" | grep '^+' | grep -v '^+++' | grep -qF "\"${pkg}\""; then
+              VERDICT="block"
+              REASON=$(jq -r --arg name "$pkg" '.blocked_packages[] | select(.name == $name) | .reason' "$RULES")
+              printf '🔴 **BLOCKED**: `%s` update detected.\n%s\n\n' "$pkg" "$REASON" >> /tmp/justice-findings.md
+            fi
+          done < <(jq -r '.blocked_packages[].name' "$RULES")
+
+          # === Check blocked field changes ===
+          while IFS= read -r rule; do
+            [ -z "$rule" ] || [ "$rule" = "null" ] && continue
+            FILE=$(echo "$rule" | jq -r '.file')
+            FIELD=$(echo "$rule" | jq -r '.field_path')
+            REASON=$(echo "$rule" | jq -r '.reason')
+
+            if ! echo "$PKG_FILES" | grep -qF "$FILE"; then
+              continue
+            fi
+
+            BASE_VAL=$(jq -r "${FIELD} // empty" "$FILE" 2>/dev/null || true)
+
+            HEAD_VAL=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${FILE}?ref=${HEAD_SHA}" \
+              --jq '.content' 2>/dev/null | base64 -d 2>/dev/null | jq -r "${FIELD} // empty" 2>/dev/null || true)
+
+            echo "Field check: ${FIELD} in ${FILE} — base='${BASE_VAL}' head='${HEAD_VAL}'"
+
+            if [ -n "$BASE_VAL" ] && [ -n "$HEAD_VAL" ] && [ "$BASE_VAL" != "$HEAD_VAL" ]; then
+              VERDICT="block"
+              printf '🔴 **BLOCKED**: `%s` changed in `%s`\n- Base: `%s`\n- Head: `%s`\n%s\n\n' \
+                "$FIELD" "$FILE" "$BASE_VAL" "$HEAD_VAL" "$REASON" >> /tmp/justice-findings.md
+            fi
+          done < <(jq -c '.blocked_field_changes[]' "$RULES" 2>/dev/null)
+
+          # === Check for major version bumps ===
+          ESLINT_PKGS=$(jq -r '.major_update_review.eslint_packages[]' "$RULES" 2>/dev/null || true)
+          ESLINT_PREFIXES=$(jq -r '.major_update_review.eslint_prefixes[]' "$RULES" 2>/dev/null || true)
+          ESLINT_REASON=$(jq -r '.major_update_review.eslint_reason' "$RULES" 2>/dev/null || true)
+          DEFAULT_REASON=$(jq -r '.major_update_review.default_reason' "$RULES" 2>/dev/null || true)
+
+          while IFS= read -r pkg_file; do
+            [ -z "$pkg_file" ] && continue
+            [ ! -f "$pkg_file" ] && continue
+
+            BASE_DEPS=$(jq -S '(.dependencies // {}) + (.devDependencies // {})' "$pkg_file" 2>/dev/null || echo '{}')
+
+            HEAD_RAW=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${pkg_file}?ref=${HEAD_SHA}" \
+              --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || true)
+            [ -z "$HEAD_RAW" ] && continue
+            HEAD_DEPS=$(echo "$HEAD_RAW" | jq -S '(.dependencies // {}) + (.devDependencies // {})' 2>/dev/null || echo '{}')
+
+            MAJOR_CHANGES=$(jq -n --argjson base "$BASE_DEPS" --argjson head "$HEAD_DEPS" '
+              $head | to_entries[] |
+              select($base[.key] != null) |
+              {
+                key,
+                old_major: ($base[.key] | gsub("[^0-9.]"; "") | split(".") | if length > 0 then .[0] else "0" end),
+                new_major: (.value | gsub("[^0-9.]"; "") | split(".") | if length > 0 then .[0] else "0" end),
+                old_ver: $base[.key],
+                new_ver: .value
+              } |
+              select(.old_major != .new_major)
+            ' 2>/dev/null || true)
+
+            [ -z "$MAJOR_CHANGES" ] && continue
+
+            while IFS= read -r change; do
+              [ -z "$change" ] && continue
+              PKG_NAME=$(echo "$change" | jq -r '.key')
+              OLD_VER=$(echo "$change" | jq -r '.old_ver')
+              NEW_VER=$(echo "$change" | jq -r '.new_ver')
+
+              IS_ESLINT=false
+              for ep in $ESLINT_PKGS; do
+                [ "$PKG_NAME" = "$ep" ] && IS_ESLINT=true
+              done
+              for prefix in $ESLINT_PREFIXES; do
+                if echo "$PKG_NAME" | grep -q "^${prefix}"; then
+                  IS_ESLINT=true
+                fi
+              done
+
+              if [ "$IS_ESLINT" = true ]; then
+                printf '⚠️ **CAUTION**: Major update for `%s` (%s → %s). %s\n\n' \
+                  "$PKG_NAME" "$OLD_VER" "$NEW_VER" "$ESLINT_REASON" >> /tmp/justice-findings.md
+              else
+                printf '⚠️ **CAUTION**: Major update for `%s` (%s → %s). %s\n\n' \
+                  "$PKG_NAME" "$OLD_VER" "$NEW_VER" "$DEFAULT_REASON" >> /tmp/justice-findings.md
+              fi
+            done < <(echo "$MAJOR_CHANGES" | jq -c '.')
+          done <<< "$PKG_FILES"
+
+          if grep -q 'CAUTION.*Major' /tmp/justice-findings.md 2>/dev/null && [ "$VERDICT" = "approve" ]; then
+            VERDICT="warn"
+          fi
+
+          if [ ! -s /tmp/justice-findings.md ]; then
+            printf '🟢 **APPROVED**: Patch/minor update. No blocked patterns detected. Safe to merge after CI passes.\n' >> /tmp/justice-findings.md
+          fi
+
+          echo "should_comment=true" >> "$GITHUB_OUTPUT"
+          echo "verdict=${VERDICT}" >> "$GITHUB_OUTPUT"
+
+          echo "=== FINDINGS ==="
+          cat /tmp/justice-findings.md
+          echo "=== VERDICT: ${VERDICT} ==="
+
+      - name: 📬 Post review comment
+        if: steps.analyze.outputs.should_comment == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          VERDICT: ${{ steps.analyze.outputs.verdict }}
+        run: |
+          set -euo pipefail
+
+          case "$VERDICT" in
+            block)    EMOJI="🚫" ;;
+            warn)     EMOJI="⚠️" ;;
+            security) EMOJI="🚨" ;;
+            approve)  EMOJI="✅" ;;
+            *)        EMOJI="👮" ;;
+          esac
+
+          {
+            printf '## 👮 ⚖️ Justice'"'"'s Dependency Verdict %s\n\n' "$EMOJI"
+            cat /tmp/justice-findings.md
+            printf '\n---\n\n'
+            printf '> テストは？型定義は？エラーハンドリングは？\n\n'
+            printf '*Verdict filed by nullvariant-justice[bot]*\n'
+          } > /tmp/justice-comment.md
+
+          EXISTING_ID=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select(.user.login == "nullvariant-justice[bot]") | select(.body | contains("Justice\u0027s Dependency Verdict")) | .id' 2>/dev/null | head -1 || true)
+
+          if [ -n "$EXISTING_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${EXISTING_ID}" \
+              -X PATCH -F body=@/tmp/justice-comment.md
+            echo "Updated existing Justice verdict comment."
+          else
+            gh pr comment "$PR_NUMBER" --body-file /tmp/justice-comment.md
+            echo "Posted new Justice verdict comment."
+          fi
+
+      - name: ⚖️ Verdict delivered
+        if: steps.analyze.outputs.should_comment == 'true'
+        env:
+          VERDICT: ${{ steps.analyze.outputs.verdict }}
+        run: |
+          echo "⚖️ JUSTICE HAS SPOKEN ⚖️"
+          echo "Verdict: ${VERDICT}"
+          if [ "$VERDICT" = "block" ]; then
+            echo "::error::Justice has blocked this PR. See the review comment for details."
+            exit 1
+          fi
