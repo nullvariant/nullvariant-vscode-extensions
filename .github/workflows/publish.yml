@@ -67,13 +67,20 @@ jobs:
 
       # Supply Chain Security: Trivy VSIX scan (post-package, pre-publish)
       # Scans the packaged VSIX for known CVEs before any publishing step
+      # Downloads Trivy directly from GitHub Releases to avoid get.trivy.dev
+      # dependency (blocked by harden-runner egress policy)
       - name: Scan VSIX with Trivy
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
-        with:
-          scan-type: 'fs'
-          scan-ref: 'extensions/git-id-switcher'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+        env:
+          TRIVY_VERSION: '0.69.3'
+        run: |
+          curl -sfL -o trivy.tar.gz \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          tar -xzf trivy.tar.gz trivy
+          chmod +x trivy
+          ./trivy fs extensions/git-id-switcher \
+            --severity CRITICAL,HIGH \
+            --exit-code 1
+          rm -f trivy trivy.tar.gz
 
       # Supply Chain Security: Cosign keyless signing for VSIX
       # Uses GitHub OIDC token (no secret key management required)
