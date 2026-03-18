@@ -59,13 +59,9 @@ jobs:
             echo "is_bot=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # SECURITY: Only checkout the base branch (trusted code).
-      # PR head content is read via API to prevent script injection.
-      - name: 📥 Checkout base branch
-        if: steps.verify.outputs.is_bot == 'true'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
+      # SECURITY: No code checkout. All file reads use the GitHub Contents API.
+      # This avoids OpenSSF Scorecard "Dangerous-Workflow" alerts for
+      # pull_request_target + actions/checkout combinations.
 
       - name: 👮 Analyze dependency changes
         if: steps.verify.outputs.is_bot == 'true'
@@ -73,12 +69,18 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
 
           VERDICT="approve"
           : > /tmp/justice-findings.md
+
+          # === Load rules from base branch via API (no checkout needed) ===
+          gh api "repos/${GITHUB_REPOSITORY}/contents/.github/justice-rules.json?ref=${BASE_SHA}" \
+            --jq '.content' | base64 -d > /tmp/justice-rules.json
+          RULES="/tmp/justice-rules.json"
 
           # === Check for security labels ===
           SECURITY_LABELS=$(gh pr view "$PR_NUMBER" --json labels \
@@ -97,9 +99,6 @@ jobs:
             echo "should_comment=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
-          # === Load rules ===
-          RULES=".github/justice-rules.json"
 
           # === Check blocked packages ===
           # Get patches for package.json files only (via API for precision)
@@ -128,10 +127,11 @@ jobs:
               continue
             fi
 
-            # Get base value (from checked-out base branch)
-            BASE_VAL=$(jq -r "${FIELD} // empty" "$FILE" 2>/dev/null || true)
+            # Get base value via API
+            BASE_VAL=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${FILE}?ref=${BASE_SHA}" \
+              --jq '.content' 2>/dev/null | base64 -d 2>/dev/null | jq -r "${FIELD} // empty" 2>/dev/null || true)
 
-            # Get head value (from PR head via API)
+            # Get head value via API
             HEAD_VAL=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${FILE}?ref=${HEAD_SHA}" \
               --jq '.content' 2>/dev/null | base64 -d 2>/dev/null | jq -r "${FIELD} // empty" 2>/dev/null || true)
 
@@ -150,10 +150,14 @@ jobs:
 
           while IFS= read -r pkg_file; do
             [ -z "$pkg_file" ] && continue
-            [ ! -f "$pkg_file" ] && continue
 
-            BASE_DEPS=$(jq -S '(.dependencies // {}) + (.devDependencies // {})' "$pkg_file" 2>/dev/null || echo '{}')
+            # Get base deps via API
+            BASE_RAW=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${pkg_file}?ref=${BASE_SHA}" \
+              --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || true)
+            [ -z "$BASE_RAW" ] && continue
+            BASE_DEPS=$(echo "$BASE_RAW" | jq -S '(.dependencies // {}) + (.devDependencies // {})' 2>/dev/null || echo '{}')
 
+            # Get head deps via API
             HEAD_RAW=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${pkg_file}?ref=${HEAD_SHA}" \
               --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || true)
             [ -z "$HEAD_RAW" ] && continue
