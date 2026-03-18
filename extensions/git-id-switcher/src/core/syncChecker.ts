@@ -170,6 +170,7 @@ export async function checkSync(
   }
 
   try {
+    /* c8 ignore next - production path: test environment has no VS Code API */
     const readGitConfig = gitConfigReaderOverride ?? getCurrentGitConfig;
     const gitConfig = await readGitConfig(token);
 
