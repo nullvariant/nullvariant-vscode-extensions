@@ -1,4 +1,5 @@
 {
+  "$schema": "./schemas/zoo-bot-rules.schema.json",
   "description": "Justice-bot dependency safety review rules",
   "version": "1.0.0",
   "blocked_packages": [
