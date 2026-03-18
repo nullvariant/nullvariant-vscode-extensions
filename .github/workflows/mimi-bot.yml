@@ -6,6 +6,13 @@ name: 🐰 Mimi Bot
 permissions: {}
 
 on:
+  pull_request_target:
+    types: [opened, synchronize]
+    paths:
+      - '**.ts'
+      - '**.tsx'
+      - '**.js'
+      - '**.mjs'
   workflow_dispatch:
     inputs:
       message:
@@ -14,9 +21,124 @@ on:
         default: 'I heard something...'
 
 jobs:
+  validation-review:
+    name: 🐰 Validation Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: read
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
+        with:
+          app_id: ${{ secrets.MIMI_BOT_APP_ID }}
+          private_key: ${{ secrets.MIMI_BOT_PRIVATE_KEY }}
+
+      # SECURITY: No code checkout. All reads via GitHub API.
+
+      - name: 🐰 Check CI status
+        id: analyze
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          : > /tmp/mimi-findings.md
+          FOUND_ISSUES=false
+
+          # === Check CI check runs for the HEAD commit ===
+          CHECK_RUNS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/check-runs" \
+            --jq '.check_runs[] | {name: .name, status: .status, conclusion: .conclusion}' 2>/dev/null || true)
+
+          if [ -z "$CHECK_RUNS" ]; then
+            printf '⏳ CI checks have not started yet. I will wait patiently!\n' >> /tmp/mimi-findings.md
+            echo "should_comment=true" >> "$GITHUB_OUTPUT"
+            echo "has_issues=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Find failed checks
+          FAILED=$(echo "$CHECK_RUNS" | jq -s '[.[] | select(.conclusion == "failure")] | length' 2>/dev/null || echo "0")
+          FAILED_NAMES=$(echo "$CHECK_RUNS" | jq -rs '[.[] | select(.conclusion == "failure") | .name] | join("`, `")' 2>/dev/null || true)
+
+          if [ "$FAILED" -gt 0 ]; then
+            {
+              printf '🔴 **VALIDATION FAILED**: %s check(s) did not pass.\n\n' "$FAILED"
+              printf 'Failed: `%s`\n\n' "$FAILED_NAMES"
+              printf 'Please fix the issues and push again. I believe in you!\n\n'
+            } >> /tmp/mimi-findings.md
+            FOUND_ISSUES=true
+          fi
+
+          # Check for pending/in-progress
+          PENDING=$(echo "$CHECK_RUNS" | jq -s '[.[] | select(.status != "completed")] | length' 2>/dev/null || echo "0")
+
+          if [ "$PENDING" -gt 0 ] && [ "$FOUND_ISSUES" = false ]; then
+            printf '⏳ Some checks are still running. I will keep watching!\n' >> /tmp/mimi-findings.md
+          fi
+
+          echo "should_comment=true" >> "$GITHUB_OUTPUT"
+          if [ "$FOUND_ISSUES" = true ]; then
+            echo "has_issues=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_issues=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 📬 Post review comment
+        if: steps.analyze.outputs.should_comment == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HAS_ISSUES: ${{ steps.analyze.outputs.has_issues }}
+        run: |
+          set -euo pipefail
+
+          {
+            if [ "$HAS_ISSUES" = "true" ]; then
+              printf '## 🐰 Mimi'"'"'s Validation Report 🚨\n\n'
+              printf '*...ears twitching... something failed validation!*\n\n'
+              cat /tmp/mimi-findings.md
+            else
+              printf '## 🐰 Mimi'"'"'s Validation Report ✅\n\n'
+              printf 'All checks are looking good! Great job! 🎉\n'
+              if [ -s /tmp/mimi-findings.md ]; then
+                printf '\n'
+                cat /tmp/mimi-findings.md
+              fi
+            fi
+            printf '\n---\n\n'
+            printf '> バリデーターを通してくださいね\n\n'
+            printf '*This report was carefully prepared by nullvariant-mimi[bot]*\n'
+          } > /tmp/mimi-comment.md
+
+          EXISTING_ID=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select(.user.login == "nullvariant-mimi[bot]") | select(.body | contains("Mimi\u0027s Validation Report")) | .id' 2>/dev/null | head -1 || true)
+
+          if [ -n "$EXISTING_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${EXISTING_ID}" \
+              -X PATCH -F body=@/tmp/mimi-comment.md
+          else
+            gh pr comment "$PR_NUMBER" --body-file /tmp/mimi-comment.md
+          fi
+
+      - name: 🐰 Done checking
+        run: echo "Validation complete! Stay thorough! 🐰"
+
   mimi-commit:
     name: 🐰 Listen carefully
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
 
@@ -45,7 +167,6 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       # SECURITY: Use environment variable to prevent script injection
-      # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injection
       - name: 📝 Leave a whispered note
         env:
           USER_MESSAGE: ${{ github.event.inputs.message }}
