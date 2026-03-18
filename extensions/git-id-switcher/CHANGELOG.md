@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.1] - 2026-03-18
+
+### Fixed
+
+- **Restore fork editor compatibility**: Reverted `engines.vscode` from `^1.109.0` to `^1.85.0`. The 1.109.0 requirement was introduced by a Dependabot `@types/vscode` bump in v0.16.20, but no APIs newer than 1.85.0 are actually used. This made v0.16.20+ invisible on Cursor, Windsurf, Antigravity, TRAE, and other VS Code forks whose engine version lags behind VS Code stable
+- **Prevent future `@types/vscode` auto-bumps**: Added `@types/vscode` to both Dependabot ignore list and Renovate ignoreDeps to prevent `engines.vscode` from being silently raised again
+
 ## [0.17.0] - 2026-03-18
 
 ### Added
