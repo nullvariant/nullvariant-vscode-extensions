@@ -91,5 +91,18 @@
   "Press 'Enter' to save (leave empty to clear)": "Press 'Enter' to save (leave empty to clear)",
   "Move up": "Move up",
   "Move down": "Move down",
-  "Failed to reorder identity: {0}": "Failed to reorder identity: {0}"
+  "Failed to reorder identity: {0}": "Failed to reorder identity: {0}",
+  "Profile out of sync": "Profile out of sync",
+  "Field": "Field",
+  "Profile": "Profile",
+  "Git Config": "Git Config",
+  "*Click to resolve*": "*Click to resolve*",
+  "Re-apply profile": "Re-apply profile",
+  "Re-apply the current profile to git config": "Re-apply the current profile to git config",
+  "Select different profile": "Select different profile",
+  "Choose a different identity profile": "Choose a different identity profile",
+  "Dismiss": "Dismiss",
+  "Ignore until next sync check": "Ignore until next sync check",
+  "How would you like to resolve this?": "How would you like to resolve this?",
+  "Failed to re-apply profile: {0}": "Failed to re-apply profile: {0}"
 }

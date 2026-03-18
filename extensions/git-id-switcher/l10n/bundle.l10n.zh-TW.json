@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "按'Enter'儲存（留空以清除）",
   "Move up": "上移",
   "Move down": "下移",
-  "Failed to reorder identity: {0}": "重新排序設定檔失敗: {0}"
+  "Failed to reorder identity: {0}": "重新排序設定檔失敗: {0}",
+  "Profile out of sync": "設定檔不同步",
+  "Field": "欄位",
+  "Profile": "設定檔",
+  "Git Config": "Git 設定",
+  "*Click to resolve*": "*點擊解決*",
+  "Re-apply profile": "重新套用設定檔",
+  "Re-apply the current profile to git config": "將目前的設定檔重新套用至 git config",
+  "Select different profile": "選擇其他設定檔",
+  "Choose a different identity profile": "選擇一個不同的身分設定檔",
+  "Dismiss": "忽略",
+  "Ignore until next sync check": "在下次同步檢查前忽略",
+  "How would you like to resolve this?": "您想如何解決？",
+  "Failed to re-apply profile: {0}": "重新套用設定檔失敗: {0}"
 }

@@ -34,6 +34,9 @@
   "config.logging.maxFileSize": "轮换前的最大文件大小（字节，默认：10MB）",
   "config.logging.maxFiles": "保留的轮换文件最大数量（默认：5）",
   "config.logging.redactAllSensitive": "启用后，日志中的所有值都将被遮蔽（最大隐私模式）",
+  "config.category.syncCheck": "Git ID Switcher: 同步检查",
+  "config.syncCheck.enabled": "检查所选配置文件是否与实际的 git config 匹配。检测到不匹配时，状态栏会显示警告。",
+  "config.syncCheck.onFocusReturn": "当编辑器窗口重新获得焦点时运行同步检查（例如，从可能更改了 git config 的终端切换回来后）。",
   "config.commandTimeouts": "命令的自定义超时值（毫秒）",
   "config.commandTimeouts.markdown": "覆盖默认命令超时。示例：\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n默认值：git=10000ms、ssh-add=5000ms、ssh-keygen=5000ms、其他=30000ms"
 }

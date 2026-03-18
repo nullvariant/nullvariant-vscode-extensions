@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "'Enter'를 눌러 저장 (비워두면 지움)",
   "Move up": "위로 이동",
   "Move down": "아래로 이동",
-  "Failed to reorder identity: {0}": "프로필 순서 변경 실패: {0}"
+  "Failed to reorder identity: {0}": "프로필 순서 변경 실패: {0}",
+  "Profile out of sync": "프로필이 동기화되지 않음",
+  "Field": "필드",
+  "Profile": "프로필",
+  "Git Config": "Git 설정",
+  "*Click to resolve*": "*클릭하여 해결*",
+  "Re-apply profile": "프로필 다시 적용",
+  "Re-apply the current profile to git config": "현재 프로필을 git config에 다시 적용",
+  "Select different profile": "다른 프로필 선택",
+  "Choose a different identity profile": "다른 ID 프로필을 선택합니다",
+  "Dismiss": "무시",
+  "Ignore until next sync check": "다음 동기화 확인까지 무시",
+  "How would you like to resolve this?": "어떻게 해결하시겠습니까?",
+  "Failed to re-apply profile: {0}": "프로필 다시 적용 실패: {0}"
 }

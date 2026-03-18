@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "'Enter'で保存（空のままでクリア）",
   "Move up": "上に移動",
   "Move down": "下に移動",
-  "Failed to reorder identity: {0}": "プロフィールの並べ替えに失敗しました: {0}"
+  "Failed to reorder identity: {0}": "プロフィールの並べ替えに失敗しました: {0}",
+  "Profile out of sync": "プロフィールが同期されていません",
+  "Field": "項目",
+  "Profile": "プロフィール",
+  "Git Config": "Git設定",
+  "*Click to resolve*": "*クリックして解決*",
+  "Re-apply profile": "プロフィールを再適用",
+  "Re-apply the current profile to git config": "現在のプロフィールをgit configに再適用します",
+  "Select different profile": "別のプロフィールを選択",
+  "Choose a different identity profile": "別のプロフィールを選択します",
+  "Dismiss": "無視",
+  "Ignore until next sync check": "次回の同期チェックまで無視します",
+  "How would you like to resolve this?": "どのように解決しますか？",
+  "Failed to re-apply profile: {0}": "プロフィールの再適用に失敗しました: {0}"
 }

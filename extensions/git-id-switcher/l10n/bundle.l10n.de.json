@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "'Enter' zum Speichern (leer lassen zum Löschen)",
   "Move up": "Nach oben verschieben",
   "Move down": "Nach unten verschieben",
-  "Failed to reorder identity: {0}": "Profil konnte nicht neu angeordnet werden: {0}"
+  "Failed to reorder identity: {0}": "Profil konnte nicht neu angeordnet werden: {0}",
+  "Profile out of sync": "Profil nicht synchronisiert",
+  "Field": "Feld",
+  "Profile": "Profil",
+  "Git Config": "Git-Konfiguration",
+  "*Click to resolve*": "*Klicken zum Beheben*",
+  "Re-apply profile": "Profil erneut anwenden",
+  "Re-apply the current profile to git config": "Das aktuelle Profil erneut auf die Git-Konfiguration anwenden",
+  "Select different profile": "Anderes Profil auswählen",
+  "Choose a different identity profile": "Ein anderes Identitätsprofil auswählen",
+  "Dismiss": "Verwerfen",
+  "Ignore until next sync check": "Bis zur nächsten Synchronisierungsprüfung ignorieren",
+  "How would you like to resolve this?": "Wie möchten Sie dies lösen?",
+  "Failed to re-apply profile: {0}": "Profil konnte nicht erneut angewendet werden: {0}"
 }

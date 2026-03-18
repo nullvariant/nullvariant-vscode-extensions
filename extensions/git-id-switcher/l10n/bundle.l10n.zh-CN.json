@@ -96,5 +96,18 @@
   "Press 'Enter' to save (leave empty to clear)": "按'Enter'保存（留空以清除）",
   "Move up": "上移",
   "Move down": "下移",
-  "Failed to reorder identity: {0}": "重新排序配置文件失败: {0}"
+  "Failed to reorder identity: {0}": "重新排序配置文件失败: {0}",
+  "Profile out of sync": "配置文件不同步",
+  "Field": "字段",
+  "Profile": "配置文件",
+  "Git Config": "Git 配置",
+  "*Click to resolve*": "*点击解决*",
+  "Re-apply profile": "重新应用配置文件",
+  "Re-apply the current profile to git config": "将当前配置文件重新应用到 git config",
+  "Select different profile": "选择其他配置文件",
+  "Choose a different identity profile": "选择一个不同的身份配置文件",
+  "Dismiss": "忽略",
+  "Ignore until next sync check": "在下次同步检查前忽略",
+  "How would you like to resolve this?": "您想如何解决？",
+  "Failed to re-apply profile: {0}": "重新应用配置文件失败: {0}"
 }

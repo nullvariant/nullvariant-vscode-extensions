@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-03-18
+
+### Added
+
+- **Sync Check**: Real-time detection of mismatches between the selected profile and actual git config (`user.name`, `user.email`, `user.signingkey`). When a mismatch is detected, the status bar shows a ⚠️ warning with a clickable resolution flow (re-apply, select different profile, or dismiss)
+- **Sync Check settings**: `syncCheck.enabled` (default: `true`) and `syncCheck.onFocusReturn` (default: `true`) to control sync check behavior
+- **Event-driven sync check**: Automatically runs on profile apply, workspace folder change, configuration change, and window focus return (debounced 500ms)
+- **Localization**: All sync check UI strings translated to 17 languages (`package.nls` and `l10n/bundle.l10n`)
+
 ## [0.16.22] - 2026-03-17
 
 ### Security

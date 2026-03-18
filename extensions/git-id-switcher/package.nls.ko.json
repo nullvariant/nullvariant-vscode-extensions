@@ -34,6 +34,9 @@
   "config.logging.maxFileSize": "로테이션 전 최대 파일 크기 (바이트, 기본값: 10MB)",
   "config.logging.maxFiles": "유지할 로테이션 파일의 최대 수 (기본값: 5)",
   "config.logging.redactAllSensitive": "활성화하면 로그의 모든 값이 마스킹됩니다 (최대 프라이버시 모드)",
+  "config.category.syncCheck": "Git ID Switcher: 동기화 확인",
+  "config.syncCheck.enabled": "선택한 프로필이 실제 git config와 일치하는지 확인합니다. 불일치가 감지되면 상태 표시줄에 경고가 표시됩니다.",
+  "config.syncCheck.onFocusReturn": "편집기 창에 포커스가 돌아올 때 동기화 확인을 실행합니다 (예: git config를 변경했을 수 있는 터미널에서 전환한 후).",
   "config.commandTimeouts": "명령의 사용자 지정 시간 초과 값 (밀리초)",
   "config.commandTimeouts.markdown": "기본 명령 시간 초과를 재정의합니다. 예:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\n기본값: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, 기타=30000ms"
 }

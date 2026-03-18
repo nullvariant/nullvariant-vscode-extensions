@@ -34,6 +34,9 @@
   "config.logging.maxFileSize": "Rotasyondan önce maksimum dosya boyutu (bayt, varsayılan: 10MB)",
   "config.logging.maxFiles": "Saklanacak maksimum rotasyonlu dosya sayısı (varsayılan: 5)",
   "config.logging.redactAllSensitive": "Etkinleştirildiğinde, günlüklerdeki tüm değerler maskelenir (maksimum gizlilik)",
+  "config.category.syncCheck": "Git ID Switcher: Senkronizasyon kontrolü",
+  "config.syncCheck.enabled": "Seçili profilin gerçek git yapılandırmasıyla eşleşip eşleşmediğini kontrol eder. Uyuşmazlık algılandığında durum çubuğunda bir uyarı gösterir.",
+  "config.syncCheck.onFocusReturn": "Düzenleyici penceresi yeniden odaklandığında senkronizasyon kontrolü çalıştırır (örn., git yapılandırmasını değiştirmiş olabilecek bir terminalden geçiş yaptıktan sonra).",
   "config.commandTimeouts": "Komutlar için özel zaman aşımı değerleri (milisaniye)",
   "config.commandTimeouts.markdown": "Varsayılan komut zaman aşımlarını geçersiz kıl. Örnek:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nVarsayılan değerler: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, diğerleri=30000ms"
 }

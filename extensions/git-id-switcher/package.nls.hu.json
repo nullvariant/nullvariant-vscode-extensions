@@ -34,6 +34,9 @@
   "config.logging.maxFileSize": "Maximális fájlméret rotáció előtt (bájt, alapértelmezett: 10MB)",
   "config.logging.maxFiles": "Megtartandó rotált fájlok száma (alapértelmezett: 5)",
   "config.logging.redactAllSensitive": "Ha engedélyezve van, minden érték maszkolva van a naplókban (maximális adatvédelem)",
+  "config.category.syncCheck": "Git ID Switcher: Szinkronizáció-ellenőrzés",
+  "config.syncCheck.enabled": "Ellenőrzi, hogy a kiválasztott profil megegyezik-e a tényleges git konfigurációval. Eltérés észlelése esetén az állapotsorban figyelmeztetés jelenik meg.",
+  "config.syncCheck.onFocusReturn": "Szinkronizáció-ellenőrzés futtatása, amikor a szerkesztőablak visszakapja a fókuszt (pl. a terminálról való visszaváltás után, amely megváltoztathatta a git konfigurációt).",
   "config.commandTimeouts": "Egyéni időtúllépési értékek parancsokhoz (milliszekundumban)",
   "config.commandTimeouts.markdown": "Alapértelmezett parancs időtúllépések felülírása. Példa:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nAlapértelmezett értékek: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, egyéb=30000ms"
 }

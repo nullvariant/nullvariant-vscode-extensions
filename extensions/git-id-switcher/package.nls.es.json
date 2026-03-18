@@ -34,6 +34,9 @@
   "config.logging.maxFileSize": "Tamaño máximo del archivo antes de rotación (bytes, predeterminado: 10MB)",
   "config.logging.maxFiles": "Número máximo de archivos rotados a conservar (predeterminado: 5)",
   "config.logging.redactAllSensitive": "Cuando está habilitado, todos los valores se enmascaran en los registros (privacidad máxima)",
+  "config.category.syncCheck": "Git ID Switcher: Verificación de sincronización",
+  "config.syncCheck.enabled": "Comprueba si el perfil seleccionado coincide con la configuración git real. Cuando se detecta una discrepancia, se muestra una advertencia en la barra de estado.",
+  "config.syncCheck.onFocusReturn": "Ejecuta una verificación de sincronización cuando la ventana del editor recupera el foco (por ejemplo, después de cambiar desde una terminal que pudo haber modificado la configuración git).",
   "config.commandTimeouts": "Valores de tiempo de espera personalizados para comandos (en milisegundos)",
   "config.commandTimeouts.markdown": "Anular los tiempos de espera predeterminados de comandos. Ejemplo:\n```json\n{\n  \"git\": 15000,\n  \"ssh-add\": 10000\n}\n```\nValores predeterminados: git=10000ms, ssh-add=5000ms, ssh-keygen=5000ms, otros=30000ms"
 }
