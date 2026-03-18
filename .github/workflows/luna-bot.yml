@@ -6,6 +6,10 @@ name: 👧 Luna Bot
 permissions: {}
 
 on:
+  pull_request_target:
+    types: [opened, synchronize]
+    paths:
+      - '**/package.json'
   workflow_dispatch:
     inputs:
       message:
@@ -14,9 +18,156 @@ on:
         default: 'I found something interesting!'
 
 jobs:
+  dependency-explorer:
+    name: 👧 Dependency Explorer
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
+        with:
+          app_id: ${{ secrets.LUNA_BOT_APP_ID }}
+          private_key: ${{ secrets.LUNA_BOT_PRIVATE_KEY }}
+
+      # SECURITY: No code checkout. All reads via GitHub API.
+
+      - name: 👧 Explore dependency changes
+        id: analyze
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          : > /tmp/luna-findings.md
+          FOUND_NEW=false
+
+          # === Get changed package.json files ===
+          CHANGED_FILES=$(gh pr diff "$PR_NUMBER" --name-only 2>/dev/null || true)
+          PKG_FILES=$(echo "$CHANGED_FILES" | grep 'package\.json$' || true)
+
+          if [ -z "$PKG_FILES" ]; then
+            echo "should_comment=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # === Compare dependencies between base and head ===
+          while IFS= read -r pkg_file; do
+            [ -z "$pkg_file" ] && continue
+
+            BASE_RAW=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${pkg_file}?ref=${BASE_SHA}" \
+              --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || true)
+            HEAD_RAW=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${pkg_file}?ref=${HEAD_SHA}" \
+              --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || true)
+
+            [ -z "$HEAD_RAW" ] && continue
+
+            # Get all deps from base and head
+            BASE_DEPS=$(echo "${BASE_RAW:-{}}" | jq -r '(.dependencies // {}) + (.devDependencies // {}) | keys[]' 2>/dev/null || true)
+            HEAD_DEPS=$(echo "$HEAD_RAW" | jq -r '(.dependencies // {}) + (.devDependencies // {}) | keys[]' 2>/dev/null || true)
+
+            # Find newly added packages (in head but not in base)
+            NEW_PKGS=""
+            while IFS= read -r dep; do
+              [ -z "$dep" ] && continue
+              if ! echo "$BASE_DEPS" | grep -qxF "$dep"; then
+                VERSION=$(echo "$HEAD_RAW" | jq -r "(.dependencies // {})[\"${dep}\"] // (.devDependencies // {})[\"${dep}\"] // \"unknown\"")
+                NEW_PKGS="${NEW_PKGS}\n| \`${dep}\` | \`${VERSION}\` |"
+                FOUND_NEW=true
+              fi
+            done <<< "$HEAD_DEPS"
+
+            if [ -n "$NEW_PKGS" ]; then
+              {
+                printf '✨ **NEW DEPENDENCIES** in `%s`:\n\n' "$pkg_file"
+                printf '| Package | Version |\n'
+                printf '| --- | --- |\n'
+                printf '%b\n\n' "$NEW_PKGS"
+                printf 'Ooh, new toys! But... do we really need them? 🤔\n\n'
+              } >> /tmp/luna-findings.md
+            fi
+
+            # Find removed packages
+            REMOVED_PKGS=""
+            while IFS= read -r dep; do
+              [ -z "$dep" ] && continue
+              if ! echo "$HEAD_DEPS" | grep -qxF "$dep"; then
+                REMOVED_PKGS="${REMOVED_PKGS}\n- \`${dep}\`"
+              fi
+            done <<< "$BASE_DEPS"
+
+            if [ -n "$REMOVED_PKGS" ]; then
+              {
+                printf '🗑️ **REMOVED DEPENDENCIES** from `%s`:\n\n'  "$pkg_file"
+                printf '%b\n\n' "$REMOVED_PKGS"
+                printf 'Goodbye, old friends! Keeping things tidy~ 🧹\n\n'
+              } >> /tmp/luna-findings.md
+            fi
+          done <<< "$PKG_FILES"
+
+          echo "should_comment=true" >> "$GITHUB_OUTPUT"
+          if [ "$FOUND_NEW" = true ]; then
+            echo "has_new=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_new=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 📬 Post review comment
+        if: steps.analyze.outputs.should_comment == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HAS_NEW: ${{ steps.analyze.outputs.has_new }}
+        run: |
+          set -euo pipefail
+
+          {
+            if [ "$HAS_NEW" = "true" ]; then
+              printf '## 👧 Luna'"'"'s Exploration Report 🔍\n\n'
+              printf '*✨ Ooh, what'"'"'s this? New packages to explore! ✨*\n\n'
+              cat /tmp/luna-findings.md
+            else
+              printf '## 👧 Luna'"'"'s Exploration Report 📦\n\n'
+              if [ -s /tmp/luna-findings.md ]; then
+                cat /tmp/luna-findings.md
+              else
+                printf 'No new dependencies added. Just version bumps! Nothing to explore here... 😴\n'
+              fi
+            fi
+            printf '\n---\n\n'
+            printf '> Botに418返そうよ！\n\n'
+            printf '*This report was curiously compiled by nullvariant-luna[bot]*\n'
+          } > /tmp/luna-comment.md
+
+          EXISTING_ID=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select(.user.login == "nullvariant-luna[bot]") | select(.body | contains("Luna\u0027s Exploration Report")) | .id' 2>/dev/null | head -1 || true)
+
+          if [ -n "$EXISTING_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${EXISTING_ID}" \
+              -X PATCH -F body=@/tmp/luna-comment.md
+          else
+            gh pr comment "$PR_NUMBER" --body-file /tmp/luna-comment.md
+          fi
+
+      - name: ✨ Off to the next adventure
+        run: echo "Exploration complete! What else is out there? ✨"
+
   luna-commit:
     name: 👧 Explore and discover
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
 
@@ -45,7 +196,6 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       # SECURITY: Use environment variable to prevent script injection
-      # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injection
       - name: 📝 Leave a discovery note
         env:
           USER_MESSAGE: ${{ github.event.inputs.message }}

@@ -6,6 +6,10 @@ name: 🐗 Blaze Bot
 permissions: {}
 
 on:
+  pull_request_target:
+    types: [opened, synchronize]
+    paths:
+      - '**/package.json'
   workflow_dispatch:
     inputs:
       message:
@@ -14,9 +18,146 @@ on:
         default: 'LETS GOOOO!!!'
 
 jobs:
+  release-review:
+    name: 🐗 Release Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
+        with:
+          app_id: ${{ secrets.BLAZE_BOT_APP_ID }}
+          private_key: ${{ secrets.BLAZE_BOT_PRIVATE_KEY }}
+
+      # SECURITY: No code checkout. All reads via GitHub API.
+
+      - name: 🐗 Check for version bumps
+        id: analyze
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          : > /tmp/blaze-findings.md
+          FOUND_BUMP=false
+
+          # === Get changed package.json files ===
+          CHANGED_FILES=$(gh pr diff "$PR_NUMBER" --name-only 2>/dev/null || true)
+          PKG_FILES=$(echo "$CHANGED_FILES" | grep 'package\.json$' || true)
+
+          if [ -z "$PKG_FILES" ]; then
+            echo "should_comment=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # === Check for version bumps in each package.json ===
+          while IFS= read -r pkg_file; do
+            [ -z "$pkg_file" ] && continue
+
+            BASE_VER=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${pkg_file}?ref=${BASE_SHA}" \
+              --jq '.content' 2>/dev/null | base64 -d 2>/dev/null | jq -r '.version // empty' 2>/dev/null || true)
+            HEAD_VER=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${pkg_file}?ref=${HEAD_SHA}" \
+              --jq '.content' 2>/dev/null | base64 -d 2>/dev/null | jq -r '.version // empty' 2>/dev/null || true)
+
+            if [ -n "$BASE_VER" ] && [ -n "$HEAD_VER" ] && [ "$BASE_VER" != "$HEAD_VER" ]; then
+              FOUND_BUMP=true
+
+              # Determine bump type
+              BASE_MAJOR=$(echo "$BASE_VER" | cut -d. -f1)
+              HEAD_MAJOR=$(echo "$HEAD_VER" | cut -d. -f1)
+              BASE_MINOR=$(echo "$BASE_VER" | cut -d. -f2)
+              HEAD_MINOR=$(echo "$HEAD_VER" | cut -d. -f2)
+
+              if [ "$BASE_MAJOR" != "$HEAD_MAJOR" ]; then
+                BUMP_TYPE="MAJOR"
+                BUMP_EMOJI="🔥🔥🔥"
+              elif [ "$BASE_MINOR" != "$HEAD_MINOR" ]; then
+                BUMP_TYPE="MINOR"
+                BUMP_EMOJI="🔥"
+              else
+                BUMP_TYPE="PATCH"
+                BUMP_EMOJI="✨"
+              fi
+
+              {
+                printf '%s **%s VERSION BUMP** in `%s`\n\n' "$BUMP_EMOJI" "$BUMP_TYPE" "$pkg_file"
+                printf '`%s` → `%s`\n\n' "$BASE_VER" "$HEAD_VER"
+                if [ "$BUMP_TYPE" = "MAJOR" ]; then
+                  printf '🔥🔥🔥 MAJOR RELEASE?! LET'"'"'S GOOOO!!! But wait... did you:\n\n'
+                  printf '- [ ] Update the CHANGELOG?\n'
+                  printf '- [ ] Check for breaking changes?\n'
+                  printf '- [ ] Run the full test suite?\n\n'
+                elif [ "$BUMP_TYPE" = "MINOR" ]; then
+                  printf '🔥 New features incoming! Make sure:\n\n'
+                  printf '- [ ] Tests pass for the new features?\n'
+                  printf '- [ ] Documentation updated?\n\n'
+                else
+                  printf '✨ Quick patch! Nice and clean.\n\n'
+                fi
+              } >> /tmp/blaze-findings.md
+            fi
+          done <<< "$PKG_FILES"
+
+          echo "should_comment=true" >> "$GITHUB_OUTPUT"
+          if [ "$FOUND_BUMP" = true ]; then
+            echo "has_bump=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_bump=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 📬 Post review comment
+        if: steps.analyze.outputs.should_comment == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HAS_BUMP: ${{ steps.analyze.outputs.has_bump }}
+        run: |
+          set -euo pipefail
+
+          {
+            if [ "$HAS_BUMP" = "true" ]; then
+              printf '## 🐗 Blaze'"'"'s Release Review 🔥\n\n'
+              printf '*🔥🔥🔥 VERSION BUMP DETECTED! THIS IS IT! 🔥🔥🔥*\n\n'
+              cat /tmp/blaze-findings.md
+            else
+              printf '## 🐗 Blaze'"'"'s Release Review 📦\n\n'
+              printf 'No version bump. Just dependency changes... boring. Wake me up when it'"'"'s deploy time! 😤\n'
+            fi
+            printf '\n---\n\n'
+            printf '> よっしゃ！デプロイしまくるぞ！\n\n'
+            printf '*This review was ENTHUSIASTICALLY filed by nullvariant-blaze[bot]*\n'
+          } > /tmp/blaze-comment.md
+
+          EXISTING_ID=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select(.user.login == "nullvariant-blaze[bot]") | select(.body | contains("Blaze\u0027s Release Review")) | .id' 2>/dev/null | head -1 || true)
+
+          if [ -n "$EXISTING_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${EXISTING_ID}" \
+              -X PATCH -F body=@/tmp/blaze-comment.md
+          else
+            gh pr comment "$PR_NUMBER" --body-file /tmp/blaze-comment.md
+          fi
+
+      - name: 🔥 Victory roar
+        run: echo "Review complete! WHO'S NEXT?! 🔥🔥🔥"
+
   blaze-commit:
     name: 🐗 Charge forward!
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
 
@@ -44,7 +185,6 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       # SECURITY: Use environment variable to prevent script injection
-      # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injection
       - name: 📝 Leave a fired-up message
         env:
           USER_MESSAGE: ${{ github.event.inputs.message }}
