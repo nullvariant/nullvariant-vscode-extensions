@@ -8,11 +8,6 @@ permissions: {}
 on:
   pull_request_target:
     types: [opened, synchronize]
-    paths:
-      - '**.ts'
-      - '**.tsx'
-      - '**.js'
-      - '**.mjs'
   workflow_dispatch:
     inputs:
       message:
