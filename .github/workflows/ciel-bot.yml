@@ -74,8 +74,8 @@ jobs:
 
           TOTAL=$((JUSTICE + SLOW + MIMI + LUNA + BLAZE))
 
-          if [ "$TOTAL" -lt 2 ]; then
-            echo "Only ${TOTAL} zoo bot(s) commented. Not enough to mediate."
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "No zoo bots commented. Nothing to mediate."
             echo "should_comment=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -98,7 +98,10 @@ jobs:
             printf '\n'
           } >> /tmp/ciel-findings.md
 
-          if [ "$HAS_BLOCK" -gt 0 ] && [ "$HAS_APPROVE" -gt 0 ]; then
+          if [ "$TOTAL" -eq 1 ]; then
+            printf '😴 A quiet day at the zoo. Only one member peeked at this PR.\n\n' >> /tmp/ciel-findings.md
+            echo "mood=quiet" >> "$GITHUB_OUTPUT"
+          elif [ "$HAS_BLOCK" -gt 0 ] && [ "$HAS_APPROVE" -gt 0 ]; then
             printf '⚖️ The zoo has **mixed opinions**. Some are concerned, some are fine with it. Please review each comment carefully and make the final call.\n\n' >> /tmp/ciel-findings.md
             echo "mood=conflict" >> "$GITHUB_OUTPUT"
           elif [ "$HAS_BLOCK" -gt 0 ]; then
@@ -124,6 +127,10 @@ jobs:
 
           {
             case "$MOOD" in
+              quiet)
+                printf '## 🕊️ Ciel'"'"'s Mediation 💤\n\n'
+                printf '*~~ drifting lazily through still air ~~ The zoo is napping today...*\n\n'
+                ;;
               conflict)
                 printf '## 🕊️ Ciel'"'"'s Mediation 🌤️\n\n'
                 printf '*~~ floating down from the clouds ~~ The zoo seems a bit noisy today...*\n\n'
@@ -138,7 +145,11 @@ jobs:
                 ;;
             esac
 
-            printf '%s zoo members have reviewed this PR.\n\n' "$TOTAL"
+            if [ "$TOTAL" -eq 1 ]; then
+              printf '1 zoo member has reviewed this PR.\n\n'
+            else
+              printf '%s zoo members have reviewed this PR.\n\n' "$TOTAL"
+            fi
             cat /tmp/ciel-findings.md
             printf '\n---\n\n'
             printf '> まあまあ、ほどほどに。\n\n'
