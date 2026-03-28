@@ -21,8 +21,10 @@
     "prettier": "^3.8.1"
   },
   "overrides": {
+    "brace-expansion@1": "^1.1.13",
+    "brace-expansion@2": "^2.0.3",
     "diff": "^8.0.3",
-    "serialize-javascript": "^7.0.3",
+    "serialize-javascript": "^7.0.5",
     "yauzl": "^3.2.1"
   },
   "lint-staged": {
