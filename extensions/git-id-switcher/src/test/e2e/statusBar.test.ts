@@ -29,7 +29,7 @@
 
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { createStatusBar, IdentityStatusBar, buildMismatchTooltip } from '../../ui/identityStatusBar';
+import { createStatusBar, IdentityStatusBar, buildMismatchTooltip, maskSshKeyPath, maskGpgKeyId } from '../../ui/identityStatusBar';
 import { Identity } from '../../identity/identity';
 import type { SyncCheckResult } from '../../core/syncChecker';
 
@@ -516,6 +516,48 @@ describe('StatusBar E2E Test Suite', function () {
 
       // Mark as disposed so afterEach doesn't double-dispose
       statusBar = undefined;
+    });
+  });
+});
+
+describe('Tooltip Masking Functions', () => {
+  describe('maskSshKeyPath', () => {
+    it('should return only the filename from an absolute path', () => {
+      assert.strictEqual(maskSshKeyPath('/home/user/.ssh/id_ed25519'), 'id_ed25519');
+    });
+
+    it('should return only the filename from a tilde path', () => {
+      assert.strictEqual(maskSshKeyPath('~/.ssh/id_github'), 'id_github');
+    });
+
+    it('should return the input unchanged if it is already a filename', () => {
+      assert.strictEqual(maskSshKeyPath('id_rsa'), 'id_rsa');
+    });
+
+    it('should handle Windows-style paths', () => {
+      assert.strictEqual(maskSshKeyPath(String.raw`C:\Users\user\.ssh\id_rsa`), 'id_rsa');
+    });
+
+    it('should return empty string for empty input', () => {
+      assert.strictEqual(maskSshKeyPath(''), '');
+    });
+  });
+
+  describe('maskGpgKeyId', () => {
+    it('should return last 8 characters of a 16-character key ID', () => {
+      assert.strictEqual(maskGpgKeyId('1234567890ABCDEF'), '90ABCDEF');
+    });
+
+    it('should return the full string if it is exactly 8 characters', () => {
+      assert.strictEqual(maskGpgKeyId('ABCD1234'), 'ABCD1234');
+    });
+
+    it('should return the full string if it is shorter than 8 characters', () => {
+      assert.strictEqual(maskGpgKeyId('SHORT'), 'SHORT');
+    });
+
+    it('should return empty string for empty input', () => {
+      assert.strictEqual(maskGpgKeyId(''), '');
     });
   });
 });
