@@ -12,6 +12,7 @@ import {
   createSystemError,
   wrapError,
   isSecurityError,
+  isFatalError,
   getUserSafeMessage,
   toFieldError,
 } from '../core/errors';
@@ -67,6 +68,30 @@ function testSecurityErrorConstructor(): void {
     assert.deepStrictEqual(details, {});
   }
 
+  // getInternalDetails should return a frozen copy (prevents audit log tampering)
+  {
+    const error = new SecurityError({
+      category: ErrorCategory.VALIDATION,
+      userMessage: 'Frozen test',
+      internalDetails: {
+        field: 'original',
+        value: 'original-value',
+      },
+      autoLog: false,
+    });
+
+    const details = error.getInternalDetails();
+    assert.ok(Object.isFrozen(details));
+    assert.throws(
+      () => {
+        (details as Record<string, unknown>).field = 'tampered';
+      },
+      TypeError,
+    );
+    // Subsequent calls return fresh copies with original values
+    assert.strictEqual(error.getInternalDetails().field, 'original');
+  }
+
   console.log('✅ SecurityError constructor tests passed!');
 }
 
@@ -101,16 +126,14 @@ function testGetSafeStack(): void {
       autoLog: false,
     });
 
-    const originalStack = error.stack;
-    if (originalStack) {
-      const safeStack = error.getSafeStack();
-      assert.ok(safeStack);
+    const safeStack = error.getSafeStack();
+    if (safeStack) {
       // Should not contain /Users/username pattern (if macOS)
       assert.ok(!/\/Users\/[a-zA-Z0-9_-]+\//.test(safeStack));
     }
   }
 
-  // Should return undefined for empty stack
+  // error.stack should return sanitized stack (getter delegates to getSafeStack)
   {
     const error = new SecurityError({
       category: ErrorCategory.VALIDATION,
@@ -118,9 +141,29 @@ function testGetSafeStack(): void {
       autoLog: false,
     });
 
-    // Force stack to be undefined
-    error.stack = undefined;
-    assert.strictEqual(error.getSafeStack(), undefined);
+    const stack = error.stack;
+    if (stack) {
+      assert.ok(!/\/Users\/[a-zA-Z0-9_-]+\//.test(stack));
+      assert.strictEqual(stack, error.getSafeStack());
+    }
+  }
+
+  // error.stack access must not cause infinite recursion
+  // Before the fix, Object.defineProperty getter called getSafeStack()
+  // which read this.stack, triggering the getter again (V8-dependent)
+  {
+    const error = new SecurityError({
+      category: ErrorCategory.VALIDATION,
+      userMessage: 'Recursion test',
+      autoLog: false,
+    });
+
+    // If infinite recursion exists, this would throw RangeError: Maximum call stack size exceeded
+    let stack: string | undefined;
+    assert.doesNotThrow(() => {
+      stack = error.stack;
+    });
+    assert.ok(typeof stack === 'string');
   }
 
   console.log('✅ getSafeStack tests passed!');
@@ -153,24 +196,37 @@ function testFactoryFunctions(): void {
     assert.strictEqual(error.userMessage, 'Config error');
   }
 
-  // createSystemError should wrap original error
+  // createSystemError should wrap original error (with stack stripped for security)
   {
     const originalError = new Error('Original error');
     const error = createSystemError('System error', originalError);
 
     assert.strictEqual(error.category, ErrorCategory.SYSTEM);
     assert.strictEqual(error.userMessage, 'System error');
-    assert.strictEqual(error.getInternalDetails().originalError, originalError);
+
+    const wrapped = error.getInternalDetails().originalError;
+    assert.ok(wrapped instanceof Error);
+    assert.strictEqual(wrapped?.message, 'Original error');
+    assert.strictEqual(wrapped?.name, 'Error');
+    // SECURITY: originalError.stack must not leak unsanitized paths
+    assert.notStrictEqual(wrapped, originalError);
+    // Stack must not carry over the original call site
+    assert.notStrictEqual(wrapped?.stack, originalError.stack);
   }
 
-  // wrapError should wrap Error instance
+  // wrapError should wrap Error instance (with stack stripped for security)
   {
     const originalError = new Error('Original');
     const error = wrapError(originalError, 'Wrapped error');
 
     assert.strictEqual(error.category, ErrorCategory.SYSTEM);
     assert.strictEqual(error.userMessage, 'Wrapped error');
-    assert.ok(error.getInternalDetails().originalError instanceof Error);
+    const wrapped = error.getInternalDetails().originalError;
+    assert.ok(wrapped instanceof Error);
+    assert.strictEqual(wrapped?.message, 'Original');
+    // SECURITY: stack must not carry over the original call site
+    assert.notStrictEqual(wrapped, originalError);
+    assert.notStrictEqual(wrapped?.stack, originalError.stack);
   }
 
   // wrapError should wrap non-Error values
@@ -330,6 +386,53 @@ function testToFieldError(): void {
 }
 
 /**
+ * Test isFatalError function
+ */
+function testIsFatalError(): void {
+  console.log('Testing isFatalError...');
+
+  // SECURITY category should be fatal
+  {
+    const error = new SecurityError({
+      category: ErrorCategory.SECURITY,
+      userMessage: 'Security violation',
+      autoLog: false,
+    });
+    assert.strictEqual(isFatalError(error), true);
+  }
+
+  // Non-SECURITY categories should not be fatal
+  {
+    for (const category of [
+      ErrorCategory.VALIDATION,
+      ErrorCategory.SYSTEM,
+      ErrorCategory.CONFIG,
+    ]) {
+      const error = new SecurityError({
+        category,
+        userMessage: 'Non-fatal',
+        autoLog: false,
+      });
+      assert.strictEqual(isFatalError(error), false);
+    }
+  }
+
+  // Regular Error should not be fatal
+  {
+    assert.strictEqual(isFatalError(new Error('regular')), false);
+  }
+
+  // Non-Error values should not be fatal
+  {
+    assert.strictEqual(isFatalError(null), false);
+    assert.strictEqual(isFatalError('string'), false);
+    assert.strictEqual(isFatalError(undefined), false);
+  }
+
+  console.log('✅ isFatalError tests passed!');
+}
+
+/**
  * Run all error tests
  */
 export async function runErrorTests(): Promise<void> {
@@ -341,6 +444,7 @@ export async function runErrorTests(): Promise<void> {
     testGetSafeStack();
     testFactoryFunctions();
     testTypeGuards();
+    testIsFatalError();
     testGetUserSafeMessageFunction();
     testToFieldError();
 
