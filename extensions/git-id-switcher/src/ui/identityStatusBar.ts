@@ -6,6 +6,7 @@
  * Shows visual warning when profile is out of sync with git config.
  */
 
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { Identity, getIdentityLabel } from '../identity/identity';
 import type { SyncCheckResult, SyncMismatch } from '../core/syncChecker';
@@ -169,11 +170,11 @@ export class IdentityStatusBar implements vscode.Disposable {
     }
 
     if (identity.sshKeyPath) {
-      lines.push('- ' + vscode.l10n.t('**SSH Key:** {0}', identity.sshKeyPath));
+      lines.push('- ' + vscode.l10n.t('**SSH Key:** {0}', maskSshKeyPath(identity.sshKeyPath)));
     }
 
     if (identity.gpgKeyId) {
-      lines.push('- ' + vscode.l10n.t('**GPG Key:** {0}', identity.gpgKeyId));
+      lines.push('- ' + vscode.l10n.t('**GPG Key:** {0}', maskGpgKeyId(identity.gpgKeyId)));
     }
 
     lines.push('', '---', '', vscode.l10n.t('*Click to switch identity*'));
@@ -192,6 +193,25 @@ export class IdentityStatusBar implements vscode.Disposable {
 // ============================================================================
 // Pure Functions (exported for testing)
 // ============================================================================
+
+/** GPG short key ID length (last 8 hex characters, per OpenPGP convention) */
+const GPG_SHORT_KEY_ID_LENGTH = 8;
+
+/**
+ * Mask SSH key path to show only the filename.
+ * Prevents full filesystem path exposure in tooltip during screen sharing.
+ */
+export function maskSshKeyPath(keyPath: string): string {
+  return path.basename(keyPath);
+}
+
+/**
+ * Mask GPG key ID to show only the last 8 characters.
+ * Prevents full key ID exposure in tooltip during screen sharing.
+ */
+export function maskGpgKeyId(keyId: string): string {
+  return keyId.slice(-GPG_SHORT_KEY_ID_LENGTH);
+}
 
 /**
  * Field display labels for mismatch tooltip.
