@@ -48,6 +48,7 @@ export default [
       "@typescript-eslint/no-floating-promises": "error",
 
       // === Guardrail #16: SonarQube patterns ===
+      "no-duplicate-imports": "error",
       "unicorn/prefer-string-replace-all": "error",
       "unicorn/prefer-set-has": "error",
       "unicorn/numeric-separators-style": "error",
