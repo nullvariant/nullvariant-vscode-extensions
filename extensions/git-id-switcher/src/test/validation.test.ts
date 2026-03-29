@@ -5,7 +5,8 @@
  */
 
 import * as assert from 'node:assert';
-import { validateIdentity, validateIdentities, isPathSafe } from '../identity/inputValidator';
+import { validateIdentity, validateIdentities, isPathSafe, validateFieldForDangerousPatterns } from '../identity/inputValidator';
+import { hasDangerousChars } from '../validators/common';
 import { Identity } from '../identity/identity';
 
 /**
@@ -377,6 +378,121 @@ function testIsPathSafe(): void {
 }
 
 /**
+ * Test suite for validation consistency between UI layer and identity layer
+ *
+ * Invariant: validateFieldForDangerousPatterns rejects a SUPERSET of what
+ * hasDangerousChars rejects. Anything hasDangerousChars catches, the identity
+ * layer also catches. The identity layer additionally catches text-level
+ * patterns (hex escape sequences) that are safe bytes but dangerous text.
+ *
+ * Issue-00103: Unify validation logic between UI and identity layers.
+ */
+function testValidationConsistency(): void {
+  console.log('Testing validation consistency (UI ↔ identity layer)...');
+
+  // Category 1: Inputs rejected by BOTH hasDangerousChars and validateFieldForDangerousPatterns
+  // (actual dangerous bytes: shell metacharacters and control characters)
+  const bothReject = [
+    { value: 'test$(cmd)', reason: 'command substitution ($)' },
+    { value: 'test`id`', reason: 'backtick injection' },
+    { value: 'test|cat', reason: 'pipe' },
+    { value: 'test&bg', reason: 'ampersand' },
+    { value: 'test<in', reason: 'angle bracket (<)' },
+    { value: 'test>out', reason: 'angle bracket (>)' },
+    { value: 'test(group)', reason: 'parentheses' },
+    { value: 'test{brace}', reason: 'braces' },
+    { value: 'test\ninjection', reason: 'newline' },
+    { value: 'test\rinjection', reason: 'carriage return' },
+    { value: 'test\0null', reason: 'null byte' },
+    // Control characters caught by hasDangerousChars (SAFE_TEXT_REGEX)
+    // AND now also by validateFieldForDangerousPatterns (Issue-00103 fix)
+    { value: 'test\u0002ctrl', reason: 'STX control character (0x02)' },
+    { value: 'test\u0007bell', reason: 'BEL control character (0x07)' },
+    { value: 'test\u001Bescape', reason: 'ESC control character (0x1B)' },
+    { value: 'test\u007Fdel', reason: 'DEL control character (0x7F)' },
+  ];
+
+  for (const { value, reason } of bothReject) {
+    const uiRejects = hasDangerousChars(value);
+    const errors: string[] = [];
+    validateFieldForDangerousPatterns(value, 'test', errors);
+    const identityRejects = errors.length > 0;
+
+    assert.strictEqual(uiRejects, true, `hasDangerousChars should reject: ${reason}`);
+    assert.strictEqual(identityRejects, true, `validateFieldForDangerousPatterns should reject: ${reason}`);
+  }
+
+  // Category 2: Inputs rejected ONLY by validateFieldForDangerousPatterns
+  // (literal text patterns like \x00 — safe bytes but dangerous as text)
+  const identityOnlyRejects = [
+    { value: String.raw`test\x00user`, reason: String.raw`hex escape \x00 (null)` },
+    { value: String.raw`test\x0auser`, reason: String.raw`hex escape \x0a (LF)` },
+    { value: String.raw`test\x1buser`, reason: String.raw`hex escape \x1b (ESC)` },
+  ];
+
+  for (const { value, reason } of identityOnlyRejects) {
+    const uiRejects = hasDangerousChars(value);
+    const errors: string[] = [];
+    validateFieldForDangerousPatterns(value, 'test', errors);
+    const identityRejects = errors.length > 0;
+
+    // hasDangerousChars does NOT reject (all bytes are printable)
+    assert.strictEqual(uiRejects, false, `hasDangerousChars allows: ${reason}`);
+    // validateFieldForDangerousPatterns DOES reject (text-level pattern detection)
+    assert.strictEqual(identityRejects, true, `validateFieldForDangerousPatterns catches: ${reason}`);
+  }
+
+  // Category 2b: validateFieldForDangerousPatterns boundary values
+  {
+    const errors: string[] = [];
+    validateFieldForDangerousPatterns(undefined, 'test', errors);
+    assert.strictEqual(errors.length, 0, 'undefined should produce no errors');
+  }
+  {
+    const errors: string[] = [];
+    validateFieldForDangerousPatterns('', 'test', errors);
+    assert.strictEqual(errors.length, 0, 'empty string should produce no errors');
+  }
+
+  // Category 3: Inputs accepted by BOTH layers
+  const bothAccept = [
+    { value: 'John Doe', reason: 'simple ASCII name' },
+    { value: '田中太郎', reason: 'Japanese name' },
+    { value: 'Null;Variant', reason: 'semicolon in name' },
+    { value: "O'Brien", reason: 'single quote in name' },
+    { value: 'José García', reason: 'accented characters' },
+    { value: 'Müller', reason: 'umlaut' },
+  ];
+
+  for (const { value, reason } of bothAccept) {
+    const uiRejects = hasDangerousChars(value);
+    const errors: string[] = [];
+    validateFieldForDangerousPatterns(value, 'test', errors);
+    const identityRejects = errors.length > 0;
+
+    assert.strictEqual(uiRejects, false, `hasDangerousChars should accept: ${reason}`);
+    assert.strictEqual(identityRejects, false, `validateFieldForDangerousPatterns should accept: ${reason}`);
+  }
+
+  // Category 4: validateIdentity integration — control characters in name are now caught
+  {
+    const controlCharName: Identity = {
+      id: 'test',
+      name: 'Test\u0007User',
+      email: 'test@example.com',
+    };
+    const result = validateIdentity(controlCharName);
+    assert.strictEqual(result.valid, false, 'Control character in name should fail');
+    assert.ok(
+      result.errors.some(e => e.includes('name') && e.includes('control characters')),
+      'Error should mention control characters'
+    );
+  }
+
+  console.log('✅ All validation consistency tests passed!');
+}
+
+/**
  * Run all tests
  */
 export function runSecurityTests(): void {
@@ -386,6 +502,7 @@ export function runSecurityTests(): void {
     testValidateIdentity();
     testValidateIdentities();
     testIsPathSafe();
+    testValidationConsistency();
 
     console.log('\n✅ All security tests passed!\n');
   } catch (error) {
