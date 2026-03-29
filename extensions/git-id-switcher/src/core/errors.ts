@@ -11,6 +11,7 @@
  */
 
 import { securityLogger, sanitizeValue } from '../security/securityLogger';
+import { sanitizePath } from '../security/pathSanitizer';
 
 /**
  * Error category for classification and handling
@@ -77,6 +78,9 @@ export class SecurityError extends Error {
   readonly category: ErrorCategory;
   readonly userMessage: string;
   readonly internalDetails: InternalErrorDetails;
+  // V8のError.stackはgetter定義前に保存しないと循環参照になるため、
+  // 生スタックをprivateフィールドに退避する
+  private readonly rawStack: string | undefined;
 
   constructor(options: SecurityErrorOptions) {
     // User-facing message is the Error's message
@@ -91,6 +95,9 @@ export class SecurityError extends Error {
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, SecurityError);
     }
+
+    // getter定義前に生スタックを退避（循環参照の防止）
+    this.rawStack = this.stack;
 
     // SECURITY: Override stack property to return sanitized stack by default
     // This prevents information leakage even if stack is accessed directly
@@ -114,9 +121,12 @@ export class SecurityError extends Error {
 
   /**
    * Get internal details (for logging only)
+   *
+   * Returns a shallow-frozen copy to prevent external mutation
+   * that could tamper with audit log integrity.
    */
-  getInternalDetails(): InternalErrorDetails {
-    return this.internalDetails;
+  getInternalDetails(): Readonly<InternalErrorDetails> {
+    return Object.freeze({ ...this.internalDetails });
   }
 
   /**
@@ -147,30 +157,34 @@ export class SecurityError extends Error {
    * Get safe stack trace (with internal paths sanitized)
    */
   getSafeStack(): string | undefined {
-    if (!this.stack) {
+    /* c8 ignore next 3 -- rawStack is undefined only on non-V8 runtimes without Error.captureStackTrace */
+    if (!this.rawStack) {
       return undefined;
     }
 
-    // Remove absolute paths - only show relative paths from extension root
-    const lines = this.stack.split('\n');
+    // Delegate path sanitization to pathSanitizer (SSOT for path redaction).
+    // Extract file paths from V8 stack frames using string ops (no regex)
+    // to avoid backtracking / ReDoS risk flagged by sonarjs/slow-regex.
+    const lines = this.rawStack.split('\n');
     const safeLines = lines.map((line) => {
-      // Replace full paths with relative indicators
-      // macOS: /Users/username/...
-      // Linux: /home/username/...
-      // Windows: C:\Users\username\... or \\?\C:\Users\...
-      // Windows UNC: \\server\share\...
-      // WSL: /mnt/c/Users/username/...
-      // Windows drive letters: D:\...
-      return line
-        .replaceAll(/\/Users\/[^/\s:]+/g, '~')
-        .replaceAll(/\/home\/[^/\s:]+/g, '~')
-        .replaceAll(/C:\\Users\\[^\\\s:]+/gi, '~')
-        .replaceAll(/[A-Z]:\\Users\\[^\\\s:]+/gi, '~')
-        .replaceAll(/\\\\\?\\[A-Z]:\\Users\\[^\\\s:]+/gi, '~')
-        .replaceAll(/\\\\[^\\]+\\[^\\]+/g, String.raw`\\server\share`)
-        .replaceAll(/\/mnt\/[a-z]\/Users\/[^/\s:]+/gi, '~')
-        .replaceAll(/\/var\/folders\/[^/]+\/[^/]+/g, '/tmp')
-        .replaceAll(/\/private\/var\/folders\/[^/]+\/[^/]+/g, '/tmp');
+      // V8 stack frames end with :line:col or :line:col)
+      const lineColMatch = /:(\d+):(\d+)\)?$/.exec(line);
+      if (!lineColMatch?.index) return line;
+
+      const suffixStart = lineColMatch.index;
+      const suffix = line.slice(suffixStart);
+
+      // Find the start of the path portion.
+      // Parenthesized: "at Func (path:line:col)" — Bare: "at path:line:col"
+      const parenPos = line.lastIndexOf('(', suffixStart);
+      const pathStart =
+        parenPos !== -1 && suffix.endsWith(')')
+          ? parenPos + 1
+          : line.lastIndexOf(' ', suffixStart) + 1;
+
+      const pathOnly = line.slice(pathStart, suffixStart);
+      const sanitized = sanitizePath(pathOnly);
+      return line.slice(0, pathStart) + sanitized + suffix;
     });
 
     return safeLines.join('\n');
@@ -231,12 +245,17 @@ export function createSystemError(
   originalError: Error,
   details?: Omit<InternalErrorDetails, 'originalError'>
 ): SecurityError {
+  // SECURITY: Strip stack from originalError before storing to prevent
+  // unsanitized path leakage via getInternalDetails().originalError.stack
+  const sanitizedOriginal = new Error(originalError.message);
+  sanitizedOriginal.name = originalError.name;
+
   return new SecurityError({
     category: ErrorCategory.SYSTEM,
     userMessage,
     internalDetails: {
       ...details,
-      originalError,
+      originalError: sanitizedOriginal,
     },
   });
 }
@@ -249,15 +268,20 @@ export function wrapError(
   userMessage: string,
   details?: Omit<InternalErrorDetails, 'originalError'>
 ): SecurityError {
-  const originalError =
+  const rawError =
     error instanceof Error ? error : new Error(String(error));
+
+  // SECURITY: Strip stack from wrapped error before storing to prevent
+  // unsanitized path leakage via getInternalDetails().originalError.stack
+  const sanitizedError = new Error(rawError.message);
+  sanitizedError.name = rawError.name;
 
   return new SecurityError({
     category: ErrorCategory.SYSTEM,
     userMessage,
     internalDetails: {
       ...details,
-      originalError,
+      originalError: sanitizedError,
     },
   });
 }
