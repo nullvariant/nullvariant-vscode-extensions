@@ -13,6 +13,8 @@
 import * as vscode from 'vscode';
 import * as crypto from 'node:crypto';
 
+import { escapeHtmlEntities } from './documentationInternal';
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -121,7 +123,7 @@ export function getDocumentHtml(
   `;
 
   return `<!DOCTYPE html>
-<html lang="${locale}">
+<html lang="${escapeHtmlEntities(locale)}">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="${csp}">
@@ -247,7 +249,7 @@ export function getDocumentHtml(
 <body>
   <div class="nav-bar">
     <button id="back-btn" ${canGoBack ? '' : 'disabled'}>← Back</button>
-    <span class="current-path">${currentPath}</span>
+    <span class="current-path">${escapeHtmlEntities(currentPath)}</span>
   </div>
   ${content}
   <div class="footer">
