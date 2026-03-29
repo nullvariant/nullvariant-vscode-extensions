@@ -40,8 +40,7 @@ export {
   type ConfigChangeDetail,
 } from '../core/configChangeDetector';
 
-import { configChangeDetector } from '../core/configChangeDetector';
-import type { ConfigKey, ConfigSnapshot, ConfigChangeDetail } from '../core/configChangeDetector';
+import { configChangeDetector, type ConfigKey, type ConfigSnapshot, type ConfigChangeDetail } from '../core/configChangeDetector';
 
 /**
  * Security event types

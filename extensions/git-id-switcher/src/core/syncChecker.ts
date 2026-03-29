@@ -14,8 +14,7 @@
 
 import type * as vscodeTypes from 'vscode';
 import type { Identity } from '../identity/identity';
-import type { GitConfig } from './gitConfig';
-import { getCurrentGitConfig, shouldIncludeIconInGitConfig } from './gitConfig';
+import { type GitConfig, getCurrentGitConfig, shouldIncludeIconInGitConfig } from './gitConfig';
 
 // ============================================================================
 // Types
