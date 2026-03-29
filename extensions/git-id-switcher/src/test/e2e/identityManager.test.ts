@@ -2982,9 +2982,9 @@ describe('identityManager E2E Test Suite', function () {
       });
     });
 
-    describe('service field: hasDangerousCharsForText()', () => {
-      it('should accept service with ampersand (AT&T)', async () => {
-        // ampersand is allowed in text fields
+    describe('service field: validateFieldForDangerousPatterns()', () => {
+      it('should reject service with ampersand', async () => {
+        // ampersand is a shell metacharacter blocked by SAFE_TEXT_REGEX
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
@@ -2997,7 +2997,7 @@ describe('identityManager E2E Test Suite', function () {
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, 'Service with ampersand should be accepted');
+        assert.strictEqual(result, false, 'Service with ampersand should be rejected');
       });
 
       it('should reject service with backtick', async () => {
@@ -3033,9 +3033,9 @@ describe('identityManager E2E Test Suite', function () {
       });
     });
 
-    describe('description field: hasDangerousCharsForText()', () => {
-      it('should accept description with angle brackets (for display)', async () => {
-        // angle brackets are allowed in text fields for descriptions
+    describe('description field: validateFieldForDangerousPatterns()', () => {
+      it('should reject description with angle brackets', async () => {
+        // angle brackets are shell metacharacters blocked by SAFE_TEXT_REGEX
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
@@ -3048,7 +3048,7 @@ describe('identityManager E2E Test Suite', function () {
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, 'Description with angle brackets should be accepted');
+        assert.strictEqual(result, false, 'Description with angle brackets should be rejected');
       });
 
       it('should reject description with backtick', async () => {
