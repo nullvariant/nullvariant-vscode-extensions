@@ -628,8 +628,27 @@ function testEscapeHtmlEntities(): void {
 
   assert.strictEqual(
     escapeHtmlEntities('<a href="test">'),
-    '&lt;a href="test"&gt;',
-    'Full tag should be escaped'
+    '&lt;a href=&quot;test&quot;&gt;',
+    'Full tag should be escaped including quotes'
+  );
+
+  // Quote escaping (defense-in-depth for attribute contexts)
+  assert.strictEqual(
+    escapeHtmlEntities('a "quoted" value'),
+    'a &quot;quoted&quot; value',
+    'Double quotes should be escaped'
+  );
+
+  assert.strictEqual(
+    escapeHtmlEntities("it's"),
+    'it&#39;s',
+    'Single quotes should be escaped'
+  );
+
+  assert.strictEqual(
+    escapeHtmlEntities(`"double" & 'single'`),
+    '&quot;double&quot; &amp; &#39;single&#39;',
+    'Mixed quotes and ampersand should all be escaped'
   );
 
   // Edge cases
