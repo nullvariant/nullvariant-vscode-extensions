@@ -13,6 +13,7 @@ import {
   isValidEmail,
   hasPathTraversal,
   isValidIdentityId,
+  hasDangerousChars,
   GPG_KEY_REGEX,
   SSH_HOST_REGEX,
   DANGEROUS_PATTERNS,
@@ -36,16 +37,16 @@ export interface ValidationResult {
 /**
  * Validate a string field for dangerous command injection patterns.
  *
- * @remarks
- * **Naming convention**: Named with `validate` prefix and explicit purpose
- * (`ForDangerousPatterns`) because this function checks for security-critical
- * patterns like command injection, not format validity.
+ * Checks both hasDangerousChars() (SAFE_TEXT_REGEX — catches control characters
+ * and shell metacharacters) and DANGEROUS_PATTERNS (catches literal hex escape
+ * sequences like `\x00` in text). This ensures consistency with UI-layer
+ * validation while retaining detection of text-level injection patterns.
  *
  * @param value - The field value to validate
  * @param fieldName - The name of the field (for error messages)
  * @param errors - Array to accumulate validation errors
  */
-function validateFieldForDangerousPatterns(
+export function validateFieldForDangerousPatterns(
   value: string | undefined,
   fieldName: string,
   errors: string[]
@@ -54,18 +55,29 @@ function validateFieldForDangerousPatterns(
     return;
   }
 
+  // Check DANGEROUS_PATTERNS first for specific error messages
+  // (includes hex escape sequence detection that SAFE_TEXT_REGEX doesn't cover)
   for (const { pattern, description } of DANGEROUS_PATTERNS) {
     if (pattern.test(value)) {
       errors.push(`${fieldName} contains ${description}`);
-      break;
+      return;
     }
+  }
+
+  // Also check hasDangerousChars (SAFE_TEXT_REGEX) for control characters
+  // not covered by DANGEROUS_PATTERNS (e.g., 0x02-0x09, 0x7F)
+  if (hasDangerousChars(value)) {
+    errors.push(`${fieldName} contains control characters`);
   }
 }
 
 /**
- * Validate an email address
+ * Validate an email address format and length.
+ *
+ * @param email - The email to validate
+ * @param errors - Array to accumulate validation errors
  */
-function validateEmail(email: string | undefined, errors: string[]): void {
+export function validateEmailField(email: string | undefined, errors: string[]): void {
   if (!email) {
     return;
   }
@@ -199,7 +211,7 @@ export function validateIdentity(identity: Identity): ValidationResult {
   validateFieldForDangerousPatterns(identity.icon, 'icon', errors);
 
   // Format-specific validation
-  validateEmail(identity.email, errors);
+  validateEmailField(identity.email, errors);
   validateSshKeyPathFormat(identity.sshKeyPath, errors);
   validateGpgKeyId(identity.gpgKeyId, errors);
   validateSshHost(identity.sshHost, errors);
@@ -280,13 +292,16 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
  * @returns true if the path appears safe for shell execution
  */
 export function isShellSafePath(path: string): boolean {
-  // Original check: path traversal detection (simple check for "..")
-  // This is stricter than isSecurePath's traversal detection
   if (hasPathTraversal(path)) {
     return false;
   }
 
-  // Original check: shell metacharacters
+  // Control characters (0x00-0x1F, 0x7F) and shell metacharacters
+  if (hasDangerousChars(path)) {
+    return false;
+  }
+
+  // Text-level patterns (hex escape sequences like literal \x00)
   for (const { pattern } of DANGEROUS_PATTERNS) {
     if (pattern.test(path)) {
       return false;

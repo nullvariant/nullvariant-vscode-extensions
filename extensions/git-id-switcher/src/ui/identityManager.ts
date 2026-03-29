@@ -27,17 +27,17 @@ import {
   MAX_IDENTITIES,
   MAX_ID_LENGTH,
   MAX_NAME_LENGTH,
-  MAX_EMAIL_LENGTH,
-  MAX_SSH_HOST_LENGTH,
 } from '../core/constants';
 import {
   isValidIdentityId,
-  isValidEmail,
-  hasDangerousChars,
-  GPG_KEY_REGEX,
-  SSH_HOST_REGEX,
 } from '../validators/common';
-import { validateSshKeyPathFormat } from '../identity/inputValidator';
+import {
+  validateSshKeyPathFormat,
+  validateFieldForDangerousPatterns,
+  validateEmailField,
+  validateGpgKeyId,
+  validateSshHost,
+} from '../identity/inputValidator';
 import { isUnderSshDirectory, replaceHomeWithTilde } from '../security/pathUtils';
 import { getUserSafeMessage } from '../core/errors';
 import { securityLogger } from '../security/securityLogger';
@@ -139,8 +139,10 @@ function validateNameInput(vs: VSCodeAPI, value: string): string | null {
   if (value.length > MAX_NAME_LENGTH) {
     return vs.l10n.t('Name is too long (max {0} characters)', MAX_NAME_LENGTH);
   }
-  // SECURITY: Check for dangerous shell metacharacters
-  if (hasDangerousChars(value)) {
+  // SECURITY: Delegate to identity layer (SSoT for dangerous pattern detection)
+  const errors: string[] = [];
+  validateFieldForDangerousPatterns(value, 'name', errors);
+  if (errors.length > 0) {
     return vs.l10n.t('Name contains invalid characters');
   }
   return null;
@@ -160,10 +162,10 @@ function validateEmailInput(vs: VSCodeAPI, value: string): string | null {
   if (!value) {
     return vs.l10n.t('Email cannot be empty');
   }
-  if (value.length > MAX_EMAIL_LENGTH) {
-    return vs.l10n.t('Email is too long (max {0} characters)', MAX_EMAIL_LENGTH);
-  }
-  if (!isValidEmail(value)) {
+  // Delegate format and length validation to identity layer (SSoT)
+  const errors: string[] = [];
+  validateEmailField(value, errors);
+  if (errors.length > 0) {
     return vs.l10n.t('Invalid email format');
   }
   return null;
@@ -206,7 +208,10 @@ function validateSshKeyPathInput(vs: VSCodeAPI, value: string): string | null {
  */
 function validateGpgKeyIdInput(vs: VSCodeAPI, value: string): string | null {
   if (!value) return null; // Optional field
-  if (!GPG_KEY_REGEX.test(value)) {
+  // Delegate to identity layer (SSoT)
+  const errors: string[] = [];
+  validateGpgKeyId(value, errors);
+  if (errors.length > 0) {
     return vs.l10n.t('GPG key ID must be 8-40 hexadecimal characters');
   }
   return null;
@@ -224,11 +229,11 @@ function validateGpgKeyIdInput(vs: VSCodeAPI, value: string): string | null {
  */
 function validateSshHostInput(vs: VSCodeAPI, value: string): string | null {
   if (!value) return null; // Optional field
-  if (!SSH_HOST_REGEX.test(value)) {
+  // Delegate to identity layer (SSoT for format and length validation)
+  const errors: string[] = [];
+  validateSshHost(value, errors);
+  if (errors.length > 0) {
     return vs.l10n.t('SSH host must contain only valid hostname characters');
-  }
-  if (value.length > MAX_SSH_HOST_LENGTH) {
-    return vs.l10n.t('SSH host is too long (max {0} characters)', MAX_SSH_HOST_LENGTH);
   }
   return null;
 }
@@ -281,13 +286,16 @@ function validateFieldInput(
       return validateSshHostInput(vs, value);
     }
     default: {
-      // Use FIELD_METADATA validator for other fields (service, icon, description)
+      // Delegate dangerous pattern check to identity layer (SSoT)
+      const errors: string[] = [];
+      validateFieldForDangerousPatterns(value, field, errors);
+      if (errors.length > 0) {
+        return vs.l10n.t('{0} contains invalid characters', field);
+      }
+      // Length validation from FIELD_METADATA
       const meta = getFieldMetadata(field);
-      if (meta?.validator) {
-        const error = meta.validator(value);
-        if (error) {
-          return vs.l10n.t(error);
-        }
+      if (meta?.maxLength && value.length > meta.maxLength) {
+        return vs.l10n.t('{0} is too long (max {1} characters)', field, meta.maxLength);
       }
       return null;
     }
