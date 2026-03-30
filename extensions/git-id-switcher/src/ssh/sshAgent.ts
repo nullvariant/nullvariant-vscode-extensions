@@ -370,11 +370,6 @@ export async function checkKeyLoadedInAgent(keyPath: string): Promise<boolean> {
 }
 
 /**
- * @deprecated Use `checkKeyLoadedInAgent` instead. This alias will be removed in a future version.
- */
-export const isKeyLoaded = checkKeyLoadedInAgent;
-
-/**
  * Detect which identity's key is currently loaded
  * @param token Optional cancellation token for aborting the operation
  */

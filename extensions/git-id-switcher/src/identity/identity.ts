@@ -38,6 +38,15 @@ import { isUnderSshDirectory } from '../security/pathUtils';
 let hasShownValidationError = false;
 
 /**
+ * Cache for validated identities.
+ *
+ * Invalidated on configuration change via invalidateIdentityCache().
+ * Avoids redundant VS Code config reads + schema validation on every call
+ * (up to MAX_IDENTITIES=1000 validateIdentitySchema() per invocation).
+ */
+let identityCache: Identity[] | null = null;
+
+/**
  * Show one-time validation error notification to user.
  *
  * Extracted from getIdentitiesWithValidation() to reduce cognitive complexity.
@@ -324,6 +333,10 @@ export function getFieldMetadata(key: keyof Identity): FieldMetadata | undefined
  *
  * WARNING: This function does not validate identities.
  * Use getIdentitiesWithValidation() for security-critical code paths.
+ *
+ * NOTE: Always reads from VS Code configuration directly, bypassing the
+ * identity cache. This is intentional for config mutation code paths
+ * (add/delete/update/move) that need the latest raw configuration.
  */
 export function getIdentities(): Identity[] {
   const vs = getVSCode();
@@ -344,6 +357,11 @@ export function getIdentities(): Identity[] {
  * @returns Array of valid identities (invalid ones are filtered out)
  */
 export function getIdentitiesWithValidation(): Identity[] {
+  // Return cached result if available (shallow copy to prevent callers from mutating cache)
+  if (identityCache !== null) {
+    return [...identityCache];
+  }
+
   const vs = getVSCode();
   if (!vs) {
     return [];
@@ -363,8 +381,9 @@ export function getIdentitiesWithValidation(): Identity[] {
     return [];
   }
 
-  // Early return for empty array (valid state)
+  // Early return for empty array (valid state, cache to avoid repeated config reads)
   if (rawIdentities.length === 0) {
+    identityCache = [];
     return [];
   }
 
@@ -376,7 +395,8 @@ export function getIdentitiesWithValidation(): Identity[] {
       `Array length exceeds maximum (${MAX_IDENTITIES})`,
       rawIdentities.length
     );
-    // Return empty array to fail securely
+    // Cache and return empty array to fail securely (avoids repeated security log spam)
+    identityCache = [];
     return [];
   }
 
@@ -426,16 +446,19 @@ export function getIdentitiesWithValidation(): Identity[] {
     showValidationErrorNotification(invalidIndices.length);
   }
 
-  return validIdentities;
+  identityCache = validIdentities;
+  return [...validIdentities];
 }
 
 /**
- * Reset the validation error notification flag
+ * Invalidate the identity cache and reset the validation notification flag.
  *
- * Used when configuration changes to allow re-notification of validation errors.
+ * Must be called on configuration change (onDidChangeConfiguration)
+ * to force re-validation on next getIdentitiesWithValidation() call.
  * Also exposed for testing purposes.
  */
-export function resetValidationNotificationFlag(): void {
+export function invalidateIdentityCache(): void {
+  identityCache = null;
   hasShownValidationError = false;
 }
 

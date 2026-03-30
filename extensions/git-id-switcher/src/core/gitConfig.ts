@@ -14,7 +14,7 @@
 // Type-only import for TypeScript (stripped at compile time)
 import type * as vscodeTypes from 'vscode';
 import { getVSCode, getWorkspace } from './vscodeLoader';
-import { Identity, formatGitAuthor, getIdentitiesWithValidation } from '../identity/identity';
+import { Identity, getIdentitiesWithValidation } from '../identity/identity';
 import { gitExec, secureExec } from '../security/secureExec';
 import { validateIdentity } from '../identity/inputValidator';
 import {
@@ -288,24 +288,6 @@ export async function detectCurrentIdentity(
   // Match by email (most reliable)
   const identities = getIdentitiesWithValidation();
   return identities.find(i => i.email === config.userEmail);
-}
-
-/**
- * Get Git author string for commit --author flag
- *
- * @security This function builds a shell-quoted `--author` flag using template literals.
- * The return value MUST be passed as an element of the args array to execFile(),
- * never concatenated into a shell command string. Shell concatenation would enable
- * command injection via crafted identity fields.
- *
- * @deprecated Prefer building the args array directly with `formatGitAuthor()`:
- * ```ts
- * await secureExec('git', ['commit', `--author=${formatGitAuthor(identity)}`]);
- * ```
- * This avoids the embedded double-quotes that are unnecessary when using execFile().
- */
-export function getGitAuthorFlag(identity: Identity): string {
-  return `--author="${formatGitAuthor(identity)}"`;
 }
 
 /**

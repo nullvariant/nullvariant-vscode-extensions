@@ -21,7 +21,7 @@
  *     - Defense against potential Node.js path module bugs
  *
  *   Lines 169-174: Post-normalization check failed
- *     - Unreachable: isSecurePath (line 127) catches attacks before normalization
+ *     - Unreachable: validatePathSecurity (line 127) catches attacks before normalization
  *     - Defense-in-depth for bypasses or Node.js edge cases
  *
  *   Lines 179-184: Normalized path exceeds PATH_MAX
@@ -32,7 +32,7 @@
  *     - Requires ELOOP (symlink loop), EACCES, or malicious symlinks
  *     - Creating symlink loops is destructive and platform-specific
  *
- * isSecurePathAfterNormalization():
+ * validatePathSecurityAfterNormalization():
  *   Lines 254-255: Null byte in normalized path
  *     - path.normalize() removes null bytes on most platforms
  *     - Defense against platforms with different behavior
@@ -46,7 +46,7 @@
  *     - Defense against platforms with different behavior
  *
  *   Lines 279-283: Home directory escape after normalization
- *     - Requires path that passes isSecurePath but escapes after normalize
+ *     - Requires path that passes validatePathSecurity but escapes after normalize
  *     - Pre-check catches most traversal attacks
  *
  * resolveSymlinksSecurely():
@@ -439,7 +439,7 @@ function testValidateSubmodulePath(): void {
  *
  * DESIGN NOTE: normalizeAndValidatePath is designed for Unix-style paths only
  * (SSH keys, log files). On Windows, os.homedir() returns Windows paths
- * (C:\Users\...) which are rejected by isSecurePath by design.
+ * (C:\Users\...) which are rejected by validatePathSecurity by design.
  * The existing path test is skipped on Windows.
  */
 function testRequireExistsOption(): void {
@@ -474,7 +474,7 @@ function testRequireExistsOption(): void {
  *
  * DESIGN NOTE: normalizeAndValidatePath is designed for Unix-style paths only.
  * On Windows, os.homedir() and os.tmpdir() return Windows paths which are
- * rejected by isSecurePath. These tests are skipped on Windows.
+ * rejected by validatePathSecurity. These tests are skipped on Windows.
  */
 function testBaseDirOption(): void {
   console.log('Testing baseDir option...');
@@ -529,7 +529,7 @@ function testBaseDirOption(): void {
  *
  * DESIGN NOTE: normalizeAndValidatePath is designed for Unix-style paths only.
  * On Windows, os.homedir() returns Windows paths which are rejected by
- * isSecurePath. The existing path tests are skipped on Windows.
+ * validatePathSecurity. The existing path tests are skipped on Windows.
  */
 function testResolveSymlinksOption(): void {
   console.log('Testing resolveSymlinks option...');

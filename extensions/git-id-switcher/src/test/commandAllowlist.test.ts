@@ -71,7 +71,7 @@ export async function runCommandAllowlistTests(): Promise<void> {
   {
     console.log('  Testing allowAnyPositional (ssh-add)...');
 
-    // Valid path (also checked by isSecurePath)
+    // Valid path (also checked by validatePathSecurity)
     const result1 = isCommandAllowed('ssh-add', ['/path/to/key']);
     assert.strictEqual(result1.allowed, true, 'Should allow arbitrary positional for ssh-add');
 

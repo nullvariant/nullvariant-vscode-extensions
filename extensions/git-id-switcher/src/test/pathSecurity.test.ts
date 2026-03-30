@@ -15,7 +15,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import {
-  isSecurePath,
+  validatePathSecurity,
   isPathArgument,
   isSecureLogPath,
 } from '../security/pathValidator';
@@ -69,7 +69,7 @@ function testPathTraversalAttacks(): void {
   // Note: URL encoded paths (%2e%2e) are handled at the HTTP layer, not here
 
   for (const attack of traversalAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -99,7 +99,7 @@ function testDoubleSlashAttacks(): void {
   ];
 
   for (const attack of doubleSlashAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -130,7 +130,7 @@ function testTildeExpansionAttacks(): void {
   ];
 
   for (const attack of tildeAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -146,7 +146,7 @@ function testTildeExpansionAttacks(): void {
   const validTilde = ['~', '~/', '~/.ssh/id_rsa', '~/Documents/file.txt'];
 
   for (const path of validTilde) {
-    const result = isSecurePath(path);
+    const result = validatePathSecurity(path);
     assert.strictEqual(
       result.valid,
       true,
@@ -179,7 +179,7 @@ function testWindowsPathAttacks(): void {
   ];
 
   for (const attack of windowsAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -204,7 +204,7 @@ function testMixedPathSeparators(): void {
   ];
 
   for (const path of mixedPaths) {
-    const result = isSecurePath(path);
+    const result = validatePathSecurity(path);
     assert.strictEqual(
       result.valid,
       false,
@@ -239,7 +239,7 @@ function testWindowsReservedNames(): void {
   ];
 
   for (const attack of reservedNames) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -268,7 +268,7 @@ function testNullByteInjection(): void {
   ];
 
   for (const attack of nullByteAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -297,7 +297,7 @@ function testControlCharacters(): void {
   ];
 
   for (const attack of controlCharAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -327,7 +327,7 @@ function testInvisibleCharacters(): void {
   ];
 
   for (const attack of invisibleCharAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -350,7 +350,7 @@ function testPathMaxLength(): void {
 
   // Create a path exceeding PATH_MAX (4096 bytes)
   const longPath = '/' + 'a'.repeat(5000);
-  const result = isSecurePath(longPath);
+  const result = validatePathSecurity(longPath);
 
   assert.strictEqual(result.valid, false, 'Path exceeding PATH_MAX should be blocked');
   assert.ok(
@@ -360,7 +360,7 @@ function testPathMaxLength(): void {
 
   // Path just under the limit should be allowed
   const validLongPath = '/' + 'a'.repeat(4000);
-  const validResult = isSecurePath(validLongPath);
+  const validResult = validatePathSecurity(validLongPath);
   assert.strictEqual(validResult.valid, true, 'Path under PATH_MAX should be allowed');
 
   console.log('✅ PATH_MAX length enforcement working!');
@@ -375,7 +375,7 @@ function testEmptyPaths(): void {
   const invalidPaths = ['', null as unknown as string, undefined as unknown as string];
 
   for (const path of invalidPaths) {
-    const result = isSecurePath(path);
+    const result = validatePathSecurity(path);
     assert.strictEqual(result.valid, false, `Empty/undefined path should be blocked: ${path}`);
   }
 
@@ -399,7 +399,7 @@ function testWhitespaceObfuscation(): void {
   ];
 
   for (const attack of whitespaceAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -428,7 +428,7 @@ function testTrailingDot(): void {
   ];
 
   for (const attack of trailingDotAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -441,7 +441,7 @@ function testTrailingDot(): void {
   }
 
   // '.' itself should be allowed (already tested in testValidPaths)
-  const validDot = isSecurePath('.');
+  const validDot = validatePathSecurity('.');
   assert.strictEqual(validDot.valid, true, 'Single dot should be allowed');
 
   console.log('✅ Trailing dot blocked, single dot allowed!');
@@ -468,7 +468,7 @@ function testTrailingDotSlashPatterns(): void {
   ];
 
   for (const { path, expectedReason } of trailingDotSlashAttacks) {
-    const result = isSecurePath(path);
+    const result = validatePathSecurity(path);
     assert.strictEqual(
       result.valid,
       false,
@@ -528,7 +528,7 @@ function testValidPaths(): void {
   ];
 
   for (const path of validPaths) {
-    const result = isSecurePath(path);
+    const result = validatePathSecurity(path);
     assert.strictEqual(result.valid, true, `Valid path should be allowed: "${path}"`);
   }
 
@@ -550,7 +550,7 @@ function testInvalidPrefixPaths(): void {
   ];
 
   for (const testPath of invalidPrefixPaths) {
-    const result = isSecurePath(testPath);
+    const result = validatePathSecurity(testPath);
     assert.strictEqual(
       result.valid,
       false,
@@ -694,7 +694,7 @@ function testWindowsDriveLetterOnly(): void {
   ];
 
   for (const attack of driveLetterAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -718,7 +718,7 @@ function testAbsolutePathWithRelativeTraversal(): void {
   ];
 
   for (const attack of absoluteTraversalAttacks) {
-    const result = isSecurePath(attack);
+    const result = validatePathSecurity(attack);
     assert.strictEqual(
       result.valid,
       false,
@@ -733,7 +733,7 @@ function testAbsolutePathWithRelativeTraversal(): void {
 // Secure Log Path Tests
 //
 // DESIGN NOTE: isSecureLogPath is designed for Unix-style paths only.
-// Windows drive letters (C:/) and backslashes are rejected by isSecurePath.
+// Windows drive letters (C:/) and backslashes are rejected by validatePathSecurity.
 // This is intentional - log file paths should use Unix-style paths for
 // cross-platform compatibility in configuration files.
 //

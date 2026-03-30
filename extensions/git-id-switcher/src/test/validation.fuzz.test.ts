@@ -7,7 +7,7 @@
  * Test Coverage:
  * - validateIdentity(): crash resistance, return type, dangerous patterns
  * - validateIdentities(): large array handling
- * - isPathSafe(): path traversal, shell metacharacters
+ * - isShellSafePath(): path traversal, shell metacharacters
  * - Field-specific: GPG key ID (hex), SSH host (hostname pattern)
  *
  * Total: ~4,650 property-based test runs per execution
@@ -17,7 +17,7 @@
 
 import * as assert from 'node:assert';
 import * as fc from 'fast-check';
-import { validateIdentity, validateIdentities, isPathSafe } from '../identity/inputValidator';
+import { validateIdentity, validateIdentities, isShellSafePath } from '../identity/inputValidator';
 import { hasInvisibleUnicode, INVISIBLE_CHARS } from '../validators/common';
 import { Identity } from '../identity/identity';
 
@@ -173,14 +173,14 @@ function testNewlineRejection(): void {
 }
 
 /**
- * Test: isPathSafe should never throw
+ * Test: isShellSafePath should never throw
  */
 function testIsPathSafeNeverThrows(): void {
-  console.log('  Fuzzing: isPathSafe should never throw...');
+  console.log('  Fuzzing: isShellSafePath should never throw...');
 
   fc.assert(
     fc.property(fc.string(), (path) => {
-      const result = isPathSafe(path);
+      const result = isShellSafePath(path);
       assert.strictEqual(typeof result, 'boolean');
     }),
     { numRuns: 1000, verbose: false }
@@ -202,7 +202,7 @@ function testPathTraversalDetection(): void {
         const pathFragment = pathChars.join('');
         // If path contains "..", it should be unsafe
         if (pathFragment.includes('..')) {
-          const result = isPathSafe(pathFragment);
+          const result = isShellSafePath(pathFragment);
           assert.strictEqual(result, false,
             `Should reject path with traversal: "${pathFragment}"`);
         }
@@ -222,7 +222,7 @@ function testPathShellMetacharacters(): void {
 
   fc.assert(
     fc.property(maliciousStringArbitrary, (maliciousPath) => {
-      const result = isPathSafe(maliciousPath);
+      const result = isShellSafePath(maliciousPath);
       // Most malicious strings should be rejected
       // (some may be false positives, but that's acceptable for security)
       if (/[`$(){}|&<>\n\r\0]/.test(maliciousPath)) {

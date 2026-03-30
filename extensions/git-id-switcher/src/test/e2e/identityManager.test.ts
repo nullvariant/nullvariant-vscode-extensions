@@ -41,8 +41,8 @@ import * as assert from 'node:assert';
 import * as path from 'node:path';
 import { showEditProfileFlow, showAddIdentityForm } from '../../ui/identityManager';
 import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
+import { invalidateIdentityCache, type Identity } from '../../identity/identity';
 import { MAX_IDENTITIES, MAX_ID_LENGTH, MAX_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_SSH_HOST_LENGTH } from '../../core/constants';
-import type { Identity } from '../../identity/identity';
 
 /**
  * Test identity fixtures
@@ -431,10 +431,12 @@ describe('identityManager E2E Test Suite', function () {
 
   beforeEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   afterEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   // ===========================================================================

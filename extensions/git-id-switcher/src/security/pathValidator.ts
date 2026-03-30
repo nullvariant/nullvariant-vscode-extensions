@@ -27,9 +27,6 @@ export {
   createInvisibleUnicodeValidator,
   controlCharValidator,
   invisibleUnicodeValidator,
-  // Deprecated aliases for backwards compatibility
-  validateNoControlChars,
-  validateNoInvisibleUnicode,
   normalizeUnicode,
   validateNoControlCharsAfterNormalization,
   validateNoInvisibleUnicodeAfterNormalization,
@@ -346,11 +343,6 @@ export function validatePathSecurity(inputPath: string): SecurePathResult {
 }
 
 /**
- * @deprecated Use `validatePathSecurity` instead. This alias will be removed in a future version.
- */
-export const isSecurePath = validatePathSecurity;
-
-/**
  * Check if an argument looks like a file path
  * Used to determine if path validation should be applied
  *
@@ -523,7 +515,7 @@ function isPathWithinAllowedBaseDir(resolvedPath: string, allowedBaseDir: string
  * Validate a log file path for security
  *
  * This function performs comprehensive security checks on log file paths:
- * - First performs basic path validation via isSecurePath()
+ * - First performs basic path validation via validatePathSecurity()
  * - Detects and rejects symbolic links in the path (TOCTOU mitigation)
  * - Resolves to real path and validates it's under allowed directory
  *

@@ -10,8 +10,8 @@
 import { validatePathSecurity, isPathArgument } from './pathValidator';
 import { validateCombinedFlags } from './flagValidator';
 
-// Re-export for backwards compatibility
-export { validatePathSecurity, isSecurePath, isPathArgument, SecurePathResult } from './pathValidator';
+// Re-export path security utilities
+export { validatePathSecurity, isPathArgument, SecurePathResult } from './pathValidator';
 export { validateCombinedFlags, CombinedFlagResult } from './flagValidator';
 
 /**

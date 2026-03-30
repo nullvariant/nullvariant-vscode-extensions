@@ -5,7 +5,7 @@
  */
 
 import * as assert from 'node:assert';
-import { validateIdentity, validateIdentities, isPathSafe, validateFieldForDangerousPatterns } from '../identity/inputValidator';
+import { validateIdentity, validateIdentities, isShellSafePath, validateFieldForDangerousPatterns } from '../identity/inputValidator';
 import { hasDangerousChars } from '../validators/common';
 import { Identity } from '../identity/identity';
 
@@ -348,33 +348,33 @@ function testValidateIdentities(): void {
 }
 
 /**
- * Test suite for isPathSafe
+ * Test suite for isShellSafePath
  */
 function testIsPathSafe(): void {
-  console.log('Testing isPathSafe...');
+  console.log('Testing isShellSafePath...');
 
   // Test 1: Normal path should be safe
-  assert.strictEqual(isPathSafe('/home/user/.ssh/id_rsa'), true, 'Normal path is safe');
+  assert.strictEqual(isShellSafePath('/home/user/.ssh/id_rsa'), true, 'Normal path is safe');
 
   // Test 2: Path with ~ should be safe
-  assert.strictEqual(isPathSafe('~/.ssh/id_rsa'), true, 'Path with ~ is safe');
+  assert.strictEqual(isShellSafePath('~/.ssh/id_rsa'), true, 'Path with ~ is safe');
 
   // Test 3: Path traversal should be unsafe
-  assert.strictEqual(isPathSafe('/home/../etc/passwd'), false, 'Path traversal is unsafe');
+  assert.strictEqual(isShellSafePath('/home/../etc/passwd'), false, 'Path traversal is unsafe');
 
   // Test 4: Shell metacharacters should be unsafe
-  assert.strictEqual(isPathSafe('/home/user/key$(rm -rf /)'), false, 'Shell metachar is unsafe');
+  assert.strictEqual(isShellSafePath('/home/user/key$(rm -rf /)'), false, 'Shell metachar is unsafe');
 
   // Test 5: Command substitution should be unsafe
-  assert.strictEqual(isPathSafe('/home/$(whoami)/key'), false, 'Command sub is unsafe');
+  assert.strictEqual(isShellSafePath('/home/$(whoami)/key'), false, 'Command sub is unsafe');
 
   // Test 6: Backticks should be unsafe
-  assert.strictEqual(isPathSafe('/home/`id`/key'), false, 'Backticks are unsafe');
+  assert.strictEqual(isShellSafePath('/home/`id`/key'), false, 'Backticks are unsafe');
 
   // Test 7: Pipe should be unsafe
-  assert.strictEqual(isPathSafe('/home/user/key|cat'), false, 'Pipe is unsafe');
+  assert.strictEqual(isShellSafePath('/home/user/key|cat'), false, 'Pipe is unsafe');
 
-  console.log('✅ All isPathSafe tests passed!');
+  console.log('✅ All isShellSafePath tests passed!');
 }
 
 /**

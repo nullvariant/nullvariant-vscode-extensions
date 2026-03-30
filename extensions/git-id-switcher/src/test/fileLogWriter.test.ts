@@ -72,7 +72,7 @@ import { LogLevel, FileLogConfig, StructuredLog } from '../logging/logTypes';
 
 /**
  * Convert Windows backslashes to forward slashes for cross-platform compatibility.
- * The FileLogWriter validates paths using isSecurePath which requires Unix-style paths.
+ * The FileLogWriter validates paths using validatePathSecurity which requires Unix-style paths.
  */
 function toForwardSlashes(p: string): string {
   return p.replaceAll('\\', '/');
@@ -817,11 +817,11 @@ async function testNonSymlinkFileWorks(): Promise<void> {
 export async function runFileLogWriterTests(): Promise<void> {
   console.log('\n=== FileLogWriter Tests ===\n');
 
-  // DESIGN NOTE: FileLogWriter uses isSecurePath which is designed for Unix-style paths.
+  // DESIGN NOTE: FileLogWriter uses validatePathSecurity which is designed for Unix-style paths.
   // It rejects Windows paths (drive letters like C:/) by design because log file paths
   // in configuration should be portable (e.g., ~/logs/app.log, /var/log/app.log).
   // On Windows, these tests cannot run with real temp directories because os.tmpdir()
-  // returns Windows paths (C:\Users\...\Temp) which are rejected by isSecurePath.
+  // returns Windows paths (C:\Users\...\Temp) which are rejected by validatePathSecurity.
   // The security validation logic itself is tested in pathSecurity.test.ts.
   if (process.platform === 'win32') {
     console.log('  [Windows] Skipping FileLogWriter tests (Unix-style paths only)');
