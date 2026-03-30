@@ -73,16 +73,6 @@ export const controlCharValidator = createControlCharValidator();
 export const invisibleUnicodeValidator = createInvisibleUnicodeValidator();
 
 /**
- * @deprecated Use `controlCharValidator` instead. This alias will be removed in a future version.
- */
-export const validateNoControlChars = controlCharValidator;
-
-/**
- * @deprecated Use `invisibleUnicodeValidator` instead. This alias will be removed in a future version.
- */
-export const validateNoInvisibleUnicode = invisibleUnicodeValidator;
-
-/**
  * Normalizes Unicode to NFC for consistent comparison
  */
 export const normalizeUnicode: Validator = (state) => ({

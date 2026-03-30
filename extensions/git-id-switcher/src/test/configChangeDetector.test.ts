@@ -666,20 +666,23 @@ function testValuesEqualLargeObjects(): void {
   const largeObject1 = createLargeObject('x', 1000);
   const largeObject2 = createLargeObject('x', 1000);
 
-  // Test 1: Identical large objects (should use length-based comparison)
+  // Test 1: Large objects always report as changed (safe-side: false return)
+  // Even identical large objects are treated as changed to guarantee config change detection
   setDetectorSnapshot(detector, createTestSnapshot({ commandTimeouts: largeObject1 }));
   const changes1 = detector.detectChanges(createTestSnapshot({ commandTimeouts: largeObject2 }));
-  assert.strictEqual(changes1.length, 0, 'Large identical objects should be considered equal');
+  assert.strictEqual(changes1.length, 1, 'Large identical objects should report as changed (safe-side)');
 
   // Test 2: Different large objects (different length)
   const largeObject3 = createLargeObject('y', 1001);
+  setDetectorSnapshot(detector, createTestSnapshot({ commandTimeouts: largeObject1 }));
   const changes2 = detector.detectChanges(createTestSnapshot({ commandTimeouts: largeObject3 }));
   assert.strictEqual(changes2.length, 1, 'Different large objects (different length) should be detected as changed');
 
-  // Test 3: Different large objects (same length, different type)
+  // Test 3: Small object vs large snapshot (always detected as changed)
+  setDetectorSnapshot(detector, createTestSnapshot({ commandTimeouts: largeObject1 }));
   const smallObject: Record<string, number> = { key0: 12_345, key1: 12_345, key2: 12_345 };
   const changes3 = detector.detectChanges(createTestSnapshot({ commandTimeouts: smallObject }));
-  assert.strictEqual(changes3.length, 1, 'Different large objects (different type) should be detected as changed');
+  assert.strictEqual(changes3.length, 1, 'Small object vs large snapshot should be detected as changed');
 
   console.log('✅ valuesEqual() with large objects passed!');
 }

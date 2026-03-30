@@ -384,7 +384,7 @@ export function validateSubmodulePath(
 
   // Prepend './' to submodule paths that don't start with a recognized prefix
   // Git submodule paths are typically 'vendor/lib', not './vendor/lib'
-  // isSecurePath requires paths to start with '/', '~/', or './'
+  // validatePathSecurity requires paths to start with '/', '~/', or './'
   const prefixedSubmodulePath = submodulePath.startsWith('./')
     ? submodulePath
     : './' + submodulePath;

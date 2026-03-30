@@ -5,7 +5,7 @@
  */
 
 import * as vscode from 'vscode';
-import { Identity, getIdentitiesWithValidation, resetValidationNotificationFlag } from '../identity/identity';
+import { Identity, getIdentitiesWithValidation, invalidateIdentityCache } from '../identity/identity';
 import { createStatusBar, IdentityStatusBar } from '../ui/identityStatusBar';
 import { showDocumentation } from '../ui/documentationPublic';
 import { securityLogger } from '../security/securityLogger';
@@ -169,7 +169,7 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
           }
         }
 
-        resetValidationNotificationFlag();
+        invalidateIdentityCache();
         initializeState(context)
           .then(() => performSyncCheck())
           .catch(error => {

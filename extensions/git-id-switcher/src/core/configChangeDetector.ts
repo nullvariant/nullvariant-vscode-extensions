@@ -139,12 +139,12 @@ export class ConfigChangeDetector {
         const aStr = JSON.stringify(a);
         const bStr = JSON.stringify(b);
 
-        // If strings are too large, use length-based comparison as fallback
+        // Large objects: report as changed to guarantee config change detection
         if (
           aStr.length > LIMITS.MAX_STRINGIFY_SIZE ||
           bStr.length > LIMITS.MAX_STRINGIFY_SIZE
         ) {
-          return aStr.length === bStr.length && typeof a === typeof b;
+          return false;
         }
 
         return aStr === bStr;

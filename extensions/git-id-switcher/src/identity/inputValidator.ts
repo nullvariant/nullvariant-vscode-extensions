@@ -310,8 +310,3 @@ export function isShellSafePath(path: string): boolean {
 
   return true;
 }
-
-/**
- * @deprecated Use `isShellSafePath` instead. This alias will be removed in a future version.
- */
-export const isPathSafe = isShellSafePath;

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-03-30
+
+### Changed
+
+- **Identity validation caching**: `getIdentitiesWithValidation()` now caches validated results in a module-level variable, avoiding redundant VS Code config reads and schema validation on every call. Cache is automatically invalidated on configuration change via `onDidChangeConfiguration`
+- **Config change detection**: `valuesEqual()` in `ConfigChangeDetector` now returns `false` (changed) for large objects exceeding `MAX_STRINGIFY_SIZE`, instead of the previous length-based heuristic that could miss same-length but different-content objects
+- **Renamed** `resetValidationNotificationFlag()` to `invalidateIdentityCache()` to reflect its expanded responsibility (cache invalidation + notification flag reset)
+
+### Removed
+
+- **Deprecated aliases removed** (BREAKING for consumers importing these symbols directly):
+  - `isPathSafe` — use `isShellSafePath` instead
+  - `isSecurePath` — use `validatePathSecurity` instead
+  - `validateNoControlChars` — use `controlCharValidator` instead
+  - `validateNoInvisibleUnicode` — use `invisibleUnicodeValidator` instead
+  - `isKeyLoaded` — use `checkKeyLoadedInAgent` instead
+  - `getGitAuthorFlag()` — use `formatGitAuthor()` with template literal instead
+
+### Refactored
+
+- **UI module split** (via #401): Split `identityManager.ts` (1181 lines) into 4 responsibility-based modules: `identityAddForm.ts`, `identityEditFlow.ts`, `identityFormUtils.ts`, `identityFormValidation.ts`
+
 ## [0.17.1] - 2026-03-18
 
 ### Fixed
