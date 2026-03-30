@@ -99,13 +99,13 @@ jobs:
                 printf '`%s` → `%s`\n\n' "$BASE_VER" "$HEAD_VER"
                 if [ "$BUMP_TYPE" = "MAJOR" ]; then
                   printf '🔥🔥🔥 MAJOR RELEASE?! LET'"'"'S GOOOO!!! But wait... did you:\n\n'
-                  printf '- [ ] Update the CHANGELOG?\n'
-                  printf '- [ ] Check for breaking changes?\n'
-                  printf '- [ ] Run the full test suite?\n\n'
+                  printf '%s\n' '- [ ] Update the CHANGELOG?'
+                  printf '%s\n' '- [ ] Check for breaking changes?'
+                  printf '%s\n\n' '- [ ] Run the full test suite?'
                 elif [ "$BUMP_TYPE" = "MINOR" ]; then
-                  printf '🔥 New features incoming! Make sure:\n\n'
-                  printf '- [ ] Tests pass for the new features?\n'
-                  printf '- [ ] Documentation updated?\n\n'
+                  printf '%s\n\n' '🔥 New features incoming! Make sure:'
+                  printf '%s\n' '- [ ] Tests pass for the new features?'
+                  printf '%s\n\n' '- [ ] Documentation updated?'
                 else
                   printf '✨ Quick patch! Nice and clean.\n\n'
                 fi
