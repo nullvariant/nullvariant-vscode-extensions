@@ -30,6 +30,7 @@ import { runDisplayLimitsTests } from './displayLimits.test';
 import { runSshAgentParsingTests } from './sshAgentParsing.test';
 import { runSyncCheckerTests } from './syncChecker.test';
 import { runErrorTests } from './errors.test';
+import { runGetSafeStackTests } from './getSafeStack.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -114,6 +115,9 @@ async function main(): Promise<void> {
 
     // Run error classes and validation types tests
     await runErrorTests();
+
+    // Run getSafeStack cross-OS path sanitization tests
+    await runGetSafeStackTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
