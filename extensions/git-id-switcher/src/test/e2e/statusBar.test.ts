@@ -11,7 +11,7 @@
  * - State Sequences: Realistic usage patterns (e.g., Identity → Loading → Identity)
  * - Resource Management: dispose behavior
  *
- * Test Count: 17 tests covering identityStatusBar.ts functionality
+ * Test Count: 18 tests covering identityStatusBar.ts functionality
  * PRD Requirement: Minimum 8 tests ✓
  *
  * E2E Test Limitations:
@@ -502,6 +502,21 @@ describe('StatusBar E2E Test Suite', function () {
       ]);
 
       assert.ok(tooltip.includes('signingKey'), 'Should contain signingKey field');
+    });
+
+    it('should escape pipe characters in mismatch values', () => {
+      const tooltip = buildMismatchTooltip([
+        { field: 'name', expected: 'Org | Team', actual: 'Other | Group' },
+      ]);
+
+      assert.ok(
+        tooltip.includes(String.raw`Org \| Team`),
+        'Should escape pipe in expected value'
+      );
+      assert.ok(
+        tooltip.includes(String.raw`Other \| Group`),
+        'Should escape pipe in actual value'
+      );
     });
   });
 
