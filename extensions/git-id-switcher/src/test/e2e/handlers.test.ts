@@ -22,9 +22,9 @@
 import * as assert from 'node:assert';
 import { handleDeleteIdentity, handleAddIdentity } from '../../commands/handlers';
 import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
+import { invalidateIdentityCache, type Identity } from '../../identity/identity';
 import { MAX_IDENTITIES } from '../../core/constants';
 import type { IdentityStatusBar } from '../../ui/identityStatusBar';
-import type { Identity } from '../../identity/identity';
 
 /**
  * Test identity fixtures
@@ -421,10 +421,12 @@ describe('handleDeleteIdentity E2E Test Suite', function () {
 
   beforeEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   afterEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   describe('No Identities', () => {
@@ -619,10 +621,12 @@ describe('handleDeleteIdentity with targetIdentity E2E Test Suite', function () 
 
   beforeEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   afterEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   describe('targetIdentity Parameter', () => {
@@ -678,10 +682,12 @@ describe('handleAddIdentity E2E Test Suite', function () {
 
   beforeEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   afterEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   describe('Cancel Flow', () => {
@@ -755,10 +761,12 @@ describe('Security Logger Integration E2E Test Suite', function () {
 
   beforeEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   afterEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   /**

@@ -26,7 +26,7 @@
 import * as assert from 'node:assert';
 import { showIdentityQuickPick, showManageIdentitiesQuickPick } from '../../ui/identityPicker';
 import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
-import type { Identity } from '../../identity/identity';
+import { invalidateIdentityCache, type Identity } from '../../identity/identity';
 
 /**
  * Test identity fixtures
@@ -212,10 +212,12 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
 
   beforeEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   afterEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   describe('Empty State', () => {
@@ -657,10 +659,12 @@ describe('showManageIdentitiesQuickPick E2E Test Suite', function () {
 
   beforeEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   afterEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   describe('Focus Retention', () => {

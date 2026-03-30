@@ -21,6 +21,7 @@
 import * as assert from 'node:assert';
 import { showDeleteIdentityQuickPick } from '../../ui/identityPicker';
 import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
+import { invalidateIdentityCache } from '../../identity/identity';
 
 /**
  * Test identity fixtures
@@ -159,10 +160,12 @@ describe('showDeleteIdentityQuickPick E2E Test Suite', function () {
 
   beforeEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   afterEach(() => {
     _resetCache();
+    invalidateIdentityCache();
   });
 
   describe('Empty State', () => {
