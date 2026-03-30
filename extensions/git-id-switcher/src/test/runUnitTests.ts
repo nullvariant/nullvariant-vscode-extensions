@@ -20,6 +20,7 @@ import { runPathSeparatorTests } from './pathSeparator.test';
 import { runDisplayLimitsTests } from './displayLimits.test';
 import { runSshAgentParsingTests } from './sshAgentParsing.test';
 import { runSyncCheckerTests } from './syncChecker.test';
+import { runHtmlTemplatesTests } from './htmlTemplates.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -74,6 +75,9 @@ async function main(): Promise<void> {
 
     // Run sync checker tests (profile vs git config comparison)
     await runSyncCheckerTests();
+
+    // Run HTML template tests (pure functions, no VS Code dependency)
+    runHtmlTemplatesTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Unit Tests Passed!                ║');

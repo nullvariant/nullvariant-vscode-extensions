@@ -31,6 +31,7 @@ import { runSshAgentParsingTests } from './sshAgentParsing.test';
 import { runSyncCheckerTests } from './syncChecker.test';
 import { runErrorTests } from './errors.test';
 import { runGetSafeStackTests } from './getSafeStack.test';
+import { runHtmlTemplatesTests } from './htmlTemplates.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -118,6 +119,9 @@ async function main(): Promise<void> {
 
     // Run getSafeStack cross-OS path sanitization tests
     await runGetSafeStackTests();
+
+    // Run HTML template tests (pure functions, no VS Code dependency)
+    runHtmlTemplatesTests();
 
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   🎉 All Security Tests Passed!            ║');
