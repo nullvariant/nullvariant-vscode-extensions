@@ -14,8 +14,8 @@
 import * as vscode from 'vscode';
 import * as crypto from 'node:crypto';
 
-import type { ErrorType } from './htmlTemplates';
 import {
+  type ErrorType,
   buildCspString,
   buildDocumentHtml,
   buildLoadingHtml,
