@@ -11,6 +11,7 @@ import * as vscode from 'vscode';
 import { Identity, getIdentityLabel } from '../identity/identity';
 import type { SyncCheckResult, SyncMismatch } from '../core/syncChecker';
 import { truncateForStatusBar } from './displayLimits';
+import { escapeMarkdownInline } from './markdownEscape';
 
 /**
  * Status bar item wrapper
@@ -153,28 +154,28 @@ export class IdentityStatusBar implements vscode.Disposable {
    */
   private buildTooltip(identity: Identity): string {
     const lines = [
-      `### ${getIdentityLabel(identity)}`,
+      `### ${escapeMarkdownInline(getIdentityLabel(identity))}`,
       '',
     ];
 
     // Add description if available
     if (identity.description) {
-      lines.push(`**${identity.description}**`, '');
+      lines.push(`**${escapeMarkdownInline(identity.description)}**`, '');
     }
 
     // Identity details
-    lines.push('---', '', '- ' + vscode.l10n.t('**Email:** {0}', identity.email));
+    lines.push('---', '', '- ' + vscode.l10n.t('**Email:** {0}', escapeMarkdownInline(identity.email)));
 
     if (identity.sshHost) {
-      lines.push('- ' + vscode.l10n.t('**SSH Host:** {0}', identity.sshHost));
+      lines.push('- ' + vscode.l10n.t('**SSH Host:** {0}', escapeMarkdownInline(identity.sshHost)));
     }
 
     if (identity.sshKeyPath) {
-      lines.push('- ' + vscode.l10n.t('**SSH Key:** {0}', maskSshKeyPath(identity.sshKeyPath)));
+      lines.push('- ' + vscode.l10n.t('**SSH Key:** {0}', escapeMarkdownInline(maskSshKeyPath(identity.sshKeyPath))));
     }
 
     if (identity.gpgKeyId) {
-      lines.push('- ' + vscode.l10n.t('**GPG Key:** {0}', maskGpgKeyId(identity.gpgKeyId)));
+      lines.push('- ' + vscode.l10n.t('**GPG Key:** {0}', escapeMarkdownInline(maskGpgKeyId(identity.gpgKeyId))));
     }
 
     lines.push('', '---', '', vscode.l10n.t('*Click to switch identity*'));
@@ -241,7 +242,7 @@ export function buildMismatchTooltip(mismatches: readonly SyncMismatch[]): strin
 
   for (const mismatch of mismatches) {
     lines.push(
-      `| ${FIELD_LABELS[mismatch.field]} | ${mismatch.expected} | ${mismatch.actual} |`
+      `| ${FIELD_LABELS[mismatch.field]} | ${escapeMarkdownInline(mismatch.expected)} | ${escapeMarkdownInline(mismatch.actual)} |`
     );
   }
 
