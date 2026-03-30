@@ -14,8 +14,8 @@ import {
   isSecurityError,
   isFatalError,
   getUserSafeMessage,
-  toFieldError,
 } from '../core/errors';
+import { toFieldError } from '../core/validation-types';
 
 /**
  * Test SecurityError constructor
