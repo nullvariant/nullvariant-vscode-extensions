@@ -10,6 +10,14 @@ coverage:
     patch:
       default:
         target: 90%
+      # Defense-in-depth code uses /* c8 ignore */ to exclude unreachable
+      # branches from line coverage, but c8 cannot suppress V8 branch data
+      # (BRDA) in LCOV. Codecov counts leaked BRDA as "missing coverage."
+      # Relax patch target for paths where this is concentrated.
+      security:
+        paths:
+          - "extensions/git-id-switcher/src/security/**"
+        target: 80%
 
 # Fix path mapping for monorepo structure
 # With sourceMap enabled, lcov.info contains paths like "src/commandAllowlist.ts"
