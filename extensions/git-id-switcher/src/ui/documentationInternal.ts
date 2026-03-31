@@ -59,6 +59,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/docs/THREAT_MODEL.md': '1947cc3c940b872641a8f291bc7ad52eac02df1e91f8b91f67588149bc6fa6f7',
   'extensions/git-id-switcher/LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
   'extensions/git-id-switcher/README.md': 'c70e13824ea64644d064dda6dbafa8d9a3d959c63f1671e98fb250c4b91dedf0',
+  'GOVERNANCE.md': 'a4a8ee6f97fb5ccbbbf310defd745e9bb38f1637336dba10eda87d0a65be5bf5',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
   'README.md': '0ef369d8edab407d769f764342e898cebb2d17feb558169093d56dfd1989228a',
   'SECURITY.md': 'b5df8a04b199315ccc25ff1421641411357de7ed3c2ec58d18b29edc45614550',
