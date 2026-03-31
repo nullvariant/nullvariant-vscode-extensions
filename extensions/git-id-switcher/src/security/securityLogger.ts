@@ -359,10 +359,10 @@ class SecurityLoggerImpl implements ISecurityLogger {
     let message: string;
     try {
       const jsonStr = JSON.stringify(event.details);
-      /* c8 ignore next 2 - Defense-in-depth: sanitizeDetails truncates values before reaching here */
-      message = jsonStr.length > MAX_MESSAGE_SIZE
-        ? `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: ${jsonStr.slice(0, MAX_MESSAGE_SIZE)}...[truncated]`
-        : `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: ${jsonStr}`;
+      // Defense-in-depth: sanitizeDetails already truncates values,
+      // so jsonStr should always be under MAX_MESSAGE_SIZE.
+      // slice(0, MAX_MESSAGE_SIZE) is a no-op for short strings.
+      message = `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: ${jsonStr.slice(0, MAX_MESSAGE_SIZE)}`;
     } catch (error) /* c8 ignore start */ {
       message = `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: [Failed to serialize: ${String(error)}]`;
     } /* c8 ignore stop */
