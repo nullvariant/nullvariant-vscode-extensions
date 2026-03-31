@@ -146,3 +146,11 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 **Token Details**:
 
 - **CLOUDFLARE_API_TOKEN**: Named `nullvariant-vscode-extensions-github-actions-deploy`, permissions: Workers R2 Storage:Edit
+
+## See Also
+
+- [GOVERNANCE.md](GOVERNANCE.md) — Project governance model
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Garden etiquette
+- [CONTRIBUTING.md](CONTRIBUTING.md) — How to contribute
+- [AGENTS.md](AGENTS.md) — Constraints for AI-assisted contributions
+- [Git ID Switcher Threat Model](extensions/git-id-switcher/docs/THREAT_MODEL.md) — STRIDE-based threat analysis

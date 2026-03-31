@@ -8,7 +8,7 @@ This repository is a karesansui--a garden that expresses the universe through sa
 
 ## Principles
 
-*In karesansui: the stone is core function, sand patterns are invisible quality, accents are delightful details.*
+_In karesansui: the stone is core function, sand patterns are invisible quality, accents are delightful details._
 
 **Discern the stone** -- Question the essence; do not place a stone that cannot answer
 
@@ -46,8 +46,17 @@ For questions or concerns: <contact@nullvariant.com>
 
 ---
 
-*This garden exists for the satisfaction of its maker.*
+_This garden exists for the satisfaction of its maker._
 
 ---
 
-*This is an original code of conduct based on the [karesansui philosophy](extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md), inspired by but not adapted from the [Contributor Covenant](https://www.contributor-covenant.org/).*
+_This is an original code of conduct based on the [karesansui philosophy](extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md), inspired by but not adapted from the [Contributor Covenant](https://www.contributor-covenant.org/)._
+
+---
+
+## See Also
+
+- [GOVERNANCE.md](GOVERNANCE.md) — Who tends this garden and how
+- [CONTRIBUTING.md](CONTRIBUTING.md) — How to contribute
+- [SECURITY.md](SECURITY.md) — Security policy and vulnerability reporting
+- [AGENTS.md](AGENTS.md) — Constraints for AI-assisted contributions

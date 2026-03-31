@@ -10,16 +10,17 @@ consensus process. The gardener places every stone.
 
 ## The Sekimori-ishi
 
-A [sekimori-ishi](https://en.wikipedia.org/wiki/Sekimori-ishi) is a small
-stone tied with rope, placed on a garden path. It carries no force — yet
-everyone who understands the garden knows: _do not pass beyond this stone._
+A [sekimori-ishi](https://www.seattlejapanesegarden.org/blog/tomeishi-stop) is a small
+stone tied with rope, placed on a garden path to say: _do not pass beyond here._
+In a traditional garden, this is a silent agreement. In this digital garden,
+the stones have teeth.
 
-This garden is protected by several such boundaries:
+This garden is guarded by several such stones:
 
 | Name                     | What it guards                                             |
 | ------------------------ | ---------------------------------------------------------- |
 | **CI / Build Check**     | No broken stone enters the garden                          |
-| **Branch Protection**    | The main path cannot be altered without a gate review      |
+| **Branch Protection**    | The main path cannot be altered without passing the gate   |
 | **Signed Commits**       | Every placed stone bears the mason's mark                  |
 | **Automated Publishing** | When a release tag is placed, the garden opens its gate    |
 | **AI Review Agents**     | Tireless apprentices that rake sand patterns day and night |
@@ -52,7 +53,9 @@ This garden follows the principle in our [Code of Conduct](CODE_OF_CONDUCT.md):
 
 > _"If it works, it's fine"_ is not welcome here.
 
-Code must be correct, secure, tested, and — yes — beautiful.
+Code must be correct, secure, tested, and — yes — beautiful. Every stone follows
+the [Karesansui Architecture](extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)
+— intentional richness that appears minimal.
 
 ## Bus Factor
 
@@ -66,3 +69,11 @@ and that is by design.
 
 To reach the gardener: open an issue on this repository, or see
 [SECURITY.md](SECURITY.md) for security-related matters.
+
+## See Also
+
+- [README.md](README.md) — Project overview and quick start
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Garden etiquette
+- [CONTRIBUTING.md](CONTRIBUTING.md) — How to contribute
+- [SECURITY.md](SECURITY.md) — Security policy and vulnerability reporting
+- [AGENTS.md](AGENTS.md) — Constraints for AI-assisted contributions
