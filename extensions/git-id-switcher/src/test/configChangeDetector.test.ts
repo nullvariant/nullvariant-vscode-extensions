@@ -1135,6 +1135,16 @@ function testValuesEqualTypeMismatchAndNull(): void {
   const changes2b = detector.detectChanges(createTestSnapshot({ defaultIdentity: 'test' }));
   assert.strictEqual(changes2b.length, 1, 'null vs non-null should be detected as change');
 
+  // Test 2c: object vs null - both typeof "object", tests b === null branch at line 135
+  setDetectorSnapshot(detector, createTestSnapshot({ commandTimeouts: { git: 5000 } }));
+  const objectVsNullSnapshot = {
+    ...createTestSnapshot(),
+    commandTimeouts: null as unknown as Record<string, number>,
+  };
+  const changes2c = detector.detectChanges(objectVsNullSnapshot);
+  const timeoutChanges = changes2c.filter(c => c.key === 'commandTimeouts');
+  assert.strictEqual(timeoutChanges.length, 1, 'object vs null (both typeof "object") should be detected as change');
+
   // Test 3: null vs null (both null should be equal)
   setDetectorSnapshot(detector, {
     ...createTestSnapshot(),
