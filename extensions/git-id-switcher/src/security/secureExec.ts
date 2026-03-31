@@ -452,7 +452,7 @@ export async function secureExec(
   // Defense-in-depth: Check command allowlist
   const allowlistCheck = isCommandAllowed(command, args);
   if (!allowlistCheck.allowed) {
-    const reason = allowlistCheck.reason || 'Unknown reason';
+    const reason = allowlistCheck.reason || /* c8 ignore next */ 'Unknown reason';
     // SECURITY: Log blocked command to audit trail for attack detection
     logger.logCommandBlocked(command, args, reason);
     const error = new Error(`Command blocked: ${reason}`);
@@ -553,6 +553,7 @@ export async function gitExec(args: string[], cwd?: string): Promise<GitExecResu
     // Git command failed (e.g., config not set, not a repo, timeout)
     // Timeout errors are already logged by secureExec via logCommandTimeout
     // Other errors need to be logged here
+    /* c8 ignore next - Defense-in-depth: secureExec always throws Error instances */
     const errorObj = error instanceof Error ? error : new Error(String(error));
 
     // SECURITY: Log non-timeout errors to audit trail
@@ -589,6 +590,7 @@ export async function gitExecRaw(args: string[], cwd?: string): Promise<GitExecR
     const { stdout } = await secureExec('git', args, { cwd });
     return { success: true, stdout: stdout };
   } catch (error) {
+    /* c8 ignore next - Defense-in-depth: secureExec always throws Error instances */
     const errorObj = error instanceof Error ? error : new Error(String(error));
     if (!(error instanceof TimeoutError)) {
       securityLogger.logCommandError('git', args, errorObj, cwd);

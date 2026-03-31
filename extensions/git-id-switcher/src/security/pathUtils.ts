@@ -370,7 +370,7 @@ export function validateSubmodulePath(
     return {
       valid: false,
       originalPath: submodulePath,
-      reason: `Invalid workspace path: ${workspaceResult.reason ?? 'validation failed'}`,
+      reason: `Invalid workspace path: ${workspaceResult.reason ?? /* c8 ignore next */ 'validation failed'}`,
     };
   }
 

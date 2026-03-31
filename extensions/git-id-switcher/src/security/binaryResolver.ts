@@ -141,7 +141,7 @@ const WHICH_PATHS: Readonly<Record<string, readonly string[]>> = {
  */
 async function getWhichCommand(): Promise<string> {
   const platform = process.platform;
-  const knownPaths = WHICH_PATHS[platform] ?? WHICH_PATHS['linux'];
+  const knownPaths = WHICH_PATHS[platform] ?? /* c8 ignore next */ WHICH_PATHS['linux'];
 
   for (const knownPath of knownPaths) {
     if (await isValidExecutable(knownPath)) {

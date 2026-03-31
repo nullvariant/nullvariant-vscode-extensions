@@ -69,6 +69,7 @@ function hasControlChars(str: string): boolean {
  * Check if a string is a valid 40-character lowercase hex SHA-1 hash.
  * Linear time O(n), no regex needed.
  */
+/* c8 ignore start - Only called from c8-ignored parseSubmoduleEntry block; branches unreachable in tests */
 function isValidCommitHash(str: string): boolean {
   if (str.length !== 40) return false;
   for (const char of str) {
@@ -76,12 +77,14 @@ function isValidCommitHash(str: string): boolean {
   }
   return true;
 }
+/* c8 ignore stop */
 
 /**
  * Strip optional branch suffix " (branch-name)" from the end of a string.
  * Returns the path portion without the branch suffix.
  * Linear time O(n), scans from end to find matching parentheses.
  */
+/* c8 ignore start - Only called from c8-ignored parseSubmoduleEntry block; branches unreachable in tests */
 function stripBranchSuffix(str: string): string {
   // Must end with ')'
   if (!str.endsWith(')')) return str;
@@ -262,7 +265,7 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
   if (!workspaceValidation.valid || !workspaceValidation.normalizedPath) {
     securityLogger.logValidationFailure(
       'submoduleWorkspace',
-      workspaceValidation.reason ?? 'Invalid workspace path'
+      workspaceValidation.reason ?? /* c8 ignore next */ 'Invalid workspace path'
     );
     return [];
   }

@@ -1419,6 +1419,76 @@ function testSanitizeConfigValueIdentities(): void {
 }
 
 /**
+ * Test buildIdentityChangeDetails with non-array newValue
+ *
+ * Coverage target: securityLogger.ts line 518
+ * When newValue is not an array, buildIdentityChangeDetails should use [] fallback.
+ */
+function testBuildIdentityChangeDetailsNonArrayNewValue(): void {
+  console.log('Testing buildIdentityChangeDetails with non-array newValue...');
+
+  const capture = new ConsoleCapture();
+  _resetCache();
+  securityLogger.initialize();
+
+  capture.start();
+  securityLogger.logConfigChanges([
+    {
+      key: 'identities',
+      previousValue: [{ id: 'old', name: 'Old' }],
+      newValue: 'not-an-array', // non-array triggers [] fallback
+    },
+  ]);
+  capture.stop();
+
+  const output = capture.getOutput();
+  const logLine = output.find(line => line.includes('CONFIG_CHANGE'));
+  assert.ok(logLine, 'Should produce CONFIG_CHANGE log');
+  assert.ok(logLine?.includes('identities'), 'Should include identities key');
+  // Non-array newValue is treated as [] by buildIdentityChangeDetails,
+  // so all previous identities are detected as "removed"
+  assert.ok(logLine?.includes('removed'), 'Should include removed identities when newValue is non-array');
+
+  console.log('✅ buildIdentityChangeDetails non-array newValue passed!');
+}
+
+/**
+ * Test buildIdentityChangeDetails with removal-only changes (no additions)
+ *
+ * Coverage target: securityLogger.ts line 524
+ * When s.added.length === 0, the ternary returns undefined.
+ */
+function testBuildIdentityChangeDetailsRemovalOnly(): void {
+  console.log('Testing buildIdentityChangeDetails with removal-only changes...');
+
+  const capture = new ConsoleCapture();
+  _resetCache();
+  securityLogger.initialize();
+
+  capture.start();
+  securityLogger.logConfigChanges([
+    {
+      key: 'identities',
+      previousValue: [
+        { id: 'removed1', name: 'Removed1' },
+        { id: 'removed2', name: 'Removed2' },
+      ],
+      newValue: [], // all removed, nothing added
+    },
+  ]);
+  capture.stop();
+
+  const output = capture.getOutput();
+  const logLine = output.find(line => line.includes('CONFIG_CHANGE'));
+  assert.ok(logLine, 'Should produce CONFIG_CHANGE log');
+  assert.ok(logLine?.includes('identities'), 'Should include identities key');
+  // With empty newValue, removed identities should be present
+  assert.ok(logLine?.includes('removed'), 'Should include removed identities');
+
+  console.log('✅ buildIdentityChangeDetails removal-only passed!');
+}
+
+/**
  * Test validateLogConfigRange() for log file setting validation
  */
 function testValidateLogConfigRange(): void {
@@ -1746,6 +1816,8 @@ export async function runSecurityLoggerTests(): Promise<void> {
     testWriteToOutputChannelJsonError();
     testSanitizeConfigValueIdentitiesNonArray();
     testSanitizeConfigValueIdentities();
+    testBuildIdentityChangeDetailsNonArrayNewValue();
+    testBuildIdentityChangeDetailsRemovalOnly();
     testValidateLogConfigRange();
     testLogConfigConstants();
     testRateLimitConstants();

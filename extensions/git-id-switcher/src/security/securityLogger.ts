@@ -187,7 +187,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
 
   private initializeFileLogging(): void {
     const vscode = getVSCode();
-    if (!vscode) return;
+    if (!vscode) return; // defense-in-depth: caller already gates on vscode being truthy
 
     const config = vscode.workspace.getConfiguration('gitIdSwitcher.logging');
 
@@ -359,6 +359,7 @@ class SecurityLoggerImpl implements ISecurityLogger {
     let message: string;
     try {
       const jsonStr = JSON.stringify(event.details);
+      /* c8 ignore next 2 - Defense-in-depth: sanitizeDetails truncates values before reaching here */
       message = jsonStr.length > MAX_MESSAGE_SIZE
         ? `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: ${jsonStr.slice(0, MAX_MESSAGE_SIZE)}...[truncated]`
         : `[${event.timestamp}] ${severityIcon} [${event.severity.toUpperCase()}] ${event.type}: ${jsonStr}`;

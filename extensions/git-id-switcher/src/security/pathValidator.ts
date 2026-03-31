@@ -503,6 +503,7 @@ function isPathWithinAllowedBaseDir(resolvedPath: string, allowedBaseDir: string
   const normalizedBase = path.normalize(allowedBaseDir);
 
   // Ensure base directory ends with separator for proper prefix matching
+  /* c8 ignore next 3 - Defense-in-depth: path.normalize strips trailing separators */
   const baseWithSep = normalizedBase.endsWith(path.sep)
     ? normalizedBase
     : normalizedBase + path.sep;

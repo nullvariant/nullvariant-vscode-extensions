@@ -246,6 +246,7 @@ export function normalizeAndValidatePath(
   /* c8 ignore stop */
 
   // Step 7: Check PATH_MAX after normalization
+  /* c8 ignore next 2 - Defense-in-depth: path.normalize cannot increase path length */
   const normalizedLengthCheck = validatePathLength(normalizedPath, inputPath, 'Normalized path');
   if (normalizedLengthCheck) return normalizedLengthCheck;
 
