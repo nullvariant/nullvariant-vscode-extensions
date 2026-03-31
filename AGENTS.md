@@ -79,3 +79,10 @@ E2E test files are in `extensions/git-id-switcher/src/test/e2e/`. Guidelines:
 - Unit tests: Must pass to merge PR
 - E2E tests: Run in parallel with build, currently non-blocking (`continue-on-error: true`)
 - E2E uses `xvfb-run` for headless execution on Linux
+
+## See Also
+
+- [GOVERNANCE.md](GOVERNANCE.md) — Project governance model
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Garden etiquette
+- [CONTRIBUTING.md](CONTRIBUTING.md) — How to contribute
+- [SECURITY.md](SECURITY.md) — Security policy and vulnerability reporting

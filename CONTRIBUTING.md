@@ -112,8 +112,12 @@ When testing UI modules (StatusBar, QuickPick, Documentation), follow these patt
 - Use command execution + extension stability verification pattern:
 
   ```typescript
-  await vscode.commands.executeCommand('git-id-switcher.showDocumentation');
-  assert.strictEqual(extension.isActive, true, 'Extension should remain active');
+  await vscode.commands.executeCommand("git-id-switcher.showDocumentation");
+  assert.strictEqual(
+    extension.isActive,
+    true,
+    "Extension should remain active",
+  );
   ```
 
 - Test panel lifecycle: create → close → re-create
@@ -142,3 +146,11 @@ Feel free to open an issue for discussion.
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
+
+## See Also
+
+- [GOVERNANCE.md](GOVERNANCE.md) — Project governance model
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Garden etiquette
+- [SECURITY.md](SECURITY.md) — Security policy and vulnerability reporting
+- [AGENTS.md](AGENTS.md) — Constraints for AI-assisted contributions
+- [Translation Contributing Guide](extensions/git-id-switcher/docs/CONTRIBUTING.md) — How to contribute translations for Git ID Switcher

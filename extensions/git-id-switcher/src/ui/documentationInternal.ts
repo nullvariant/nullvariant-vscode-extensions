@@ -22,9 +22,9 @@
  * Unknown paths or hash mismatches result in content rejection.
  */
 export const DOCUMENT_HASHES: Record<string, string> = {
-  'AGENTS.md': 'cb8170851742743e584cf21ff3427c78dc1c9471fd56d25a19abc174ed4fdd61',
-  'CODE_OF_CONDUCT.md': 'a5eb286c902437bbe0f6d409894f20e51c172fa869fe2f151bfa388f9d911b54',
-  'CONTRIBUTING.md': '4150f8810aec7b2e8eff9f3c69ee1bae1374843f50a812efa6778cba27a833cd',
+  'AGENTS.md': '5576e35cba6912b02c0bc5e7f51fc15a2a6e5f125e68cc7a6a450cdddc5e5ca5',
+  'CODE_OF_CONDUCT.md': 'a0e9cb2e004663cdedef4e1adc0e429417ccfc479e367cbc17b869f62ae759d2',
+  'CONTRIBUTING.md': '86390ee951cf08f616d75f35c0746f0005be6aee29b1a3abb5745ffb823914fb',
   'extensions/git-id-switcher/CHANGELOG.md': 'b11d9b619f23b9e55c31302b9a55f455ade9c58f65ce485b0d6ae4ddeb289e7a',
   'extensions/git-id-switcher/docs/ARCHITECTURE.md': 'db6ba2f7809b2c7aa831eda3a4b9bb80521577e4e267c7b6ccad17ffba847548',
   'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
@@ -59,10 +59,10 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/docs/THREAT_MODEL.md': '1947cc3c940b872641a8f291bc7ad52eac02df1e91f8b91f67588149bc6fa6f7',
   'extensions/git-id-switcher/LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
   'extensions/git-id-switcher/README.md': 'c70e13824ea64644d064dda6dbafa8d9a3d959c63f1671e98fb250c4b91dedf0',
-  'GOVERNANCE.md': 'a4a8ee6f97fb5ccbbbf310defd745e9bb38f1637336dba10eda87d0a65be5bf5',
+  'GOVERNANCE.md': '806cf32ec9fe9fd964a782927f8eaa7696d408c42d31f554eebd6755bd911c71',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
-  'README.md': '0ef369d8edab407d769f764342e898cebb2d17feb558169093d56dfd1989228a',
-  'SECURITY.md': 'b5df8a04b199315ccc25ff1421641411357de7ed3c2ec58d18b29edc45614550',
+  'README.md': '89a6fc159f160a2b8fb96279deb3c2af558bd61341f4d9c99ff6a5d7b58c4253',
+  'SECURITY.md': '4dcd8884851a057738d9c6f58e9017f0dc8edc91fd4921a491bf66f3b2fe5e0f',
 };
 
 /** Supported locales for documentation */
