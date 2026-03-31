@@ -1,0 +1,8 @@
+# Dangerous Workflow policy
+# Flags GitHub Actions patterns that may be security risks
+# (e.g., pull_request_target with explicit checkout of PR head)
+
+optConfig:
+  optIn: true
+
+action: issue

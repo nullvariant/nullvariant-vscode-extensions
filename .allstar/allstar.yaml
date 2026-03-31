@@ -1,0 +1,14 @@
+# Allstar repository-level configuration
+# https://github.com/ossf/allstar
+
+optConfig:
+  # Enable Allstar for this repository
+  optIn: true
+
+# Issue management
+issueLabel: allstar
+issueRepo: ""
+
+# Schedule: check once daily to avoid noise
+schedule:
+  interval: daily

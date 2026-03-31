@@ -1,0 +1,7 @@
+# Security policy
+# Ensures SECURITY.md exists in the repository
+
+optConfig:
+  optIn: true
+
+action: issue
