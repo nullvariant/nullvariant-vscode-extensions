@@ -7,6 +7,7 @@
  * @module ui/identityAddForm
  */
 
+import type { QuickPick } from 'vscode';
 import { getVSCode } from '../core/vscodeLoader';
 import {
   type Identity,
@@ -16,7 +17,6 @@ import {
 import { MAX_IDENTITIES } from '../core/constants';
 import {
   type VSCodeAPI,
-  type GenericQuickPick,
   type QuickInputResult,
   getPlaceholderForField,
   getInputBoxPrompt,
@@ -33,19 +33,16 @@ import {
 // Type Definitions
 // ============================================================================
 
-/** State for add identity form */
-interface AddFormState {
-  [key: string]: string | undefined;
+/**
+ * State for add identity form — derived from Identity to maintain SSOT.
+ * All fields are string-typed (user input). Required fields are always present,
+ * optional fields may be undefined.
+ */
+type AddFormState = Partial<Record<keyof Identity, string>> & {
   id: string;
   name: string;
   email: string;
-  service?: string;
-  icon?: string;
-  description?: string;
-  sshKeyPath?: string;
-  sshHost?: string;
-  gpgKeyId?: string;
-}
+};
 
 /** QuickPick item for add form field */
 interface AddFormQuickPickItem {
@@ -58,7 +55,7 @@ interface AddFormQuickPickItem {
 }
 
 /** QuickPick type for add form */
-type AddFormQuickPick = GenericQuickPick<AddFormQuickPickItem>;
+type AddFormQuickPick = QuickPick<AddFormQuickPickItem>;
 
 // ============================================================================
 // Form State Helpers
@@ -119,7 +116,7 @@ function buildAddFormItems(
   const items: AddFormQuickPickItem[] = [];
 
   for (const meta of FIELD_METADATA) {
-    const value = state[meta.key as keyof AddFormState];
+    const value = state[meta.key];
     const hasValue = value !== undefined && value.trim() !== '';
     const requiredMark = meta.required ? '*' : '';
     const displayValue = hasValue

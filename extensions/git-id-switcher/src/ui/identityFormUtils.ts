@@ -7,6 +7,7 @@
  * @module ui/identityFormUtils
  */
 
+import type { QuickPick, QuickPickItem } from 'vscode';
 import { getVSCode } from '../core/vscodeLoader';
 import {
   type Identity,
@@ -34,10 +35,6 @@ export interface FieldQuickPickItem {
   readonly _isDisabled?: boolean;
 }
 
-/** Generic QuickPick type */
-export type GenericQuickPick<T> = ReturnType<VSCodeAPI['window']['createQuickPick']> & {
-  readonly selectedItems: readonly T[];
-};
 
 /** InputBox type */
 export type GenericInputBox = ReturnType<VSCodeAPI['window']['createInputBox']>;
@@ -284,9 +281,9 @@ function createDisposableCleanup(): {
  * @param quickPick - The QuickPick instance
  * @returns Selected item, 'back' if back pressed, undefined if cancelled
  */
-export function waitForQuickPickSelection<T>(
+export function waitForQuickPickSelection<T extends QuickPickItem>(
   vs: VSCodeAPI,
-  quickPick: GenericQuickPick<T>
+  quickPick: QuickPick<T>
 ): Promise<T | 'back' | undefined> {
   return new Promise(resolve => {
     const { cleanup } = createDisposableCleanup();
@@ -294,7 +291,7 @@ export function waitForQuickPickSelection<T>(
     const disposables: { dispose(): void }[] = [
       quickPick.onDidAccept(() => {
         cleanup(disposables);
-        resolve(quickPick.selectedItems[0] as T | undefined);
+        resolve(quickPick.selectedItems[0]);
       }),
       quickPick.onDidTriggerButton(button => {
         if (button === vs.QuickInputButtons.Back) {
