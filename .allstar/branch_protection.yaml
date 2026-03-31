@@ -1,0 +1,15 @@
+# Branch Protection policy
+# Ensures main branch has proper protection rules
+
+optConfig:
+  optIn: true
+
+action: issue
+
+enforceDefault: true
+
+requireApproval: true
+approvalCount: 1
+
+dismissStale: true
+blockForce: true

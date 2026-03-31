@@ -1,0 +1,9 @@
+# Outside Collaborators policy
+# Monitors external collaborators with elevated access
+
+optConfig:
+  optIn: true
+
+action: issue
+
+pushAdminOnly: true

@@ -1,0 +1,7 @@
+# Binary Artifacts policy
+# Detects checked-in binary files that should not be in the repository
+
+optConfig:
+  optIn: true
+
+action: issue
