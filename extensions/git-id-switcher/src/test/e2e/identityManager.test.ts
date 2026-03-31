@@ -657,8 +657,11 @@ describe('identityManager E2E Test Suite', function () {
     it('should return true when a field is successfully edited', async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
-        showQuickPickResult: { field: 'name' },
-        showInputBoxResults: ['New Name'],
+        quickPickSelections: [
+          { field: 'name' },
+          undefined,
+        ],
+        inputBoxSelections: ['New Name'],
       });
       _setMockVSCode(mockVSCode as never);
 
