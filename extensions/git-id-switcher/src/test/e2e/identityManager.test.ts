@@ -653,8 +653,8 @@ describe('identityManager E2E Test Suite', function () {
     });
   });
 
-  describe('Edit Profile: Return Type Verification', () => {
-    it('should return boolean type from showEditProfileFlow', async () => {
+  describe('Edit Profile: Success Path', () => {
+    it('should return true when a field is successfully edited', async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
         showQuickPickResult: { field: 'name' },
@@ -664,12 +664,12 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(typeof result, 'boolean', 'Return type should be boolean');
+      assert.strictEqual(result, true, 'Should return true after successful edit');
     });
   });
 
-  describe('Add Form: Return Type Verification', () => {
-    it('should return Identity object from showAddIdentityForm on success', async () => {
+  describe('Add Form: Success Path', () => {
+    it('should return Identity with correct id/name/email after completing all fields', async () => {
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
@@ -684,10 +684,10 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      // showAddIdentityForm returns Identity | undefined
       assert.ok(result !== undefined, 'Should return Identity object on success');
-      assert.strictEqual(typeof result, 'object', 'Return type should be object (Identity)');
       assert.strictEqual(result?.id, 'return-type-id', 'Should have correct id');
+      assert.strictEqual(result?.name, 'Return Type Name', 'Should have correct name');
+      assert.strictEqual(result?.email, 'email@test.com', 'Should have correct email');
     });
   });
 
@@ -716,11 +716,7 @@ describe('identityManager E2E Test Suite', function () {
       assert.strictEqual(result, undefined, 'Invalid ID should cause validation failure');
     });
 
-    it('should show duplicate ID error in detail', async () => {
-      // This is already covered by 'Duplicate ID Check' tests in Add Identity Form section
-      // Duplicate ID shows "ID already exists" in detail and keeps save button disabled
-      assert.ok(true, 'Duplicate ID check covered in Add Identity Form tests');
-    });
+    // Duplicate ID validation is covered by 'Duplicate ID Check' tests in Add Identity Form section
   });
 
   describe('Security: Name Input Validation', () => {
@@ -1451,17 +1447,15 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // After saving, the ID field should show "Saved" feedback
-        if (capturedItemsHistory.length >= 2) {
-          const itemsAfterSave = capturedItemsHistory[1];
-          const idItem = itemsAfterSave.find((i: unknown) => {
-            if (typeof i !== 'object' || i === null) return false;
-            return (i as { field?: string | null }).field === 'id';
-          });
-          if (idItem) {
-            const description = (idItem as { description?: string }).description;
-            assert.ok(description?.includes('Saved'), `ID field should show 'Saved' feedback, got: ${description}`);
-          }
-        }
+        assert.ok(capturedItemsHistory.length >= 2, `Should capture items at least twice (initial + after save), got ${capturedItemsHistory.length}`);
+        const itemsAfterSave = capturedItemsHistory[1];
+        const idItem = itemsAfterSave.find((i: unknown) => {
+          if (typeof i !== 'object' || i === null) return false;
+          return (i as { field?: string | null }).field === 'id';
+        });
+        assert.ok(idItem, 'Should find ID field item after save');
+        const description = (idItem as { description?: string }).description;
+        assert.ok(description?.includes('Saved'), `ID field should show 'Saved' feedback, got: ${description}`);
       });
 
       it('should accept valid new ID and save successfully', async () => {
@@ -1596,17 +1590,15 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // After saving, the name field should show "Saved" feedback
-        if (capturedItemsHistory.length >= 2) {
-          const itemsAfterSave = capturedItemsHistory[1];
-          const nameItem = itemsAfterSave.find((i: unknown) => {
-            if (typeof i !== 'object' || i === null) return false;
-            return (i as { field?: string }).field === 'name';
-          });
-          if (nameItem) {
-            const description = (nameItem as { description?: string }).description;
-            assert.ok(description?.includes('Saved'), `Name field should show 'Saved' feedback, got: ${description}`);
-          }
-        }
+        assert.ok(capturedItemsHistory.length >= 2, `Should capture items at least twice (initial + after save), got ${capturedItemsHistory.length}`);
+        const itemsAfterSave = capturedItemsHistory[1];
+        const nameItem = itemsAfterSave.find((i: unknown) => {
+          if (typeof i !== 'object' || i === null) return false;
+          return (i as { field?: string }).field === 'name';
+        });
+        assert.ok(nameItem, 'Should find name field item after save');
+        const description = (nameItem as { description?: string }).description;
+        assert.ok(description?.includes('Saved'), `Name field should show 'Saved' feedback, got: ${description}`);
       });
 
       it('should allow re-selecting the same field after saving', async () => {
@@ -3227,13 +3219,49 @@ describe('identityManager E2E Test Suite', function () {
       });
     });
 
-    describe('Delete identity: logConfigChange is called (covered by deleteIdentityPicker.test.ts)', () => {
-      // Note: Delete functionality is tested in deleteIdentityPicker.test.ts
-      // This test confirms the audit trail requirement is documented
-      it('should be tested in deleteIdentityPicker.test.ts', () => {
-        // Placeholder to document that delete audit logging is tested elsewhere
-        assert.ok(true, 'Delete identity audit logging is tested in deleteIdentityPicker.test.ts');
+    // Delete identity audit logging is covered by deleteIdentityPicker.test.ts
+  });
+
+  describe('Config Update Error: saveNewIdentity/saveEditedField error paths', () => {
+    it('should return undefined and show error message when saveNewIdentity fails due to config update error', async () => {
+      const mockVSCode = createMockVSCode({
+        identities: [],
+        quickPickSelections: [
+          { field: 'id' },
+          { field: 'name' },
+          { field: 'email' },
+          { _isSaveButton: true },
+        ],
+        inputBoxSelections: ['error-test-id', 'Error Test Name', 'error@test.com'],
+        configUpdateError: new Error('Permission denied'),
       });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showAddIdentityForm();
+
+      assert.strictEqual(result, undefined, 'Should return undefined when config update fails');
+      const errorCalls = mockVSCode._getShowErrorMessageCalls();
+      assert.ok(errorCalls.length > 0, 'Should show error notification to user');
+    });
+
+    it('should show error message and return false when saveEditedField fails and user cancels', async () => {
+      const mockVSCode = createMockVSCode({
+        identities: [TEST_IDENTITIES.work],
+        quickPickSelections: [
+          { field: 'name' },
+          undefined,
+        ],
+        inputBoxSelections: ['Updated Name'],
+        configUpdateError: new Error('Permission denied'),
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+
+      const errorCalls = mockVSCode._getShowErrorMessageCalls();
+      assert.ok(errorCalls.length > 0, 'Should show error notification to user');
+      // saveEditedField failure does not set hasUpdated=true, so cancelling returns false
+      assert.strictEqual(result, false, 'Edit flow should return false when save failed and user cancelled');
     });
   });
 
