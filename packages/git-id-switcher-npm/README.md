@@ -7,6 +7,7 @@ The actual **git-id-switcher** is a VS Code extension that lets you manage and s
 ## Install the VS Code Extension
 
 - [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher)
+- [Open VSX Registry](https://open-vsx.org/extension/nullvariant/git-id-switcher)
 
 ## Links
 
