@@ -8,8 +8,13 @@
 [![Security](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml)
 [![CI](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml)
 [![Platform](https://img.shields.io/badge/%20-Win%20%7C%20Mac%20%7C%20Linux-blue?labelColor=555&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yMSAySDNjLTEuMSAwLTIgLjktMiAydjEyYzAgMS4xLjkgMiAyIDJoN3YySDh2Mmg4di0yaC0ydi0yaDdjMS4xIDAgMi0uOSAyLTJWNGMwLTEuMS0uOS0yLTItMnptMCAxNEgzVjRoMTh2MTJ6Ii8+PC9zdmc+)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml)
+[![Known Vulnerabilities](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions/badge.svg)](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions)
 [![codecov](https://codecov.io/gh/nullvariant/nullvariant-vscode-extensions/graph/badge.svg)](https://codecov.io/gh/nullvariant/nullvariant-vscode-extensions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=bugs)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=coverage)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Harden-Runner](https://img.shields.io/badge/Harden--Runner-enabled-7037F5)](https://github.com/step-security/harden-runner)
 
 VS Code extensions by [Null;Variant](https://github.com/nullvariant).
