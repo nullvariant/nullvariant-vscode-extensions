@@ -62,7 +62,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'GOVERNANCE.md': '806cf32ec9fe9fd964a782927f8eaa7696d408c42d31f554eebd6755bd911c71',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
   'README.md': '2597f0c6fca10b28cacc27696d4753f4d32a5abbb6339615da6144ce269d47bc',
-  'SECURITY.md': 'f0a9554c55bbf84187bb0d10afaf2591ebf0ffef70e73d212e9ba0d9a4b2bb6e',
+  'SECURITY.md': 'bbae0e2a679851ea0ede598102c7d809aea11b7bab99ddf6a20f4dde31070c23',
 };
 
 /** Supported locales for documentation */

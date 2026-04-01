@@ -66,6 +66,7 @@ This repository contains VS Code extensions with the following security measures
 - **Daily Vulnerability Scans**: `npm audit` runs daily via scheduled workflow
 - **Fork Protection**: Sensitive workflows skip on fork repositories
 - **SAST (Snyk Code)**: [Snyk](https://snyk.io/) runs static analysis; test fixtures are excluded via `.snyk` policy
+- **License & Vulnerability Scanning**: [FOSSA](https://app.fossa.com/) runs license compliance, dependency quality, and security analysis on every commit (GitHub App integration)
 - **Runtime Security Monitoring**: [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) monitors all workflow runs for suspicious network egress, file access, and process execution
 
 ## Security Testing
@@ -94,6 +95,7 @@ This section documents all secrets used in CI/CD workflows.
 | VSCE_PAT              | VS Code Marketplace publishing         | publish.yml, unpublish.yml   | Annual    | High            |
 | OVSX_PAT              | Open VSX publishing                    | publish.yml, unpublish.yml   | Annual    | High            |
 | SONAR_TOKEN           | SonarCloud code analysis               | sonarcloud.yml               | As needed | Medium          |
+| FOSSA_API_KEY         | FOSSA license/vulnerability scanning   | (API access only)            | As needed | Medium          |
 | CLOUDFLARE_API_TOKEN  | Cloudflare Pages/R2 deployment         | deploy-docs.yml, publish.yml | Annual    | High            |
 | CLOUDFLARE_ACCOUNT_ID | Cloudflare account identifier (public) | deploy-docs.yml, publish.yml | Never     | Low (public ID) |
 | SLACK_WEBHOOK         | Bot monitoring alerts                  | bot-monitoring.yml           | As needed | Medium          |
@@ -141,6 +143,7 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 | OVSX_PAT             | Open VSX     | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens)                   | No expiration |
 | CLOUDFLARE_API_TOKEN | Cloudflare   | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)        | No expiration |
 | SONAR_TOKEN          | SonarCloud   | [SonarCloud Security](https://sonarcloud.io/account/security)                  | No expiration |
+| FOSSA_API_KEY        | FOSSA        | [FOSSA Settings](https://app.fossa.com/account/settings/integrations)          | No expiration |
 | GitHub App Keys      | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
 | SLACK_WEBHOOK        | Slack        | [Slack Apps](https://api.slack.com/apps)                                       | No expiration |
 
