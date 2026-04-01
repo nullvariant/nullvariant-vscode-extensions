@@ -10,6 +10,7 @@
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11709/badge)](https://www.bestpractices.dev/projects/11709)
 [![Harden-Runner](https://img.shields.io/badge/Harden--Runner-enabled-7037F5)](https://github.com/step-security/harden-runner)
 [![Known Vulnerabilities](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions/badge.svg)](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions)
+[![Socket.dev](https://img.shields.io/badge/Socket.dev-monitored-7042F5)](https://socket.dev/gh/nullvariant/nullvariant-vscode-extensions)
 [![GitGuardian](https://img.shields.io/badge/GitGuardian-monitored-7042F5?logo=gitguardian)](https://www.gitguardian.com/)
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](https://renovatebot.com)
 [![FOSSA License](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_shield&issueType=license)
