@@ -65,6 +65,7 @@ This repository contains VS Code extensions with the following security measures
 - **Static Code Analysis**: [SonarCloud](https://sonarcloud.io/project/overview?id=nullvariant_nullvariant-vscode-extensions) runs on every push and PR (CI-based analysis)
 - **Daily Vulnerability Scans**: `npm audit` runs daily via scheduled workflow
 - **Fork Protection**: Sensitive workflows skip on fork repositories
+- **SAST (Snyk Code)**: [Snyk](https://snyk.io/) runs static analysis; test fixtures are excluded via `.snyk` policy
 - **Runtime Security Monitoring**: [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) monitors all workflow runs for suspicious network egress, file access, and process execution
 
 ## Security Testing

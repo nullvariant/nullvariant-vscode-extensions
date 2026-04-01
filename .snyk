@@ -1,0 +1,8 @@
+# Snyk (https://snyk.io) policy file
+version: v1.25.0
+exclude:
+  global:
+    # Test fixtures intentionally contain secret-like patterns
+    # for testing sensitiveDataDetector and related security utilities.
+    # These are synthetic values (e.g., 'AbCdEfGh12345678...'), not real secrets.
+    - extensions/git-id-switcher/src/test
