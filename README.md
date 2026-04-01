@@ -18,6 +18,7 @@
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=coverage)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_shield)
 
 VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
@@ -48,6 +49,9 @@ VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 <br>
 
 <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/demo.png" width="600" alt="Git ID Switcher Demo">
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_large)
 
 ## Quick Start for Developers
 
