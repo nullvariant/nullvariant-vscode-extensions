@@ -12,6 +12,8 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions/badge.svg)](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions)
 [![GitGuardian](https://img.shields.io/badge/GitGuardian-monitored-7042F5?logo=gitguardian)](https://www.gitguardian.com/)
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](https://renovatebot.com)
+[![FOSSA License](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_shield&issueType=license)
+[![FOSSA Security](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_shield&issueType=security)
 [![codecov](https://codecov.io/gh/nullvariant/nullvariant-vscode-extensions/graph/badge.svg)](https://codecov.io/gh/nullvariant/nullvariant-vscode-extensions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=bugs)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
