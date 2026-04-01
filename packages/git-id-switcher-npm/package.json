@@ -8,7 +8,7 @@
   "homepage": "https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nullvariant/nullvariant-vscode-extensions.git",
+    "url": "git+https://github.com/nullvariant/nullvariant-vscode-extensions.git",
     "directory": "packages/git-id-switcher-npm"
   },
   "keywords": [
