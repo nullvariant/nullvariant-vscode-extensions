@@ -13,16 +13,46 @@ The `main` branch is protected with the following rules:
 
 > **Note for contributors**: You don't need to GPG-sign your commits. The maintainer will handle signing when merging your PR.
 
+## Developer Certificate of Origin (DCO)
+
+This project requires all contributors to sign off their commits, certifying that they have the right to submit the code under the project's license. This is enforced via the [Developer Certificate of Origin](https://developercertificate.org/).
+
+### How to sign off
+
+Add `--signoff` (or `-s`) to your `git commit` command:
+
+```bash
+git commit --signoff -m "feat: add new feature"
+```
+
+This adds a `Signed-off-by` line to your commit message:
+
+```text
+feat: add new feature
+
+Signed-off-by: Your Name <your.email@example.com>
+```
+
+### What you are certifying
+
+By signing off, you certify the [Developer Certificate of Origin v1.1](https://developercertificate.org/) (full text at the link). Key points:
+
+- The contribution is your original work, or you have the right to pass it on
+- You have the right to submit it under the project's open source license
+- You understand the contribution is public and a record of it is maintained indefinitely
+
+> **Note**: If you forget `--signoff`, the DCO check on your PR will fail. You can fix existing commits with `git commit --amend --signoff` or `git rebase --signoff HEAD~N`.
+
 ## Getting Started
 
 1. Fork the repository
 2. Clone your fork
 3. Create a feature branch: `git checkout -b feature/my-feature`
 4. Make your changes
-5. Commit with a descriptive message
+5. Commit with `--signoff`: `git commit --signoff -m "feat: description"`
 6. Push to your fork
 7. Open a Pull Request
-8. Wait for CI checks to pass, then a maintainer will merge
+8. Wait for CI checks to pass (including DCO), then a maintainer will merge
 
 ## Development Setup
 

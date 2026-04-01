@@ -1,0 +1,37 @@
+name: DCO
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  dco:
+    name: DCO Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Run DCO Check
+        run: |
+          pip install 'dco-check==0.5.0' --require-hashes --no-deps \
+            --hash=sha256:3c027d2d47b5cbb03f7e2a25ec8ffb56d8a33c49563c8fcd2cef443ebf3cff0d
+          dco-check

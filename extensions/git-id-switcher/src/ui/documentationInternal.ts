@@ -22,9 +22,9 @@
  * Unknown paths or hash mismatches result in content rejection.
  */
 export const DOCUMENT_HASHES: Record<string, string> = {
-  'AGENTS.md': '5576e35cba6912b02c0bc5e7f51fc15a2a6e5f125e68cc7a6a450cdddc5e5ca5',
+  'AGENTS.md': 'c4918e12fd7900bfc41e708992ebc4b7326600ce9327e8020a986fe4dd807f8d',
   'CODE_OF_CONDUCT.md': 'a0e9cb2e004663cdedef4e1adc0e429417ccfc479e367cbc17b869f62ae759d2',
-  'CONTRIBUTING.md': '86390ee951cf08f616d75f35c0746f0005be6aee29b1a3abb5745ffb823914fb',
+  'CONTRIBUTING.md': 'ed4d1f391ffe04e3031dfc9f16fd8fd5dcd54ba23af3b3202c07adac5ba23da7',
   'extensions/git-id-switcher/CHANGELOG.md': 'b11d9b619f23b9e55c31302b9a55f455ade9c58f65ce485b0d6ae4ddeb289e7a',
   'extensions/git-id-switcher/docs/ARCHITECTURE.md': 'db6ba2f7809b2c7aa831eda3a4b9bb80521577e4e267c7b6ccad17ffba847548',
   'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',

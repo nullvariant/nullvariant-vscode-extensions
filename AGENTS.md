@@ -12,6 +12,7 @@ VS Code extensions monorepo. Primary extension: **Git ID Switcher** — manages 
 4. Do not make security constants user-configurable — hardcoded security values are by design.
 5. Do not add features outside the current scope (e.g., GitHub API integration).
 6. Minimize dependencies — add only when genuinely needed and not replaceable by existing tools.
+7. Include `--signoff` flag on all commits (DCO requirement).
 
 ## Branch Protection
 
