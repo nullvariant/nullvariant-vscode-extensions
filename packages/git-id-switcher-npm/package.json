@@ -1,6 +1,6 @@
 {
   "name": "git-id-switcher",
-  "_nameConflictNote": "Intentionally same name as extensions/git-id-switcher to reserve npm namespace",
+  "x-nameConflictNote": "Intentionally same name as extensions/git-id-switcher to reserve npm namespace",
   "version": "0.0.1",
   "description": "Namespace placeholder for git-id-switcher. The actual extension is available on the VS Code Marketplace and Open VSX Registry.",
   "author": "Null;Variant <null@nullvariant.com>",
@@ -18,6 +18,7 @@
     "vscode"
   ],
   "files": [
-    "README.md"
+    "README.md",
+    "LICENSE"
   ]
 }
