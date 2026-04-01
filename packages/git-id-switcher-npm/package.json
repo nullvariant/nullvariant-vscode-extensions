@@ -1,0 +1,19 @@
+{
+  "name": "git-id-switcher",
+  "version": "0.0.1",
+  "description": "Namespace placeholder for git-id-switcher. The actual extension is available on the VS Code Marketplace.",
+  "author": "Null;Variant <null@nullvariant.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nullvariant/nullvariant-vscode-extensions.git",
+    "directory": "packages/git-id-switcher-npm"
+  },
+  "keywords": [
+    "git",
+    "identity",
+    "switcher",
+    "vscode"
+  ]
+}
