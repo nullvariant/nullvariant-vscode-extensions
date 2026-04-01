@@ -1,21 +1,27 @@
 # nullvariant-vscode-extensions
 
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nullvariant/nullvariant-vscode-extensions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/nullvariant/nullvariant-vscode-extensions)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11709/badge)](https://www.bestpractices.dev/projects/11709)
+[![CI](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml)
+[![Security](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml)
+[![Platform](https://img.shields.io/badge/%20-Win%20%7C%20Mac%20%7C%20Linux-blue?labelColor=555&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yMSAySDNjLTEuMSAwLTIgLjktMiAydjEyYzAgMS4xLjkgMiAyIDJoN3YySDh2Mmg4di0yaC0ydi0yaDdjMS4xIDAgMi0uOSAyLTJWNGMwLTEuMS0uOS0yLTItMnptMCAxNEgzVjRoMTh2MTJ6Ii8+PC9zdmc+)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml)
 [![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev/)
 [![Sigstore](https://img.shields.io/badge/Sigstore-Cosign_Signed-blue?logo=sigstore)](https://github.com/nullvariant/nullvariant-vscode-extensions#supply-chain-security)
 [![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-brightgreen)](https://github.com/nullvariant/nullvariant-vscode-extensions#supply-chain-security)
-[![Security](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml)
-[![CI](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml)
-[![Platform](https://img.shields.io/badge/%20-Win%20%7C%20Mac%20%7C%20Linux-blue?labelColor=555&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yMSAySDNjLTEuMSAwLTIgLjktMiAydjEyYzAgMS4xLjkgMiAyIDJoN3YySDh2Mmg4di0yaC0ydi0yaDdjMS4xIDAgMi0uOSAyLTJWNGMwLTEuMS0uOS0yLTItMnptMCAxNEgzVjRoMTh2MTJ6Ii8+PC9zdmc+)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nullvariant/nullvariant-vscode-extensions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/nullvariant/nullvariant-vscode-extensions)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11709/badge)](https://www.bestpractices.dev/projects/11709)
+[![Harden-Runner](https://img.shields.io/badge/Harden--Runner-enabled-7037F5)](https://github.com/step-security/harden-runner)
 [![Known Vulnerabilities](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions/badge.svg)](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions)
+[![Socket Badge](https://socket.dev/api/badge/npm/package/git-id-switcher)](https://socket.dev/npm/package/git-id-switcher)
+[![GitGuardian](https://img.shields.io/badge/GitGuardian-monitored-7042F5?logo=gitguardian)](https://www.gitguardian.com/)
+[![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](https://renovatebot.com)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_shield)
+[![REUSE](https://api.reuse.software/badge/github.com/nullvariant/nullvariant-vscode-extensions)](https://api.reuse.software/info/github.com/nullvariant/nullvariant-vscode-extensions)
+[![CLA assistant](https://cla-assistant.io/readme/badge/nullvariant/nullvariant-vscode-extensions)](https://cla-assistant.io/nullvariant/nullvariant-vscode-extensions)
 [![codecov](https://codecov.io/gh/nullvariant/nullvariant-vscode-extensions/graph/badge.svg)](https://codecov.io/gh/nullvariant/nullvariant-vscode-extensions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=bugs)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=coverage)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
-[![Harden-Runner](https://img.shields.io/badge/Harden--Runner-enabled-7037F5)](https://github.com/step-security/harden-runner)
 
 VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 
