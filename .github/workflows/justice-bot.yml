@@ -265,6 +265,10 @@ jobs:
             echo "Posted new Justice verdict comment."
           fi
 
+      # NOTE: ci-gated-approve also approves after CI passes. This early approval
+      # allows dependency bot PRs to merge without waiting for full CI when the
+      # safety verdict is clear. ci-gated-approve has a duplicate check to skip
+      # if Justice has already approved.
       - name: ✅ Approve PR
         if: >
           steps.verify.outputs.is_bot == 'true' &&
@@ -297,6 +301,7 @@ jobs:
       github.event_name == 'workflow_run' &&
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository != null &&
       github.event.workflow_run.head_repository.full_name == github.repository
     permissions:
       contents: read
@@ -315,21 +320,26 @@ jobs:
           app_id: ${{ secrets.JUSTICE_BOT_APP_ID }}
           private_key: ${{ secrets.JUSTICE_BOT_PRIVATE_KEY }}
 
-      # SECURITY: workflow_run does not directly expose the PR number.
-      # Resolve it from the head commit SHA via the GitHub API.
+      # SECURITY: workflow_run.pull_requests may be empty when CI was triggered
+      # by push (not pull_request). Use commits API for reliable PR resolution.
       - name: 🔍 Find associated PR
         id: find-pr
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls" \
-            --jq '.[0].number // empty' 2>/dev/null || true)
+          PR_DATA=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls" \
+            2>/dev/null || echo "[]")
+          PR_COUNT=$(echo "$PR_DATA" | jq 'length')
 
-          if [ -z "$PR_NUMBER" ]; then
+          if [ "$PR_COUNT" -eq 0 ]; then
             echo "No open PR found for SHA ${HEAD_SHA}. Skipping."
             echo "found=false" >> "$GITHUB_OUTPUT"
+          elif [ "$PR_COUNT" -gt 1 ]; then
+            echo "::warning::Multiple PRs ($PR_COUNT) found for SHA ${HEAD_SHA}. Skipping auto-approval."
+            echo "found=false" >> "$GITHUB_OUTPUT"
           else
+            PR_NUMBER=$(echo "$PR_DATA" | jq -r '.[0].number')
             echo "Found PR #${PR_NUMBER}"
             echo "found=true" >> "$GITHUB_OUTPUT"
             echo "number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
@@ -390,6 +400,10 @@ jobs:
         env:
           USER_MESSAGE: ${{ github.event.inputs.message }}
         run: |
+          # Sanitize: truncate to 500 chars, strip control characters except newlines
+          USER_MESSAGE=$(printf '%s' "$USER_MESSAGE" | head -c 500 | tr -d '\000-\010\013\014\016-\037')
+          export USER_MESSAGE
+
           mkdir -p docs
           cat > docs/JUSTICE.md << 'EOF'
           # 👮 Justice's Code Review
