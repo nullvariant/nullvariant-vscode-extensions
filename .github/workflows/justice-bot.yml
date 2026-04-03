@@ -11,6 +11,9 @@ on:
     paths:
       - '**/package.json'
       - '**/package-lock.json'
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
   workflow_dispatch:
     inputs:
       message:
@@ -262,6 +265,18 @@ jobs:
             echo "Posted new Justice verdict comment."
           fi
 
+      - name: ✅ Approve PR
+        if: >
+          steps.verify.outputs.is_bot == 'true' &&
+          steps.analyze.outputs.should_comment == 'true' &&
+          (steps.analyze.outputs.verdict == 'approve' || steps.analyze.outputs.verdict == 'security')
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr review "$PR_NUMBER" --approve \
+            --body "⚖️ Justice approves this dependency update. All safety checks passed."
+
       - name: ⚖️ Verdict delivered
         if: steps.verify.outputs.is_bot == 'true' && steps.analyze.outputs.should_comment == 'true'
         env:
@@ -272,6 +287,68 @@ jobs:
           if [ "$VERDICT" = "block" ]; then
             echo "::error::Justice has blocked this PR. See the review comment for details."
             exit 1
+          fi
+
+  ci-gated-approve:
+    name: 👮 CI-Gated Approval
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+        with:
+          egress-policy: audit
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
+        with:
+          app_id: ${{ secrets.JUSTICE_BOT_APP_ID }}
+          private_key: ${{ secrets.JUSTICE_BOT_PRIVATE_KEY }}
+
+      # SECURITY: workflow_run does not directly expose the PR number.
+      # Resolve it from the head commit SHA via the GitHub API.
+      - name: 🔍 Find associated PR
+        id: find-pr
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls" \
+            --jq '.[0].number // empty' 2>/dev/null || true)
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No open PR found for SHA ${HEAD_SHA}. Skipping."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found PR #${PR_NUMBER}"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ✅ Approve PR
+        if: steps.find-pr.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.number }}
+        run: |
+          # Avoid duplicate approvals
+          EXISTING=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+            --jq '[.[] | select(.user.login == "nullvariant-justice[bot]" and .state == "APPROVED")] | length' \
+            2>/dev/null || echo "0")
+
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "PR already approved by Justice. Skipping."
+          else
+            gh pr review "$PR_NUMBER" --approve \
+              --body "⚖️ Justice grants passage. CI checks passed — this code meets the garden's standards."
           fi
 
   justice-commit:
