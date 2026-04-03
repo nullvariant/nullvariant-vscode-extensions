@@ -11,6 +11,9 @@ on:
     paths:
       - '**/package.json'
       - '**/package-lock.json'
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
   workflow_dispatch:
     inputs:
       message:
@@ -262,6 +265,22 @@ jobs:
             echo "Posted new Justice verdict comment."
           fi
 
+      # NOTE: ci-gated-approve also approves after CI passes. This early approval
+      # allows dependency bot PRs to merge without waiting for full CI when the
+      # safety verdict is clear. ci-gated-approve has a duplicate check to skip
+      # if Justice has already approved.
+      - name: ✅ Approve PR
+        if: >
+          steps.verify.outputs.is_bot == 'true' &&
+          steps.analyze.outputs.should_comment == 'true' &&
+          (steps.analyze.outputs.verdict == 'approve' || steps.analyze.outputs.verdict == 'security')
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr review "$PR_NUMBER" --approve \
+            --body "⚖️ Justice approves this dependency update. All safety checks passed."
+
       - name: ⚖️ Verdict delivered
         if: steps.verify.outputs.is_bot == 'true' && steps.analyze.outputs.should_comment == 'true'
         env:
@@ -272,6 +291,76 @@ jobs:
           if [ "$VERDICT" = "block" ]; then
             echo "::error::Justice has blocked this PR. See the review comment for details."
             exit 1
+          fi
+
+  ci-gated-approve:
+    name: 👮 CI-Gated Approval
+    runs-on: ubuntu-latest
+    # SECURITY: Reject fork PRs — only same-repo branches are trusted for auto-approval.
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository != null &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+        with:
+          egress-policy: audit
+
+      - name: 🔑 Get App Token
+        id: app-token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
+        with:
+          app_id: ${{ secrets.JUSTICE_BOT_APP_ID }}
+          private_key: ${{ secrets.JUSTICE_BOT_PRIVATE_KEY }}
+
+      # SECURITY: workflow_run.pull_requests may be empty when CI was triggered
+      # by push (not pull_request). Use commits API for reliable PR resolution.
+      - name: 🔍 Find associated PR
+        id: find-pr
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          PR_DATA=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls" \
+            2>/dev/null || echo "[]")
+          PR_COUNT=$(echo "$PR_DATA" | jq 'length')
+
+          if [ "$PR_COUNT" -eq 0 ]; then
+            echo "No open PR found for SHA ${HEAD_SHA}. Skipping."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          elif [ "$PR_COUNT" -gt 1 ]; then
+            echo "::warning::Multiple PRs ($PR_COUNT) found for SHA ${HEAD_SHA}. Skipping auto-approval."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            PR_NUMBER=$(echo "$PR_DATA" | jq -r '.[0].number')
+            echo "Found PR #${PR_NUMBER}"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ✅ Approve PR
+        if: steps.find-pr.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.find-pr.outputs.number }}
+        run: |
+          # Avoid duplicate approvals
+          EXISTING=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+            --jq '[.[] | select(.user.login == "nullvariant-justice[bot]" and .state == "APPROVED")] | length' \
+            2>/dev/null || echo "0")
+
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "PR already approved by Justice. Skipping."
+          else
+            gh pr review "$PR_NUMBER" --approve \
+              --body "⚖️ Justice grants passage. CI checks passed — this code meets the garden's standards."
           fi
 
   justice-commit:
@@ -311,6 +400,10 @@ jobs:
         env:
           USER_MESSAGE: ${{ github.event.inputs.message }}
         run: |
+          # Sanitize: truncate to 500 chars, strip control characters except newlines
+          USER_MESSAGE=$(printf '%s' "$USER_MESSAGE" | head -c 500 | tr -d '\000-\010\013\014\016-\037')
+          export USER_MESSAGE
+
           mkdir -p docs
           cat > docs/JUSTICE.md << 'EOF'
           # 👮 Justice's Code Review
