@@ -18,6 +18,7 @@ import { securityLogger } from '../security/securityLogger';
 import { getUserSafeMessage } from '../core/errors';
 import { IdentityStatusBar } from '../ui/identityStatusBar';
 import { checkSync } from '../core/syncChecker';
+import { extensionLogger } from '../logging/extensionLogger';
 
 /**
  * Switch to a specific identity
@@ -65,14 +66,14 @@ export async function switchToIdentity(
         statusBar.setSyncState(syncResult);
       } catch {
         // Non-fatal: sync check failure should not disrupt the switch
-        console.debug('[Git ID Switcher] Post-switch sync check failed silently');
+        extensionLogger.debug('Post-switch sync check failed silently');
       }
     }
 
     // Show notification
     showIdentitySwitchedNotification(identity);
 
-    console.log(`[Git ID Switcher] Switched to identity: ${identity.id}`);
+    extensionLogger.info(`Switched to identity: ${identity.id}`);
   } catch (error) {
     // SECURITY: Use getUserSafeMessage to prevent information leakage in console
     const safeMessage = getUserSafeMessage(error);

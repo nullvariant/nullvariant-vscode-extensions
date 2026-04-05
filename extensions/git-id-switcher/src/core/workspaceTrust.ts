@@ -14,6 +14,7 @@
 // Type-only import (stripped at compile time, no runtime dependency)
 import type * as vscodeTypes from 'vscode';
 import { getVSCode, getWorkspace, getWindow } from './vscodeLoader';
+import { extensionLogger } from '../logging/extensionLogger';
 
 /**
  * State tracking for workspace trust initialization
@@ -48,7 +49,7 @@ export function showUntrustedWorkspaceWarning(): void {
   const vscode = getVSCode();
   const window = getWindow();
   if (!window) {
-    console.log('[Git ID Switcher] Workspace is not trusted. VS Code window API unavailable.');
+    extensionLogger.info('Workspace is not trusted. VS Code window API unavailable.');
     return;
   }
 
@@ -94,7 +95,7 @@ export function initializeWorkspaceTrust(
 
   // Workspace is not trusted - show warning and set up trust handler
   showUntrustedWorkspaceWarning();
-  console.log('[Git ID Switcher] Workspace is not trusted. Waiting for trust to be granted...');
+  extensionLogger.info('Workspace is not trusted. Waiting for trust to be granted...');
 
   const workspace = getWorkspace();
   if (!workspace) {
@@ -104,7 +105,7 @@ export function initializeWorkspaceTrust(
 
   // Register handler for when trust is granted
   trustGrantedHandler = workspace.onDidGrantWorkspaceTrust(async () => {
-    console.log('[Git ID Switcher] Workspace trust granted. Initializing...');
+    extensionLogger.info('Workspace trust granted. Initializing...');
 
     // Clean up the handler since trust can only be granted once per session
     if (trustGrantedHandler) {

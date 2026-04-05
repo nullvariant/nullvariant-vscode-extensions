@@ -14,6 +14,7 @@ import { Identity, getIdentityById } from '../identity/identity';
 import { detectCurrentIdentity, isGitRepository } from '../core/gitConfig';
 import { detectCurrentIdentityFromSsh } from '../ssh/sshAgent';
 import { IdentityStatusBar } from '../ui/identityStatusBar';
+import { extensionLogger } from '../logging/extensionLogger';
 
 /**
  * Result type for identity detection operations
@@ -46,14 +47,14 @@ export async function tryDetectFromGit(token: vscode.CancellationToken): Promise
   }
 
   if (token.isCancellationRequested) {
-    console.debug('[Git ID Switcher] Initialization cancelled after isGitRepository');
+    extensionLogger.debug('Initialization cancelled after isGitRepository');
     return 'cancelled';
   }
 
   const detectedIdentity = await detectCurrentIdentity(token);
 
   if (token.isCancellationRequested) {
-    console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentity');
+    extensionLogger.debug('Initialization cancelled after detectCurrentIdentity');
     return 'cancelled';
   }
 
@@ -71,7 +72,7 @@ export async function tryDetectFromSsh(token: vscode.CancellationToken): Promise
   const sshIdentity = await detectCurrentIdentityFromSsh(token);
 
   if (token.isCancellationRequested) {
-    console.debug('[Git ID Switcher] Initialization cancelled after detectCurrentIdentityFromSsh');
+    extensionLogger.debug('Initialization cancelled after detectCurrentIdentityFromSsh');
     return 'cancelled';
   }
 

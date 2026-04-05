@@ -419,10 +419,10 @@ async function testCallbackErrorHandling(): Promise<void> {
 
   _resetForTesting();
   let trustGrantedHandler: (() => void) | undefined;
-  const consoleLogs: string[] = [];
+  const consoleErrors: string[] = [];
   const originalError = console.error;
   console.error = (...args: unknown[]) => {
-    consoleLogs.push(args.map(String).join(' '));
+    consoleErrors.push(args.map(String).join(' '));
   };
 
   const mockVSCode = {
@@ -456,7 +456,7 @@ async function testCallbackErrorHandling(): Promise<void> {
   console.error = originalError;
 
   // Check that error was logged
-  const hasErrorLog = consoleLogs.some(log =>
+  const hasErrorLog = consoleErrors.some(log =>
     log.includes('Failed to initialize') || log.includes('Test callback error')
   );
   assert.ok(hasErrorLog, 'Error should be logged when callback fails');
@@ -609,22 +609,8 @@ function testShowUntrustedWorkspaceWarningNoWindow(): void {
   // Reset cache to ensure VS Code API is not available
   _resetCache();
 
-  const consoleLogs: string[] = [];
-  const originalLog = console.log;
-  console.log = (...args: unknown[]) => {
-    consoleLogs.push(args.map(String).join(' '));
-  };
-
-  // Should not throw and should log to console
+  // Should not throw when window API is unavailable (logs go to OutputChannel, which is also unavailable)
   showUntrustedWorkspaceWarning();
-
-  console.log = originalLog;
-
-  // Check that fallback log was written
-  const hasLog = consoleLogs.some(log =>
-    log.includes('VS Code window API unavailable')
-  );
-  assert.ok(hasLog, 'Should log fallback message when window API is unavailable');
 
   console.log('✅ showUntrustedWorkspaceWarning without window API passed!');
 }
@@ -639,20 +625,12 @@ function testInitializeWorkspaceTrustNoWorkspace(): void {
   // Reset cache to ensure VS Code API is not available
   _resetCache();
 
-  const consoleLogs: string[] = [];
-  const originalLog = console.log;
-  console.log = (...args: unknown[]) => {
-    consoleLogs.push(args.map(String).join(' '));
-  };
-
   const mockContext = createMockContext();
   let callbackCalled = false;
 
   const result = initializeWorkspaceTrust(mockContext, async () => {
     callbackCalled = true;
   });
-
-  console.log = originalLog;
 
   assert.strictEqual(result, false, 'Should return false when VS Code API is unavailable');
   assert.strictEqual(callbackCalled, false, 'Callback should not be called');
