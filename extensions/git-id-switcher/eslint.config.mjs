@@ -126,6 +126,9 @@ export default [
     files: ["**/*.test.ts"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
       "no-magic-numbers": "off",
       "no-restricted-syntax": "off",
@@ -188,6 +191,12 @@ export default [
     rules: {
       "no-magic-numbers": "off",
       "no-restricted-syntax": "off",
+    },
+  },
+  {
+    files: ["**/test/run*.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
   {

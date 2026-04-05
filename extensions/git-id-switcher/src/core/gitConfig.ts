@@ -24,6 +24,7 @@ import {
   getSubmoduleDepth,
 } from './submodule';
 import { createValidationError, createConfigError } from './errors';
+import { extensionLogger } from '../logging/extensionLogger';
 
 /**
  * Get localized string using VS Code l10n API
@@ -258,9 +259,7 @@ async function propagateToSubmodules(
   }
 
   if (result.success > 0) {
-    console.log(
-      `Git ID Switcher: Configured ${result.success} submodule(s)`
-    );
+    extensionLogger.info(`Configured ${result.success} submodule(s)`);
   }
 }
 

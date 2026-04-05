@@ -10,6 +10,7 @@ import { runSshKeyFormatTests } from './sshKeyFormat.test';
 import { runValidatorsCommonTests } from './validatorsCommon.test';
 import { runVSCodeLoaderTests } from './vscodeLoader.test';
 import { runFileLogWriterTests } from './fileLogWriter.test';
+import { runExtensionLoggerTests } from './extensionLogger.test';
 import { runCombinedFlagValidationTests } from './combinedFlagValidation.test';
 import { runConfigChangeDetectorTests } from './configChangeDetector.test';
 import { runDocumentationTests } from './documentation.test';
@@ -45,6 +46,9 @@ async function main(): Promise<void> {
 
     // Run FileLogWriter tests
     await runFileLogWriterTests();
+
+    // Run extension logger tests
+    runExtensionLoggerTests();
 
     // Run combined flag validation tests
     await runCombinedFlagValidationTests();

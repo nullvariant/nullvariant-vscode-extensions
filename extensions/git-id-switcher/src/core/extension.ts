@@ -14,6 +14,7 @@ import { initializeWorkspaceTrust } from './workspaceTrust';
 import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetectedIdentity } from '../services/detection';
 import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotification, handleDeleteIdentity, resolveSyncMismatchCommand } from '../commands/handlers';
 import { checkSync } from './syncChecker';
+import { extensionLogger } from '../logging/extensionLogger';
 
 // Global state
 let statusBar: IdentityStatusBar;
@@ -32,7 +33,7 @@ const setCurrentIdentity = (identity: Identity): void => { currentIdentity = ide
  * Extension activation
  */
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  console.log('[Git ID Switcher] Activating...');
+  extensionLogger.info('Activating...');
 
   // SECURITY: Log files written only to extension's secure storage
   securityLogger.initializeWithContext(context.globalStorageUri.fsPath);
@@ -72,11 +73,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     await performTrustedInitialization(context);
   } else {
     statusBar.setNoIdentity();
-    console.log('[Git ID Switcher] Activated in restricted mode (untrusted workspace)');
+    extensionLogger.info('Activated in restricted mode (untrusted workspace)');
     return;
   }
 
-  console.log('[Git ID Switcher] Activated');
+  extensionLogger.info('Activated');
 }
 
 /**
@@ -104,7 +105,7 @@ async function performSyncCheck(): Promise<void> {
     statusBar.setSyncState(result);
   } catch {
     // Non-fatal: sync check failure should not disrupt the extension
-    console.debug('[Git ID Switcher] Sync check failed silently');
+    extensionLogger.debug('Sync check failed silently');
   }
 }
 
@@ -120,7 +121,7 @@ function debouncedSyncCheck(): void {
     syncCheckDebounceTimer = undefined;
     performSyncCheck().catch(error => {
       const safeMessage = getUserSafeMessage(error);
-      console.debug('[Git ID Switcher] Debounced sync check failed:', safeMessage);
+      extensionLogger.debug(`Debounced sync check failed: ${safeMessage}`);
     });
   }, SYNC_CHECK_DEBOUNCE_MS);
 }
@@ -212,7 +213,8 @@ export function deactivate(): void {
   }
   securityLogger.logDeactivation();
   securityLogger.dispose();
-  console.log('[Git ID Switcher] Deactivated');
+  extensionLogger.info('Deactivated');
+  extensionLogger.dispose();
 }
 
 /**
@@ -266,7 +268,7 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     statusBar.setNoIdentity();
   } catch (error) {
     if (token.isCancellationRequested) {
-      console.debug('[Git ID Switcher] Initialization cancelled (caught in error handler)');
+      extensionLogger.debug('Initialization cancelled (caught in error handler)');
       return;
     }
 
