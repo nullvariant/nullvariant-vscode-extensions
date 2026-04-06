@@ -92,6 +92,34 @@ function testSecurityErrorConstructor(): void {
     assert.strictEqual(error.getInternalDetails().field, 'original');
   }
 
+  // autoLog defaults to true — SecurityError should be created without throwing
+  // (logError() is called internally; verify it does not throw)
+  {
+    const error = new SecurityError({
+      category: ErrorCategory.VALIDATION,
+      userMessage: 'Auto-logged error',
+      internalDetails: {
+        field: 'testField',
+        value: 'testValue',
+      },
+    });
+
+    assert.strictEqual(error.category, ErrorCategory.VALIDATION);
+    assert.strictEqual(error.userMessage, 'Auto-logged error');
+    assert.strictEqual(error.getInternalDetails().field, 'testField');
+  }
+
+  // autoLog defaults to true with SECURITY category
+  {
+    const error = new SecurityError({
+      category: ErrorCategory.SECURITY,
+      userMessage: 'Security auto-logged',
+    });
+
+    assert.strictEqual(error.category, ErrorCategory.SECURITY);
+    assert.strictEqual(error.userMessage, 'Security auto-logged');
+  }
+
   console.log('✅ SecurityError constructor tests passed!');
 }
 
@@ -127,10 +155,11 @@ function testGetSafeStack(): void {
     });
 
     const safeStack = error.getSafeStack();
-    if (safeStack) {
-      // Should not contain /Users/username pattern (if macOS)
-      assert.ok(!/\/Users\/[a-zA-Z0-9_-]+\//.test(safeStack));
-    }
+    // V8 runtime must provide stack traces
+    assert.ok(safeStack !== undefined, 'getSafeStack() must return a string on V8');
+    assert.ok(safeStack.length > 0, 'getSafeStack() must not be empty');
+    // Should not contain /Users/username pattern (if macOS)
+    assert.ok(!/\/Users\/[a-zA-Z0-9_-]+\//.test(safeStack));
   }
 
   // error.stack should return sanitized stack (getter delegates to getSafeStack)
@@ -142,10 +171,11 @@ function testGetSafeStack(): void {
     });
 
     const stack = error.stack;
-    if (stack) {
-      assert.ok(!/\/Users\/[a-zA-Z0-9_-]+\//.test(stack));
-      assert.strictEqual(stack, error.getSafeStack());
-    }
+    // V8 runtime must provide stack traces via getter
+    assert.ok(stack !== undefined, 'error.stack must return a string on V8');
+    assert.ok(stack.length > 0, 'error.stack must not be empty');
+    assert.ok(!/\/Users\/[a-zA-Z0-9_-]+\//.test(stack));
+    assert.strictEqual(stack, error.getSafeStack());
   }
 
   // error.stack access must not cause infinite recursion
@@ -163,7 +193,9 @@ function testGetSafeStack(): void {
     assert.doesNotThrow(() => {
       stack = error.stack;
     });
-    assert.ok(typeof stack === 'string');
+    assert.ok(typeof stack === 'string', 'stack must be a string');
+    assert.ok(stack.length > 0, 'stack must not be empty');
+    assert.strictEqual(stack, error.getSafeStack(), 'stack getter must delegate to getSafeStack()');
   }
 
   console.log('✅ getSafeStack tests passed!');
@@ -229,16 +261,57 @@ function testFactoryFunctions(): void {
     assert.notStrictEqual(wrapped?.stack, originalError.stack);
   }
 
-  // wrapError should wrap non-Error values
+  // wrapError should wrap non-Error values: string
   {
-    const error = wrapError('string error', 'Wrapped error');
+    const error = wrapError('string error', 'Wrapped string');
 
     assert.strictEqual(error.category, ErrorCategory.SYSTEM);
-    assert.strictEqual(error.userMessage, 'Wrapped error');
+    assert.strictEqual(error.userMessage, 'Wrapped string');
     assert.ok(error.getInternalDetails().originalError instanceof Error);
     assert.strictEqual(
       error.getInternalDetails().originalError?.message,
       'string error'
+    );
+  }
+
+  // wrapError should wrap non-Error values: null
+  {
+    const error = wrapError(null, 'Wrapped null');
+
+    assert.strictEqual(error.category, ErrorCategory.SYSTEM);
+    assert.strictEqual(error.userMessage, 'Wrapped null');
+    assert.ok(error.getInternalDetails().originalError instanceof Error);
+    assert.strictEqual(
+      error.getInternalDetails().originalError?.message,
+      'null',
+    );
+  }
+
+  // wrapError should wrap non-Error values: undefined
+  {
+    const error = wrapError(undefined, 'Wrapped undefined');
+
+    assert.strictEqual(error.category, ErrorCategory.SYSTEM);
+    assert.strictEqual(error.userMessage, 'Wrapped undefined');
+    assert.ok(error.getInternalDetails().originalError instanceof Error);
+    assert.strictEqual(
+      error.getInternalDetails().originalError?.message,
+      'undefined',
+    );
+  }
+
+  // wrapError should wrap non-Error values: object
+  {
+    const obj = { code: 'ERR_TIMEOUT', detail: 'connection lost' };
+    const error = wrapError(obj, 'Wrapped object');
+
+    assert.strictEqual(error.category, ErrorCategory.SYSTEM);
+    assert.strictEqual(error.userMessage, 'Wrapped object');
+    assert.ok(error.getInternalDetails().originalError instanceof Error);
+    // String(obj) produces "[object Object]"
+    assert.strictEqual(
+      error.getInternalDetails().originalError?.message,
+      String(obj),
     );
   }
 
@@ -450,7 +523,7 @@ export async function runErrorTests(): Promise<void> {
 
     console.log('\n✅ All error tests passed!\n');
   } catch (error) {
-    console.error('\n❌ Test failed:', error);
+    console.error('\n❌ Test failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }
