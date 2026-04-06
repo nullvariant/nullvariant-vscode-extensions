@@ -17,9 +17,10 @@ import * as os from 'node:os';
 import {
   validatePathSecurity,
   isPathArgument,
-  isSecureLogPath,
 } from '../security/pathValidator';
+import { isSecureLogPath } from '../security/secureLogPath';
 import { isCommandAllowed } from '../security/commandAllowlist';
+import { isPathWithinDirectory } from '../security/pathUtils';
 
 /**
  * Normalize path to use forward slashes (cross-platform compatibility).
@@ -967,6 +968,83 @@ function testSecureLogPathBasicValidation(): void {
 }
 
 /**
+ * Test isPathWithinDirectory with trailing separator on baseDir
+ *
+ * Ensures the ternary branch where baseDir already ends with path.sep is covered.
+ */
+function testIsPathWithinDirectoryTrailingSep(): void {
+  console.log('Testing isPathWithinDirectory with trailing separator...');
+
+  const sep = path.sep;
+  const base = `${sep}home${sep}user`;
+  const baseTrailing = `${base}${sep}`;
+  const child = `${base}${sep}logs${sep}file.log`;
+  const outside = `${sep}etc${sep}passwd`;
+
+  // baseDir with trailing separator
+  assert.strictEqual(
+    isPathWithinDirectory(child, baseTrailing),
+    true,
+    'Child path under base with trailing sep should be within directory'
+  );
+  assert.strictEqual(
+    isPathWithinDirectory(base, baseTrailing),
+    false,
+    'Exact path without trailing sep should not match base with trailing sep'
+  );
+  assert.strictEqual(
+    isPathWithinDirectory(baseTrailing, baseTrailing),
+    true,
+    'Exact match with trailing sep should be within directory'
+  );
+  // baseDir without trailing separator (control)
+  assert.strictEqual(
+    isPathWithinDirectory(child, base),
+    true,
+    'Child path under base without trailing sep should be within directory'
+  );
+  assert.strictEqual(
+    isPathWithinDirectory(outside, base),
+    false,
+    'Path outside base should not be within directory'
+  );
+
+  console.log('✅ isPathWithinDirectory trailing separator handled!');
+}
+
+/**
+ * Test isSecureLogPath when filePath exactly matches allowedBaseDir
+ *
+ * Boundary case: isPathWithinDirectory must accept exact match
+ * (normalizedPath === normalizedBase branch).
+ *
+ * Note: Skipped on Windows because isSecureLogPath rejects Windows drive letters
+ * (C:/) which are present in Windows temp directory paths.
+ */
+function testSecureLogPathExactMatch(): void {
+  console.log('Testing isSecureLogPath with exact base directory match...');
+
+  if (process.platform === 'win32') {
+    console.log('  Skipped on Windows (drive letter rejection takes precedence)');
+    console.log('✅ Exact match handled!');
+    return;
+  }
+
+  const baseTempDir = fs.realpathSync(os.tmpdir());
+  const tempDir = fs.mkdtempSync(path.join(baseTempDir, 'securelogpath-exact-test-'));
+  try {
+    const normalizedDir = toForwardSlashes(tempDir);
+    const result = isSecureLogPath(normalizedDir, normalizedDir);
+    assert.strictEqual(result.valid, true, 'Exact match with base dir should be allowed');
+    assert.ok(result.resolvedPath, 'Should have resolved path');
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+
+  console.log('✅ Exact match handled!');
+}
+
+/**
  * Test isSecureLogPath with invalid allowed base directory
  *
  * Note: Skipped on Windows because isSecureLogPath rejects Windows drive letters
@@ -1042,6 +1120,8 @@ export async function runPathSecurityTests(): Promise<void> {
     testSecureLogPathRejectsFileSymlink();
     testSecureLogPathRejectsTraversal();
     testSecureLogPathBasicValidation();
+    testIsPathWithinDirectoryTrailingSep();
+    testSecureLogPathExactMatch();
     testSecureLogPathInvalidBaseDir();
 
     console.log('\n✅ All path security tests passed!\n');

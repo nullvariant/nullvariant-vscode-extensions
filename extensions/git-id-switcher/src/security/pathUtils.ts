@@ -117,6 +117,22 @@ function validateSubmodulePathPreChecks(
 }
 
 /**
+ * Check if a path is within an allowed base directory.
+ *
+ * @remarks
+ * **Naming convention**: Named with `is` prefix because this is a pure boolean
+ * predicate with no side effects.
+ *
+ * @param targetPath - The path to check (should be normalized)
+ * @param baseDir - The allowed base directory (should be normalized)
+ * @returns true if targetPath is under baseDir or is exactly baseDir
+ */
+export function isPathWithinDirectory(targetPath: string, baseDir: string): boolean {
+  const baseWithSep = baseDir.endsWith(path.sep) ? baseDir : baseDir + path.sep;
+  return targetPath === baseDir || targetPath.startsWith(baseWithSep);
+}
+
+/**
  * Assert that normalized path is within workspace boundary.
  *
  * @remarks
@@ -131,11 +147,7 @@ function assertWithinWorkspaceBoundary(
   workspacePath: string,
   originalPath: string
 ): NormalizedPathResult | null {
-  const workspaceWithSep = workspacePath + path.sep;
-  if (
-    !normalizedPath.startsWith(workspaceWithSep) &&
-    normalizedPath !== workspacePath
-  ) {
+  if (!isPathWithinDirectory(normalizedPath, workspacePath)) {
     return {
       valid: false,
       originalPath,
