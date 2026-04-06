@@ -15,7 +15,8 @@ import { sanitizePath } from './pathSanitizer';
 import { sanitizeValue, sanitizeDetails, type SanitizeOptions } from './sensitiveDataDetector';
 import { expandTilde } from './pathUtils';
 import * as path from 'node:path';
-import { validatePathSecurity, isSecureLogPath } from './pathValidator';
+import { validatePathSecurity } from './pathValidator';
+import { isSecureLogPath } from './secureLogPath';
 import {
   LogLevel,
   type StructuredLog,

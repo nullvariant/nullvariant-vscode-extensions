@@ -381,6 +381,3 @@ export function isPathArgument(arg: string): boolean {
     /^[/\\]{2}/.test(arg)
   );
 }
-
-// Re-export from secureLogPath.ts (separated for SRP)
-export { isSecureLogPath, type SecureLogPathResult } from './secureLogPath';

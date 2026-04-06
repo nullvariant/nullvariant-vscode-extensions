@@ -17,8 +17,8 @@ import * as os from 'node:os';
 import {
   validatePathSecurity,
   isPathArgument,
-  isSecureLogPath,
 } from '../security/pathValidator';
+import { isSecureLogPath } from '../security/secureLogPath';
 import { isCommandAllowed } from '../security/commandAllowlist';
 import { isPathWithinDirectory } from '../security/pathUtils';
 
