@@ -967,6 +967,38 @@ function testSecureLogPathBasicValidation(): void {
 }
 
 /**
+ * Test isSecureLogPath when filePath exactly matches allowedBaseDir
+ *
+ * Boundary case: isPathWithinDirectory must accept exact match
+ * (normalizedPath === normalizedBase branch).
+ *
+ * Note: Skipped on Windows because isSecureLogPath rejects Windows drive letters
+ * (C:/) which are present in Windows temp directory paths.
+ */
+function testSecureLogPathExactMatch(): void {
+  console.log('Testing isSecureLogPath with exact base directory match...');
+
+  if (process.platform === 'win32') {
+    console.log('  Skipped on Windows (drive letter rejection takes precedence)');
+    console.log('✅ Exact match handled!');
+    return;
+  }
+
+  const baseTempDir = fs.realpathSync(os.tmpdir());
+  const tempDir = fs.mkdtempSync(path.join(baseTempDir, 'securelogpath-exact-test-'));
+  try {
+    const normalizedDir = toForwardSlashes(tempDir);
+    const result = isSecureLogPath(normalizedDir, normalizedDir);
+    assert.strictEqual(result.valid, true, 'Exact match with base dir should be allowed');
+    assert.ok(result.resolvedPath, 'Should have resolved path');
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+
+  console.log('✅ Exact match handled!');
+}
+
+/**
  * Test isSecureLogPath with invalid allowed base directory
  *
  * Note: Skipped on Windows because isSecureLogPath rejects Windows drive letters
@@ -1042,6 +1074,7 @@ export async function runPathSecurityTests(): Promise<void> {
     testSecureLogPathRejectsFileSymlink();
     testSecureLogPathRejectsTraversal();
     testSecureLogPathBasicValidation();
+    testSecureLogPathExactMatch();
     testSecureLogPathInvalidBaseDir();
 
     console.log('\n✅ All path security tests passed!\n');
