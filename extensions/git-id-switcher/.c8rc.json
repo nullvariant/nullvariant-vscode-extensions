@@ -9,5 +9,10 @@
     "out/identity/identity.js"
   ],
   "reporter": ["lcov", "text"],
+  "check-coverage": true,
+  "statements": 100,
+  "lines": 100,
+  "branches": 98,
+  "functions": 92,
   "all": false
 }

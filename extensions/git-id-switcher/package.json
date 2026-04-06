@@ -295,7 +295,7 @@
     "test:fast": "npm run compile && node out/test/runUnitTests.js",
     "test:security": "npm run compile && node out/test/runSecurityTests.js",
     "test:fuzz": "npm run compile && node out/test/runFuzzTests.js",
-    "test:coverage": "npm run compile && npx c8 --reporter=lcov --reporter=text node out/test/runTests.js",
+    "test:coverage": "npm run compile && npx c8 node out/test/runTests.js",
     "test:e2e": "npm run compile && vscode-test",
     "package": "vsce package --no-dependencies",
     "publish": "echo '❌ Do not use vsce publish directly. Push a tag instead: git tag git-id-switcher-vX.X.X && git push --tags' && exit 1",
