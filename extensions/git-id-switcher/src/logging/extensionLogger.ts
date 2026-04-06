@@ -32,6 +32,7 @@ export interface IExtensionLogger {
 class ExtensionLoggerImpl implements IExtensionLogger {
   private outputChannel: OutputChannel | null = null;
   private initialized = false;
+  private disposed = false;
 
   /**
    * Lazily create the OutputChannel on first use.
@@ -54,6 +55,7 @@ class ExtensionLoggerImpl implements IExtensionLogger {
    * Maps to OutputChannel.appendLine().
    */
   info(message: string): void {
+    if (this.disposed) return;
     this.ensureInitialized();
     this.outputChannel?.appendLine(`${PREFIX} ${message}`);
   }
@@ -63,18 +65,28 @@ class ExtensionLoggerImpl implements IExtensionLogger {
    * Maps to OutputChannel.appendLine() with [debug] prefix.
    */
   debug(message: string): void {
+    if (this.disposed) return;
     this.ensureInitialized();
     this.outputChannel?.appendLine(`${PREFIX} [debug] ${message}`);
   }
 
   dispose(): void {
+    this.disposed = true;
     if (this.outputChannel) {
       this.outputChannel.dispose();
       this.outputChannel = null;
     }
     this.initialized = false;
   }
+
+  /** @internal Test-only: reset all internal state so the singleton can be reused across tests */
+  _resetForTest(): void {
+    this.outputChannel?.dispose();
+    this.disposed = false;
+    this.initialized = false;
+    this.outputChannel = null;
+  }
 }
 
 /** Singleton instance */
-export const extensionLogger: IExtensionLogger = new ExtensionLoggerImpl();
+export const extensionLogger = new ExtensionLoggerImpl();
