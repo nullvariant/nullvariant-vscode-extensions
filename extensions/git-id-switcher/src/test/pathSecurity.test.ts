@@ -20,6 +20,7 @@ import {
   isSecureLogPath,
 } from '../security/pathValidator';
 import { isCommandAllowed } from '../security/commandAllowlist';
+import { isPathWithinDirectory } from '../security/pathUtils';
 
 /**
  * Normalize path to use forward slashes (cross-platform compatibility).
@@ -967,6 +968,45 @@ function testSecureLogPathBasicValidation(): void {
 }
 
 /**
+ * Test isPathWithinDirectory with trailing separator on baseDir
+ *
+ * Ensures the ternary branch where baseDir already ends with path.sep is covered.
+ */
+function testIsPathWithinDirectoryTrailingSep(): void {
+  console.log('Testing isPathWithinDirectory with trailing separator...');
+
+  // baseDir with trailing separator
+  assert.strictEqual(
+    isPathWithinDirectory('/home/user/logs/file.log', '/home/user/'),
+    true,
+    'Child path under base with trailing sep should be within directory'
+  );
+  assert.strictEqual(
+    isPathWithinDirectory('/home/user', '/home/user/'),
+    false,
+    'Exact path without trailing sep should not match base with trailing sep'
+  );
+  assert.strictEqual(
+    isPathWithinDirectory('/home/user/', '/home/user/'),
+    true,
+    'Exact match with trailing sep should be within directory'
+  );
+  // baseDir without trailing separator (control)
+  assert.strictEqual(
+    isPathWithinDirectory('/home/user/logs/file.log', '/home/user'),
+    true,
+    'Child path under base without trailing sep should be within directory'
+  );
+  assert.strictEqual(
+    isPathWithinDirectory('/etc/passwd', '/home/user'),
+    false,
+    'Path outside base should not be within directory'
+  );
+
+  console.log('✅ isPathWithinDirectory trailing separator handled!');
+}
+
+/**
  * Test isSecureLogPath when filePath exactly matches allowedBaseDir
  *
  * Boundary case: isPathWithinDirectory must accept exact match
@@ -1074,6 +1114,7 @@ export async function runPathSecurityTests(): Promise<void> {
     testSecureLogPathRejectsFileSymlink();
     testSecureLogPathRejectsTraversal();
     testSecureLogPathBasicValidation();
+    testIsPathWithinDirectoryTrailingSep();
     testSecureLogPathExactMatch();
     testSecureLogPathInvalidBaseDir();
 
