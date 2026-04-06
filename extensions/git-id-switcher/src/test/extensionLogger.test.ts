@@ -12,10 +12,11 @@ import { extensionLogger } from '../logging/extensionLogger';
 
 /**
  * Create a fresh extensionLogger instance for isolated testing.
- * The singleton is shared, so we use dispose() + _resetCache() to reset state.
+ * The singleton is shared, so we use _resetForTest() + _resetCache() to reset state.
+ * _resetForTest() clears disposed/initialized/outputChannel without setting disposed=true.
  */
 function resetLogger(): void {
-  extensionLogger.dispose();
+  extensionLogger._resetForTest();
   _resetCache();
 }
 
@@ -122,8 +123,9 @@ function testDispose(): void {
   resetLogger();
 
   let disposeCalled = false;
+  const appendedLines: string[] = [];
   const mockOutputChannel = {
-    appendLine: () => {},
+    appendLine: (line: string) => { appendedLines.push(line); },
     dispose: () => { disposeCalled = true; },
   };
 
@@ -136,14 +138,15 @@ function testDispose(): void {
 
   // Trigger initialization
   extensionLogger.info('init');
+  assert.strictEqual(appendedLines.length, 1, 'Should log before dispose');
 
   // Dispose should clean up OutputChannel
   extensionLogger.dispose();
   assert.ok(disposeCalled, 'Should dispose OutputChannel');
 
-  // After dispose + cache reset, no VS Code API available — logging is a no-op
-  _resetCache();
+  // After dispose, logging is a permanent no-op (disposed flag prevents re-initialization)
   extensionLogger.info('after dispose');
+  assert.strictEqual(appendedLines.length, 1, 'Should not log after dispose');
 
   resetLogger();
   console.log('✅ extensionLogger.dispose() passed!');
@@ -189,6 +192,116 @@ function testLazyInitialization(): void {
   console.log('✅ extensionLogger lazy initialization passed!');
 }
 
+/**
+ * Test that info() and debug() are permanent no-ops after dispose().
+ * Verifies that OutputChannel is not re-created after dispose.
+ */
+function testNoOpAfterDispose(): void {
+  console.log('Testing extensionLogger no-op after dispose()...');
+
+  resetLogger();
+
+  const appendedLines: string[] = [];
+  let createCallCount = 0;
+  const mockOutputChannel = {
+    appendLine: (line: string) => { appendedLines.push(line); },
+    dispose: () => {},
+  };
+
+  const mockVSCode = {
+    window: {
+      createOutputChannel: () => {
+        createCallCount++;
+        return mockOutputChannel;
+      },
+    },
+  };
+  _setMockVSCode(mockVSCode as never);
+
+  // Normal logging works before dispose
+  extensionLogger.info('before dispose');
+  assert.strictEqual(appendedLines.length, 1, 'Should log before dispose');
+  assert.strictEqual(createCallCount, 1, 'Should create OutputChannel once');
+
+  // Dispose the logger
+  extensionLogger.dispose();
+
+  // After dispose, logging should be a permanent no-op
+  extensionLogger.info('after dispose info');
+  extensionLogger.debug('after dispose debug');
+
+  assert.strictEqual(appendedLines.length, 1, 'Should not log after dispose');
+  assert.strictEqual(createCallCount, 1, 'Should not re-create OutputChannel after dispose');
+
+  resetLogger();
+  console.log('✅ extensionLogger no-op after dispose() passed!');
+}
+
+/**
+ * Test dispose() before any logging — should not throw, subsequent calls are no-ops
+ */
+function testDisposeBeforeLogging(): void {
+  console.log('Testing extensionLogger dispose before any logging...');
+
+  resetLogger();
+
+  let createCallCount = 0;
+  const mockVSCode = {
+    window: {
+      createOutputChannel: () => {
+        createCallCount++;
+        return { appendLine: () => {}, dispose: () => {} };
+      },
+    },
+  };
+  _setMockVSCode(mockVSCode as never);
+
+  // Dispose without ever logging — should not throw
+  extensionLogger.dispose();
+
+  // Subsequent logging should be a no-op
+  extensionLogger.info('after early dispose');
+  extensionLogger.debug('after early dispose debug');
+  assert.strictEqual(createCallCount, 0, 'Should not create OutputChannel after early dispose');
+
+  resetLogger();
+  console.log('✅ extensionLogger dispose before any logging passed!');
+}
+
+/**
+ * Test double dispose() — should not throw
+ */
+function testDoubleDispose(): void {
+  console.log('Testing extensionLogger double dispose()...');
+
+  resetLogger();
+
+  let disposeCallCount = 0;
+  const mockOutputChannel = {
+    appendLine: () => {},
+    dispose: () => { disposeCallCount++; },
+  };
+
+  const mockVSCode = {
+    window: {
+      createOutputChannel: () => mockOutputChannel,
+    },
+  };
+  _setMockVSCode(mockVSCode as never);
+
+  extensionLogger.info('init');
+
+  extensionLogger.dispose();
+  assert.strictEqual(disposeCallCount, 1, 'First dispose should call OutputChannel.dispose');
+
+  // Second dispose should not throw and should not call OutputChannel.dispose again
+  extensionLogger.dispose();
+  assert.strictEqual(disposeCallCount, 1, 'Second dispose should not call OutputChannel.dispose');
+
+  resetLogger();
+  console.log('✅ extensionLogger double dispose() passed!');
+}
+
 export function runExtensionLoggerTests(): void {
   console.log('\n--- Extension Logger Tests ---\n');
 
@@ -197,6 +310,9 @@ export function runExtensionLoggerTests(): void {
   testDebugWithMockVSCode();
   testDispose();
   testLazyInitialization();
+  testNoOpAfterDispose();
+  testDisposeBeforeLogging();
+  testDoubleDispose();
 
   console.log('\n✅ All Extension Logger tests passed!\n');
 }
