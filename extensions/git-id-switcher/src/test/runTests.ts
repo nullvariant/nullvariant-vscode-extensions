@@ -31,6 +31,7 @@ import { runDisplayLimitsTests } from './displayLimits.test';
 import { runSshAgentParsingTests } from './sshAgentParsing.test';
 import { runSyncCheckerTests } from './syncChecker.test';
 import { runErrorTests } from './errors.test';
+import { runValidationTypesTests } from './validation-types.test';
 import { runGetSafeStackTests } from './getSafeStack.test';
 import { runHtmlTemplatesTests } from './htmlTemplates.test';
 import { runMarkdownEscapeTests } from './markdownEscape.test';
@@ -119,8 +120,11 @@ async function main(): Promise<void> {
     // Run sync checker tests (profile vs git config comparison)
     await runSyncCheckerTests();
 
-    // Run error classes and validation types tests
+    // Run error classes tests
     await runErrorTests();
+
+    // Run validation-types tests (toFieldError)
+    await runValidationTypesTests();
 
     // Run getSafeStack cross-OS path sanitization tests
     await runGetSafeStackTests();
