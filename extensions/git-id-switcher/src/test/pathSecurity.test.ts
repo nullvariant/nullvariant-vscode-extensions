@@ -975,30 +975,36 @@ function testSecureLogPathBasicValidation(): void {
 function testIsPathWithinDirectoryTrailingSep(): void {
   console.log('Testing isPathWithinDirectory with trailing separator...');
 
+  const sep = path.sep;
+  const base = `${sep}home${sep}user`;
+  const baseTrailing = `${base}${sep}`;
+  const child = `${base}${sep}logs${sep}file.log`;
+  const outside = `${sep}etc${sep}passwd`;
+
   // baseDir with trailing separator
   assert.strictEqual(
-    isPathWithinDirectory('/home/user/logs/file.log', '/home/user/'),
+    isPathWithinDirectory(child, baseTrailing),
     true,
     'Child path under base with trailing sep should be within directory'
   );
   assert.strictEqual(
-    isPathWithinDirectory('/home/user', '/home/user/'),
+    isPathWithinDirectory(base, baseTrailing),
     false,
     'Exact path without trailing sep should not match base with trailing sep'
   );
   assert.strictEqual(
-    isPathWithinDirectory('/home/user/', '/home/user/'),
+    isPathWithinDirectory(baseTrailing, baseTrailing),
     true,
     'Exact match with trailing sep should be within directory'
   );
   // baseDir without trailing separator (control)
   assert.strictEqual(
-    isPathWithinDirectory('/home/user/logs/file.log', '/home/user'),
+    isPathWithinDirectory(child, base),
     true,
     'Child path under base without trailing sep should be within directory'
   );
   assert.strictEqual(
-    isPathWithinDirectory('/etc/passwd', '/home/user'),
+    isPathWithinDirectory(outside, base),
     false,
     'Path outside base should not be within directory'
   );
