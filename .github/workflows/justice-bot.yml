@@ -278,8 +278,9 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr review "$PR_NUMBER" --approve \
-            --body "⚖️ Justice approves this dependency update. All safety checks passed."
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+            -f event="APPROVE" \
+            -f body="⚖️ Justice approves this dependency update. All safety checks passed."
 
       - name: ⚖️ Verdict delivered
         if: steps.verify.outputs.is_bot == 'true' && steps.analyze.outputs.should_comment == 'true'
@@ -359,8 +360,9 @@ jobs:
           if [ "$EXISTING" -gt 0 ]; then
             echo "PR already approved by Justice. Skipping."
           else
-            gh pr review "$PR_NUMBER" --approve \
-              --body "⚖️ Justice grants passage. CI checks passed — this code meets the garden's standards."
+            gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+              -f event="APPROVE" \
+              -f body="⚖️ Justice grants passage. CI checks passed — this code meets the garden's standards."
           fi
 
   justice-commit:
