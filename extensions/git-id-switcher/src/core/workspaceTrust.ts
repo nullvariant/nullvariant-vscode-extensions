@@ -14,6 +14,7 @@
 // Type-only import (stripped at compile time, no runtime dependency)
 import type * as vscodeTypes from 'vscode';
 import { getVSCode, getWorkspace, getWindow } from './vscodeLoader';
+import { getUserSafeMessage } from './errors';
 import { extensionLogger } from '../logging/extensionLogger';
 
 /**
@@ -117,7 +118,7 @@ export function initializeWorkspaceTrust(
     try {
       await onTrustGranted();
     } catch (error) {
-      console.error('[Git ID Switcher] Failed to initialize after trust granted:', error);
+      extensionLogger.error(`Failed to initialize after trust granted: ${getUserSafeMessage(error)}`);
     }
   });
 
