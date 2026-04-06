@@ -25,6 +25,8 @@ const PREFIX = '[Git ID Switcher]';
  */
 export interface IExtensionLogger {
   info(message: string): void;
+  warn(message: string): void;
+  error(message: string): void;
   debug(message: string): void;
   dispose(): void;
 }
@@ -58,6 +60,26 @@ class ExtensionLoggerImpl implements IExtensionLogger {
     if (this.disposed) return;
     this.ensureInitialized();
     this.outputChannel?.appendLine(`${PREFIX} ${message}`);
+  }
+
+  /**
+   * Log a warning message (non-fatal issues that deserve attention).
+   * Maps to OutputChannel.appendLine() with [warn] prefix.
+   */
+  warn(message: string): void {
+    if (this.disposed) return;
+    this.ensureInitialized();
+    this.outputChannel?.appendLine(`${PREFIX} [warn] ${message}`);
+  }
+
+  /**
+   * Log an error message (failures that affect functionality).
+   * Maps to OutputChannel.appendLine() with [error] prefix.
+   */
+  error(message: string): void {
+    if (this.disposed) return;
+    this.ensureInitialized();
+    this.outputChannel?.appendLine(`${PREFIX} [error] ${message}`);
   }
 
   /**

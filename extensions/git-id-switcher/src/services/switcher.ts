@@ -77,7 +77,7 @@ export async function switchToIdentity(
   } catch (error) {
     // SECURITY: Use getUserSafeMessage to prevent information leakage in console
     const safeMessage = getUserSafeMessage(error);
-    console.error(`[Git ID Switcher] Failed to switch identity: ${safeMessage}`);
+    extensionLogger.error(`Failed to switch identity: ${safeMessage}`);
 
     // Revert status bar
     const currentIdentity = getCurrentIdentity();

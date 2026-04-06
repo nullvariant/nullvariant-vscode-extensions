@@ -30,6 +30,8 @@ function testLogWithoutVSCode(): void {
 
   // Should not throw when VS Code API is unavailable
   extensionLogger.info('test info message');
+  extensionLogger.warn('test warn message');
+  extensionLogger.error('test error message');
   extensionLogger.debug('test debug message');
 
   resetLogger();
@@ -60,17 +62,10 @@ function testInfoWithMockVSCode(): void {
   extensionLogger.info('Activating...');
 
   assert.strictEqual(appendedLines.length, 1, 'Should have one log entry');
-  assert.ok(
-    appendedLines[0].includes('[Git ID Switcher]'),
-    'Should include extension prefix'
-  );
-  assert.ok(
-    appendedLines[0].includes('Activating...'),
-    'Should include message'
-  );
-  assert.ok(
-    !appendedLines[0].includes('[debug]'),
-    'Info messages should not have debug prefix'
+  assert.strictEqual(
+    appendedLines[0],
+    '[Git ID Switcher] Activating...',
+    'Info should format as PREFIX + message without level tag'
   );
 
   resetLogger();
@@ -101,17 +96,82 @@ function testDebugWithMockVSCode(): void {
   extensionLogger.debug('Initialization cancelled');
 
   assert.strictEqual(appendedLines.length, 1, 'Should have one log entry');
-  assert.ok(
-    appendedLines[0].includes('[debug]'),
-    'Debug messages should have [debug] prefix'
-  );
-  assert.ok(
-    appendedLines[0].includes('Initialization cancelled'),
-    'Should include message'
+  assert.strictEqual(
+    appendedLines[0],
+    '[Git ID Switcher] [debug] Initialization cancelled',
+    'Debug should format as PREFIX + [debug] + message'
   );
 
   resetLogger();
   console.log('✅ extensionLogger.debug() with mock VS Code passed!');
+}
+
+/**
+ * Test warn() with mock VS Code API
+ */
+function testWarnWithMockVSCode(): void {
+  console.log('Testing extensionLogger.warn() with mock VS Code...');
+
+  resetLogger();
+
+  const appendedLines: string[] = [];
+  const mockOutputChannel = {
+    appendLine: (line: string) => { appendedLines.push(line); },
+    dispose: () => {},
+  };
+
+  const mockVSCode = {
+    window: {
+      createOutputChannel: () => mockOutputChannel,
+    },
+  };
+  _setMockVSCode(mockVSCode as never);
+
+  extensionLogger.warn('Submodule config failed');
+
+  assert.strictEqual(appendedLines.length, 1, 'Should have one log entry');
+  assert.strictEqual(
+    appendedLines[0],
+    '[Git ID Switcher] [warn] Submodule config failed',
+    'Warn should format as PREFIX + [warn] + message'
+  );
+
+  resetLogger();
+  console.log('✅ extensionLogger.warn() with mock VS Code passed!');
+}
+
+/**
+ * Test error() with mock VS Code API
+ */
+function testErrorWithMockVSCode(): void {
+  console.log('Testing extensionLogger.error() with mock VS Code...');
+
+  resetLogger();
+
+  const appendedLines: string[] = [];
+  const mockOutputChannel = {
+    appendLine: (line: string) => { appendedLines.push(line); },
+    dispose: () => {},
+  };
+
+  const mockVSCode = {
+    window: {
+      createOutputChannel: () => mockOutputChannel,
+    },
+  };
+  _setMockVSCode(mockVSCode as never);
+
+  extensionLogger.error('Failed to initialize');
+
+  assert.strictEqual(appendedLines.length, 1, 'Should have one log entry');
+  assert.strictEqual(
+    appendedLines[0],
+    '[Git ID Switcher] [error] Failed to initialize',
+    'Error should format as PREFIX + [error] + message'
+  );
+
+  resetLogger();
+  console.log('✅ extensionLogger.error() with mock VS Code passed!');
 }
 
 /**
@@ -228,6 +288,8 @@ function testNoOpAfterDispose(): void {
 
   // After dispose, logging should be a permanent no-op
   extensionLogger.info('after dispose info');
+  extensionLogger.warn('after dispose warn');
+  extensionLogger.error('after dispose error');
   extensionLogger.debug('after dispose debug');
 
   assert.strictEqual(appendedLines.length, 1, 'Should not log after dispose');
@@ -261,6 +323,8 @@ function testDisposeBeforeLogging(): void {
 
   // Subsequent logging should be a no-op
   extensionLogger.info('after early dispose');
+  extensionLogger.warn('after early dispose warn');
+  extensionLogger.error('after early dispose error');
   extensionLogger.debug('after early dispose debug');
   assert.strictEqual(createCallCount, 0, 'Should not create OutputChannel after early dispose');
 
@@ -307,6 +371,8 @@ export function runExtensionLoggerTests(): void {
 
   testLogWithoutVSCode();
   testInfoWithMockVSCode();
+  testWarnWithMockVSCode();
+  testErrorWithMockVSCode();
   testDebugWithMockVSCode();
   testDispose();
   testLazyInitialization();

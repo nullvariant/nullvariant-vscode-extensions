@@ -253,9 +253,7 @@ async function propagateToSubmodules(
   );
 
   if (result.failed > 0) {
-    console.warn(
-      `Git ID Switcher: Failed to configure ${result.failed} submodule(s)`
-    );
+    extensionLogger.warn(`Failed to configure ${result.failed} submodule(s)`);
   }
 
   if (result.success > 0) {

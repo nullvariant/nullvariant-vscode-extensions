@@ -144,7 +144,7 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
         .then(() => performSyncCheck())
         .catch(error => {
           const safeMessage = getUserSafeMessage(error);
-          console.error('[Git ID Switcher] Failed to initialize after workspace change:', safeMessage);
+          extensionLogger.error(`Failed to initialize after workspace change: ${safeMessage}`);
           if (isFatalError(error)) {
             vscode.window.showErrorMessage(
               vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
@@ -162,11 +162,11 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
           }
           securityLogger.storeConfigSnapshot();
         } catch (error) {
-          console.error('[Git ID Switcher] Error handling config change:', error);
+          extensionLogger.error(`Error handling config change: ${getUserSafeMessage(error)}`);
           try {
             securityLogger.storeConfigSnapshot();
           } catch (snapshotError) {
-            console.error('[Git ID Switcher] Error storing config snapshot:', snapshotError);
+            extensionLogger.error(`Error storing config snapshot: ${getUserSafeMessage(snapshotError)}`);
           }
         }
 
@@ -175,7 +175,7 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
           .then(() => performSyncCheck())
           .catch(error => {
             const safeMessage = getUserSafeMessage(error);
-            console.error('[Git ID Switcher] Failed to initialize after config change:', safeMessage);
+            extensionLogger.error(`Failed to initialize after config change: ${safeMessage}`);
             if (isFatalError(error)) {
               vscode.window.showErrorMessage(
                 vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
@@ -273,7 +273,7 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
     }
 
     const safeMessage = getUserSafeMessage(error);
-    console.error('[Git ID Switcher] Failed to initialize:', safeMessage);
+    extensionLogger.error(`Failed to initialize: ${safeMessage}`);
     statusBar.setNoIdentity();
 
     if (isFatalError(error)) {
