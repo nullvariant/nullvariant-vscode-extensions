@@ -21,6 +21,7 @@ import {
   _resetForTesting,
 } from '../core/workspaceTrust';
 import { _setMockVSCode, _resetCache } from '../core/vscodeLoader';
+import { extensionLogger } from '../logging/extensionLogger';
 
 /**
  * Create a minimal mock VS Code API for testing
@@ -418,12 +419,10 @@ async function testCallbackErrorHandling(): Promise<void> {
   console.log('Testing callback error handling...');
 
   _resetForTesting();
+  extensionLogger._resetForTest();
+  _resetCache();
   let trustGrantedHandler: (() => void) | undefined;
-  const consoleErrors: string[] = [];
-  const originalError = console.error;
-  console.error = (...args: unknown[]) => {
-    consoleErrors.push(args.map(String).join(' '));
-  };
+  const loggedLines: string[] = [];
 
   const mockVSCode = {
     workspace: {
@@ -435,6 +434,10 @@ async function testCallbackErrorHandling(): Promise<void> {
     },
     window: {
       showWarningMessage: () => Promise.resolve(undefined),
+      createOutputChannel: () => ({
+        appendLine: (line: string) => { loggedLines.push(line); },
+        dispose: () => {},
+      }),
     },
     l10n: {
       t: (message: string) => message,
@@ -453,11 +456,9 @@ async function testCallbackErrorHandling(): Promise<void> {
     await trustGrantedHandler();
   }
 
-  console.error = originalError;
-
-  // Check that error was logged
-  const hasErrorLog = consoleErrors.some(log =>
-    log.includes('Failed to initialize') || log.includes('Test callback error')
+  // Check that error was logged via extensionLogger
+  const hasErrorLog = loggedLines.some(log =>
+    log.includes('[error]') && log.includes('Failed to initialize after trust granted')
   );
   assert.ok(hasErrorLog, 'Error should be logged when callback fails');
 
