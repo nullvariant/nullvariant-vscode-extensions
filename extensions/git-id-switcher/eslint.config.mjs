@@ -89,7 +89,7 @@ export default [
         {
           selector: "Literal[regex]",
           message:
-            "Import pattern constants from validators/common.ts instead of inline regex",
+            "Import pattern constants from core/constants.ts or validators/common.ts instead of inline regex",
         },
       ],
       "@typescript-eslint/no-unsafe-call": "warn",
@@ -160,7 +160,7 @@ export default [
     },
   },
   {
-    files: ["**/validators/common.ts"],
+    files: ["**/validators/common.ts", "**/core/constants.ts"],
     rules: {
       "no-restricted-syntax": "off",
       "no-magic-numbers": "off",

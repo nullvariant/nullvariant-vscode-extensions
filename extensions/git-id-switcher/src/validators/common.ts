@@ -72,20 +72,9 @@ export const INVISIBLE_CHARS = [
   '\u2029', // Paragraph Separator
 ] as const;
 
-/**
- * Control character regex pattern
- *
- * Matches ASCII control characters (0x00-0x1f, 0x7f) excluding common whitespace.
- * Used for input validation to prevent injection attacks.
- *
- * Note: Different modules may use slightly different patterns:
- * - Some exclude tab/newline (0x09, 0x0a, 0x0d)
- * - Some include all control characters
- */
-// eslint-disable-next-line no-control-regex
-export const CONTROL_CHAR_REGEX_STRICT = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
-// eslint-disable-next-line no-control-regex
-export const CONTROL_CHAR_REGEX_ALL = /[\u0000-\u001F\u007F]/;
+// Re-export control character regexes from core/constants (SSOT)
+import { CONTROL_CHAR_REGEX_STRICT, CONTROL_CHAR_REGEX_ALL } from '../core/constants';
+export { CONTROL_CHAR_REGEX_STRICT, CONTROL_CHAR_REGEX_ALL } from '../core/constants';
 
 /**
  * Check if a string contains null bytes
@@ -385,7 +374,7 @@ export const SAFE_TEXT_PATTERN = '^[^\\x00-\\x1f\\x7f`$(){}|&<>]+$';
  *
  * The pattern string above is for JSON Schema validation.
  * This regex is for runtime validation with the same pattern.
- * Using regex literal (consistent with CONTROL_CHAR_REGEX_ALL above).
+ * Using regex literal (consistent with CONTROL_CHAR_REGEX_ALL from core/constants).
  */
 // eslint-disable-next-line no-control-regex
 export const SAFE_TEXT_REGEX = /^[^\u0000-\u001F\u007F`$(){}|&<>]+$/;

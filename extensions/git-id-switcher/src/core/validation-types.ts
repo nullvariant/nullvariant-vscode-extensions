@@ -5,6 +5,8 @@
  * for consistent validation result handling across the codebase.
  */
 
+import { MAX_ERROR_STRING_LENGTH, DANGEROUS_PROTOTYPE_KEYS, CONTROL_CHAR_REGEX_ALL } from './constants';
+
 /**
  * Field-level validation error
  *
@@ -54,25 +56,46 @@ export interface UnifiedValidationResult {
  * // Empty field name (colon at start) - treated as unknown
  * toFieldError(': message only')
  * // Returns: { field: 'unknown', message: ': message only' }
+ *
+ * // Oversized input is truncated
+ * toFieldError('x'.repeat(2000))
+ * // Returns: { field: 'unknown', message: 'xxx...x' } (truncated to MAX_ERROR_STRING_LENGTH)
+ *
+ * // Prototype pollution keys are rejected
+ * toFieldError('__proto__: malicious')
+ * // Returns: { field: 'unknown', message: '__proto__: malicious' }
  * ```
  */
 export function toFieldError(error: string): FieldValidationError {
-  const colonIndex = error.indexOf(':');
+  // defense-in-depth: truncate oversized input to prevent memory exhaustion
+  const safeError = error.length > MAX_ERROR_STRING_LENGTH
+    ? error.slice(0, MAX_ERROR_STRING_LENGTH)
+    : error;
+
+  const colonIndex = safeError.indexOf(':');
   if (colonIndex === -1) {
     return {
       field: 'unknown',
-      message: error,
+      message: safeError,
     };
   }
 
-  const field = error.slice(0, colonIndex).trim();
-  const message = error.slice(colonIndex + 1).trim();
+  const field = safeError.slice(0, colonIndex).trim();
+  const message = safeError.slice(colonIndex + 1).trim();
 
   // If field is empty after trim, use 'unknown'
   if (!field) {
     return {
       field: 'unknown',
-      message: error,
+      message: safeError,
+    };
+  }
+
+  // defense-in-depth: reject prototype pollution keys and control characters
+  if (DANGEROUS_PROTOTYPE_KEYS.has(field) || CONTROL_CHAR_REGEX_ALL.test(field)) {
+    return {
+      field: 'unknown',
+      message: safeError,
     };
   }
 
