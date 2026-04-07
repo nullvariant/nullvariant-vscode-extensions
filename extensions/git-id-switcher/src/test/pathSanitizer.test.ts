@@ -40,6 +40,7 @@ import {
   sanitizePath,
 } from '../security/pathSanitizer';
 import { PATH_MAX, MAX_PATTERN_CHECK_LENGTH } from '../core/constants';
+import { saveEnv, restoreEnv } from './helpers/envMock';
 
 /**
  * Test containsSensitiveDir with Unix paths
@@ -47,11 +48,9 @@ import { PATH_MAX, MAX_PATTERN_CHECK_LENGTH } from '../core/constants';
 function testContainsSensitiveDirUnix(): void {
   console.log('Testing containsSensitiveDir (Unix)...');
 
-  // Save original platform
-  const originalPlatform = process.platform;
+  const snap = saveEnv();
 
   try {
-    // Mock Unix platform
     Object.defineProperty(process, 'platform', { value: 'linux', writable: true });
 
     // Should detect SSH directory
@@ -146,8 +145,7 @@ function testContainsSensitiveDirUnix(): void {
 
     console.log('✅ containsSensitiveDir (Unix) passed!');
   } finally {
-    // Restore original platform
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
+    restoreEnv(snap);
   }
 }
 
@@ -157,7 +155,7 @@ function testContainsSensitiveDirUnix(): void {
 function testContainsSensitiveDirBoundary(): void {
   console.log('Testing containsSensitiveDir (boundary check)...');
 
-  const originalPlatform = process.platform;
+  const snap = saveEnv();
 
   try {
     Object.defineProperty(process, 'platform', { value: 'linux', writable: true });
@@ -199,7 +197,7 @@ function testContainsSensitiveDirBoundary(): void {
 
     console.log('✅ containsSensitiveDir (boundary check) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
+    restoreEnv(snap);
   }
 }
 
@@ -228,10 +226,9 @@ function testContainsSensitiveDirPathMax(): void {
 function testContainsSensitiveDirWindows(): void {
   console.log('Testing containsSensitiveDir (Windows)...');
 
-  const originalPlatform = process.platform;
+  const snap = saveEnv();
 
   try {
-    // Mock Windows platform
     Object.defineProperty(process, 'platform', { value: 'win32', writable: true });
 
     // Should detect AppData (normalized to forward slashes)
@@ -278,7 +275,7 @@ function testContainsSensitiveDirWindows(): void {
 
     console.log('✅ containsSensitiveDir (Windows) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
+    restoreEnv(snap);
   }
 }
 
@@ -596,7 +593,7 @@ function testSanitizePathUNC(): void {
 function testSanitizePathSensitive(): void {
   console.log('Testing sanitizePath (sensitive)...');
 
-  const originalPlatform = process.platform;
+  const snap = saveEnv();
 
   try {
     Object.defineProperty(process, 'platform', { value: 'linux', writable: true });
@@ -625,7 +622,7 @@ function testSanitizePathSensitive(): void {
 
     console.log('✅ sanitizePath (sensitive) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
+    restoreEnv(snap);
   }
 }
 
@@ -635,8 +632,7 @@ function testSanitizePathSensitive(): void {
 function testSanitizePathHomeUnix(): void {
   console.log('Testing sanitizePath (home replacement Unix)...');
 
-  const originalPlatform = process.platform;
-  const originalHome = process.env.HOME;
+  const snap = saveEnv();
 
   try {
     Object.defineProperty(process, 'platform', { value: 'linux', writable: true });
@@ -672,12 +668,7 @@ function testSanitizePathHomeUnix(): void {
 
     console.log('✅ sanitizePath (home replacement Unix) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHome === undefined) {
-      delete process.env.HOME;
-    } else {
-      process.env.HOME = originalHome;
-    }
+    restoreEnv(snap);
   }
 }
 
@@ -687,10 +678,7 @@ function testSanitizePathHomeUnix(): void {
 function testSanitizePathHomeWindows(): void {
   console.log('Testing sanitizePath (home replacement Windows)...');
 
-  const originalPlatform = process.platform;
-  const originalHomeDrive = process.env.HOMEDRIVE;
-  const originalHomePath = process.env.HOMEPATH;
-  const originalUserProfile = process.env.USERPROFILE;
+  const snap = saveEnv();
 
   try {
     Object.defineProperty(process, 'platform', { value: 'win32', writable: true });
@@ -732,22 +720,7 @@ function testSanitizePathHomeWindows(): void {
 
     console.log('✅ sanitizePath (home replacement Windows) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHomeDrive === undefined) {
-      delete process.env.HOMEDRIVE;
-    } else {
-      process.env.HOMEDRIVE = originalHomeDrive;
-    }
-    if (originalHomePath === undefined) {
-      delete process.env.HOMEPATH;
-    } else {
-      process.env.HOMEPATH = originalHomePath;
-    }
-    if (originalUserProfile === undefined) {
-      delete process.env.USERPROFILE;
-    } else {
-      process.env.USERPROFILE = originalUserProfile;
-    }
+    restoreEnv(snap);
   }
 }
 
@@ -757,8 +730,7 @@ function testSanitizePathHomeWindows(): void {
 function testSanitizePathNoHomeUnix(): void {
   console.log('Testing sanitizePath (no HOME Unix)...');
 
-  const originalPlatform = process.platform;
-  const originalHome = process.env.HOME;
+  const snap = saveEnv();
 
   try {
     Object.defineProperty(process, 'platform', { value: 'linux', writable: true });
@@ -774,12 +746,7 @@ function testSanitizePathNoHomeUnix(): void {
 
     console.log('✅ sanitizePath (no HOME Unix) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHome === undefined) {
-      delete process.env.HOME;
-    } else {
-      process.env.HOME = originalHome;
-    }
+    restoreEnv(snap);
   }
 }
 
@@ -789,7 +756,7 @@ function testSanitizePathNoHomeUnix(): void {
 function testContainsSensitiveDirMore(): void {
   console.log('Testing containsSensitiveDir (more directories)...');
 
-  const originalPlatform = process.platform;
+  const snap = saveEnv();
 
   try {
     Object.defineProperty(process, 'platform', { value: 'linux', writable: true });
@@ -838,7 +805,7 @@ function testContainsSensitiveDirMore(): void {
 
     console.log('✅ containsSensitiveDir (more directories) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
+    restoreEnv(snap);
   }
 }
 
@@ -848,8 +815,7 @@ function testContainsSensitiveDirMore(): void {
 function testSanitizePathEdgeCases(): void {
   console.log('Testing sanitizePath (edge cases)...');
 
-  const originalPlatform = process.platform;
-  const originalHome = process.env.HOME;
+  const snap = saveEnv();
 
   try {
     Object.defineProperty(process, 'platform', { value: 'linux', writable: true });
@@ -878,12 +844,7 @@ function testSanitizePathEdgeCases(): void {
 
     console.log('✅ sanitizePath (edge cases) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHome === undefined) {
-      delete process.env.HOME;
-    } else {
-      process.env.HOME = originalHome;
-    }
+    restoreEnv(snap);
   }
 }
 
@@ -893,7 +854,7 @@ function testSanitizePathEdgeCases(): void {
 function testContainsSensitiveDirWindowsMore(): void {
   console.log('Testing containsSensitiveDir (Windows more)...');
 
-  const originalPlatform = process.platform;
+  const snap = saveEnv();
 
   try {
     Object.defineProperty(process, 'platform', { value: 'win32', writable: true });
@@ -914,7 +875,7 @@ function testContainsSensitiveDirWindowsMore(): void {
 
     console.log('✅ containsSensitiveDir (Windows more) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
+    restoreEnv(snap);
   }
 }
 
@@ -924,8 +885,7 @@ function testContainsSensitiveDirWindowsMore(): void {
 function testSanitizePathNormalization(): void {
   console.log('Testing sanitizePath (normalization)...');
 
-  const originalPlatform = process.platform;
-  const originalHome = process.env.HOME;
+  const snap = saveEnv();
 
   try {
     Object.defineProperty(process, 'platform', { value: 'linux', writable: true });
@@ -947,12 +907,7 @@ function testSanitizePathNormalization(): void {
 
     console.log('✅ sanitizePath (normalization) passed!');
   } finally {
-    Object.defineProperty(process, 'platform', { value: originalPlatform, writable: true });
-    if (originalHome === undefined) {
-      delete process.env.HOME;
-    } else {
-      process.env.HOME = originalHome;
-    }
+    restoreEnv(snap);
   }
 }
 

@@ -22,6 +22,7 @@
  */
 
 import * as assert from 'node:assert';
+import { saveEnv, restoreEnv } from './helpers/envMock';
 import { SecurityError, ErrorCategory } from '../core/errors';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -62,40 +63,6 @@ function createErrorWithStack(fakeStack: string): SecurityError {
     configurable: true,
   });
   return error;
-}
-
-/**
- * Snapshot of environment variables used by pathSanitizer's getHomeDirectory()
- */
-interface EnvSnapshot {
-  platform: string;
-  HOME: string | undefined;
-  HOMEDRIVE: string | undefined;
-  HOMEPATH: string | undefined;
-  USERPROFILE: string | undefined;
-}
-
-function saveEnv(): EnvSnapshot {
-  return {
-    platform: process.platform,
-    HOME: process.env.HOME,
-    HOMEDRIVE: process.env.HOMEDRIVE,
-    HOMEPATH: process.env.HOMEPATH,
-    USERPROFILE: process.env.USERPROFILE,
-  };
-}
-
-function restoreEnv(snap: EnvSnapshot): void {
-  // Restore env vars first (simple assignment, unlikely to fail)
-  for (const key of ['HOME', 'HOMEDRIVE', 'HOMEPATH', 'USERPROFILE'] as const) {
-    if (snap[key] === undefined) {
-      delete process.env[key];
-    } else {
-      process.env[key] = snap[key];
-    }
-  }
-  // Restore platform last (Object.defineProperty is the riskier operation)
-  Object.defineProperty(process, 'platform', { value: snap.platform, writable: true });
 }
 
 // ─── Test functions ──────────────────────────────────────────────────────────
