@@ -52,10 +52,21 @@ export function buildCspString(cspSource: string, nonce: string): string {
 /**
  * Base styles shared across all HTML templates
  *
- * Extracted to eliminate duplication across document/loading/error templates.
+ * Contains:
+ *  - Design tokens (CSS custom properties) for consistent radii/spacing
+ *  - body core (font + theme colors only — layout belongs to each template)
+ *  - link colors
+ *
+ * Template-specific body overrides (padding, max-width, text-align, etc.)
+ * MUST live in the template function itself, clearly marked by a
+ * "Template-specific body overrides" comment, not here.
  */
 export function getBaseStyles(): string {
-  return `body {
+  return `:root {
+      --gis-radius-sm: 3px;
+      --gis-radius-md: 5px;
+    }
+    body {
       font-family: var(--vscode-font-family);
       color: var(--vscode-foreground);
       background-color: var(--vscode-editor-background);
@@ -140,9 +151,15 @@ export function buildDocumentHtml(
   <title>Git ID Switcher Documentation</title>
   <style nonce="${nonce}">
     ${getBaseStyles()}
-    /* External link indicator */
+    /* External link indicator.
+       The "/ <alt-text>" syntax (CSS Generated Content L3) provides the
+       screen-reader announcement for the decorative arrow glyph. We
+       announce "(opens externally)" rather than silencing it so AT
+       users receive the same "external link" signal as sighted users.
+       Note: VS Code webview is Electron/Chromium so this syntax is
+       supported; it is not portable to Firefox. */
     a[href^="http"]:not([href*="assets.nullvariant.com"])::after {
-      content: " ↗";
+      content: " ↗" / " (opens externally)";
       font-size: 0.8em;
     }
     h1, h2, h3 {
@@ -154,13 +171,13 @@ export function buildDocumentHtml(
     code {
       background-color: var(--vscode-textCodeBlock-background);
       padding: 0.2em 0.4em;
-      border-radius: 3px;
+      border-radius: var(--gis-radius-sm);
       font-family: var(--vscode-editor-font-family);
     }
     pre {
       background-color: var(--vscode-textCodeBlock-background);
       padding: 1em;
-      border-radius: 5px;
+      border-radius: var(--gis-radius-md);
       overflow-x: auto;
     }
     pre code {
@@ -182,6 +199,11 @@ export function buildDocumentHtml(
       border: 1px solid var(--vscode-panel-border);
       padding: 0.5em 1em;
       text-align: left;
+      /* Prevent long tokens (URLs, hashes) from pushing the table
+         wider than its container. overflow-wrap: anywhere is sufficient;
+         we deliberately do NOT use table-layout: fixed (which would
+         force equal column widths regardless of content). */
+      overflow-wrap: anywhere;
     }
     th {
       background-color: var(--vscode-textCodeBlock-background);
@@ -212,7 +234,7 @@ export function buildDocumentHtml(
       color: var(--vscode-button-secondaryForeground);
       border: none;
       padding: 4px 12px;
-      border-radius: 3px;
+      border-radius: var(--gis-radius-sm);
       cursor: pointer;
       font-family: var(--vscode-font-family);
       font-size: var(--vscode-font-size);
@@ -238,6 +260,7 @@ export function buildDocumentHtml(
     .footer a {
       margin-right: 1em;
     }
+    /* Template-specific body overrides (layout for document template) */
     body {
       padding: 20px;
       line-height: 1.6;
@@ -290,7 +313,7 @@ export function buildLoadingHtml(cspSource: string, nonce: string): string {
       height: 40px;
       border: 3px solid var(--vscode-panel-border);
       border-top-color: var(--vscode-textLink-foreground);
-      border-radius: 50%;
+      border-radius: 50%; /* circle, not a token */
       animation: spin 1s linear infinite;
     }
     @keyframes spin {
@@ -348,6 +371,7 @@ export function buildErrorHtml(
   <meta http-equiv="Content-Security-Policy" content="${csp}">
   <style nonce="${nonce}">
     ${getBaseStyles()}
+    /* Template-specific body overrides (layout for error template) */
     body {
       padding: 40px;
       text-align: center;
