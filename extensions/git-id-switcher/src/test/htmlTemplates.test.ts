@@ -164,7 +164,96 @@ function testGetBaseStyles(): void {
     'Should use VS Code active link color variable'
   );
 
+  // Should define design tokens for border-radius (Issue-00119)
+  // Values matter: they form the SSOT contract, not just the names.
+  assert.match(
+    styles, /--gis-radius-sm:\s*3px/,
+    '--gis-radius-sm must equal 3px'
+  );
+  assert.match(
+    styles, /--gis-radius-md:\s*5px/,
+    '--gis-radius-md must equal 5px'
+  );
+
   console.log('  getBaseStyles passed!');
+}
+
+/**
+ * Count `border-radius: Npx` literal occurrences (excluding `%` values
+ * like `50%` which are intentionally not tokenised, and excluding
+ * `var(--...)` references).
+ */
+function countBorderRadiusPxLiterals(html: string): string[] {
+  const matches = [...html.matchAll(/border-radius:\s*(\d+px)/g)];
+  return matches.map(m => m[1]);
+}
+
+/**
+ * Test CSS/a11y quality fixes from Issue-00119.
+ *
+ * Applies to ALL templates (document/loading/error) so the SSOT
+ * guarantees cannot regress in one template while passing in another.
+ */
+function testAllTemplatesCssQuality(): void {
+  console.log('Testing all templates (CSS/a11y quality — Issue-00119)...');
+
+  const templates: ReadonlyArray<readonly [string, () => string]> = [
+    ['document', (): string => buildDocumentHtml(
+      TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+    )],
+    ['loading', (): string => buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE)],
+    ['error', (): string => buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE)],
+  ];
+
+  for (const [name, build] of templates) {
+    const html = build();
+
+    // No raw `border-radius: Npx` literals allowed. Spinner uses
+    // `50%` which does not match the `\d+px` pattern so it is exempt.
+    const literals = countBorderRadiusPxLiterals(html);
+    assert.strictEqual(
+      literals.length, 0,
+      `${name}: border-radius must use design tokens, found literals: ${literals.join(', ')}`
+    );
+  }
+
+  // Document template uses both tokens explicitly.
+  const docHtml = buildDocumentHtml(
+    TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+  );
+  assert.ok(
+    docHtml.includes('border-radius: var(--gis-radius-sm)'),
+    'Document template should reference --gis-radius-sm via border-radius'
+  );
+  assert.ok(
+    docHtml.includes('border-radius: var(--gis-radius-md)'),
+    'Document template should reference --gis-radius-md via border-radius'
+  );
+
+  // External link arrow must be scoped to the correct selector and
+  // must announce its purpose via CSS alt-text (not silenced).
+  const arrowRule =
+    /a\[href\^="http"\][^{]*::after\s*\{[^}]*content:\s*" ↗"\s*\/\s*" \(opens externally\)"\s*;[^}]*\}/;
+  assert.match(
+    docHtml, arrowRule,
+    'External link ::after must declare "(opens externally)" CSS alt text'
+  );
+
+  // Table cell overflow rules must live inside the `th, td` block,
+  // not just anywhere in the stylesheet.
+  const cellBlock = /th,\s*td\s*\{([^}]*)\}/.exec(docHtml)?.[1] ?? '';
+  assert.ok(
+    cellBlock.includes('overflow-wrap: anywhere'),
+    'th/td block must declare overflow-wrap: anywhere'
+  );
+  // word-break: break-word is a non-standard alias of overflow-wrap
+  // and is intentionally omitted to avoid duplication.
+  assert.ok(
+    !cellBlock.includes('word-break: break-word'),
+    'th/td should not duplicate word-break: break-word (use overflow-wrap only)'
+  );
+
+  console.log('  all templates (CSS/a11y quality) passed!');
 }
 
 // ============================================================================
@@ -500,6 +589,7 @@ export function runHtmlTemplatesTests(): void {
     testBuildDocumentHtmlStructure();
     testBuildDocumentHtmlNavigation();
     testBuildDocumentHtmlContentEscaping();
+    testAllTemplatesCssQuality();
 
     // Loading HTML Tests
     console.log('\n--- Loading HTML Tests ---');
