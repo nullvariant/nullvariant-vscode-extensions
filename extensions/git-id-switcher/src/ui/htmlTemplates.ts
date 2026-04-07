@@ -58,13 +58,33 @@ export function buildCspString(cspSource: string, nonce: string): string {
  *  - link colors
  *
  * Template-specific body overrides (padding, max-width, text-align, etc.)
- * MUST live in the template function itself, clearly marked by a
- * "Template-specific body overrides" comment, not here.
+ * MUST live in the template function itself, scoped by a `body.gis-*`
+ * class selector (e.g. body.gis-doc) so specificity — not cascade order —
+ * decides the winner (Issue-00189).
  */
 export function getBaseStyles(): string {
   return `:root {
       --gis-radius-sm: 3px;
       --gis-radius-md: 5px;
+      /* Unified 1px panel border used across h1/th,td/hr/nav/footer (Issue-00192). */
+      --gis-border-subtle: 1px solid var(--vscode-panel-border);
+      /* em-based spacing scale. em is intentional so spacing follows text size.
+         Use font-size tokens (below) to avoid em-chain multiplication in nested
+         elements. */
+      --gis-space-xs: 0.3em;
+      --gis-space-sm: 0.5em;
+      --gis-space-md: 1em;
+      --gis-space-lg: 1.5em;
+      --gis-space-xl: 2em;
+      /* px-based layout spacing (body padding, footer gap, button padding) that
+         must not scale with inherited font-size. */
+      --gis-pad-btn: 4px 12px;
+      --gis-pad-body: 20px;
+      --gis-pad-body-lg: 40px;
+      /* font-size tokens. Declared against the document root so nested elements
+         do not multiply em values (0.9em inside a 0.9em ancestor shrinks). */
+      --gis-font-sm: 0.9em;
+      --gis-font-xs: 0.8em;
     }
     body {
       font-family: var(--vscode-font-family);
@@ -97,6 +117,13 @@ interface HtmlShellOptions {
   readonly title: string;
   /** Full CSS content placed inside the single <style nonce> block. */
   readonly styles: string;
+  /**
+   * Body class identifier (e.g. "gis-doc"). Template-specific body CSS MUST
+   * be scoped by this class so that template overrides raise specificity
+   * beyond the base `body` rule in getBaseStyles(), making cascade order
+   * irrelevant (Issue-00189).
+   */
+  readonly bodyClass: string;
   /** Raw HTML inserted between <body> and </body> (may include <script>). */
   readonly body: string;
 }
@@ -122,7 +149,7 @@ function buildHtmlShell(opts: Readonly<HtmlShellOptions>): string {
     ${opts.styles}
   </style>
 </head>
-<body>
+<body class="${escapeHtmlEntities(opts.bodyClass)}">
 ${opts.body}
 </body>
 </html>`;
@@ -136,7 +163,11 @@ ${opts.body}
  * Generate the document HTML with content
  *
  * @param cspSource - Webview CSP source
- * @param content - Rendered HTML content
+ * @param content - Pre-sanitized HTML content. Caller MUST pass HTML that
+ *   has already been run through a strict allowlist sanitizer (e.g. a
+ *   markdown renderer with HTML escaping). This function injects `content`
+ *   verbatim; CSP blocks `<script>` execution but does NOT stop `<img
+ *   onerror>` or `javascript:` URLs outside the linkInterceptScript path.
  * @param locale - Current locale
  * @param currentPath - Current document path (for relative link resolution)
  * @param nonce - CSP nonce for inline styles and scripts
@@ -199,14 +230,14 @@ export function buildDocumentHtml(
        supported; it is not portable to Firefox. */
     a[href^="http"]:not([href*="assets.nullvariant.com"])::after {
       content: " ↗" / " (opens externally)";
-      font-size: 0.8em;
+      font-size: var(--gis-font-xs);
     }
     h1, h2, h3 {
       color: var(--vscode-foreground);
-      margin-top: 1.5em;
-      margin-bottom: 0.5em;
+      margin-top: var(--gis-space-lg);
+      margin-bottom: var(--gis-space-sm);
     }
-    h1 { border-bottom: 1px solid var(--vscode-panel-border); padding-bottom: 0.3em; }
+    h1 { border-bottom: var(--gis-border-subtle); padding-bottom: var(--gis-space-xs); }
     code {
       background-color: var(--vscode-textCodeBlock-background);
       padding: 0.2em 0.4em;
@@ -215,7 +246,7 @@ export function buildDocumentHtml(
     }
     pre {
       background-color: var(--vscode-textCodeBlock-background);
-      padding: 1em;
+      padding: var(--gis-space-md);
       border-radius: var(--gis-radius-md);
       overflow-x: auto;
     }
@@ -224,19 +255,19 @@ export function buildDocumentHtml(
       padding: 0;
     }
     ul {
-      padding-left: 1.5em;
+      padding-left: var(--gis-space-lg);
     }
     li {
-      margin-bottom: 0.5em;
+      margin-bottom: var(--gis-space-sm);
     }
     table {
       border-collapse: collapse;
       width: 100%;
-      margin: 1em 0;
+      margin: var(--gis-space-md) 0;
     }
     th, td {
-      border: 1px solid var(--vscode-panel-border);
-      padding: 0.5em 1em;
+      border: var(--gis-border-subtle);
+      padding: var(--gis-space-sm) var(--gis-space-md);
       text-align: left;
       /* Prevent long tokens (URLs, hashes) from pushing the table
          wider than its container. overflow-wrap: anywhere is sufficient;
@@ -253,26 +284,26 @@ export function buildDocumentHtml(
     }
     blockquote {
       border-left: 4px solid var(--vscode-textLink-foreground);
-      margin: 1em 0;
-      padding: 0.5em 1em;
+      margin: var(--gis-space-md) 0;
+      padding: var(--gis-space-sm) var(--gis-space-md);
       background-color: var(--vscode-textCodeBlock-background);
       font-style: italic;
     }
     hr {
       border: none;
-      border-top: 1px solid var(--vscode-panel-border);
-      margin: 2em 0;
+      border-top: var(--gis-border-subtle);
+      margin: var(--gis-space-xl) 0;
     }
     .nav-bar {
-      margin-bottom: 1em;
-      padding-bottom: 0.5em;
-      border-bottom: 1px solid var(--vscode-panel-border);
+      margin-bottom: var(--gis-space-md);
+      padding-bottom: var(--gis-space-sm);
+      border-bottom: var(--gis-border-subtle);
     }
     .nav-bar button {
       background: var(--vscode-button-secondaryBackground);
       color: var(--vscode-button-secondaryForeground);
       border: none;
-      padding: 4px 12px;
+      padding: var(--gis-pad-btn);
       border-radius: var(--gis-radius-sm);
       cursor: pointer;
       font-family: var(--vscode-font-family);
@@ -286,22 +317,24 @@ export function buildDocumentHtml(
       cursor: not-allowed;
     }
     .nav-bar .current-path {
-      margin-left: 1em;
+      margin-left: var(--gis-space-md);
       color: var(--vscode-descriptionForeground);
-      font-size: 0.9em;
+      font-size: var(--gis-font-sm);
     }
     .footer {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--vscode-panel-border);
-      font-size: 0.9em;
+      margin-top: var(--gis-pad-body-lg);
+      padding-top: var(--gis-pad-body);
+      border-top: var(--gis-border-subtle);
+      font-size: var(--gis-font-sm);
     }
     .footer a {
-      margin-right: 1em;
+      margin-right: var(--gis-space-md);
     }
-    /* Template-specific body overrides (layout for document template) */
-    body {
-      padding: 20px;
+    /* Template-specific body layout — scoped by body.gis-doc class to
+       raise specificity above the base body rule, making cascade order
+       irrelevant (Issue-00189). */
+    body.gis-doc {
+      padding: var(--gis-pad-body);
       line-height: 1.6;
       max-width: 800px;
       margin: 0 auto;
@@ -324,6 +357,7 @@ export function buildDocumentHtml(
     lang: locale,
     title: 'Git ID Switcher Documentation',
     styles,
+    bodyClass: 'gis-doc',
     body,
   });
 }
@@ -356,7 +390,7 @@ export function buildLoadingHtml(cspSource: string, nonce: string): string {
       to { transform: rotate(360deg); }
     }
     p {
-      margin-top: 1em;
+      margin-top: var(--gis-space-md);
     }`;
 
   const body = `  <div class="loading">
@@ -370,6 +404,7 @@ export function buildLoadingHtml(cspSource: string, nonce: string): string {
     lang: 'en',
     title: 'Loading — Git ID Switcher',
     styles,
+    bodyClass: 'gis-loading',
     body,
   });
 }
@@ -404,9 +439,10 @@ export function buildErrorHtml(
   const msg = messages[errorType];
 
   const styles = `${getBaseStyles()}
-    /* Template-specific body overrides (layout for error template) */
-    body {
-      padding: 40px;
+    /* Template-specific body layout — scoped by body.gis-error class
+       to raise specificity above the base body rule (Issue-00189). */
+    body.gis-error {
+      padding: var(--gis-pad-body-lg);
       text-align: center;
     }
     h1 {
@@ -423,6 +459,7 @@ export function buildErrorHtml(
     lang: 'en',
     title: `${msg.title} — Git ID Switcher`,
     styles,
+    bodyClass: 'gis-error',
     body,
   });
 }
