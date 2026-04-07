@@ -257,6 +257,198 @@ function testAllTemplatesCssQuality(): void {
 }
 
 // ============================================================================
+// Cross-Template Invariants: shell skeleton equality (Issue-00190)
+// ============================================================================
+
+/**
+ * Strip template-specific content (lang, CSP, title, styles, body class,
+ * body inner HTML) from a rendered template so only the shared shell
+ * skeleton — DOCTYPE, html/head/body tag layout, meta tags, their order —
+ * remains. Used to prove all three templates emit a byte-identical shell
+ * after buildHtmlShell() extraction (Issue-00186).
+ */
+function extractShell(html: string): string {
+  return html
+    .replace(/lang="[^"]*"/, 'lang="__LANG__"')
+    .replace(/content="default-src[^"]*"/, 'content="__CSP__"')
+    .replace(/<title>[^<]*<\/title>/, '<title>__TITLE__</title>')
+    .replace(
+      /<style nonce="[^"]*">[\s\S]*?<\/style>/,
+      '<style nonce="__NONCE__">__STYLES__</style>'
+    )
+    // Mask only the class attribute value (so additions of non-class body
+    // attributes surface as shell differences), then non-greedily strip
+    // body inner HTML. Non-greedy `*?` prevents runaway matching if a
+    // template ever embeds the literal `</body>` in its content.
+    .replace(/<body class="[^"]*">/, '<body class="__BODY_CLASS__">')
+    .replace(
+      /<body class="__BODY_CLASS__">[\s\S]*?<\/body>/,
+      '<body class="__BODY_CLASS__">__BODY__</body>'
+    );
+}
+
+/**
+ * All three templates must share a byte-identical shell skeleton.
+ *
+ * Regression guard for Issue-00186 (buildHtmlShell extraction): if any
+ * future change adds a meta tag, reorders head children, or drops the
+ * viewport meta from just one template, this assertion fails immediately
+ * instead of silently diverging across templates.
+ */
+function testShellSkeletonIsShared(): void {
+  console.log('Testing shell skeleton invariance across templates...');
+
+  const docShell = extractShell(
+    buildDocumentHtml(
+      TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+    )
+  );
+  const loadingShell = extractShell(buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE));
+  const errorShell = extractShell(buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE));
+
+  assert.strictEqual(
+    loadingShell, docShell,
+    'Loading shell skeleton must match document shell skeleton'
+  );
+  assert.strictEqual(
+    errorShell, docShell,
+    'Error shell skeleton must match document shell skeleton'
+  );
+
+  // Positive check — the stripped shell must still contain the shared
+  // skeleton markers; otherwise extractShell masked too aggressively and
+  // equality would be trivially true.
+  for (const shell of [docShell, loadingShell, errorShell]) {
+    assert.ok(shell.includes('<!DOCTYPE html>'), 'Shell should retain DOCTYPE');
+    assert.ok(shell.includes('<meta charset="UTF-8">'), 'Shell should retain charset meta');
+    assert.ok(
+      shell.includes('<meta name="viewport"'),
+      'Shell should retain viewport meta'
+    );
+    assert.ok(
+      shell.includes('http-equiv="Content-Security-Policy"'),
+      'Shell should retain CSP meta'
+    );
+  }
+
+  console.log('  shell skeleton invariance passed!');
+}
+
+/**
+ * Body class-based override invariant (Issue-00189).
+ *
+ * Each template must declare its body layout under a `body.gis-*` class
+ * selector, not a bare `body { … }` override. The base body rule in
+ * getBaseStyles() remains unscoped, so class-based selectors win on
+ * specificity regardless of style-block order.
+ */
+function testBodyClassOverrides(): void {
+  console.log('Testing body class overrides (Issue-00189)...');
+
+  const cases: ReadonlyArray<readonly [string, string, () => string]> = [
+    ['document', 'gis-doc', (): string => buildDocumentHtml(
+      TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+    )],
+    ['loading', 'gis-loading', (): string => buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE)],
+    ['error', 'gis-error', (): string => buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE)],
+  ];
+
+  for (const [name, cls, build] of cases) {
+    const html = build();
+    assert.ok(
+      html.includes(`<body class="${cls}">`),
+      `${name}: <body> must carry class="${cls}"`
+    );
+    // Guard: no bare `<body>` without class.
+    assert.ok(
+      !/<body>\s/.test(html),
+      `${name}: must not emit a bare <body> without class`
+    );
+  }
+
+  // Document & error templates must scope their overrides via the class
+  // selector. Loading has no body override, only the base rule.
+  const docHtml = buildDocumentHtml(
+    TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+  );
+  assert.match(
+    docHtml, /body\.gis-doc\s*\{/,
+    'Document template must scope override under body.gis-doc'
+  );
+  const errorHtml = buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE);
+  assert.match(
+    errorHtml, /body\.gis-error\s*\{/,
+    'Error template must scope override under body.gis-error'
+  );
+
+  console.log('  body class overrides passed!');
+}
+
+/**
+ * Design token coverage (Issue-00192).
+ *
+ * Verify magic numbers previously scattered across templates are now
+ * token references. Presence of the tokens in :root is a necessary
+ * condition; the negative check ensures literal `1px solid var(--vscode-panel-border)`
+ * no longer recurs (SSOT enforcement for core-values #4).
+ */
+function testDesignTokenCoverage(): void {
+  console.log('Testing design token coverage (Issue-00192)...');
+
+  const styles = getBaseStyles();
+  // Values matter: tokens form the SSOT contract, not just the names.
+  // `--gis-space-xs: 999em` would pass a name-only check and silently
+  // break every consumer.
+  const tokenSpec: ReadonlyArray<readonly [string, RegExp]> = [
+    ['--gis-border-subtle', /--gis-border-subtle:\s*1px solid var\(--vscode-panel-border\)/],
+    ['--gis-space-xs', /--gis-space-xs:\s*0\.3em\b/],
+    ['--gis-space-sm', /--gis-space-sm:\s*0\.5em\b/],
+    ['--gis-space-md', /--gis-space-md:\s*1em\b/],
+    ['--gis-space-lg', /--gis-space-lg:\s*1\.5em\b/],
+    ['--gis-space-xl', /--gis-space-xl:\s*2em\b/],
+    ['--gis-pad-btn', /--gis-pad-btn:\s*4px 12px\b/],
+    ['--gis-pad-body', /--gis-pad-body:\s*20px\b/],
+    ['--gis-pad-body-lg', /--gis-pad-body-lg:\s*40px\b/],
+    ['--gis-font-sm', /--gis-font-sm:\s*0\.9em\b/],
+    ['--gis-font-xs', /--gis-font-xs:\s*0\.8em\b/],
+  ];
+  for (const [name, re] of tokenSpec) {
+    assert.match(styles, re, `${name} value contract violated`);
+  }
+
+  // The literal `1px solid var(--vscode-panel-border)` must exist exactly
+  // ONCE per template — inside the --gis-border-subtle token definition
+  // — and nowhere else. Checked across all three templates because
+  // getBaseStyles() is inlined into each, and SSOT enforcement must hold
+  // uniformly.
+  const literalPattern = /1px solid var\(--vscode-panel-border\)/g;
+  const allTemplates: ReadonlyArray<readonly [string, string]> = [
+    ['document', buildDocumentHtml(
+      TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+    )],
+    ['loading', buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE)],
+    ['error', buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE)],
+  ];
+  for (const [name, html] of allTemplates) {
+    const matches = html.match(literalPattern) ?? [];
+    assert.strictEqual(
+      matches.length, 1,
+      `${name}: literal "1px solid var(--vscode-panel-border)" must appear exactly once (in token definition), found ${matches.length}`
+    );
+  }
+  // Only the document template actually consumes --gis-border-subtle
+  // (loading/error have no panel-border rules). Asserted separately to
+  // confirm the token is wired up, not merely defined.
+  const docHtml = allTemplates[0][1];
+  assert.ok(
+    docHtml.includes('var(--gis-border-subtle)'),
+    'Document template must reference --gis-border-subtle'
+  );
+
+  console.log('  design token coverage passed!');
+}
+
+// ============================================================================
 // Document HTML Tests: buildDocumentHtml()
 // ============================================================================
 
@@ -618,6 +810,12 @@ export function runHtmlTemplatesTests(): void {
     testBuildDocumentHtmlNavigation();
     testBuildDocumentHtmlContentEscaping();
     testAllTemplatesCssQuality();
+
+    // Cross-Template Invariants
+    console.log('\n--- Cross-Template Invariants ---');
+    testShellSkeletonIsShared();
+    testBodyClassOverrides();
+    testDesignTokenCoverage();
 
     // Loading HTML Tests
     console.log('\n--- Loading HTML Tests ---');
