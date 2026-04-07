@@ -20,6 +20,7 @@ import {
   MAX_ICON_BYTE_LENGTH,
   MIN_GPG_KEY_LENGTH,
   MAX_GPG_KEY_LENGTH,
+  DANGEROUS_PROTOTYPE_KEYS,
 } from '../core/constants';
 
 /**
@@ -115,14 +116,6 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     format: 'hex',
   },
 } as const;
-
-/**
- * SECURITY: Keys that indicate prototype pollution attempts.
- * Rejected unconditionally regardless of field count limits.
- * defense-in-depth: Even though Object.keys() skips prototype chain,
- * __proto__ can exist as an own property via JSON.parse or object literal.
- */
-const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 /**
  * Schema validation result
@@ -332,7 +325,7 @@ export function validateIdentitySchema(identity: unknown): SchemaValidationResul
   // SECURITY: Check dangerous keys BEFORE field count limit
   // defense-in-depth: prevents __proto__ bypass via excessive fields
   for (const field of objKeys) {
-    if (DANGEROUS_KEYS.has(field)) {
+    if (DANGEROUS_PROTOTYPE_KEYS.has(field)) {
       errors.push({
         field,
         message: 'Dangerous property name rejected',
@@ -352,7 +345,7 @@ export function validateIdentitySchema(identity: unknown): SchemaValidationResul
     // Continue validation but skip unknown field check for performance
   } else {
     for (const field of objKeys) {
-      if (!DANGEROUS_KEYS.has(field) && !knownFields.has(field)) {
+      if (!DANGEROUS_PROTOTYPE_KEYS.has(field) && !knownFields.has(field)) {
         errors.push({
           field,
           message: 'Unknown field',
