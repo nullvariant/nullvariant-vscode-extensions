@@ -80,6 +80,55 @@ export function getBaseStyles(): string {
 }
 
 // ============================================================================
+// HTML Shell
+// ============================================================================
+
+/**
+ * Options for the shared HTML shell wrapper.
+ *
+ * The shell owns <!DOCTYPE>, <html>, <head> (charset/CSP/viewport/title/style)
+ * and the outer <body> tags. Each template provides its own styles and body
+ * content, keeping the skeleton in a single place (Issue-00186).
+ */
+interface HtmlShellOptions {
+  readonly cspSource: string;
+  readonly nonce: string;
+  readonly lang: string;
+  readonly title: string;
+  /** Full CSS content placed inside the single <style nonce> block. */
+  readonly styles: string;
+  /** Raw HTML inserted between <body> and </body> (may include <script>). */
+  readonly body: string;
+}
+
+/**
+ * Build the shared HTML shell for all webview templates.
+ *
+ * Centralises the <!DOCTYPE>…</head> skeleton previously duplicated across
+ * document/loading/error templates so meta tag additions, CSP changes, and
+ * a11y fixes happen in exactly one place.
+ */
+function buildHtmlShell(opts: Readonly<HtmlShellOptions>): string {
+  const csp = buildCspString(opts.cspSource, opts.nonce);
+
+  return `<!DOCTYPE html>
+<html lang="${escapeHtmlEntities(opts.lang)}">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="${csp}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtmlEntities(opts.title)}</title>
+  <style nonce="${opts.nonce}">
+    ${opts.styles}
+  </style>
+</head>
+<body>
+${opts.body}
+</body>
+</html>`;
+}
+
+// ============================================================================
 // HTML Templates
 // ============================================================================
 
@@ -102,8 +151,6 @@ export function buildDocumentHtml(
   nonce: string,
   canGoBack: boolean
 ): string {
-  const csp = buildCspString(cspSource, nonce);
-
   // Script to intercept link clicks and send messages to extension
   const linkInterceptScript = `
     (function() {
@@ -142,15 +189,7 @@ export function buildDocumentHtml(
     })();
   `;
 
-  return `<!DOCTYPE html>
-<html lang="${escapeHtmlEntities(locale)}">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="${csp}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Git ID Switcher Documentation</title>
-  <style nonce="${nonce}">
-    ${getBaseStyles()}
+  const styles = `${getBaseStyles()}
     /* External link indicator.
        The "/ <alt-text>" syntax (CSS Generated Content L3) provides the
        screen-reader announcement for the decorative arrow glyph. We
@@ -266,11 +305,9 @@ export function buildDocumentHtml(
       line-height: 1.6;
       max-width: 800px;
       margin: 0 auto;
-    }
-  </style>
-</head>
-<body>
-  <nav class="nav-bar" aria-label="Document navigation">
+    }`;
+
+  const body = `  <nav class="nav-bar" aria-label="Document navigation">
     <button id="back-btn" ${canGoBack ? '' : 'disabled'}>← Back</button>
     <span class="current-path">${escapeHtmlEntities(currentPath)}</span>
   </nav>
@@ -279,9 +316,16 @@ export function buildDocumentHtml(
     <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher#readme">View on GitHub</a>
     <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher">VS Code Marketplace</a>
   </footer>
-  <script nonce="${nonce}">${linkInterceptScript}</script>
-</body>
-</html>`;
+  <script nonce="${nonce}">${linkInterceptScript}</script>`;
+
+  return buildHtmlShell({
+    cspSource,
+    nonce,
+    lang: locale,
+    title: 'Git ID Switcher Documentation',
+    styles,
+    body,
+  });
 }
 
 /**
@@ -292,15 +336,7 @@ export function buildDocumentHtml(
  * @returns Loading HTML document
  */
 export function buildLoadingHtml(cspSource: string, nonce: string): string {
-  const csp = buildCspString(cspSource, nonce);
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="${csp}">
-  <style nonce="${nonce}">
-    ${getBaseStyles()}
+  const styles = `${getBaseStyles()}
     .loading {
       display: flex;
       flex-direction: column;
@@ -321,16 +357,21 @@ export function buildLoadingHtml(cspSource: string, nonce: string): string {
     }
     p {
       margin-top: 1em;
-    }
-  </style>
-</head>
-<body>
-  <div class="loading">
+    }`;
+
+  const body = `  <div class="loading">
     <div class="spinner" aria-hidden="true"></div>
     <p role="status">Loading documentation...</p>
-  </div>
-</body>
-</html>`;
+  </div>`;
+
+  return buildHtmlShell({
+    cspSource,
+    nonce,
+    lang: 'en',
+    title: 'Loading — Git ID Switcher',
+    styles,
+    body,
+  });
 }
 
 /**
@@ -346,8 +387,6 @@ export function buildErrorHtml(
   errorType: ErrorType,
   nonce: string
 ): string {
-  const csp = buildCspString(cspSource, nonce);
-
   const messages = {
     network: {
       title: 'Network Error',
@@ -364,13 +403,7 @@ export function buildErrorHtml(
   };
   const msg = messages[errorType];
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="${csp}">
-  <style nonce="${nonce}">
-    ${getBaseStyles()}
+  const styles = `${getBaseStyles()}
     /* Template-specific body overrides (layout for error template) */
     body {
       padding: 40px;
@@ -378,13 +411,18 @@ export function buildErrorHtml(
     }
     h1 {
       color: var(--vscode-errorForeground);
-    }
-  </style>
-</head>
-<body>
-  <h1>${msg.title}</h1>
+    }`;
+
+  const body = `  <h1>${msg.title}</h1>
   <p>${msg.body}</p>
-  <p><a href="https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher#readme">View on GitHub</a></p>
-</body>
-</html>`;
+  <p><a href="https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher#readme">View on GitHub</a></p>`;
+
+  return buildHtmlShell({
+    cspSource,
+    nonce,
+    lang: 'en',
+    title: `${msg.title} — Git ID Switcher`,
+    styles,
+    body,
+  });
 }

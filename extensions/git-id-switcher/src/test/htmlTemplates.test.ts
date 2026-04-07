@@ -545,6 +545,34 @@ function testLangAttributes(): void {
     'Error HTML should have lang="en"'
   );
 
+  // Issue-00186: every template must declare a <title> inside <head> so
+  // tabs / screen readers / browser history have a discoverable label.
+  // Regression guard: before this Issue, loading/error had no <title>.
+  const requireTitleInHead = (html: string, expected: string, name: string): void => {
+    const head = /<head>([\s\S]*?)<\/head>/.exec(html)?.[1] ?? '';
+    assert.ok(
+      head.includes(`<title>${expected}</title>`),
+      `${name}: <title>${expected}</title> must live inside <head>`
+    );
+    const titleCount = (html.match(/<title>/g) ?? []).length;
+    assert.strictEqual(titleCount, 1, `${name}: exactly one <title> per document`);
+  };
+
+  requireTitleInHead(docHtml, 'Git ID Switcher Documentation', 'document');
+  requireTitleInHead(loadingHtml, 'Loading — Git ID Switcher', 'loading');
+  requireTitleInHead(errorHtml, 'Network Error — Git ID Switcher', 'error(network)');
+  // errorType must be reflected in the title dynamically.
+  requireTitleInHead(
+    buildErrorHtml(TEST_CSP_SOURCE, 'notfound', TEST_NONCE),
+    'Document Not Found — Git ID Switcher',
+    'error(notfound)'
+  );
+  requireTitleInHead(
+    buildErrorHtml(TEST_CSP_SOURCE, 'server', TEST_NONCE),
+    'Server Error — Git ID Switcher',
+    'error(server)'
+  );
+
   // All three should NOT have bare <html> without lang
   assert.ok(
     !docHtml.includes('<html>'),
