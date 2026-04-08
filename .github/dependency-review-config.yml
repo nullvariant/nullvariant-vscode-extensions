@@ -29,4 +29,6 @@ allow-dependencies-licenses:
   - 'pkg:githubactions/semgrep/semgrep-action'
   - 'pkg:githubactions/SocketDev/action'
   - 'pkg:githubactions/restyled-io/actions'
+  - 'pkg:githubactions/restyled-io/actions/run'
+  - 'pkg:githubactions/restyled-io/actions/setup'
   - 'pkg:githubactions/SonarSource/sonarqube-scan-action'
