@@ -20,6 +20,24 @@ import { escapeHtmlEntities } from './documentationInternal';
 /** Error types for documentation display */
 export type ErrorType = 'network' | 'notfound' | 'server';
 
+/**
+ * Branded string type marking HTML that has already passed through a strict
+ * allowlist sanitizer (see `renderMarkdown`). The brand exists purely at the
+ * type level — there is no runtime tag — and acts as a trust-boundary marker:
+ *
+ *  - Only the sanitizer is allowed to produce a value of this type (via a
+ *    single `as SanitizedHtml` cast at its return site).
+ *  - `buildDocumentHtml` accepts only `SanitizedHtml` for its verbatim-injected
+ *    `content` parameter, so a plain `string` (raw markdown, untrusted input,
+ *    a forgotten sanitizer call) fails at compile time instead of reaching the
+ *    webview and relying on CSP as the sole defence.
+ *
+ * Why not a class/wrapper object? The value flows through HTML string
+ * concatenation inside the template, so we need structural `string` identity;
+ * a branded alias gives us the type check with zero runtime cost.
+ */
+export type SanitizedHtml = string & { readonly __brand: 'SanitizedHtml' };
+
 // ============================================================================
 // CSP Configuration
 // ============================================================================
@@ -229,11 +247,13 @@ ${opts.body}
  * Generate the document HTML with content
  *
  * @param cspSource - Webview CSP source
- * @param content - Pre-sanitized HTML content. Caller MUST pass HTML that
- *   has already been run through a strict allowlist sanitizer (e.g. a
- *   markdown renderer with HTML escaping). This function injects `content`
+ * @param content - Pre-sanitized HTML content, typed as `SanitizedHtml` so
+ *   the compiler forbids passing a raw `string`. The brand can only originate
+ *   at the sanitizer boundary (`renderMarkdown`), making the trust boundary
+ *   structurally impossible to bypass. This function injects `content`
  *   verbatim; CSP blocks `<script>` execution but does NOT stop `<img
- *   onerror>` or `javascript:` URLs outside the linkInterceptScript path.
+ *   onerror>` or `javascript:` URLs outside the linkInterceptScript path,
+ *   which is exactly why we want the type-level guarantee on top of CSP.
  * @param locale - Current locale
  * @param currentPath - Current document path (for relative link resolution)
  * @param nonce - CSP nonce for inline styles and scripts
@@ -242,7 +262,7 @@ ${opts.body}
  */
 export function buildDocumentHtml(
   cspSource: string,
-  content: string,
+  content: SanitizedHtml,
   locale: string,
   currentPath: string,
   nonce: string,

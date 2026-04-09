@@ -16,6 +16,7 @@ import * as crypto from 'node:crypto';
 
 import {
   type ErrorType,
+  type SanitizedHtml,
   buildCspString,
   buildDocumentHtml,
   buildLoadingHtml,
@@ -23,7 +24,7 @@ import {
 } from './htmlTemplates';
 import { renderWithFallback } from './webviewFallback';
 
-export type { ErrorType } from './htmlTemplates';
+export type { ErrorType, SanitizedHtml } from './htmlTemplates';
 
 // ============================================================================
 // Nonce Generation
@@ -69,7 +70,7 @@ export function buildCsp(webview: vscode.Webview, nonce: string): string {
  */
 export function getDocumentHtml(
   webview: vscode.Webview,
-  content: string,
+  content: SanitizedHtml,
   locale: string,
   currentPath: string,
   nonce: string,

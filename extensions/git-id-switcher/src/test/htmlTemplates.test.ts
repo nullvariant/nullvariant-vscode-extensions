@@ -34,6 +34,7 @@
 
 import * as assert from 'node:assert';
 import {
+  type SanitizedHtml,
   buildCspString,
   CspValidationError,
   getBaseStyles,
@@ -41,6 +42,16 @@ import {
   buildLoadingHtml,
   buildErrorHtml,
 } from '../ui/htmlTemplates';
+
+/**
+ * Test-only brand lift. Production code MUST obtain `SanitizedHtml` exclusively
+ * through `renderMarkdown` (see documentationInternal.ts), which is the single
+ * sanctioned origin of the brand. Tests bypass the sanitizer because they
+ * exercise `buildDocumentHtml`'s structural contract (shell, nav, escaping),
+ * not the sanitizer's correctness — `renderMarkdown` has its own dedicated
+ * test suite in documentation.test.ts.
+ */
+const asSanitizedHtml = (s: string): SanitizedHtml => s as SanitizedHtml;
 
 // ============================================================================
 // Test Constants
@@ -342,7 +353,7 @@ function testAllTemplatesCssQuality(): void {
 
   const templates: ReadonlyArray<readonly [string, () => string]> = [
     ['document', (): string => buildDocumentHtml(
-      TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+      TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, false
     )],
     ['loading', (): string => buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE)],
     ['error', (): string => buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE)],
@@ -362,7 +373,7 @@ function testAllTemplatesCssQuality(): void {
 
   // Document template uses both tokens explicitly.
   const docHtml = buildDocumentHtml(
-    TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+    TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, false
   );
   assert.ok(
     docHtml.includes('border-radius: var(--gis-radius-sm)'),
@@ -443,7 +454,7 @@ function testShellSkeletonIsShared(): void {
 
   const docShell = extractShell(
     buildDocumentHtml(
-      TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+      TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, false
     )
   );
   const loadingShell = extractShell(buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE));
@@ -490,7 +501,7 @@ function testBodyClassOverrides(): void {
 
   const cases: ReadonlyArray<readonly [string, string, () => string]> = [
     ['document', 'gis-doc', (): string => buildDocumentHtml(
-      TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+      TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, false
     )],
     ['loading', 'gis-loading', (): string => buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE)],
     ['error', 'gis-error', (): string => buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE)],
@@ -512,7 +523,7 @@ function testBodyClassOverrides(): void {
   // Document & error templates must scope their overrides via the class
   // selector. Loading has no body override, only the base rule.
   const docHtml = buildDocumentHtml(
-    TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+    TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, false
   );
   assert.match(
     docHtml, /body\.gis-doc\s*\{/,
@@ -567,7 +578,7 @@ function testDesignTokenCoverage(): void {
   const literalPattern = /1px solid var\(--vscode-panel-border\)/g;
   const allTemplates: ReadonlyArray<readonly [string, string]> = [
     ['document', buildDocumentHtml(
-      TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+      TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, false
     )],
     ['loading', buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE)],
     ['error', buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE)],
@@ -603,7 +614,7 @@ function testBuildDocumentHtmlStructure(): void {
 
   const html = buildDocumentHtml(
     TEST_CSP_SOURCE,
-    '<p>Test content</p>',
+    asSanitizedHtml('<p>Test content</p>'),
     'en',
     'docs/README.md',
     TEST_NONCE,
@@ -650,7 +661,7 @@ function testBuildDocumentHtmlNavigation(): void {
 
   // nav element with aria-label (semantic HTML)
   const htmlWithBack = buildDocumentHtml(
-    TEST_CSP_SOURCE, '<p>Content</p>', 'ja', 'docs/test.md', TEST_NONCE, true
+    TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'ja', 'docs/test.md', TEST_NONCE, true
   );
   assert.ok(
     htmlWithBack.includes('<nav class="nav-bar" aria-label="Document navigation">'),
@@ -665,7 +676,7 @@ function testBuildDocumentHtmlNavigation(): void {
 
   // Back button disabled when canGoBack=false
   const htmlNoBack = buildDocumentHtml(
-    TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/test.md', TEST_NONCE, false
+    TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/test.md', TEST_NONCE, false
   );
   assert.ok(
     htmlNoBack.includes('<button id="back-btn" disabled>'),
@@ -696,7 +707,7 @@ function testBuildDocumentHtmlContentEscaping(): void {
   // Locale with XSS payload should be escaped
   const html = buildDocumentHtml(
     TEST_CSP_SOURCE,
-    '<p>Safe content</p>',
+    asSanitizedHtml('<p>Safe content</p>'),
     '"><script>alert(1)</script>',
     'docs/<script>alert(2)</script>.md',
     TEST_NONCE,
@@ -851,7 +862,7 @@ function testLangAttributes(): void {
 
   // Document HTML uses provided locale
   const docHtml = buildDocumentHtml(
-    TEST_CSP_SOURCE, '<p>Content</p>', 'ja', 'docs/README.md', TEST_NONCE, false
+    TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'ja', 'docs/README.md', TEST_NONCE, false
   );
   assert.ok(
     docHtml.includes('<html lang="ja">'),
@@ -859,7 +870,7 @@ function testLangAttributes(): void {
   );
 
   const docHtmlEn = buildDocumentHtml(
-    TEST_CSP_SOURCE, '<p>Content</p>', 'en', 'docs/README.md', TEST_NONCE, false
+    TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, false
   );
   assert.ok(
     docHtmlEn.includes('<html lang="en">'),
