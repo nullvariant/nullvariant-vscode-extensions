@@ -9,6 +9,11 @@
  * allowing them to be tested in isolation without VS Code environment.
  */
 
+// Type-only import: erased at runtime. htmlTemplates.ts has a runtime
+// import of `escapeHtmlEntities` from this file, so promoting this to a
+// value import would create a real circular dependency. Keep `import type`.
+import type { SanitizedHtml } from './htmlTemplates';
+
 // ============================================================================
 // Constants
 // ============================================================================
@@ -320,9 +325,12 @@ export function getDocumentDisplayName(path: string): string {
  * We preserve HTML while converting Markdown-only sections.
  *
  * @param raw - Raw Markdown/HTML content
- * @returns Safe HTML string
+ * @returns Safe HTML string, branded as `SanitizedHtml` so downstream
+ *   consumers (e.g. `buildDocumentHtml`) can enforce the trust boundary at
+ *   compile time. The single `as SanitizedHtml` cast at the return site is
+ *   the only sanctioned origin of the brand in the codebase.
  */
-export function renderMarkdown(raw: string): string {
+export function renderMarkdown(raw: string): SanitizedHtml {
   // Content is trusted (self-managed CDN with hash verification)
   let html = raw;
 
@@ -445,7 +453,9 @@ export function renderMarkdown(raw: string): string {
   html = html.replaceAll(new RegExp(String.raw`<p>\s*(</(?:${blockElements})>)`, 'g'), '$1');
   html = html.replaceAll(new RegExp(String.raw`(<(?:${blockElements})[^>]*>)\s*</p>`, 'g'), '$1');
 
-  return html;
+  // Single sanctioned origin of the SanitizedHtml brand. All other callers
+  // MUST go through this function; do not introduce additional casts.
+  return html as SanitizedHtml;
 }
 
 // ============================================================================
