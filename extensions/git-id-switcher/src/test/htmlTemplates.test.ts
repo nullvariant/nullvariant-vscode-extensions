@@ -35,6 +35,7 @@
 import * as assert from 'node:assert';
 import {
   buildCspString,
+  CspValidationError,
   getBaseStyles,
   buildDocumentHtml,
   buildLoadingHtml,
@@ -159,8 +160,10 @@ function testBuildCspStringValidation(): void {
   // Error message assertions use anchored regexes that match the exact
   // "buildCspString: nonce " / "buildCspString: cspSource " prefix so a
   // future rewording that conflates the two parameters is caught.
-  const NONCE_ERR = /^Error: buildCspString: nonce /;
-  const SOURCE_ERR = /^Error: buildCspString: cspSource /;
+  // The `CspValidationError:` prefix (Issue-00236) lets renderWithFallback
+  // narrow its catch via `instanceof` instead of swallowing every throw.
+  const NONCE_ERR = /^CspValidationError: buildCspString: nonce /;
+  const SOURCE_ERR = /^CspValidationError: buildCspString: cspSource /;
 
   // Nonce breakout and boundary payloads.
   // Covers attribute breakout (quote/angle), directive injection (semicolon),
@@ -222,6 +225,48 @@ function testBuildCspStringValidation(): void {
       `Valid cspSource must be accepted: ${good}`
     );
   }
+
+  // Issue-00236 scrub contract: the CspValidationError message MUST be
+  // static — it must not interpolate any caller-supplied nonce/cspSource
+  // substring. renderWithFallback logs `error.message` verbatim, so any
+  // future "helpful" error builder that echoes raw input would silently
+  // leak attacker-chosen bytes into extension logs. Lock the contract
+  // here (at the throw site) rather than at the log site.
+  const SCRUB_SENTINEL = 'LEAK_SENTINEL_ZZZ';
+  try {
+    buildCspString(TEST_CSP_SOURCE, `${SCRUB_SENTINEL}' ; x`);
+    assert.fail('expected throw');
+  } catch (error) {
+    assert.ok(error instanceof CspValidationError);
+    assert.ok(
+      !error.message.includes(SCRUB_SENTINEL),
+      'buildCspString error must not echo raw nonce input'
+    );
+  }
+  try {
+    buildCspString(`https://${SCRUB_SENTINEL}' ; x`, TEST_NONCE);
+    assert.fail('expected throw');
+  } catch (error) {
+    assert.ok(error instanceof CspValidationError);
+    assert.ok(
+      !error.message.includes(SCRUB_SENTINEL),
+      'buildCspString error must not echo raw cspSource input'
+    );
+  }
+
+  // Issue-00236: thrown error must be a `CspValidationError` instance so
+  // `renderWithFallback` can narrow its catch. A plain `Error` would still
+  // match the regex above but break the instanceof guard silently.
+  assert.throws(
+    () => buildCspString(TEST_CSP_SOURCE, ''),
+    (err: unknown) => err instanceof CspValidationError,
+    'nonce validation must throw CspValidationError'
+  );
+  assert.throws(
+    () => buildCspString('no-scheme', TEST_NONCE),
+    (err: unknown) => err instanceof CspValidationError,
+    'cspSource validation must throw CspValidationError'
+  );
 
   console.log('  buildCspString (input validation) passed!');
 }

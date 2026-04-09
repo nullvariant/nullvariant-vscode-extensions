@@ -34,6 +34,7 @@ import { runErrorTests } from './errors.test';
 import { runValidationTypesTests } from './validation-types.test';
 import { runGetSafeStackTests } from './getSafeStack.test';
 import { runHtmlTemplatesTests } from './htmlTemplates.test';
+import { runWebviewFallbackTests } from './webviewFallback.test';
 import { runMarkdownEscapeTests } from './markdownEscape.test';
 
 async function main(): Promise<void> {
@@ -131,6 +132,9 @@ async function main(): Promise<void> {
 
     // Run HTML template tests (pure functions, no VS Code dependency)
     runHtmlTemplatesTests();
+
+    // Run webview fallback tests (Issue-00236: narrow catch to CspValidationError)
+    runWebviewFallbackTests();
 
     // Run Markdown escape tests (pure functions, no VS Code dependency)
     runMarkdownEscapeTests();

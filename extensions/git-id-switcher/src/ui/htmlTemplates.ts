@@ -25,6 +25,23 @@ export type ErrorType = 'network' | 'notfound' | 'server';
 // ============================================================================
 
 /**
+ * Dedicated error class thrown by `buildCspString` when the caller-supplied
+ * `nonce` or `cspSource` fails format validation.
+ *
+ * Exists so the webview fallback layer (`renderWithFallback`) can narrow its
+ * catch to "CSP drift only" via `instanceof` instead of swallowing every
+ * throw from the builder pipeline. Swallowing arbitrary `Error`s masked
+ * logic bugs (escape regressions, unexpected TypeError) in production and
+ * reduced observability to zero — the whole point of separating this class.
+ */
+export class CspValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CspValidationError';
+  }
+}
+
+/**
  * Allowed character set for a CSP nonce. Base64url + standard base64 alphabet.
  * Must fullmatch — any character outside this set (quotes, whitespace, `;`, `<`)
  * could break out of the meta tag attribute and inject arbitrary CSP directives.
@@ -65,14 +82,14 @@ const CSP_SOURCE_PATTERN = /^[A-Za-z][A-Za-z0-9+.-]*:[A-Za-z0-9%*._/:-]+$/;
  * @param cspSource - Webview CSP source (webview.cspSource)
  * @param nonce - Nonce for style-src and script-src
  * @returns CSP header string
- * @throws {Error} if `nonce` or `cspSource` fails format validation
+ * @throws {CspValidationError} if `nonce` or `cspSource` fails format validation
  */
 export function buildCspString(cspSource: string, nonce: string): string {
   if (!NONCE_PATTERN.test(nonce)) {
-    throw new Error('buildCspString: nonce contains disallowed characters');
+    throw new CspValidationError('buildCspString: nonce contains disallowed characters');
   }
   if (!CSP_SOURCE_PATTERN.test(cspSource)) {
-    throw new Error('buildCspString: cspSource has unexpected format');
+    throw new CspValidationError('buildCspString: cspSource has unexpected format');
   }
 
   const directives = [
