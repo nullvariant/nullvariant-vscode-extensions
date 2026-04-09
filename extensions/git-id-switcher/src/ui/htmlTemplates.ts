@@ -25,18 +25,67 @@ export type ErrorType = 'network' | 'notfound' | 'server';
 // ============================================================================
 
 /**
+ * Allowed character set for a CSP nonce. Base64url + standard base64 alphabet.
+ * Must fullmatch — any character outside this set (quotes, whitespace, `;`, `<`)
+ * could break out of the meta tag attribute and inject arbitrary CSP directives.
+ *
+ * Minimum length 22 characters enforces ≥128 bits of entropy (16 random bytes
+ * base64-encoded = 24 chars with padding, 22 without). A short or fixed nonce
+ * from a buggy caller would pass a format-only check; enforcing length here
+ * keeps the trust boundary fail-closed even if generation drifts.
+ *
+ * Rationale: defense-in-depth against attribute breakout and directive
+ * injection even though nonce/cspSource are currently trusted VS Code inputs.
+ */
+const NONCE_PATTERN = /^[A-Za-z0-9+/=_-]{22,}$/;
+
+/**
+ * Allowed shape for `webview.cspSource`. VS Code hands us values like
+ * `https://file%2B.vscode-resource.vscode-cdn.net` or `vscode-webview://<guid>`
+ * — scheme + host, possibly with `%`-encoding and `*` wildcards. We reject
+ * anything containing characters that could terminate the attribute or start a
+ * new directive (`'`, `"`, whitespace, `;`, `<`, `>`).
+ */
+const CSP_SOURCE_PATTERN = /^[A-Za-z][A-Za-z0-9+.-]*:[A-Za-z0-9%*._/:-]+$/;
+
+/**
  * Build Content Security Policy header value
+ *
+ * Defense-in-depth:
+ *  - `base-uri 'none'` / `form-action 'none'` / `frame-ancestors 'none'` are
+ *    emitted explicitly because `default-src 'none'` does NOT cover them per
+ *    CSP3 §6.1 (these directives have no fallback to default-src).
+ *  - `nonce` and `cspSource` are format-validated before string interpolation
+ *    so a compromised caller cannot inject additional directives via attribute
+ *    breakout. Both inputs are currently VS Code-controlled, but the rule of
+ *    two says a trust boundary we don't own must still be validated.
+ *  - `style-src` drops `cspSource` and permits only `'nonce-…'`, closing the
+ *    `<link rel="stylesheet" href="${cspSource}/…">` bypass path.
  *
  * @param cspSource - Webview CSP source (webview.cspSource)
  * @param nonce - Nonce for style-src and script-src
  * @returns CSP header string
+ * @throws {Error} if `nonce` or `cspSource` fails format validation
  */
 export function buildCspString(cspSource: string, nonce: string): string {
+  if (!NONCE_PATTERN.test(nonce)) {
+    throw new Error('buildCspString: nonce contains disallowed characters');
+  }
+  if (!CSP_SOURCE_PATTERN.test(cspSource)) {
+    throw new Error('buildCspString: cspSource has unexpected format');
+  }
+
   const directives = [
     `default-src 'none'`,
+    // default-src 'none' does not cover these; emit explicitly (CSP3 §6.1).
+    `base-uri 'none'`,
+    `form-action 'none'`,
+    `frame-ancestors 'none'`,
     // Allow images from: VSCode, our CDN, shields.io badges, GitHub avatars
     `img-src ${cspSource} https://assets.nullvariant.com https://img.shields.io https://*.githubusercontent.com`,
-    `style-src ${cspSource} 'nonce-${nonce}'`,
+    // style-src is nonce-only: dropping cspSource closes the
+    // `<link rel="stylesheet" href="${cspSource}/…">` bypass.
+    `style-src 'nonce-${nonce}'`,
     `script-src 'nonce-${nonce}'`,
     `connect-src https://assets.nullvariant.com`,
     `font-src ${cspSource}`,
