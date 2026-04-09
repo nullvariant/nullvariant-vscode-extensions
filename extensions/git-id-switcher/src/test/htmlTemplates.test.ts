@@ -668,19 +668,28 @@ function testBuildDocumentHtmlNavigation(): void {
     'Should use nav element with aria-label'
   );
 
-  // Back button enabled when canGoBack=true
+  // Back button enabled: aria-disabled="false" (not the [disabled] attribute),
+  // so Safari/VoiceOver keep it in focus order (Issue-00188).
   assert.ok(
-    htmlWithBack.includes('<button id="back-btn" >'),
-    'Back button should be enabled when canGoBack is true'
+    htmlWithBack.includes('aria-disabled="false"'),
+    'Back button should have aria-disabled="false" when canGoBack is true'
+  );
+  assert.ok(
+    !/<button id="back-btn"[^>]*\sdisabled(>|\s)/.test(htmlWithBack),
+    'Back button must NOT use the native [disabled] attribute'
   );
 
-  // Back button disabled when canGoBack=false
+  // Back button disabled when canGoBack=false — aria-disabled="true"
   const htmlNoBack = buildDocumentHtml(
     TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/test.md', TEST_NONCE, false
   );
   assert.ok(
-    htmlNoBack.includes('<button id="back-btn" disabled>'),
-    'Back button should be disabled when canGoBack is false'
+    htmlNoBack.includes('aria-disabled="true"'),
+    'Back button should have aria-disabled="true" when canGoBack is false'
+  );
+  assert.ok(
+    !/<button id="back-btn"[^>]*\sdisabled(>|\s)/.test(htmlNoBack),
+    'Back button must NOT use the native [disabled] attribute when disabled'
   );
 
   // Current path should be displayed (escaped)
@@ -786,7 +795,7 @@ function testBuildLoadingHtmlAccessibility(): void {
     'Loading text should have role="status"'
   );
   assert.ok(
-    html.includes('<p role="status">Loading documentation...</p>'),
+    /<p role="status"[^>]*>Loading documentation\.\.\.<\/p>/.test(html),
     'role="status" should be on the loading paragraph'
   );
 
@@ -937,6 +946,200 @@ function testLangAttributes(): void {
 }
 
 // ============================================================================
+// Issue-00188: Existing template a11y improvements
+// ============================================================================
+
+/**
+ * Cover the a11y contract introduced by Issue-00188:
+ *  - back-btn uses aria-label="Go back" with ← inside aria-hidden span
+ *  - document/error templates wrap body content in <main> landmark
+ *  - error template wraps message in div role="alert" (not on <h1>)
+ *  - loading status has aria-live="polite" + aria-atomic="true"
+ *  - footer GitHub link has descriptive aria-label
+ *  - nav-bar current-path carries aria-current="page"
+ *  - focus-visible rule is present in document & error styles
+ *  - @media (forced-colors: active) overrides zebra + focus outline
+ *  - linkInterceptScript handles keydown in addition to click
+ */
+function testIssue00188A11yImprovements(): void {
+  console.log('Testing Issue-00188 a11y improvements...');
+
+  const docHtmlCanBack = buildDocumentHtml(
+    TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, true
+  );
+  const docHtmlNoBack = buildDocumentHtml(
+    TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, false
+  );
+  const loadingHtml = buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE);
+
+  // (2) back-btn: aria-label="Go back" + arrow inside aria-hidden span
+  assert.ok(
+    docHtmlCanBack.includes('aria-label="Go back"'),
+    'back-btn must carry aria-label="Go back"'
+  );
+  assert.ok(
+    /<span aria-hidden="true">←\s*<\/span>/.test(docHtmlCanBack),
+    'back-btn decorative arrow must live inside aria-hidden span'
+  );
+
+  // (8) aria-disabled both directions (fixed value contract, not a union).
+  assert.ok(
+    /id="back-btn"[^>]*aria-disabled="false"/.test(docHtmlCanBack),
+    'canGoBack=true must emit aria-disabled="false"'
+  );
+  assert.ok(
+    /id="back-btn"[^>]*aria-disabled="true"/.test(docHtmlNoBack),
+    'canGoBack=false must emit aria-disabled="true"'
+  );
+  // Disabled-state style uses color (not opacity) so focus ring contrast
+  // is preserved when the button is both focused and disabled.
+  assert.ok(
+    docHtmlCanBack.includes('.nav-bar button[aria-disabled="true"]'),
+    'nav-bar must style disabled state via aria-disabled selector'
+  );
+  assert.ok(
+    !/\.nav-bar button\[aria-disabled="true"\]\s*\{[^}]*opacity:/.test(docHtmlCanBack),
+    'disabled back-btn must not use opacity (kills focus ring contrast)'
+  );
+
+  // (10) document body wrapped in exactly one <main> landmark.
+  assert.strictEqual(
+    (docHtmlCanBack.match(/<main[>\s]/g) ?? []).length, 1,
+    'document template must contain exactly one <main> landmark'
+  );
+  assert.ok(
+    /<main>\s*\n?\s*<p>Content<\/p>\s*<\/main>/.test(docHtmlCanBack),
+    'document <main> must directly wrap the sanitized content'
+  );
+
+  // (11) error: all three errorTypes must preserve
+  //      <main>…<h1>…<p role="alert">…</main> parametrically.
+  //      h1 lives OUTSIDE role="alert" (JAWS heading-list regression guard).
+  const errorCases = [
+    ['network', 'Network Error'],
+    ['notfound', 'Document Not Found'],
+    ['server', 'Server Error'],
+  ] as const;
+  for (const [errorType, title] of errorCases) {
+    const errHtml = buildErrorHtml(TEST_CSP_SOURCE, errorType, TEST_NONCE);
+    assert.strictEqual(
+      (errHtml.match(/<main[>\s]/g) ?? []).length, 1,
+      `error(${errorType}): exactly one <main> landmark required`
+    );
+    assert.ok(
+      errHtml.includes(`<h1>${title}</h1>`),
+      `error(${errorType}): <h1> must contain the error title`
+    );
+    // role="alert" is on a <p>, not the <h1> or a wrapping <div>.
+    assert.ok(
+      /<p role="alert">/.test(errHtml),
+      `error(${errorType}): role="alert" must live on a <p> element`
+    );
+    assert.ok(
+      !/<h1[^>]*role="alert"/.test(errHtml),
+      `error(${errorType}): <h1> must NOT carry role="alert"`
+    );
+    assert.ok(
+      !/<div role="alert">/.test(errHtml),
+      `error(${errorType}): role="alert" must not wrap the heading in a div`
+    );
+    // Footer GitHub link must carry descriptive aria-label.
+    assert.ok(
+      errHtml.includes('aria-label="View Git ID Switcher on GitHub"'),
+      `error(${errorType}): GitHub link must carry descriptive aria-label`
+    );
+  }
+
+  // (9) loading status: aria-live + aria-atomic AND status <p> must NOT be
+  //     aria-hidden (spinner is hidden, status is announced — the contract
+  //     is a two-sided split).
+  assert.ok(
+    /role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"/.test(loadingHtml),
+    'loading status must have aria-live="polite" and aria-atomic="true"'
+  );
+  assert.ok(
+    !/<p[^>]*aria-hidden/.test(loadingHtml),
+    'loading status <p> must NOT be aria-hidden (it is the announced region)'
+  );
+  assert.ok(
+    /<main class="loading">/.test(loadingHtml),
+    'loading template must use <main class="loading"> landmark'
+  );
+
+  // (12) document footer GitHub link aria-label
+  assert.ok(
+    docHtmlCanBack.includes('aria-label="View Git ID Switcher on GitHub"'),
+    'document footer GitHub link must carry descriptive aria-label'
+  );
+
+  // (13) current-path aria-current="page"
+  assert.ok(
+    /class="current-path" aria-current="page"/.test(docHtmlCanBack),
+    'nav-bar current-path must carry aria-current="page"'
+  );
+
+  // (5) :focus-visible — document must bind BOTH a and button into a single
+  // SSOT selector (regression guard: if one gets dropped, this fails).
+  assert.match(
+    docHtmlCanBack,
+    /a:focus-visible\s*,\s*\n?\s*button:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--vscode-focusBorder\)/,
+    'document template must bind a + button to :focus-visible SSOT rule'
+  );
+  const errorHtmlNetwork = buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE);
+  assert.match(
+    errorHtmlNetwork, /a:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--vscode-focusBorder\)/,
+    'error template must define a:focus-visible outline'
+  );
+
+  // (6)(7) forced-colors media query — extract the block body first, then
+  //        assert on its inner contents so greedy matches cannot leak across
+  //        the `}` boundary into unrelated rules.
+  const forcedColorsBlock = (html: string): string => {
+    const m = /@media \(forced-colors: active\)\s*\{((?:[^{}]|\{[^{}]*\})*)\}/.exec(html);
+    return m?.[1] ?? '';
+  };
+  const docForced = forcedColorsBlock(docHtmlCanBack);
+  assert.ok(docForced.length > 0, 'document template must declare forced-colors media query');
+  assert.match(
+    docForced, /tr:nth-child\(even\)[\s\S]*?background-color:\s*Canvas/,
+    'document forced-colors: nth-child(even) must reset to Canvas'
+  );
+  assert.match(
+    docForced, /\bth\b[\s\S]*?background-color:\s*Canvas/,
+    'document forced-colors: th must also reset to Canvas (parity with zebra)'
+  );
+  assert.match(
+    docForced, /outline-color:\s*Highlight/,
+    'document forced-colors: focus outline must use Highlight'
+  );
+  const errorForced = forcedColorsBlock(errorHtmlNetwork);
+  assert.match(
+    errorForced, /outline-color:\s*Highlight/,
+    'error forced-colors: focus outline must use Highlight'
+  );
+
+  // (1) Keyboard policy: Space on <a> must NOT be synthesised as
+  //     activation (WCAG 3.2.5). Native Enter on <a> and Enter/Space on
+  //     <button> flow through the click listener alone.
+  assert.ok(
+    !docHtmlCanBack.includes("addEventListener('keydown'"),
+    'linkInterceptScript must NOT register a keydown listener (Space on <a> is page scroll)'
+  );
+  // Back button guard: must read aria-disabled, not the [disabled] attribute.
+  assert.ok(
+    docHtmlCanBack.includes("getAttribute('aria-disabled')"),
+    'back-btn handler must guard on aria-disabled state'
+  );
+  // The back-btn click path must be reached before the generic <a> fallback.
+  assert.ok(
+    /closest\(['"]#back-btn['"]\)[\s\S]*closest\(['"]a['"]\)/.test(docHtmlCanBack),
+    'back-btn branch must precede the generic <a> branch in click handler'
+  );
+
+  console.log('  Issue-00188 a11y improvements passed!');
+}
+
+// ============================================================================
 // Test Runner
 // ============================================================================
 
@@ -986,6 +1189,10 @@ export function runHtmlTemplatesTests(): void {
     // Lang Attribute Tests
     console.log('\n--- Lang Attribute Tests ---');
     testLangAttributes();
+
+    // Issue-00188 A11y Improvements
+    console.log('\n--- Issue-00188 A11y Improvements ---');
+    testIssue00188A11yImprovements();
 
     console.log('\n========================================');
     console.log('   All HTML template tests passed!     ');
