@@ -46,7 +46,9 @@ import {
 // ============================================================================
 
 const TEST_CSP_SOURCE = 'https://test.vscode-resource.vscode-cdn.net';
-const TEST_NONCE = 'dGVzdC1ub25jZS0xMjM0';
+// 24 chars = base64 of 16 random bytes (what generateNonce() actually produces).
+// Shorter values are rejected by NONCE_PATTERN's ≥22-char minimum.
+const TEST_NONCE = 'dGVzdC1ub25jZS0xMjM0NTY=';
 
 // ============================================================================
 // CSP Tests: buildCspString()
@@ -80,14 +82,27 @@ function testBuildCspString(): void {
     'CSP should include shields.io in img-src'
   );
 
-  // Should include nonce-based style-src and script-src
+  // style-src must be nonce-only — cspSource removed to close
+  // the `<link rel="stylesheet" href="${cspSource}/…">` bypass.
   assert.ok(
-    csp.includes(`style-src ${TEST_CSP_SOURCE} 'nonce-${TEST_NONCE}'`),
+    csp.includes(`style-src 'nonce-${TEST_NONCE}'`),
     'CSP should include nonce in style-src'
+  );
+  assert.ok(
+    !csp.includes(`style-src ${TEST_CSP_SOURCE}`),
+    'style-src must not include cspSource'
   );
   assert.ok(
     csp.includes(`script-src 'nonce-${TEST_NONCE}'`),
     'CSP should include nonce in script-src'
+  );
+
+  // Defense-in-depth directives not covered by default-src 'none'.
+  assert.ok(csp.includes("base-uri 'none'"), 'CSP should have base-uri none');
+  assert.ok(csp.includes("form-action 'none'"), 'CSP should have form-action none');
+  assert.ok(
+    csp.includes("frame-ancestors 'none'"),
+    'CSP should have frame-ancestors none'
   );
 
   // Should include connect-src and font-src
@@ -115,17 +130,100 @@ function testBuildCspString(): void {
 function testBuildCspStringNonceVariation(): void {
   console.log('Testing buildCspString (nonce variation)...');
 
-  const csp1 = buildCspString(TEST_CSP_SOURCE, 'abc123');
-  const csp2 = buildCspString(TEST_CSP_SOURCE, 'def456');
+  // Two distinct 24-char base64 nonces (≥22 chars required by NONCE_PATTERN).
+  const nonce1 = 'abcdefghijklmnopqrstuvw=';
+  const nonce2 = 'ABCDEFGHIJKLMNOPQRSTUVW=';
+  const csp1 = buildCspString(TEST_CSP_SOURCE, nonce1);
+  const csp2 = buildCspString(TEST_CSP_SOURCE, nonce2);
 
   assert.notStrictEqual(csp1, csp2, 'Different nonces should produce different CSP');
 
   // Each should contain its own nonce (without double nonce- prefix)
-  assert.ok(csp1.includes("'nonce-abc123'"), 'CSP1 should contain nonce-abc123');
-  assert.ok(csp2.includes("'nonce-def456'"), 'CSP2 should contain nonce-def456');
+  assert.ok(csp1.includes(`'nonce-${nonce1}'`), 'CSP1 should contain its nonce');
+  assert.ok(csp2.includes(`'nonce-${nonce2}'`), 'CSP2 should contain its nonce');
   assert.ok(!csp1.includes('nonce-nonce-'), 'Should not have double nonce- prefix');
 
   console.log('  buildCspString (nonce variation) passed!');
+}
+
+/**
+ * Test CSP input validation — nonce / cspSource format hardening.
+ *
+ * Attribute breakout via malformed nonce/cspSource must be rejected
+ * fail-closed. Checks the full set of dangerous characters that could
+ * terminate the `content="…"` attribute or start a new directive.
+ */
+function testBuildCspStringValidation(): void {
+  console.log('Testing buildCspString (input validation)...');
+
+  // Error message assertions use anchored regexes that match the exact
+  // "buildCspString: nonce " / "buildCspString: cspSource " prefix so a
+  // future rewording that conflates the two parameters is caught.
+  const NONCE_ERR = /^Error: buildCspString: nonce /;
+  const SOURCE_ERR = /^Error: buildCspString: cspSource /;
+
+  // Nonce breakout and boundary payloads.
+  // Covers attribute breakout (quote/angle), directive injection (semicolon),
+  // control-character / whitespace smuggling (newline, tab, NBSP, null byte),
+  // non-ASCII and length-floor violations (short nonce passes character
+  // class but is below the 22-char entropy minimum).
+  const badNonces = [
+    `${TEST_NONCE}' ; script-src *`,   // quote + directive injection
+    `${TEST_NONCE}"`,                   // double quote
+    `${TEST_NONCE} `,                   // trailing whitespace
+    `${TEST_NONCE};`,                   // semicolon
+    `${TEST_NONCE}<script>`,            // angle bracket
+    `${TEST_NONCE}\n; script-src *`,    // newline (CRLF-like smuggling)
+    `${TEST_NONCE}\t`,                  // tab
+    `${TEST_NONCE}\u00A0`,              // non-breaking space (Unicode)
+    `${TEST_NONCE}\0`,                  // null byte
+    '日本語テスト字列xxxxxxxxx',            // non-ASCII (also ≥22 chars)
+    'tooShort',                         // character class OK but <22 chars
+    '',                                 // empty
+  ];
+  for (const bad of badNonces) {
+    assert.throws(
+      () => buildCspString(TEST_CSP_SOURCE, bad),
+      NONCE_ERR,
+      `Malformed nonce should throw: ${JSON.stringify(bad)}`
+    );
+  }
+
+  // cspSource breakout payloads
+  const badSources = [
+    `${TEST_CSP_SOURCE}' ; script-src *`,
+    `${TEST_CSP_SOURCE} https://evil.example`,  // whitespace → extra source
+    `${TEST_CSP_SOURCE};`,
+    `${TEST_CSP_SOURCE}"`,
+    `${TEST_CSP_SOURCE}\n`,                      // newline
+    'no-scheme',                                 // missing scheme
+    '',
+  ];
+  for (const bad of badSources) {
+    assert.throws(
+      () => buildCspString(bad, TEST_NONCE),
+      SOURCE_ERR,
+      `Malformed cspSource should throw: ${JSON.stringify(bad)}`
+    );
+  }
+
+  // Valid shapes must continue to pass (regression guard).
+  // Covers: percent-encoded resource URI, vscode-webview scheme, wildcard host,
+  // and port number — all shapes VS Code may legitimately hand us.
+  const validSources = [
+    'https://file%2B.vscode-resource.vscode-cdn.net',
+    'vscode-webview://abc-123',
+    'https://*.vscode-cdn.net',
+    'https://example.com:8080',
+  ];
+  for (const good of validSources) {
+    assert.doesNotThrow(
+      () => buildCspString(good, TEST_NONCE),
+      `Valid cspSource must be accepted: ${good}`
+    );
+  }
+
+  console.log('  buildCspString (input validation) passed!');
 }
 
 // ============================================================================
@@ -799,6 +897,7 @@ export function runHtmlTemplatesTests(): void {
     console.log('--- CSP Tests ---');
     testBuildCspString();
     testBuildCspStringNonceVariation();
+    testBuildCspStringValidation();
 
     // Shared Styles Tests
     console.log('\n--- Shared Styles Tests ---');
