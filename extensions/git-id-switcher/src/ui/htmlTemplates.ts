@@ -268,22 +268,48 @@ export function buildDocumentHtml(
   nonce: string,
   canGoBack: boolean
 ): string {
-  // Script to intercept link clicks and send messages to extension
+  // Script to intercept link clicks / keyboard activation and back button.
+  //
+  // Keyboard policy for <a>: only Enter activates. Native <a> already fires
+  // a synthetic click on Enter, so the click listener covers it with zero
+  // extra code. Space is intentionally NOT handled — on <a> Space performs
+  // page scroll per the ARIA Authoring Practices, and synthesising
+  // navigation there would break user expectations (WCAG 3.2.5 Change on
+  // Request). The back button is a <button>, where both Enter and Space
+  // DO fire a native click, so its activation also flows through the
+  // click listener.
+  //
+  // Why aria-disabled on back-btn (not [disabled]): Safari/VoiceOver remove
+  // focus from [disabled] buttons entirely, trapping keyboard users who
+  // tab-land on the nav bar. aria-disabled keeps the button in the focus
+  // order and we guard the click handler instead.
   const linkInterceptScript = `
     (function() {
       const vscode = acquireVsCodeApi();
 
       document.addEventListener('click', function(e) {
-        const link = e.target.closest('a');
-        if (!link) return;
+        // Back button takes precedence: if the click path traverses the
+        // back button, handle it first so link-in-button edge cases (a
+        // sanitizer future-regression adding <a> inside the button) cannot
+        // bypass the aria-disabled guard below.
+        const backBtn = e.target.closest && e.target.closest('#back-btn');
+        if (backBtn) {
+          if (backBtn.getAttribute('aria-disabled') === 'true') {
+            e.preventDefault();
+            return;
+          }
+          e.preventDefault();
+          vscode.postMessage({ command: 'back' });
+          return;
+        }
 
+        const link = e.target.closest && e.target.closest('a');
+        if (!link) return;
         const href = link.getAttribute('href');
         if (!href) return;
 
-        // Prevent default navigation
         e.preventDefault();
 
-        // Handle anchor links (scroll within page)
         if (href.startsWith('#')) {
           const target = document.getElementById(href.slice(1));
           if (target) {
@@ -292,16 +318,7 @@ export function buildDocumentHtml(
           return;
         }
 
-        // Send navigation request to extension
-        vscode.postMessage({
-          command: 'navigate',
-          href: href
-        });
-      });
-
-      // Handle back button
-      document.getElementById('back-btn')?.addEventListener('click', function() {
-        vscode.postMessage({ command: 'back' });
+        vscode.postMessage({ command: 'navigate', href: href });
       });
     })();
   `;
@@ -398,14 +415,47 @@ export function buildDocumentHtml(
     .nav-bar button:hover {
       background: var(--vscode-button-secondaryHoverBackground);
     }
-    .nav-bar button:disabled {
-      opacity: 0.5;
+    /* aria-disabled is used instead of the [disabled] attribute so
+       Safari/VoiceOver keep the button in the focus order (Issue-00188).
+       Uses a theme-aware foreground color instead of opacity so the
+       focus-visible outline retains full contrast (WCAG 1.4.11) when
+       the button is both focused and disabled. */
+    .nav-bar button[aria-disabled="true"] {
+      color: var(--vscode-disabledForeground, var(--vscode-descriptionForeground));
       cursor: not-allowed;
     }
     .nav-bar .current-path {
       margin-left: var(--gis-space-md);
       color: var(--vscode-descriptionForeground);
       font-size: var(--gis-font-sm);
+    }
+    /* WCAG 2.4.7 Focus Visible: a single SSOT focus ring shared by
+       every focusable element in the document template. Uses VS Code
+       theme tokens so it adapts to light/dark/high-contrast themes. */
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--vscode-focusBorder);
+      outline-offset: 2px;
+    }
+    /* Forced-colors (Windows High Contrast) overrides.
+       - The nth-child(even) zebra uses a theme background that collapses to
+         Canvas in forced-colors, flattening rows. Explicitly reset to
+         Canvas so rows keep the system background rather than an opaque
+         panel color that would fight cell borders.
+       - Focus outlines must use the system Highlight color per WCAG 1.4.3. */
+    @media (forced-colors: active) {
+      /* Both th and zebra rows share --vscode-textCodeBlock-background
+         in the default theme; under forced-colors that token collapses and
+         can fight cell borders. Flatten them to Canvas so the system
+         palette drives row/cell backgrounds uniformly. */
+      tr:nth-child(even),
+      th {
+        background-color: Canvas;
+      }
+      a:focus-visible,
+      button:focus-visible {
+        outline-color: Highlight;
+      }
     }
     .footer {
       margin-top: var(--gis-pad-body-lg);
@@ -426,13 +476,19 @@ export function buildDocumentHtml(
       margin: 0 auto;
     }`;
 
+  // aria-disabled (not [disabled]) preserves tab focus under Safari/VoiceOver.
+  // The ← glyph lives inside an aria-hidden span so AT announces only the
+  // button's aria-label ("Go back") instead of reading the arrow as a
+  // standalone token before the word "Back".
   const body = `  <nav class="nav-bar" aria-label="Document navigation">
-    <button id="back-btn" ${canGoBack ? '' : 'disabled'}>← Back</button>
-    <span class="current-path">${escapeHtmlEntities(currentPath)}</span>
+    <button id="back-btn" type="button" aria-label="Go back" aria-disabled="${canGoBack ? 'false' : 'true'}"><span aria-hidden="true">← </span>Back</button>
+    <span class="current-path" aria-current="page">${escapeHtmlEntities(currentPath)}</span>
   </nav>
-  ${content}
+  <main>
+${content}
+  </main>
   <footer class="footer">
-    <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher#readme">View on GitHub</a>
+    <a href="https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher#readme" aria-label="View Git ID Switcher on GitHub">View on GitHub</a>
     <a href="https://marketplace.visualstudio.com/items?itemName=nullvariant.git-id-switcher">VS Code Marketplace</a>
   </footer>
   <script nonce="${nonce}">${linkInterceptScript}</script>`;
@@ -479,10 +535,13 @@ export function buildLoadingHtml(cspSource: string, nonce: string): string {
       margin-top: var(--gis-space-md);
     }`;
 
-  const body = `  <div class="loading">
+  // aria-live="polite" + aria-atomic complements role="status" for AT stacks
+  // (older NVDA, some mobile readers) that miss the implicit live region on
+  // elements rendered during initial document parse.
+  const body = `  <main class="loading">
     <div class="spinner" aria-hidden="true"></div>
-    <p role="status">Loading documentation...</p>
-  </div>`;
+    <p role="status" aria-live="polite" aria-atomic="true">Loading documentation...</p>
+  </main>`;
 
   return buildHtmlShell({
     cspSource,
@@ -533,11 +592,29 @@ export function buildErrorHtml(
     }
     h1 {
       color: var(--vscode-errorForeground);
+    }
+    /* WCAG 2.4.7 Focus Visible — error template has no other focusable
+       controls but still needs a visible focus ring on the fallback link. */
+    a:focus-visible {
+      outline: 2px solid var(--vscode-focusBorder);
+      outline-offset: 2px;
+    }
+    @media (forced-colors: active) {
+      a:focus-visible {
+        outline-color: Highlight;
+      }
     }`;
 
-  const body = `  <h1>${msg.title}</h1>
-  <p>${msg.body}</p>
-  <p><a href="https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher#readme">View on GitHub</a></p>`;
+  // role="alert" wraps only the body <p>, not the <h1>. Putting a heading
+  // inside role="alert" causes JAWS to drop it from the heading list and
+  // some AT to re-read the title as both "alert" and "heading level 1".
+  // The <h1> remains the landmark heading; the alert announces only the
+  // detail message, which is the part that needs to interrupt the user.
+  const body = `  <main>
+    <h1>${msg.title}</h1>
+    <p role="alert">${msg.body}</p>
+    <p><a href="https://github.com/nullvariant/nullvariant-vscode-extensions/tree/main/extensions/git-id-switcher#readme" aria-label="View Git ID Switcher on GitHub">View on GitHub</a></p>
+  </main>`;
 
   return buildHtmlShell({
     cspSource,
