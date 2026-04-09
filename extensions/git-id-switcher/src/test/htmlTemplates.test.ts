@@ -34,10 +34,13 @@
 
 import * as assert from 'node:assert';
 import {
+  type BodyClass,
+  type ErrorType,
   type SanitizedHtml,
   assertValidLang,
   assertValidNonce,
   buildCspString,
+  buildHtmlShell,
   CspValidationError,
   getBaseStyles,
   buildDocumentHtml,
@@ -173,11 +176,11 @@ function testBuildCspStringValidation(): void {
   // Error message assertions use anchored regexes that match the exact
   // "buildCspString: nonce " / "buildCspString: cspSource " prefix so a
   // future rewording that conflates the two parameters is caught.
-  // The `CspValidationError:` prefix (Issue-00236) lets renderWithFallback
+  // The `CspValidationError:` prefix lets renderWithFallback
   // narrow its catch via `instanceof` instead of swallowing every throw.
-  // Nonce validation was de-duplicated into assertValidNonce (Issue-00191
+  // Nonce validation was de-duplicated into assertValidNonce (
   // SSOT consolidation), so the error prefix is `assertValidNonce:` rather
-  // than `buildCspString:`. The Issue-00236 scrub invariant (static message,
+  // than `buildCspString:`. Thescrub invariant (static message,
   // no attacker bytes) and the `instanceof CspValidationError` narrowing
   // used by renderWithFallback remain unchanged.
   const NONCE_ERR = /^CspValidationError: assertValidNonce: nonce /;
@@ -244,7 +247,7 @@ function testBuildCspStringValidation(): void {
     );
   }
 
-  // Issue-00236 scrub contract: the CspValidationError message MUST be
+  //scrub contract: the CspValidationError message MUST be
   // static — it must not interpolate any caller-supplied nonce/cspSource
   // substring. renderWithFallback logs `error.message` verbatim, so any
   // future "helpful" error builder that echoes raw input would silently
@@ -272,7 +275,7 @@ function testBuildCspStringValidation(): void {
     );
   }
 
-  // Issue-00236: thrown error must be a `CspValidationError` instance so
+  // : thrown error must be a `CspValidationError` instance so
   // `renderWithFallback` can narrow its catch. A plain `Error` would still
   // match the regex above but break the instanceof guard silently.
   assert.throws(
@@ -325,7 +328,7 @@ function testGetBaseStyles(): void {
     'Should use VS Code active link color variable'
   );
 
-  // Should define design tokens for border-radius (Issue-00119)
+  // Should define design tokens for border-radius
   // Values matter: they form the SSOT contract, not just the names.
   assert.match(
     styles, /--gis-radius-sm:\s*3px/,
@@ -350,13 +353,13 @@ function countBorderRadiusPxLiterals(html: string): string[] {
 }
 
 /**
- * Test CSS/a11y quality fixes from Issue-00119.
+ * Test CSS/a11y quality fixes from .
  *
  * Applies to ALL templates (document/loading/error) so the SSOT
  * guarantees cannot regress in one template while passing in another.
  */
 function testAllTemplatesCssQuality(): void {
-  console.log('Testing all templates (CSS/a11y quality — Issue-00119)...');
+  console.log('Testing all templates (CSS/a11y quality — )...');
 
   const templates: ReadonlyArray<readonly [string, () => string]> = [
     ['document', (): string => buildDocumentHtml(
@@ -418,7 +421,7 @@ function testAllTemplatesCssQuality(): void {
 }
 
 // ============================================================================
-// Cross-Template Invariants: shell skeleton equality (Issue-00190)
+// Cross-Template Invariants: shell skeleton equality
 // ============================================================================
 
 /**
@@ -426,7 +429,7 @@ function testAllTemplatesCssQuality(): void {
  * body inner HTML) from a rendered template so only the shared shell
  * skeleton — DOCTYPE, html/head/body tag layout, meta tags, their order —
  * remains. Used to prove all three templates emit a byte-identical shell
- * after buildHtmlShell() extraction (Issue-00186).
+ * after buildHtmlShell() extraction.
  */
 function extractShell(html: string): string {
   return html
@@ -451,7 +454,7 @@ function extractShell(html: string): string {
 /**
  * All three templates must share a byte-identical shell skeleton.
  *
- * Regression guard for Issue-00186 (buildHtmlShell extraction): if any
+ * Regression guard for(buildHtmlShell extraction): if any
  * future change adds a meta tag, reorders head children, or drops the
  * viewport meta from just one template, this assertion fails immediately
  * instead of silently diverging across templates.
@@ -496,7 +499,7 @@ function testShellSkeletonIsShared(): void {
 }
 
 /**
- * Body class-based override invariant (Issue-00189).
+ * Body class-based override invariant.
  *
  * Each template must declare its body layout under a `body.gis-*` class
  * selector, not a bare `body { … }` override. The base body rule in
@@ -504,7 +507,7 @@ function testShellSkeletonIsShared(): void {
  * specificity regardless of style-block order.
  */
 function testBodyClassOverrides(): void {
-  console.log('Testing body class overrides (Issue-00189)...');
+  console.log('Testing body class overrides...');
 
   const cases: ReadonlyArray<readonly [string, string, () => string]> = [
     ['document', 'gis-doc', (): string => buildDocumentHtml(
@@ -527,8 +530,11 @@ function testBodyClassOverrides(): void {
     );
   }
 
-  // Document & error templates must scope their overrides via the class
-  // selector. Loading has no body override, only the base rule.
+  // All three templates must scope their overrides via the class selector.
+  // Loading's <p> override was bare (`p { margin-top: ... }`) prior to
+  //and has since been pinned under `body.gis-loading p` to stay
+  // symmetric with document/error; asserting it here prevents the scoping
+  // from silently regressing to a bare element selector again.
   const docHtml = buildDocumentHtml(
     TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, false
   );
@@ -541,12 +547,27 @@ function testBodyClassOverrides(): void {
     errorHtml, /body\.gis-error\s*\{/,
     'Error template must scope override under body.gis-error'
   );
+  const loadingHtml = buildLoadingHtml(TEST_CSP_SOURCE, TEST_NONCE);
+  assert.match(
+    loadingHtml, /body\.gis-loading\s+p\s*\{/,
+    'Loading template must scope <p> override under body.gis-loading'
+  );
+  // Negative guard: within the loading <style> block, no bare `p {` selector
+  // may remain. Slice between the style tags so the assertion ignores any
+  // future <p> in the body markup itself.
+  const styleOpen = loadingHtml.indexOf('<style');
+  const styleClose = loadingHtml.indexOf('</style>', styleOpen);
+  const loadingStyleBlock = loadingHtml.slice(styleOpen, styleClose);
+  assert.ok(
+    !/(^|\n)\s*p\s*\{/.test(loadingStyleBlock),
+    'Loading style block must not contain a bare `p {` selector'
+  );
 
   console.log('  body class overrides passed!');
 }
 
 /**
- * Design token coverage (Issue-00192).
+ * Design token coverage.
  *
  * Verify magic numbers previously scattered across templates are now
  * token references. Presence of the tokens in :root is a necessary
@@ -554,7 +575,7 @@ function testBodyClassOverrides(): void {
  * no longer recurs (SSOT enforcement for core-values #4).
  */
 function testDesignTokenCoverage(): void {
-  console.log('Testing design token coverage (Issue-00192)...');
+  console.log('Testing design token coverage...');
 
   const styles = getBaseStyles();
   // Values matter: tokens form the SSOT contract, not just the names.
@@ -676,7 +697,7 @@ function testBuildDocumentHtmlNavigation(): void {
   );
 
   // Back button enabled: aria-disabled="false" (not the [disabled] attribute),
-  // so Safari/VoiceOver keep it in focus order (Issue-00188).
+  // so Safari/VoiceOver keep it in focus order.
   assert.ok(
     htmlWithBack.includes('aria-disabled="false"'),
     'Back button should have aria-disabled="false" when canGoBack is true'
@@ -720,7 +741,7 @@ function testBuildDocumentHtmlNavigation(): void {
 function testBuildDocumentHtmlContentEscaping(): void {
   console.log('Testing buildDocumentHtml (escaping)...');
 
-  // Issue-00191: XSS payloads in `locale` no longer rely on downstream
+  // : XSS payloads in `locale` no longer rely on downstream
   // escaping — they are rejected fail-closed at the shell boundary via
   // assertValidLang. This is strictly stronger than escaping because the
   // error surfaces immediately instead of depending on the escaper staying
@@ -759,7 +780,7 @@ function testBuildDocumentHtmlContentEscaping(): void {
 }
 
 /**
- * Issue-00191: defense-in-depth validation of nonce / lang at the
+ * : defense-in-depth validation of nonce / lang at the
  * buildHtmlShell boundary via the exported assertValid* helpers.
  *
  * Covered:
@@ -772,7 +793,7 @@ function testBuildDocumentHtmlContentEscaping(): void {
  *  - buildLoadingHtml / buildErrorHtml also validate nonce at the shell
  */
 function testShellInputValidation(): void {
-  console.log('Testing buildHtmlShell input validation (Issue-00191)...');
+  console.log('Testing buildHtmlShell input validation...');
 
   // --- assertValidNonce ---
   const badNonces = [
@@ -1065,7 +1086,7 @@ function testLangAttributes(): void {
     'Error HTML should have lang="en"'
   );
 
-  // Issue-00186: every template must declare a <title> inside <head> so
+  // : every template must declare a <title> inside <head> so
   // tabs / screen readers / browser history have a discoverable label.
   // Regression guard: before this Issue, loading/error had no <title>.
   const requireTitleInHead = (html: string, expected: string, name: string): void => {
@@ -1111,11 +1132,11 @@ function testLangAttributes(): void {
 }
 
 // ============================================================================
-// Issue-00188: Existing template a11y improvements
+// : Existing template a11y improvements
 // ============================================================================
 
 /**
- * Cover the a11y contract introduced by Issue-00188:
+ * Cover the a11y contract introduced by :
  *  - back-btn uses aria-label="Go back" with ← inside aria-hidden span
  *  - document/error templates wrap body content in <main> landmark
  *  - error template wraps message in div role="alert" (not on <h1>)
@@ -1127,7 +1148,7 @@ function testLangAttributes(): void {
  *  - linkInterceptScript handles keydown in addition to click
  */
 function testIssue00188A11yImprovements(): void {
-  console.log('Testing Issue-00188 a11y improvements...');
+  console.log('Testinga11y improvements...');
 
   const docHtmlCanBack = buildDocumentHtml(
     TEST_CSP_SOURCE, asSanitizedHtml('<p>Content</p>'), 'en', 'docs/README.md', TEST_NONCE, true
@@ -1301,7 +1322,113 @@ function testIssue00188A11yImprovements(): void {
     'back-btn branch must precede the generic <a> branch in click handler'
   );
 
-  console.log('  Issue-00188 a11y improvements passed!');
+  console.log(' a11y improvements passed!');
+}
+
+// ============================================================================
+// Barrel Surface & buildHtmlShell Direct Tests
+// ============================================================================
+
+/**
+ * Pin the `../ui/htmlTemplates` barrel's re-export surface so a future
+ * refactor that drops a symbol (or introduces a duplicate class under the
+ * same name) is caught immediately. Prior tothe barrel covered
+ * BodyClass / ErrorType / buildHtmlShell only transitively via consumer
+ * imports, leaving them untouched by the test suite — which defeats the
+ * purpose of a barrel as an external contract.
+ */
+function testBarrelReExportSurface(): void {
+  console.log('Testing barrel re-export surface...');
+
+  // Value symbols: runtime typeof locks the shape.
+  assert.strictEqual(typeof buildHtmlShell, 'function', 'buildHtmlShell must be re-exported');
+  assert.strictEqual(typeof assertValidLang, 'function', 'assertValidLang must be re-exported');
+  assert.strictEqual(typeof assertValidNonce, 'function', 'assertValidNonce must be re-exported');
+  assert.strictEqual(typeof buildCspString, 'function', 'buildCspString must be re-exported');
+  assert.strictEqual(typeof getBaseStyles, 'function', 'getBaseStyles must be re-exported');
+  assert.strictEqual(typeof buildDocumentHtml, 'function', 'buildDocumentHtml must be re-exported');
+  assert.strictEqual(typeof buildLoadingHtml, 'function', 'buildLoadingHtml must be re-exported');
+  assert.strictEqual(typeof buildErrorHtml, 'function', 'buildErrorHtml must be re-exported');
+  assert.ok(
+    CspValidationError.prototype instanceof Error,
+    'CspValidationError must extend Error'
+  );
+
+  // Type-only symbols: assignment proves compile-time availability and
+  // structural value. A future drop/rename of the type in the barrel would
+  // fail to compile before this test ever runs.
+  // Assignment + runtime assertion proves compile-time type availability
+  // without tripping `sonarjs/void-use`. If the barrel ever stops exporting
+  // one of these types the file fails to compile before reaching runtime.
+  const bodyClass: BodyClass = 'gis-doc';
+  const errorType: ErrorType = 'network';
+  const sanitized: SanitizedHtml = asSanitizedHtml('<p>x</p>');
+  assert.strictEqual(bodyClass, 'gis-doc');
+  assert.strictEqual(errorType, 'network');
+  assert.strictEqual(sanitized, '<p>x</p>');
+
+  console.log('  barrel re-export surface passed!');
+}
+
+/**
+ * `buildHtmlShell` is the trust boundary that every template funnels
+ * through.added a defense-in-depth `</style` raw-text
+ * breakout guard on `extraStyles` — pin it here so a future refactor
+ * cannot quietly delete the check.
+ *
+ * The happy path (`extraStyles: ''` is legal, getBaseStyles is always
+ * prepended) is asserted alongside the negative cases so a regression
+ * that makes the check too aggressive (e.g. rejecting legitimate
+ * `body { }` rules) is also caught.
+ */
+function testBuildHtmlShellExtraStylesGuard(): void {
+  console.log('Testing buildHtmlShell (extraStyles </style guard)...');
+
+  // Happy path: empty extraStyles must still produce a well-formed shell
+  // with getBaseStyles prepended. This also pins the "base layer is always
+  // injected by the shell, not the template" contract introduced by the
+  // extraStyles refactor.
+  const happy = buildHtmlShell({
+    cspSource: TEST_CSP_SOURCE,
+    nonce: TEST_NONCE,
+    lang: 'en',
+    title: 'Shell Contract Test',
+    extraStyles: '',
+    bodyClass: 'gis-doc',
+    body: asSanitizedHtml('<main>hi</main>'),
+  });
+  assert.ok(happy.includes('<!DOCTYPE html>'), 'shell must emit DOCTYPE');
+  assert.ok(happy.includes(':root {'), 'shell must prepend getBaseStyles (:root block)');
+  assert.ok(happy.includes('<body class="gis-doc">'), 'shell must emit body class');
+
+  // Negative path: every case-variant of `</style` must fail-closed with
+  // CspValidationError so renderWithFallback can narrow on instanceof and
+  // fall through to staticFallbackHtml.
+  const breakoutPayloads = [
+    'body { } </style><script>alert(1)</script>',
+    'x </STYLE',
+    'a</Style>b',
+    '</style ',
+  ];
+  for (const payload of breakoutPayloads) {
+    assert.throws(
+      () => buildHtmlShell({
+        cspSource: TEST_CSP_SOURCE,
+        nonce: TEST_NONCE,
+        lang: 'en',
+        title: 't',
+        extraStyles: payload,
+        bodyClass: 'gis-doc',
+        body: '' as SanitizedHtml,
+      }),
+      (e: unknown) =>
+        e instanceof CspValidationError &&
+        /extraStyles contains <\/style sequence/.test(e.message),
+      `extraStyles </style breakout must fail-closed: ${JSON.stringify(payload)}`
+    );
+  }
+
+  console.log('  buildHtmlShell (extraStyles </style guard) passed!');
 }
 
 // ============================================================================
@@ -1340,6 +1467,8 @@ export function runHtmlTemplatesTests(): void {
     testShellSkeletonIsShared();
     testBodyClassOverrides();
     testDesignTokenCoverage();
+    testBarrelReExportSurface();
+    testBuildHtmlShellExtraStylesGuard();
 
     // Loading HTML Tests
     console.log('\n--- Loading HTML Tests ---');
@@ -1356,8 +1485,8 @@ export function runHtmlTemplatesTests(): void {
     console.log('\n--- Lang Attribute Tests ---');
     testLangAttributes();
 
-    // Issue-00188 A11y Improvements
-    console.log('\n--- Issue-00188 A11y Improvements ---');
+    //A11y Improvements
+    console.log('\n---A11y Improvements ---');
     testIssue00188A11yImprovements();
 
     console.log('\n========================================');

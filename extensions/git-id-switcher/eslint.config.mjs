@@ -186,7 +186,7 @@ export default [
       "**/ui/documentationInternal.ts",
       "**/ui/documentationPublic.ts",
       "**/ui/webview.ts",
-      "**/ui/htmlTemplates.ts",
+      "**/ui/htmlTemplates/**",
     ],
     rules: {
       "no-magic-numbers": "off",
