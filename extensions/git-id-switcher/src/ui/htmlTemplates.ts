@@ -84,6 +84,90 @@ const NONCE_PATTERN = /^[A-Za-z0-9+/=_-]{22,}$/;
 const CSP_SOURCE_PATTERN = /^[A-Za-z][A-Za-z0-9+.-]*:[A-Za-z0-9%*._/:-]+$/;
 
 /**
+ * BCP 47 language tag (subset). Accepts either:
+ *  - a 2-3 letter primary subtag optionally followed by `-<2-8 alphanumeric>`
+ *    subtags (covers `en`, `ja`, `zh-CN`, `pt-BR`, `ain`, `tlh`, …), or
+ *  - an `x-…` private-use tag whose subtags are 1-16 alphanumeric
+ *    (covers SUPPORTED_LOCALES entries `x-pirate`, `x-shakespeare`,
+ *    `x-lolcat`). The subtag length is intentionally wider than RFC 5646's
+ *    8-char limit to accommodate the extension's own whimsy locales without
+ *    spamming governance. Private-use is enumerated explicitly because the
+ *    single-letter `x` primary subtag does not fit the general form.
+ *
+ * Fullmatch forbids quotes, angle brackets, whitespace, etc. that could
+ * break the `<html lang>` attribute. Kept deliberately stricter than the
+ * full RFC 5646 grammar — we do not need extlang / grandfathered forms.
+ */
+const LANG_PATTERN = /^(?:[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{2,8})*|x(?:-[a-zA-Z0-9]{1,16})+)$/;
+
+/**
+ * SSOT allowlist for body class identifiers consumed by `buildHtmlShell`.
+ * The tuple is declared `as const` so the `BodyClass` type below can be
+ * derived from it — adding a new template means widening this one array
+ * and the compile-time union follows automatically (no dual-definition
+ * drift, core-values #2).
+ */
+const VALID_BODY_CLASSES = new Set([
+  'gis-doc',
+  'gis-loading',
+  'gis-error',
+] as const);
+
+/**
+ * Compile-time allowlist for the body class identifier on `<body>`, derived
+ * from `VALID_BODY_CLASSES` so the runtime set and the type stay in lockstep.
+ * The only values that may reach `buildHtmlShell` come from template
+ * functions inside this file, so a literal union plus a runtime allowlist
+ * check is strictly stronger than escaping an arbitrary `string`: even a
+ * future refactor that accidentally forwards external input fails at both
+ * compile time and the trust boundary.
+ */
+export type BodyClass =
+  typeof VALID_BODY_CLASSES extends ReadonlySet<infer T> ? T : never;
+
+/**
+ * Validate a CSP nonce at the trust boundary. Used by both `buildCspString`
+ * (where the nonce is interpolated into the CSP `content` attribute) and
+ * `buildHtmlShell` (where it is interpolated into `<style nonce>` /
+ * `<script nonce>` attributes). Exported so the webview layer can assert at
+ * the generation site in addition to the consumption site — defense-in-depth
+ * per Issue-00191.
+ *
+ * @throws {CspValidationError} with a scrubbed, static message (Issue-00236
+ *   contract: never echo attacker-controlled bytes back through error logs).
+ */
+export function assertValidNonce(nonce: string): void {
+  if (!NONCE_PATTERN.test(nonce)) {
+    throw new CspValidationError('assertValidNonce: nonce contains disallowed characters');
+  }
+}
+
+/**
+ * Validate a BCP 47 language tag for interpolation into `<html lang="…">`.
+ * Exported for defense-in-depth alongside `assertValidNonce`. Callers that
+ * may legitimately receive an empty locale (e.g. bootstrap before i18n is
+ * ready) should pass the empty string through `coerceLang` first rather than
+ * duplicating the fallback logic.
+ *
+ * @throws {CspValidationError} with a static, scrubbed message.
+ */
+export function assertValidLang(lang: string): void {
+  if (!LANG_PATTERN.test(lang)) {
+    throw new CspValidationError('assertValidLang: lang is not a valid BCP 47 tag');
+  }
+}
+
+/**
+ * Coerce a possibly-empty locale to a safe default before validation. Kept
+ * separate from `assertValidLang` so that the validator remains fail-closed
+ * for *all* callers — only the shell, which owns the rendering contract,
+ * opts into the fallback.
+ */
+function coerceLang(lang: string): string {
+  return lang === '' ? 'en' : lang;
+}
+
+/**
  * Build Content Security Policy header value
  *
  * Defense-in-depth:
@@ -103,9 +187,11 @@ const CSP_SOURCE_PATTERN = /^[A-Za-z][A-Za-z0-9+.-]*:[A-Za-z0-9%*._/:-]+$/;
  * @throws {CspValidationError} if `nonce` or `cspSource` fails format validation
  */
 export function buildCspString(cspSource: string, nonce: string): string {
-  if (!NONCE_PATTERN.test(nonce)) {
-    throw new CspValidationError('buildCspString: nonce contains disallowed characters');
-  }
+  // Delegate to assertValidNonce — single source of truth for nonce format.
+  // The thrown CspValidationError keeps the Issue-00236 scrub invariant
+  // (static message, no attacker bytes) and `renderWithFallback` narrows on
+  // `instanceof CspValidationError`, not on the prefix string.
+  assertValidNonce(nonce);
   if (!CSP_SOURCE_PATTERN.test(cspSource)) {
     throw new CspValidationError('buildCspString: cspSource has unexpected format');
   }
@@ -197,17 +283,24 @@ export function getBaseStyles(): string {
 interface HtmlShellOptions {
   readonly cspSource: string;
   readonly nonce: string;
+  /**
+   * BCP 47 language tag or the empty string. Empty is coerced to `'en'`
+   * inside `buildHtmlShell` before validation; any other non-conforming
+   * value throws `CspValidationError`.
+   */
   readonly lang: string;
   readonly title: string;
   /** Full CSS content placed inside the single <style nonce> block. */
   readonly styles: string;
   /**
-   * Body class identifier (e.g. "gis-doc"). Template-specific body CSS MUST
-   * be scoped by this class so that template overrides raise specificity
-   * beyond the base `body` rule in getBaseStyles(), making cascade order
-   * irrelevant (Issue-00189).
+   * Body class identifier. Compile-time restricted to the `BodyClass` union
+   * and runtime-checked against `VALID_BODY_CLASSES` so a future caller that
+   * erases the type cannot inject attacker-controlled bytes into the `<body
+   * class>` attribute (Issue-00191). Template-specific body CSS MUST be
+   * scoped by this class so template overrides raise specificity beyond the
+   * base `body` rule in getBaseStyles() (Issue-00189).
    */
-  readonly bodyClass: string;
+  readonly bodyClass: BodyClass;
   /** Raw HTML inserted between <body> and </body> (may include <script>). */
   readonly body: string;
 }
@@ -220,10 +313,32 @@ interface HtmlShellOptions {
  * a11y fixes happen in exactly one place.
  */
 function buildHtmlShell(opts: Readonly<HtmlShellOptions>): string {
+  // Defense-in-depth: validate every attribute-interpolated input at the
+  // shell boundary, not just at the caller that generates it. nonce and lang
+  // land in attribute context (`<style nonce>`, `<html lang>`), where a
+  // single stray `"` or `>` permits breakout; bodyClass is allowlist-checked
+  // because it is under our compile-time control (Issue-00191).
+  assertValidNonce(opts.nonce);
+  const lang = coerceLang(opts.lang);
+  assertValidLang(lang);
+  // Defense-in-depth: the BodyClass union makes this branch unreachable
+  // under the normal type contract, but the runtime allowlist guards against
+  // a future caller that erases the type.
+  /* c8 ignore start */
+  if (!VALID_BODY_CLASSES.has(opts.bodyClass)) {
+    throw new CspValidationError('buildHtmlShell: bodyClass is not in the allowlist');
+  }
+  /* c8 ignore stop */
+
   const csp = buildCspString(opts.cspSource, opts.nonce);
 
+  // lang and bodyClass are post-validation fixed-shape values, so the
+  // escapeHtmlEntities wrapper is redundant — the allowlist IS the escape.
+  // Removing the call makes the trust boundary explicit: if `lang` ever
+  // flows in without passing assertValidLang, the failure is structural
+  // rather than silently masked by a downstream escaper.
   return `<!DOCTYPE html>
-<html lang="${escapeHtmlEntities(opts.lang)}">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="${csp}">
@@ -233,7 +348,7 @@ function buildHtmlShell(opts: Readonly<HtmlShellOptions>): string {
     ${opts.styles}
   </style>
 </head>
-<body class="${escapeHtmlEntities(opts.bodyClass)}">
+<body class="${opts.bodyClass}">
 ${opts.body}
 </body>
 </html>`;

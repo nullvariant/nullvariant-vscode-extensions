@@ -35,6 +35,8 @@
 import * as assert from 'node:assert';
 import {
   type SanitizedHtml,
+  assertValidLang,
+  assertValidNonce,
   buildCspString,
   CspValidationError,
   getBaseStyles,
@@ -173,7 +175,12 @@ function testBuildCspStringValidation(): void {
   // future rewording that conflates the two parameters is caught.
   // The `CspValidationError:` prefix (Issue-00236) lets renderWithFallback
   // narrow its catch via `instanceof` instead of swallowing every throw.
-  const NONCE_ERR = /^CspValidationError: buildCspString: nonce /;
+  // Nonce validation was de-duplicated into assertValidNonce (Issue-00191
+  // SSOT consolidation), so the error prefix is `assertValidNonce:` rather
+  // than `buildCspString:`. The Issue-00236 scrub invariant (static message,
+  // no attacker bytes) and the `instanceof CspValidationError` narrowing
+  // used by renderWithFallback remain unchanged.
+  const NONCE_ERR = /^CspValidationError: assertValidNonce: nonce /;
   const SOURCE_ERR = /^CspValidationError: buildCspString: cspSource /;
 
   // Nonce breakout and boundary payloads.
@@ -713,33 +720,191 @@ function testBuildDocumentHtmlNavigation(): void {
 function testBuildDocumentHtmlContentEscaping(): void {
   console.log('Testing buildDocumentHtml (escaping)...');
 
-  // Locale with XSS payload should be escaped
+  // Issue-00191: XSS payloads in `locale` no longer rely on downstream
+  // escaping — they are rejected fail-closed at the shell boundary via
+  // assertValidLang. This is strictly stronger than escaping because the
+  // error surfaces immediately instead of depending on the escaper staying
+  // correct forever.
+  assert.throws(
+    () =>
+      buildDocumentHtml(
+        TEST_CSP_SOURCE,
+        asSanitizedHtml('<p>Safe content</p>'),
+        '"><script>alert(1)</script>',
+        'docs/README.md',
+        TEST_NONCE,
+        false
+      ),
+    (err: unknown) => err instanceof CspValidationError,
+    'Locale XSS payload must throw CspValidationError at the shell boundary'
+  );
+
+  // Path still flows through escapeHtmlEntities (it is markdown-derived
+  // free text, not an allowlisted attribute) so the escape contract on
+  // that field must keep working.
   const html = buildDocumentHtml(
     TEST_CSP_SOURCE,
     asSanitizedHtml('<p>Safe content</p>'),
-    '"><script>alert(1)</script>',
+    'en',
     'docs/<script>alert(2)</script>.md',
     TEST_NONCE,
     false
   );
-
-  // Locale should be escaped in lang attribute
-  assert.ok(
-    !html.includes('lang=""><script>'),
-    'Locale XSS payload should be escaped'
-  );
-  assert.ok(
-    html.includes('&lt;script&gt;'),
-    'Script tags in locale should be HTML-escaped'
-  );
-
-  // Path should be escaped in display
   assert.ok(
     html.includes('&lt;script&gt;alert(2)&lt;/script&gt;'),
     'Script tags in path should be HTML-escaped'
   );
 
   console.log('  buildDocumentHtml (escaping) passed!');
+}
+
+/**
+ * Issue-00191: defense-in-depth validation of nonce / lang at the
+ * buildHtmlShell boundary via the exported assertValid* helpers.
+ *
+ * Covered:
+ *  - assertValidNonce rejects the same breakout payloads as buildCspString
+ *    (quote, angle bracket, semicolon, whitespace, length floor)
+ *  - assertValidLang rejects XSS payloads and accepts every entry in
+ *    SUPPORTED_LOCALES (including `x-*` private-use tags)
+ *  - assertValidLang's errors are scrubbed (no attacker bytes in message)
+ *  - buildDocumentHtml propagates nonce rejection to the shell boundary
+ *  - buildLoadingHtml / buildErrorHtml also validate nonce at the shell
+ */
+function testShellInputValidation(): void {
+  console.log('Testing buildHtmlShell input validation (Issue-00191)...');
+
+  // --- assertValidNonce ---
+  const badNonces = [
+    `${TEST_NONCE}"`,
+    `${TEST_NONCE}>`,
+    `${TEST_NONCE}<script>`,
+    `${TEST_NONCE} `,
+    `${TEST_NONCE};`,
+    `${TEST_NONCE}\n`,
+    `${TEST_NONCE}\r`,              // CR
+    `${TEST_NONCE}\t`,              // tab
+    `${TEST_NONCE}\u00A0`,          // NBSP
+    `${TEST_NONCE}\u2028`,          // line separator (JS-specific hazard)
+    `${TEST_NONCE}\u0000`,          // NUL
+    'tooShort',
+    '',
+  ];
+  for (const bad of badNonces) {
+    assert.throws(
+      () => assertValidNonce(bad),
+      (err: unknown) => err instanceof CspValidationError,
+      `assertValidNonce must reject: ${JSON.stringify(bad)}`
+    );
+  }
+  assert.doesNotThrow(
+    () => assertValidNonce(TEST_NONCE),
+    'assertValidNonce must accept a valid 24-char base64 nonce'
+  );
+
+  // --- assertValidLang happy path ---
+  // Every entry in the extension's SUPPORTED_LOCALES must pass. Hardcoded
+  // rather than imported so a future accidental narrowing of LANG_PATTERN
+  // that silently drops `x-*` tags is caught here even if the import path
+  // changes.
+  const validLangs = [
+    'en', 'ja', 'zh-CN', 'zh-TW', 'ko', 'de', 'fr', 'es', 'it', 'pt-BR',
+    'ru', 'pl', 'tr', 'uk', 'cs', 'hu', 'bg',
+    'ain', 'ryu', 'haw', 'eo', 'tlh', 'tok',
+    'x-pirate', 'x-shakespeare', 'x-lolcat',
+  ];
+  for (const good of validLangs) {
+    assert.doesNotThrow(
+      () => assertValidLang(good),
+      `assertValidLang must accept SUPPORTED_LOCALES entry: ${good}`
+    );
+  }
+
+  // --- assertValidLang rejection ---
+  const badLangs = [
+    '"><script>alert(1)</script>',
+    'en"',
+    'en>',
+    'en ',
+    'en;',
+    'en\n',
+    'a',                 // 1-char primary subtag (not x-*)
+    'toolong',           // 7-char primary subtag
+    'en-',               // trailing hyphen
+    'en--US',            // empty subtag between hyphens
+    '',                  // empty (coerce happens in shell, not here)
+    'x',                 // bare x without private-use subtag
+    'x-',                // trailing hyphen after x
+    'en\u0000',          // NUL smuggling
+    'en\u00A0',          // NBSP
+    'en\r\n',            // CRLF
+    'en\u2028',          // line separator
+  ];
+  for (const bad of badLangs) {
+    assert.throws(
+      () => assertValidLang(bad),
+      (err: unknown) => err instanceof CspValidationError,
+      `assertValidLang must reject: ${JSON.stringify(bad)}`
+    );
+  }
+
+  // --- scrub contract: message must not echo attacker bytes ---
+  const SCRUB_SENTINEL = 'LEAK_SENTINEL_LANG_ZZZ';
+  try {
+    assertValidLang(`"><script>${SCRUB_SENTINEL}`);
+    assert.fail('expected throw');
+  } catch (error) {
+    assert.ok(error instanceof CspValidationError);
+    assert.ok(
+      !error.message.includes(SCRUB_SENTINEL),
+      'assertValidLang error must not echo raw lang input'
+    );
+  }
+
+  // --- buildDocumentHtml propagates nonce rejection ---
+  assert.throws(
+    () =>
+      buildDocumentHtml(
+        TEST_CSP_SOURCE,
+        asSanitizedHtml('<p>x</p>'),
+        'en',
+        'docs/README.md',
+        `${TEST_NONCE}"><script>`,
+        false
+      ),
+    (err: unknown) => err instanceof CspValidationError,
+    'buildDocumentHtml must reject nonce breakout at the shell boundary'
+  );
+
+  // --- buildLoadingHtml / buildErrorHtml also validate nonce ---
+  assert.throws(
+    () => buildLoadingHtml(TEST_CSP_SOURCE, 'short'),
+    (err: unknown) => err instanceof CspValidationError,
+    'buildLoadingHtml must reject malformed nonce'
+  );
+  assert.throws(
+    () => buildErrorHtml(TEST_CSP_SOURCE, 'network', 'short'),
+    (err: unknown) => err instanceof CspValidationError,
+    'buildErrorHtml must reject malformed nonce'
+  );
+
+  // --- empty lang is coerced to 'en' inside the shell ---
+  // Passed through buildDocumentHtml to exercise the shell path, not the
+  // raw assertValidLang (which stays fail-closed on empty).
+  const coercedHtml = buildDocumentHtml(
+    TEST_CSP_SOURCE,
+    asSanitizedHtml('<p>x</p>'),
+    '',
+    'docs/README.md',
+    TEST_NONCE,
+    false
+  );
+  assert.ok(
+    coercedHtml.includes('<html lang="en">'),
+    'Empty locale must be coerced to lang="en" at the shell boundary'
+  );
+
+  console.log('  buildHtmlShell input validation passed!');
 }
 
 // ============================================================================
@@ -1167,6 +1332,7 @@ export function runHtmlTemplatesTests(): void {
     testBuildDocumentHtmlStructure();
     testBuildDocumentHtmlNavigation();
     testBuildDocumentHtmlContentEscaping();
+    testShellInputValidation();
     testAllTemplatesCssQuality();
 
     // Cross-Template Invariants
