@@ -114,6 +114,16 @@ export function coerceLang(lang: string): string {
 }
 
 /**
+ * Detects the `</style` substring (case-insensitive) in a raw-text element
+ * context. HTML5 raw-text elements (`<style>`, `<script>`) terminate at the
+ * first occurrence of their own closing tag — any `</style` inside a `<style>`
+ * block therefore breaks out of the element and re-enters HTML context,
+ * enabling attribute injection. Used by `buildHtmlShell` to fail-closed on
+ * `extraStyles` before interpolation.
+ */
+export const STYLE_CLOSE_PATTERN = /<\/style/i;
+
+/**
  * Build Content Security Policy header value
  *
  * Defense-in-depth:

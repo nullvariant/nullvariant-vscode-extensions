@@ -21,6 +21,7 @@ import { escapeHtmlEntities } from '../documentationInternal';
 import { getBaseStyles } from './baseStyles';
 import {
   CspValidationError,
+  STYLE_CLOSE_PATTERN,
   assertValidLang,
   assertValidNonce,
   buildCspString,
@@ -112,7 +113,7 @@ export function buildHtmlShell(opts: Readonly<HtmlShellOptions>): string {
   // brand. `body` is deliberately NOT covered here because document.ts
   // legitimately embeds a `</script>` closing tag and `body` has a separate
   // trust boundary (`SanitizedHtml` on `buildDocumentHtml#content`).
-  if (/<\/style/i.test(opts.extraStyles)) {
+  if (STYLE_CLOSE_PATTERN.test(opts.extraStyles)) {
     throw new CspValidationError('buildHtmlShell: extraStyles contains </style sequence');
   }
 
