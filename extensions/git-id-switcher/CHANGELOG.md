@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-04-10
+
+### Security
+
+- **Webview CSP hardening**: Tightened `img-src` from wildcard to explicit `assets.nullvariant.com` subdomain (#462)
+- **Link scheme allowlist**: Externalized `linkInterceptScript` and restricted navigable href schemes to `http:`, `https:`, and fragment-only (#460)
+- **SanitizedHtml branded type**: Introduced a compile-time brand on pre-sanitized HTML content so `buildDocumentHtml` cannot accept a raw `string` (#455)
+- **Webview fail-safe fallback**: Hardened CSP construction with `CspValidationError` and a fail-closed error page when CSP assembly fails (#453)
+- **Input length guard**: Added input length limit and field name validation to `toFieldError` (#444)
+
+### Added
+
+- **Defense-in-depth nonce/lang validation**: `buildHtmlShell` now validates nonce format and lang tag at the template boundary, throwing `CspValidationError` on invalid input (#457)
+- **npm namespace placeholder**: Published `@nullvariant/git-id-switcher` placeholder package to prevent name squatting (#422)
+- **DCO enforcement**: Added Developer Certificate of Origin check workflow for all PRs (#425)
+- **CI auto-approval**: Justice bot now auto-approves PRs that pass all CI checks (#430)
+- **Coverage thresholds**: Enforced c8 statement/branch/function/line thresholds via `.c8rc.json` (#434)
+- **Allstar policy**: Added OpenSSF Allstar security policy configuration (#413)
+- **Snyk integration**: Added Snyk policy, vulnerability badge, and documented in SECURITY.md (#416)
+- **FOSSA integration**: Added FOSSA license/security badges and documented in SECURITY.md (#424, #426)
+
+### Fixed
+
+- **Webview a11y**: Improved landmark structure, focus management, ARIA attributes, and forced-colors support in all webview templates (#446, #456)
+- **Markdown tooltip escaping**: Escape Markdown special characters in status bar tooltip user values (#406)
+
+### Refactored
+
+- **htmlTemplates directory split**: Decomposed monolithic `htmlTemplates.ts` into `shell.ts`, `document.ts`, `loading.ts`, `error.ts`, `baseStyles.ts`, `csp.ts`, `linkIntercept.ts`, and `types.ts` (#447, #458, #459)
+- **Design tokens round two**: Added six new tokens (`--gis-width-readable`, `--gis-line-height-doc`, `--gis-border-emphasis`, `--gis-pad-code`, `--gis-spinner-size`, `--gis-spinner-border`), renamed `--gis-pad-*` → `--gis-size-*`, and eliminated all remaining magic numbers from templates
+- **Design tokens round one**: Scoped webview body overrides by `body.gis-*` class and introduced initial `--gis-border-subtle` / `--gis-space-*` / `--gis-pad-*` token set (#448)
+- **Webview template extraction**: Extracted pure HTML template functions from webview provider for independent testability (#405)
+- **identityManager split**: Split `identityManager.ts` (1181 → 4 modules) into `identityAddForm.ts`, `identityEditFlow.ts`, `identityFormUtils.ts`, `identityFormValidation.ts` (#401)
+- **Validation types module**: Split Phase 4 Unified Validation Types into dedicated `validation-types.ts` (#403)
+- **Logging consolidation**: Replaced all `console.log/error/warn/debug` with `OutputChannel`-based `extensionLogger`, added disposed guard (#431, #438, #441)
+- **secureLogPath extraction**: Separated log path validation into dedicated `secureLogPath.ts` (#432)
+- **AddFormState derivation**: Derived `AddFormState` from `Identity` type and removed `GenericQuickPick` wrapper (#412)
+- **Narrowed ESLint exception**: Restricted htmlTemplates `var` allowance to `csp.ts` only (#461)
+
+### Tests
+
+- **Branch coverage expansion**: Added tests for `securityLogger` and `configChangeDetector` branch paths (#411)
+- **Cross-OS path sanitization**: Added `getSafeStack` tests for Windows/macOS/Linux path formats (#404)
+- **Assertion quality**: Improved assertion specificity in `errors.test.ts` and `identityManager.test.ts` (#408, #442)
+
 ## [0.18.0] - 2026-03-30
 
 ### Changed
