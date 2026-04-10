@@ -28,9 +28,9 @@ export function buildLoadingHtml(cspSource: string, nonce: string): string {
       height: 100vh;
     }
     .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--vscode-panel-border);
+      width: var(--gis-spinner-size);
+      height: var(--gis-spinner-size);
+      border: var(--gis-spinner-border) solid var(--vscode-panel-border);
       border-top-color: var(--vscode-textLink-foreground);
       border-radius: 50%; /* circle, not a token */
       animation: spin 1s linear infinite;

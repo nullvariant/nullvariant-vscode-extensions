@@ -67,7 +67,7 @@ export function buildErrorHtml(
   const extraStyles = `    /* Template-specific body layout — scoped by body.gis-error class
        to raise specificity above the base body rule. */
     body.gis-error {
-      padding: var(--gis-pad-body-lg);
+      padding: var(--gis-size-body-lg);
       text-align: center;
     }
     h1 {
