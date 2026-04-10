@@ -13,11 +13,11 @@
 
 import {
   GITHUB_README_URL,
-  buildHtmlShell,
   getFocusVisibleForcedColorsRule,
   getFocusVisibleRule,
-  type SanitizedHtml,
-} from './shell';
+} from './baseStyles';
+import { buildHtmlShell } from './shell';
+import { type SanitizedHtml } from './types';
 
 /** Error types for documentation display. */
 export type ErrorType = 'network' | 'notfound' | 'server';

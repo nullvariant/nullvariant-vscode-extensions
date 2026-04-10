@@ -11,16 +11,15 @@
  * @license MIT
  */
 
+export { type BodyClass, type SanitizedHtml } from './types';
 export {
-  type BodyClass,
-  type SanitizedHtml,
   CspValidationError,
   assertValidLang,
   assertValidNonce,
   buildCspString,
-  buildHtmlShell,
-  getBaseStyles,
-} from './shell';
+} from './csp';
+export { getBaseStyles } from './baseStyles';
+export { buildHtmlShell } from './shell';
 export { buildDocumentHtml } from './document';
 export { buildLoadingHtml } from './loading';
 export { type ErrorType, buildErrorHtml } from './error';
