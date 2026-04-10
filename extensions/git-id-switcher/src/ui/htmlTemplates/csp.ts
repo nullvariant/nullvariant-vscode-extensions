@@ -4,8 +4,11 @@
  * Owns the CSP trust boundary for the webview shell:
  *  - `CspValidationError` (the narrow-able class thrown on format failures)
  *  - Format patterns for nonce / cspSource / lang
- *  - `assertValidNonce` / `assertValidLang` / `coerceLang`
+ *  - `assertValidNonce` / `assertValidLang`
  *  - `buildCspString` (assembles the final `content` attribute value)
+ *
+ * `coerceLang` and `STYLE_CLOSE_PATTERN` were moved to `shell.ts` as
+ * they are shell-rendering concerns, not CSP concerns.
  *
  * Split from shell.ts in Issue-00243 so shell.ts can shrink to the skeleton
  * wrapper alone. All functions are pure and free of VS Code dependencies.
@@ -92,8 +95,8 @@ export function assertValidNonce(nonce: string): void {
  * Validate a BCP 47 language tag for interpolation into `<html lang="…">`.
  * Exported for defense-in-depth alongside `assertValidNonce`. Callers that
  * may legitimately receive an empty locale (e.g. bootstrap before i18n is
- * ready) should pass the empty string through `coerceLang` first rather than
- * duplicating the fallback logic.
+ * ready) should coerce the empty string to a safe default first rather than
+ * duplicating the fallback logic (see `coerceLang` in `shell.ts`).
  *
  * @throws {CspValidationError} with a static, scrubbed message.
  */
@@ -102,26 +105,6 @@ export function assertValidLang(lang: string): void {
     throw new CspValidationError('assertValidLang: lang is not a valid BCP 47 tag');
   }
 }
-
-/**
- * Coerce a possibly-empty locale to a safe default before validation. Kept
- * separate from `assertValidLang` so that the validator remains fail-closed
- * for *all* callers — only the shell, which owns the rendering contract,
- * opts into the fallback.
- */
-export function coerceLang(lang: string): string {
-  return lang === '' ? 'en' : lang;
-}
-
-/**
- * Detects the `</style` substring (case-insensitive) in a raw-text element
- * context. HTML5 raw-text elements (`<style>`, `<script>`) terminate at the
- * first occurrence of their own closing tag — any `</style` inside a `<style>`
- * block therefore breaks out of the element and re-enters HTML context,
- * enabling attribute injection. Used by `buildHtmlShell` to fail-closed on
- * `extraStyles` before interpolation.
- */
-export const STYLE_CLOSE_PATTERN = /<\/style/i;
 
 /**
  * Build Content Security Policy header value
@@ -159,7 +142,7 @@ export function buildCspString(cspSource: string, nonce: string): string {
     `form-action 'none'`,
     `frame-ancestors 'none'`,
     // Allow images from: VSCode, our CDN, shields.io badges, GitHub avatars
-    `img-src ${cspSource} https://assets.nullvariant.com https://img.shields.io https://*.githubusercontent.com`,
+    `img-src ${cspSource} https://assets.nullvariant.com https://img.shields.io https://avatars.githubusercontent.com`,
     // style-src is nonce-only: dropping cspSource closes the
     // `<link rel="stylesheet" href="${cspSource}/…">` bypass.
     `style-src 'nonce-${nonce}'`,
