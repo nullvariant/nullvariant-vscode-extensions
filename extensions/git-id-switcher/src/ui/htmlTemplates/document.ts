@@ -68,7 +68,7 @@ export function buildDocumentHtml(
     h1 { border-bottom: var(--gis-border-subtle); padding-bottom: var(--gis-space-xs); }
     code {
       background-color: var(--vscode-textCodeBlock-background);
-      padding: 0.2em 0.4em;
+      padding: var(--gis-pad-code);
       border-radius: var(--gis-radius-sm);
       font-family: var(--vscode-editor-font-family);
     }
@@ -111,7 +111,7 @@ export function buildDocumentHtml(
       background-color: var(--vscode-textCodeBlock-background);
     }
     blockquote {
-      border-left: 4px solid var(--vscode-textLink-foreground);
+      border-left: var(--gis-border-emphasis);
       margin: var(--gis-space-md) 0;
       padding: var(--gis-space-sm) var(--gis-space-md);
       background-color: var(--vscode-textCodeBlock-background);
@@ -131,7 +131,7 @@ export function buildDocumentHtml(
       background: var(--vscode-button-secondaryBackground);
       color: var(--vscode-button-secondaryForeground);
       border: none;
-      padding: var(--gis-pad-btn);
+      padding: var(--gis-size-btn);
       border-radius: var(--gis-radius-sm);
       cursor: pointer;
       font-family: var(--vscode-font-family);
@@ -169,8 +169,8 @@ ${getFocusVisibleRule('a:focus-visible, button:focus-visible')}
 ${getFocusVisibleForcedColorsRule('a:focus-visible, button:focus-visible')}
     }
     .footer {
-      margin-top: var(--gis-pad-body-lg);
-      padding-top: var(--gis-pad-body);
+      margin-top: var(--gis-size-body-lg);
+      padding-top: var(--gis-size-body);
       border-top: var(--gis-border-subtle);
       font-size: var(--gis-font-sm);
     }
@@ -181,9 +181,9 @@ ${getFocusVisibleForcedColorsRule('a:focus-visible, button:focus-visible')}
        raise specificity above the base body rule, making cascade order
        irrelevant. */
     body.gis-doc {
-      padding: var(--gis-pad-body);
-      line-height: 1.6;
-      max-width: 800px;
+      padding: var(--gis-size-body);
+      line-height: var(--gis-line-height-doc);
+      max-width: var(--gis-width-readable);
       margin: 0 auto;
     }`;
 

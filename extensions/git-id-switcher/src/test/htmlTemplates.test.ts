@@ -615,11 +615,17 @@ function testDesignTokenCoverage(): void {
     ['--gis-space-md', /--gis-space-md:\s*1em\b/],
     ['--gis-space-lg', /--gis-space-lg:\s*1\.5em\b/],
     ['--gis-space-xl', /--gis-space-xl:\s*2em\b/],
-    ['--gis-pad-btn', /--gis-pad-btn:\s*4px 12px\b/],
-    ['--gis-pad-body', /--gis-pad-body:\s*20px\b/],
-    ['--gis-pad-body-lg', /--gis-pad-body-lg:\s*40px\b/],
+    ['--gis-size-btn', /--gis-size-btn:\s*4px 12px\b/],
+    ['--gis-size-body', /--gis-size-body:\s*20px\b/],
+    ['--gis-size-body-lg', /--gis-size-body-lg:\s*40px\b/],
     ['--gis-font-sm', /--gis-font-sm:\s*0\.9em\b/],
     ['--gis-font-xs', /--gis-font-xs:\s*0\.8em\b/],
+    ['--gis-width-readable', /--gis-width-readable:\s*800px\b/],
+    ['--gis-line-height-doc', /--gis-line-height-doc:\s*1\.6\b/],
+    ['--gis-border-emphasis', /--gis-border-emphasis:\s*4px solid var\(--vscode-textLink-foreground\)/],
+    ['--gis-pad-code', /--gis-pad-code:\s*0\.2em 0\.4em\b/],
+    ['--gis-spinner-size', /--gis-spinner-size:\s*40px\b/],
+    ['--gis-spinner-border', /--gis-spinner-border:\s*3px\b/],
   ];
   for (const [name, re] of tokenSpec) {
     assert.match(styles, re, `${name} value contract violated`);
@@ -645,6 +651,18 @@ function testDesignTokenCoverage(): void {
       `${name}: literal "1px solid var(--vscode-panel-border)" must appear exactly once (in token definition), found ${matches.length}`
     );
   }
+  // The literal `4px solid var(--vscode-textLink-foreground)` must appear
+  // exactly once per template — inside the --gis-border-emphasis token
+  // definition. Same SSOT enforcement as above.
+  const emphasisPattern = /4px solid var\(--vscode-textLink-foreground\)/g;
+  for (const [name, html] of allTemplates) {
+    const matches = html.match(emphasisPattern) ?? [];
+    assert.strictEqual(
+      matches.length, 1,
+      `${name}: literal "4px solid var(--vscode-textLink-foreground)" must appear exactly once (in token definition), found ${matches.length}`
+    );
+  }
+
   // Only the document template actually consumes --gis-border-subtle
   // (loading/error have no panel-border rules). Asserted separately to
   // confirm the token is wired up, not merely defined.

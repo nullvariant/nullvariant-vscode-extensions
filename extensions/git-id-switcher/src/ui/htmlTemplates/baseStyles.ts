@@ -44,15 +44,26 @@ export function getBaseStyles(): string {
       --gis-space-md: 1em;
       --gis-space-lg: 1.5em;
       --gis-space-xl: 2em;
-      /* px-based layout spacing (body padding, footer gap, button padding) that
-         must not scale with inherited font-size. */
-      --gis-pad-btn: 4px 12px;
-      --gis-pad-body: 20px;
-      --gis-pad-body-lg: 40px;
+      /* px-based layout sizing (body padding, footer gap, button padding)
+         that must not scale with inherited font-size. */
+      --gis-size-btn: 4px 12px;
+      --gis-size-body: 20px;
+      --gis-size-body-lg: 40px;
       /* font-size tokens. Declared against the document root so nested elements
          do not multiply em values (0.9em inside a 0.9em ancestor shrinks). */
       --gis-font-sm: 0.9em;
       --gis-font-xs: 0.8em;
+      /* Document body readability tokens. */
+      --gis-width-readable: 800px;
+      --gis-line-height-doc: 1.6;
+      /* Emphasis border (blockquote left-edge, distinct from the subtle 1px
+         panel border). */
+      --gis-border-emphasis: 4px solid var(--vscode-textLink-foreground);
+      /* Inline code padding scale. */
+      --gis-pad-code: 0.2em 0.4em;
+      /* Spinner dimensions. */
+      --gis-spinner-size: 40px;
+      --gis-spinner-border: 3px;
     }
     body {
       font-family: var(--vscode-font-family);
