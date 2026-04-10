@@ -160,7 +160,7 @@ export default [
     },
   },
   {
-    files: ["**/validators/common.ts", "**/core/constants.ts"],
+    files: ["**/validators/common.ts", "**/core/constants.ts", "**/ui/htmlTemplates/csp.ts"],
     rules: {
       "no-restricted-syntax": "off",
       "no-magic-numbers": "off",
@@ -186,7 +186,6 @@ export default [
       "**/ui/documentationInternal.ts",
       "**/ui/documentationPublic.ts",
       "**/ui/webview.ts",
-      "**/ui/htmlTemplates/**",
     ],
     rules: {
       "no-magic-numbers": "off",
