@@ -645,32 +645,40 @@ src/
 
 ## Webview Content Security Policy
 
-This extension currently does not use Webviews for rendering. If Webviews are added in the future, the following CSP **must** be applied:
+The authoritative CSP implementation lives in `src/ui/htmlTemplates/csp.ts` (`buildCspString`). The current policy:
 
-```
+```text
 default-src 'none';
-script-src 'nonce-${nonce}';
+base-uri 'none';
+form-action 'none';
+frame-ancestors 'none';
+img-src ${cspSource} https://assets.nullvariant.com https://img.shields.io https://avatars.githubusercontent.com;
 style-src 'nonce-${nonce}';
-img-src ${webview.cspSource} data:;
-font-src ${webview.cspSource};
+script-src 'nonce-${nonce}';
+connect-src https://assets.nullvariant.com;
+font-src ${cspSource};
 ```
 
 ### Policy Rationale
 
-| Directive     | Value             | Why                                                      |
-| ------------- | ----------------- | -------------------------------------------------------- |
-| `default-src` | `'none'`          | Deny everything by default                               |
-| `script-src`  | `'nonce-...'`     | Only allow scripts with a per-render cryptographic nonce |
-| `style-src`   | `'nonce-...'`     | Only allow styles with a nonce (no `'unsafe-inline'`)    |
-| `img-src`     | `cspSource data:` | Allow VS Code resource images and inline SVG icons       |
-| `font-src`    | `cspSource`       | Allow VS Code bundled fonts only                         |
+| Directive         | Value                                 | Why                                                                        |
+| ----------------- | ------------------------------------- | -------------------------------------------------------------------------- |
+| `default-src`     | `'none'`                              | Deny everything by default                                                 |
+| `base-uri`        | `'none'`                              | Not covered by `default-src`; prevents `<base>` injection (CSP3 §6.1)      |
+| `form-action`     | `'none'`                              | Not covered by `default-src`; prevents form submission to attacker origins |
+| `frame-ancestors` | `'none'`                              | Not covered by `default-src`; prevents clickjacking via iframe embedding   |
+| `img-src`         | `cspSource`, CDN, shields.io, avatars | VS Code resources, CDN assets, README badges, GitHub contributor avatars   |
+| `style-src`       | `'nonce-...'`                         | Nonce-only; `cspSource` removed to close stylesheet bypass                 |
+| `script-src`      | `'nonce-...'`                         | Only allow scripts with a per-render cryptographic nonce                   |
+| `connect-src`     | CDN only                              | Fetch README/documentation from CDN; no other network access               |
+| `font-src`        | `cspSource`                           | Allow VS Code bundled fonts only                                           |
 
-### Prohibited Patterns
+### CSP Prohibited Patterns
 
 - `'unsafe-inline'` — Enables XSS via injected `<script>` tags
 - `'unsafe-eval'` — Enables code injection via `eval()`
 - `*` or `https:` in any directive — Allows loading from arbitrary origins
-- `connect-src` — No network access from Webviews
+- Wildcard subdomains (e.g. `*.githubusercontent.com`) — Only specific subdomains are allowed
 
 ---
 

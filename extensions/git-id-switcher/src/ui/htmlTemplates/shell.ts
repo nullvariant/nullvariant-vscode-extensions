@@ -21,12 +21,30 @@ import { escapeHtmlEntities } from '../documentationInternal';
 import { getBaseStyles } from './baseStyles';
 import {
   CspValidationError,
-  STYLE_CLOSE_PATTERN,
   assertValidLang,
   assertValidNonce,
   buildCspString,
-  coerceLang,
 } from './csp';
+
+/**
+ * Coerce a possibly-empty locale to a safe default before validation. Kept
+ * separate from `assertValidLang` so that the validator remains fail-closed
+ * for *all* callers — only the shell, which owns the rendering contract,
+ * opts into the fallback.
+ */
+function coerceLang(lang: string): string {
+  return lang === '' ? 'en' : lang;
+}
+
+/**
+ * Detects the `</style` substring (case-insensitive) in a raw-text element
+ * context. HTML5 raw-text elements (`<style>`, `<script>`) terminate at the
+ * first occurrence of their own closing tag — any `</style` inside a `<style>`
+ * block therefore breaks out of the element and re-enters HTML context,
+ * enabling attribute injection. Used by `buildHtmlShell` to fail-closed on
+ * `extraStyles` before interpolation.
+ */
+const STYLE_CLOSE_PATTERN = /<\/style/i;
 import { type BodyClass, type SanitizedHtml, VALID_BODY_CLASSES } from './types';
 
 /**

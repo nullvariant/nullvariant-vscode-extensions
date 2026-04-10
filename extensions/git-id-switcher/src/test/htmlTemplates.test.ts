@@ -94,18 +94,36 @@ function testBuildCspString(): void {
     'CSP should have default-src none'
   );
 
-  // Should include img-src with cspSource and CDN
+  // img-src: extract the directive to scope assertions precisely.
+  const imgSrc = csp.split('; ').find(d => d.startsWith('img-src')) ?? '';
   assert.ok(
-    csp.includes(`img-src ${TEST_CSP_SOURCE}`),
-    'CSP should include cspSource in img-src'
+    imgSrc.includes(`img-src ${TEST_CSP_SOURCE}`),
+    'img-src should include cspSource'
   );
   assert.ok(
-    csp.includes('https://assets.nullvariant.com'),
-    'CSP should include CDN in img-src'
+    imgSrc.includes('https://assets.nullvariant.com'),
+    'img-src should include CDN'
   );
   assert.ok(
-    csp.includes('https://img.shields.io'),
-    'CSP should include shields.io in img-src'
+    imgSrc.includes('https://img.shields.io'),
+    'img-src should include shields.io'
+  );
+  assert.ok(
+    imgSrc.includes('https://avatars.githubusercontent.com'),
+    'img-src should include avatars.githubusercontent.com'
+  );
+
+  // img-src absence checks — wildcard *.githubusercontent.com must not
+  // appear; only the avatars subdomain is needed. raw.githubusercontent.com
+  // would allow loading arbitrary files from attacker-controlled
+  // repositories (Issue-00196).
+  assert.ok(
+    !imgSrc.includes('*.githubusercontent.com'),
+    'img-src must not contain wildcard *.githubusercontent.com'
+  );
+  assert.ok(
+    !imgSrc.includes('raw.githubusercontent.com'),
+    'img-src must not include raw.githubusercontent.com'
   );
 
   // style-src must be nonce-only — cspSource removed to close
