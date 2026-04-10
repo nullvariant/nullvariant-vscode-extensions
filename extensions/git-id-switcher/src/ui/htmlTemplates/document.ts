@@ -18,6 +18,7 @@ import {
   getFocusVisibleForcedColorsRule,
   getFocusVisibleRule,
 } from './baseStyles';
+import { buildLinkInterceptScript } from './linkIntercept';
 import { buildHtmlShell } from './shell';
 import { type SanitizedHtml } from './types';
 
@@ -46,60 +47,7 @@ export function buildDocumentHtml(
   nonce: string,
   canGoBack: boolean
 ): string {
-  // Script to intercept link clicks / keyboard activation and back button.
-  //
-  // Keyboard policy for <a>: only Enter activates. Native <a> already fires
-  // a synthetic click on Enter, so the click listener covers it with zero
-  // extra code. Space is intentionally NOT handled — on <a> Space performs
-  // page scroll per the ARIA Authoring Practices, and synthesising
-  // navigation there would break user expectations (WCAG 3.2.5 Change on
-  // Request). The back button is a <button>, where both Enter and Space
-  // DO fire a native click, so its activation also flows through the
-  // click listener.
-  //
-  // Why aria-disabled on back-btn (not [disabled]): Safari/VoiceOver remove
-  // focus from [disabled] buttons entirely, trapping keyboard users who
-  // tab-land on the nav bar. aria-disabled keeps the button in the focus
-  // order and we guard the click handler instead.
-  const linkInterceptScript = `
-    (function() {
-      const vscode = acquireVsCodeApi();
-
-      document.addEventListener('click', function(e) {
-        // Back button takes precedence: if the click path traverses the
-        // back button, handle it first so link-in-button edge cases (a
-        // sanitizer future-regression adding <a> inside the button) cannot
-        // bypass the aria-disabled guard below.
-        const backBtn = e.target.closest && e.target.closest('#back-btn');
-        if (backBtn) {
-          if (backBtn.getAttribute('aria-disabled') === 'true') {
-            e.preventDefault();
-            return;
-          }
-          e.preventDefault();
-          vscode.postMessage({ command: 'back' });
-          return;
-        }
-
-        const link = e.target.closest && e.target.closest('a');
-        if (!link) return;
-        const href = link.getAttribute('href');
-        if (!href) return;
-
-        e.preventDefault();
-
-        if (href.startsWith('#')) {
-          const target = document.getElementById(href.slice(1));
-          if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
-          }
-          return;
-        }
-
-        vscode.postMessage({ command: 'navigate', href: href });
-      });
-    })();
-  `;
+  const linkInterceptScript = buildLinkInterceptScript();
 
   const extraStyles = `    /* External link indicator.
        The "/ <alt-text>" syntax (CSS Generated Content L3) provides the

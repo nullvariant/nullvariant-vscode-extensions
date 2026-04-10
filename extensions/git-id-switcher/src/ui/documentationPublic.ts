@@ -274,6 +274,15 @@ async function handleNavigation(
       // Anchor links are handled in the Webview JS
       break;
     }
+
+    case 'rejected': {
+      // Dangerous scheme (javascript:, data:, file:, etc.) — silently
+      // dropped. The client-side allowlist should have already blocked
+      // this, so arrival here means either the allowlist was bypassed or
+      // a new code path was added without the client guard.
+      // defense-in-depth
+      break;
+    }
   }
 }
 
