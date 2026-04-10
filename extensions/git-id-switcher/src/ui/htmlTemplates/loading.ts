@@ -9,7 +9,8 @@
  * @license MIT
  */
 
-import { buildHtmlShell, type SanitizedHtml } from './shell';
+import { buildHtmlShell } from './shell';
+import { type SanitizedHtml } from './types';
 
 /**
  * Generate loading state HTML

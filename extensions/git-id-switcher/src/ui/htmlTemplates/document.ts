@@ -15,11 +15,11 @@
 import { escapeHtmlEntities } from '../documentationInternal';
 import {
   GITHUB_README_URL,
-  buildHtmlShell,
   getFocusVisibleForcedColorsRule,
   getFocusVisibleRule,
-  type SanitizedHtml,
-} from './shell';
+} from './baseStyles';
+import { buildHtmlShell } from './shell';
+import { type SanitizedHtml } from './types';
 
 /**
  * Generate the document HTML with content
