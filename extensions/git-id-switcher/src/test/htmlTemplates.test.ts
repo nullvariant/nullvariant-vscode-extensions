@@ -27,9 +27,15 @@
  * ## Lang Attribute Tests - 1 test function:
  * 12. testLangAttributes - lang attribute presence across all templates
  *
- * Total: 12 test functions
+ * ## Link Intercept Tests (Issue-00195) - 3 test functions:
+ * 13. testIsHrefAllowed - href scheme allowlist validation
+ * 14. testAllowedHrefSchemes - Allowlist constant pinning
+ * 15. testBuildLinkInterceptScript - Script structure and security guards
+ *
+ * Total: 15 test functions
  * Coverage: buildCspString, getBaseStyles, buildDocumentHtml,
- *           buildLoadingHtml, buildErrorHtml
+ *           buildLoadingHtml, buildErrorHtml, isHrefAllowed,
+ *           buildLinkInterceptScript, ALLOWED_HREF_SCHEMES
  */
 
 import * as assert from 'node:assert';
@@ -37,15 +43,18 @@ import {
   type BodyClass,
   type ErrorType,
   type SanitizedHtml,
+  ALLOWED_HREF_SCHEMES,
   assertValidLang,
   assertValidNonce,
   buildCspString,
   buildHtmlShell,
+  buildLinkInterceptScript,
   CspValidationError,
   getBaseStyles,
   buildDocumentHtml,
   buildLoadingHtml,
   buildErrorHtml,
+  isHrefAllowed,
 } from '../ui/htmlTemplates';
 
 /**
@@ -1349,6 +1358,9 @@ function testBarrelReExportSurface(): void {
   assert.strictEqual(typeof buildDocumentHtml, 'function', 'buildDocumentHtml must be re-exported');
   assert.strictEqual(typeof buildLoadingHtml, 'function', 'buildLoadingHtml must be re-exported');
   assert.strictEqual(typeof buildErrorHtml, 'function', 'buildErrorHtml must be re-exported');
+  assert.strictEqual(typeof buildLinkInterceptScript, 'function', 'buildLinkInterceptScript must be re-exported');
+  assert.strictEqual(typeof isHrefAllowed, 'function', 'isHrefAllowed must be re-exported');
+  assert.ok(Array.isArray(ALLOWED_HREF_SCHEMES), 'ALLOWED_HREF_SCHEMES must be re-exported');
   assert.ok(
     CspValidationError.prototype instanceof Error,
     'CspValidationError must extend Error'
@@ -1432,6 +1444,130 @@ function testBuildHtmlShellExtraStylesGuard(): void {
 }
 
 // ============================================================================
+// Link Intercept Tests (Issue-00195)
+// ============================================================================
+
+/**
+ * Test `isHrefAllowed` — the host-side mirror of the client-side scheme
+ * allowlist. Verifies that only safe href values pass through.
+ */
+function testIsHrefAllowed(): void {
+  console.log('Testing isHrefAllowed...');
+
+  // Allowed: anchor links
+  assert.strictEqual(isHrefAllowed('#section'), true, '#section should be allowed');
+  assert.strictEqual(isHrefAllowed('#'), true, '# alone should be allowed');
+
+  // Allowed: relative paths
+  assert.strictEqual(isHrefAllowed('./file.md'), true, 'Relative ./file.md should be allowed');
+  assert.strictEqual(isHrefAllowed('../parent/file.md'), true, 'Relative ../parent should be allowed');
+  assert.strictEqual(isHrefAllowed('file.md'), true, 'Bare filename should be allowed');
+  assert.strictEqual(isHrefAllowed('docs/README.md'), true, 'Path without ./ should be allowed');
+
+  // Allowed: http(s) absolute URLs
+  assert.strictEqual(isHrefAllowed('https://example.com'), true, 'https should be allowed');
+  assert.strictEqual(isHrefAllowed('http://example.com'), true, 'http should be allowed');
+  assert.strictEqual(isHrefAllowed('https://github.com/user/repo'), true, 'https with path should be allowed');
+
+  // Rejected: javascript: scheme
+  assert.strictEqual(isHrefAllowed('javascript:alert(1)'), false, 'javascript: should be rejected');
+  assert.strictEqual(isHrefAllowed('javascript:void(0)'), false, 'javascript:void(0) should be rejected');
+
+  // Rejected: data: scheme
+  assert.strictEqual(isHrefAllowed('data:text/html,<h1>XSS</h1>'), false, 'data: should be rejected');
+  assert.strictEqual(isHrefAllowed('data:application/pdf;base64,abc'), false, 'data:application should be rejected');
+
+  // Rejected: file: scheme
+  assert.strictEqual(isHrefAllowed('file:///etc/passwd'), false, 'file:/// should be rejected');
+
+  // Rejected: vscode-resource: scheme
+  assert.strictEqual(isHrefAllowed('vscode-resource://extension/path'), false, 'vscode-resource: should be rejected');
+
+  // Rejected: insecure/dangerous protocol schemes
+  assert.strictEqual(isHrefAllowed('sftp://files.example.com'), false, 'sftp:// should be rejected');
+  assert.strictEqual(isHrefAllowed('ssh://git@github.com/repo'), false, 'ssh:// should be rejected');
+
+  // Rejected: malformed URLs
+  assert.strictEqual(isHrefAllowed('ht!tp://bad'), false, 'Malformed URL should be rejected');
+
+  // Rejected: case-insensitive scheme detection
+  assert.strictEqual(isHrefAllowed('JAVASCRIPT:alert(1)'), false, 'Upper-case JAVASCRIPT: should be rejected');
+  assert.strictEqual(isHrefAllowed('JavaScript:void(0)'), false, 'Mixed-case JavaScript: should be rejected');
+  assert.strictEqual(isHrefAllowed('DATA:text/html,test'), false, 'Upper-case DATA: should be rejected');
+
+  // Edge case: empty href is a relative path (harmless no-op)
+  assert.strictEqual(isHrefAllowed(''), true, 'Empty href is a relative path (no scheme)');
+
+  console.log('  isHrefAllowed passed!');
+}
+
+/**
+ * Test `ALLOWED_HREF_SCHEMES` constant — pin the allowlist so additions
+ * require a conscious decision (new schemes widen the attack surface).
+ */
+function testAllowedHrefSchemes(): void {
+  console.log('Testing ALLOWED_HREF_SCHEMES...');
+
+  assert.deepStrictEqual(
+    [...ALLOWED_HREF_SCHEMES],
+    ['http:', 'https:'],
+    'ALLOWED_HREF_SCHEMES must contain exactly http: and https:'
+  );
+
+  console.log('  ALLOWED_HREF_SCHEMES passed!');
+}
+
+/**
+ * Test `buildLinkInterceptScript` — verifies the generated script string
+ * contains the expected security guards and structural elements.
+ */
+function testBuildLinkInterceptScript(): void {
+  console.log('Testing buildLinkInterceptScript...');
+
+  const script = buildLinkInterceptScript();
+
+  // Must be a self-invoking function
+  assert.ok(script.includes('(function()'), 'Script must be IIFE');
+
+  // Must contain the scheme allowlist
+  assert.ok(script.includes("'http:'"), 'Script must include http: in allowlist');
+  assert.ok(script.includes("'https:'"), 'Script must include https: in allowlist');
+
+  // Must contain the isHrefSafe guard
+  assert.ok(script.includes('isHrefSafe'), 'Script must include isHrefSafe guard');
+
+  // Must check isHrefSafe before postMessage navigate
+  assert.ok(
+    /isHrefSafe[\s\S]*postMessage\(\{[\s\S]*command:\s*['"]navigate['"]/.test(script),
+    'isHrefSafe check must precede navigate postMessage'
+  );
+
+  // Must NOT register a keydown listener (WCAG 3.2.5)
+  assert.ok(
+    !script.includes("addEventListener('keydown'"),
+    'Script must NOT register keydown listener'
+  );
+
+  // Back button must use aria-disabled guard
+  assert.ok(
+    script.includes("getAttribute('aria-disabled')"),
+    'Script must guard back-btn on aria-disabled'
+  );
+
+  // Anchor scroll must move focus for AT users (tabindex + focus)
+  assert.ok(
+    script.includes("setAttribute('tabindex'"),
+    'Anchor scroll must set tabindex for AT focus'
+  );
+  assert.ok(
+    script.includes('.focus('),
+    'Anchor scroll must call focus() for AT reading position'
+  );
+
+  console.log('  buildLinkInterceptScript passed!');
+}
+
+// ============================================================================
 // Test Runner
 // ============================================================================
 
@@ -1488,6 +1624,12 @@ export function runHtmlTemplatesTests(): void {
     //A11y Improvements
     console.log('\n---A11y Improvements ---');
     testIssue00188A11yImprovements();
+
+    // Link Intercept Tests (Issue-00195)
+    console.log('\n--- Link Intercept Tests ---');
+    testIsHrefAllowed();
+    testAllowedHrefSchemes();
+    testBuildLinkInterceptScript();
 
     console.log('\n========================================');
     console.log('   All HTML template tests passed!     ');

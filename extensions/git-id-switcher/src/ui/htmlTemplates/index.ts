@@ -21,5 +21,10 @@ export {
 export { getBaseStyles } from './baseStyles';
 export { buildHtmlShell } from './shell';
 export { buildDocumentHtml } from './document';
+export {
+  ALLOWED_HREF_SCHEMES,
+  buildLinkInterceptScript,
+  isHrefAllowed,
+} from './linkIntercept';
 export { buildLoadingHtml } from './loading';
 export { type ErrorType, buildErrorHtml } from './error';

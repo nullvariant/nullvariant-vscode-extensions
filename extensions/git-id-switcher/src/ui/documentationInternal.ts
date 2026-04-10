@@ -9,10 +9,13 @@
  * allowing them to be tested in isolation without VS Code environment.
  */
 
-// Type-only import: erased at runtime. htmlTemplates.ts has a runtime
-// import of `escapeHtmlEntities` from this file, so promoting this to a
-// value import would create a real circular dependency. Keep `import type`.
+// Type-only import: erased at runtime. htmlTemplates/document.ts has a
+// runtime import of `escapeHtmlEntities` from this file, so importing from
+// the barrel (`./htmlTemplates`) would create a circular dependency.
+// Keep `import type` for the type, and import `isHrefAllowed` directly
+// from `linkIntercept.ts` (which has no dependency on this file).
 import type { SanitizedHtml } from './htmlTemplates';
+import { isHrefAllowed } from './htmlTemplates/linkIntercept';
 
 // ============================================================================
 // Constants
@@ -259,14 +262,20 @@ export function resolveRelativePath(basePath: string, relativePath: string): str
 }
 
 /**
- * Classify a URL and determine how to handle it
+ * Classify a URL and determine how to handle it.
+ *
+ * SECURITY: Dangerous schemes (`javascript:`, `data:`, `file:`,
+ * `vscode-resource:`, etc.) are rejected with type `'rejected'` so the
+ * caller never passes them to `vscode.env.openExternal`. This is
+ * defense-in-depth alongside the client-side allowlist in
+ * `linkIntercept.ts`. // defense-in-depth
  *
  * @param href - The href value from a link
  * @param currentPath - Current document path for relative resolution
  * @returns Classification with resolved path if applicable
  */
 export function classifyUrl(href: string, currentPath: string): {
-  type: 'internal-md' | 'anchor' | 'external';
+  type: 'internal-md' | 'anchor' | 'external' | 'rejected';
   resolvedPath?: string;
 } {
   // Anchor links
@@ -274,24 +283,27 @@ export function classifyUrl(href: string, currentPath: string): {
     return { type: 'anchor' };
   }
 
-  // Absolute URLs (external)
+  // Delegate scheme validation to the SSOT allowlist (linkIntercept.ts).
+  // isHrefAllowed returns true for anchors (handled above), http(s),
+  // and relative paths — false for everything else. // defense-in-depth
+  if (!isHrefAllowed(href)) {
+    return { type: 'rejected' };
+  }
+
+  // Absolute URLs (external) — only http(s) reach here
   if (href.startsWith('http://') || href.startsWith('https://')) {
     return { type: 'external' };
   }
 
-  // Relative paths
-  if (href.startsWith('./') || href.startsWith('../') || !href.includes('://')) {
-    const resolved = resolveRelativePath(currentPath, href);
+  // Relative paths — safe to resolve
+  const resolved = resolveRelativePath(currentPath, href);
 
-    // Check if it's a markdown file (internal navigation)
-    if (resolved.endsWith('.md')) {
-      return { type: 'internal-md', resolvedPath: resolved };
-    }
-
-    // Non-markdown files - treat as external (open on GitHub)
-    return { type: 'external' };
+  // Check if it's a markdown file (internal navigation)
+  if (resolved.endsWith('.md')) {
+    return { type: 'internal-md', resolvedPath: resolved };
   }
 
+  // Non-markdown files - treat as external (open on GitHub)
   return { type: 'external' };
 }
 

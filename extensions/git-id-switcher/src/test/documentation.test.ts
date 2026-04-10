@@ -515,15 +515,36 @@ function testClassifyUrl(): void {
   const directNonMdResult = classifyUrl('script.js', 'docs/README.md');
   assert.strictEqual(directNonMdResult.type, 'external', 'Direct non-.md filename should be external');
 
-  // Non-http/https URLs with :// (ftp, file, ssh, etc.) - hits final fallback return
-  const ftpResult = classifyUrl('ftp://files.example.com/data', 'docs/README.md');
-  assert.strictEqual(ftpResult.type, 'external', 'FTP links should be external');
+  // Non-http/https URLs with :// — rejected as dangerous schemes (defense-in-depth)
+  const sftpResult = classifyUrl('sftp://files.example.com/data', 'docs/README.md');
+  assert.strictEqual(sftpResult.type, 'rejected', 'SFTP links should be rejected');
 
   const fileResult = classifyUrl('file:///local/path', 'docs/README.md');
-  assert.strictEqual(fileResult.type, 'external', 'File protocol links should be external');
+  assert.strictEqual(fileResult.type, 'rejected', 'File protocol links should be rejected');
 
   const sshResult = classifyUrl('ssh://git@github.com/repo', 'docs/README.md');
-  assert.strictEqual(sshResult.type, 'external', 'SSH links should be external');
+  assert.strictEqual(sshResult.type, 'rejected', 'SSH links should be rejected');
+
+  // Dangerous schemes without :// — rejected by colon-before-slash guard
+  const jsResult = classifyUrl('javascript:alert(1)', 'docs/README.md');
+  assert.strictEqual(jsResult.type, 'rejected', 'javascript: scheme should be rejected');
+
+  const dataResult = classifyUrl('data:text/html,<h1>XSS</h1>', 'docs/README.md');
+  assert.strictEqual(dataResult.type, 'rejected', 'data: scheme should be rejected');
+
+  const vscodeResResult = classifyUrl('vscode-resource://extension/path', 'docs/README.md');
+  assert.strictEqual(vscodeResResult.type, 'rejected', 'vscode-resource: scheme should be rejected');
+
+  // Case-insensitive scheme rejection
+  const jsUpperResult = classifyUrl('JAVASCRIPT:alert(1)', 'docs/README.md');
+  assert.strictEqual(jsUpperResult.type, 'rejected', 'Upper-case JAVASCRIPT: should be rejected');
+
+  const dataMixedResult = classifyUrl('Data:text/html,test', 'docs/README.md');
+  assert.strictEqual(dataMixedResult.type, 'rejected', 'Mixed-case Data: should be rejected');
+
+  // Edge case: colon in relative path with ./ prefix is a valid filename, not a scheme
+  const colonInPath = classifyUrl('./file:name.md', 'docs/README.md');
+  assert.strictEqual(colonInPath.type, 'internal-md', 'Relative path with colon should be treated as internal md');
 
   console.log('  classifyUrl passed!');
 }
