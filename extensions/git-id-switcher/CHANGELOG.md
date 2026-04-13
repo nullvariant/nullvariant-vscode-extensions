@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.1] - 2026-04-13
+
+### Fixed
+
+- **Badge display**: Replace broken VS Code Marketplace version badge with Open VSX Registry badge after shields.io permanently dropped Marketplace support (badges/shields#11796)
+
 ## [0.19.0] - 2026-04-10
 
 ### Security
