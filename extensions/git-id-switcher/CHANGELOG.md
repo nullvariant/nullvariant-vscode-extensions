@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.2] - 2026-04-14
+
+### Fixed
+
+- **Snyk badge**: Replace broken `snyk.io/test/github/*/badge.svg` endpoint (HTTP 410 Gone) with a static shields.io "Snyk monitored" badge linking to snyk.io
+
 ## [0.19.1] - 2026-04-13
 
 ### Fixed

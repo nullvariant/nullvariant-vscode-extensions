@@ -9,7 +9,7 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nullvariant/nullvariant-vscode-extensions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/nullvariant/nullvariant-vscode-extensions)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11709/badge)](https://www.bestpractices.dev/projects/11709)
 [![Harden-Runner](https://img.shields.io/badge/Harden--Runner-enabled-7037F5)](https://github.com/step-security/harden-runner)
-[![Known Vulnerabilities](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions/badge.svg)](https://snyk.io/test/github/nullvariant/nullvariant-vscode-extensions)
+[![Snyk monitored](https://img.shields.io/badge/Snyk-monitored-4C4A73?logo=snyk&logoColor=white)](https://snyk.io/)
 [![Socket.dev](https://img.shields.io/badge/Socket.dev-monitored-7042F5)](https://socket.dev/dashboard/org/null-variant/repo/nullvariant-vscode-extensions)
 [![GitGuardian](https://img.shields.io/badge/GitGuardian-monitored-7042F5?logo=gitguardian)](https://www.gitguardian.com/)
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](https://renovatebot.com)
