@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.3] - 2026-04-16
+
+### Added
+
+- **Legitify SCM Posture Audit badge**: Added static Legitify badge to the root README, extension README, and all 26 localized READMEs, reflecting the weekly SCM configuration audit now running as part of the security workflow
+
+### Fixed
+
+- **Legitify workflow failure**: Pinned `Legit-Labs/legitify` to post-v1.0.11 main SHA (`038aa49`). v1.0.11 (2024-07-09) fails on the current GitHub Actions runtime because its composite action pulls `codeql-action` internals that depend on the deprecated `actions/upload-artifact@v3`. The upstream fix landed on main (PR #333, 2024-09-11) but no new tag has been published
+
 ## [0.19.2] - 2026-04-14
 
 ### Fixed
