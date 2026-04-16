@@ -277,8 +277,14 @@ jobs:
 
       # No checkout step: Legitify queries the GitHub API only; the composite
       # action checks out its own source when compile_legitify=true (not used here).
+      # Pinned to post-v1.0.11 main SHA: v1.0.11 (2024-07-09) uses codeql-action
+      # internals that depend on the deprecated actions/upload-artifact@v3,
+      # which GitHub auto-fails since 2024-04-16. The fix (node 20, codeql-action
+      # v3 with v4 upload-artifact) landed on main (2024-09-11, PR #333) but no
+      # new tag has been published. SHA pin preserves immutability; follow-up
+      # tracking: Issue-00293 (tag/ref cadence of upstream Legitify).
       - name: Run Legitify analysis
-        uses: Legit-Labs/legitify@002049404ef93b207048323fe996eb2330327031 # v1.0.11
+        uses: Legit-Labs/legitify@038aa49473a6974a3ef79f6c76b949b689d23282 # post-v1.0.11 main (2024-09-25)
         with:
           github_token: ${{ secrets.SCM_TOKEN }}
           analyze_self_only: 'true'
