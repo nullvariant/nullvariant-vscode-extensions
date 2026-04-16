@@ -260,6 +260,30 @@ jobs:
         with:
           sarif_file: results.sarif
 
+  legitify-analyze:
+    name: Legitify SCM Posture Analysis
+    runs-on: ubuntu-latest
+    # Skip on pull requests: SCM_TOKEN is not available in PR context by design
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      security-events: write # Upload SARIF to Code Scanning
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+        with:
+          egress-policy: audit
+
+      # No checkout step: Legitify queries the GitHub API only; the composite
+      # action checks out its own source when compile_legitify=true (not used here).
+      - name: Run Legitify analysis
+        uses: Legit-Labs/legitify@002049404ef93b207048323fe996eb2330327031 # v1.0.11
+        with:
+          github_token: ${{ secrets.SCM_TOKEN }}
+          analyze_self_only: 'true'
+          upload_code_scanning: 'true'
+
   # Separate job: scorecard-action requires all steps in its job to use `uses` only.
   # Shell script steps cause workflow verification failure on result publication.
   scorecard-threshold:

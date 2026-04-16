@@ -68,6 +68,7 @@ This repository contains VS Code extensions with the following security measures
 - **SAST (Snyk Code)**: [Snyk](https://snyk.io/) runs static analysis; test fixtures are excluded via `.snyk` policy
 - **License & Vulnerability Scanning**: [FOSSA](https://app.fossa.com/) runs license compliance, dependency quality, and security analysis on every commit (GitHub App integration)
 - **Runtime Security Monitoring**: [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) monitors all workflow runs for suspicious network egress, file access, and process execution
+- **SCM Posture Audit**: [Legitify](https://github.com/Legit-Labs/legitify) audits GitHub repository configuration weekly against built-in OPA/Rego policies. Findings are published to the GitHub Security tab via SARIF upload. Scope is limited to this repository (`analyze_self_only: true`)
 - **Branch Protection**: Main branch requires PR approval (1 reviewer minimum). All PRs are automatically approved by nullvariant-justice[bot] after CI passes (solo-developer workflow for [OpenSSF Scorecard](https://securityscorecards.dev/) compliance). Dependency bot PRs receive additional safety review before approval. Enforced by [Allstar](https://github.com/ossf/allstar/)
 
 ## Security Testing
@@ -100,6 +101,7 @@ This section documents all secrets used in CI/CD workflows.
 | CLOUDFLARE_API_TOKEN  | Cloudflare Pages/R2 deployment         | deploy-docs.yml, publish.yml | Annual    | High            |
 | CLOUDFLARE_ACCOUNT_ID | Cloudflare account identifier (public) | deploy-docs.yml, publish.yml | Never     | Low (public ID) |
 | SLACK_WEBHOOK         | Bot monitoring alerts                  | bot-monitoring.yml           | As needed | Medium          |
+| SCM_TOKEN             | Legitify SCM posture audit             | security.yml                 | 90 days   | Medium          |
 
 ### GitHub App Secrets (6 bots × 2 secrets each)
 
@@ -145,12 +147,14 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 | CLOUDFLARE_API_TOKEN | Cloudflare   | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)        | No expiration |
 | SONAR_TOKEN          | SonarCloud   | [SonarCloud Security](https://sonarcloud.io/account/security)                  | No expiration |
 | FOSSA_API_KEY        | FOSSA        | [FOSSA Settings](https://app.fossa.com/account/settings/integrations)          | No expiration |
+| SCM_TOKEN            | GitHub       | [GitHub Fine-grained PAT](https://github.com/settings/tokens?type=beta)        | 2026-07-15    |
 | GitHub App Keys      | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
 | SLACK_WEBHOOK        | Slack        | [Slack Apps](https://api.slack.com/apps)                                       | No expiration |
 
 **Token Details**:
 
 - **CLOUDFLARE_API_TOKEN**: Named `nullvariant-vscode-extensions-github-actions-deploy`, permissions: Workers R2 Storage:Edit
+- **SCM_TOKEN**: Fine-grained PAT scoped to this repository only. Repository permissions: Metadata (Read), Contents (Read), Administration (Read). Used by Legitify to audit SCM posture — read-only, no write access to any resource
 
 ## See Also
 
