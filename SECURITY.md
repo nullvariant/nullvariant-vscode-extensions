@@ -141,7 +141,7 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 
 | Secret               | Provider     | Management URL                                                                 | Expiration    |
 | -------------------- | ------------ | ------------------------------------------------------------------------------ | ------------- |
-| RELEASE_PAT          | GitHub       | [GitHub Fine-grained PAT](https://github.com/settings/tokens?type=beta)        | 2026-04-17    |
+| RELEASE_PAT          | GitHub       | [GitHub Fine-grained PAT](https://github.com/settings/tokens?type=beta)        | 2026-07-15    |
 | VSCE_PAT             | Azure DevOps | [Azure DevOps Tokens](https://dev.azure.com/nullvariant/_usersSettings/tokens) | 2027-01-08    |
 | OVSX_PAT             | Open VSX     | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens)                   | No expiration |
 | CLOUDFLARE_API_TOKEN | Cloudflare   | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)        | No expiration |
@@ -154,7 +154,8 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 **Token Details**:
 
 - **CLOUDFLARE_API_TOKEN**: Named `nullvariant-vscode-extensions-github-actions-deploy`, permissions: Workers R2 Storage:Edit
-- **SCM_TOKEN**: Fine-grained PAT scoped to this repository only. Repository permissions: Metadata (Read), Contents (Read), Administration (Read). Used by Legitify to audit SCM posture — read-only, no write access to any resource
+- **RELEASE_PAT**: Named `RELEASE_PAT`. Fine-grained PAT scoped to this repository only. Repository permissions: Contents (Write). Used by auto-tag.yml to push release tags that trigger the publish workflow (built-in GITHUB_TOKEN pushes do not re-trigger workflows, so a PAT is required)
+- **SCM_TOKEN**: Named `legitify-scm-token`. Fine-grained PAT scoped to this repository only. Repository permissions: Metadata (Read), Contents (Read), Administration (Read). Used by Legitify to audit SCM posture — read-only, no write access to any resource
 
 ## See Also
 
