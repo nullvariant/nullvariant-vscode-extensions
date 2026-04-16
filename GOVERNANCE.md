@@ -17,13 +17,14 @@ the stones have teeth.
 
 This garden is guarded by several such stones:
 
-| Name                     | What it guards                                             |
-| ------------------------ | ---------------------------------------------------------- |
-| **CI / Build Check**     | No broken stone enters the garden                          |
-| **Branch Protection**    | The main path cannot be altered without passing the gate   |
-| **Signed Commits**       | Every placed stone bears the mason's mark                  |
-| **Automated Publishing** | When a release tag is placed, the garden opens its gate    |
-| **AI Review Agents**     | Tireless apprentices that rake sand patterns day and night |
+| Name                     | What it guards                                               |
+| ------------------------ | ------------------------------------------------------------ |
+| **CI / Build Check**     | No broken stone enters the garden                            |
+| **Branch Protection**    | The main path cannot be altered without passing the gate     |
+| **SCM Posture Audit**    | The garden's arrangement remains true to the gardener's plan |
+| **Signed Commits**       | Every placed stone bears the mason's mark                    |
+| **Automated Publishing** | When a release tag is placed, the garden opens its gate      |
+| **AI Review Agents**     | Tireless apprentices that rake sand patterns day and night   |
 
 The AI review agents deserve special mention. They are not gardeners — they
 cannot place stones or choose where paths lead. They are **apprentices bound by
