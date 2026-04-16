@@ -23,7 +23,7 @@
   "overrides": {
     "brace-expansion@1": "^1.1.13",
     "brace-expansion@2": "^2.0.3",
-    "diff": "^8.0.3",
+    "diff": "^9.0.0",
     "serialize-javascript": "^7.0.5",
     "yauzl": "^3.2.1"
   },
