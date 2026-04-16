@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.4] - 2026-04-16
+
+### Removed
+
+- **Legitify integration (full revert)**: Removed the Legitify SCM posture audit introduced in 0.19.3. Legitify (both v1.0.11 and the post-v1.0.11 main branch at `038aa49`) explicitly rejects fine-grained PATs (`GitHub fine-grained tokens are not supported at this moment, please use classic PAT`). Switching to a classic PAT would broaden the token's blast radius beyond the minimum-privilege principle this repository follows. All Legitify references have been removed: the `legitify-analyze` job in `security.yml`, the Legitify badge across the root README, the extension README, and all 26 localized READMEs, as well as the SCM_TOKEN entries in SECURITY.md and the sekimori-ishi entry in GOVERNANCE.md
+
 ## [0.19.3] - 2026-04-16
 
 ### Added
