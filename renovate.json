@@ -10,5 +10,5 @@
       "automerge": false
     }
   ],
-  "ignoreDeps": ["@types/vscode"]
+  "ignoreDeps": ["@types/vscode", "diff"]
 }
