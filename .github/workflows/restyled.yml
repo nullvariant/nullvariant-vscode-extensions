@@ -42,10 +42,10 @@ jobs:
           git checkout -B "$HEAD_REF"
 
       - name: Setup Restyled
-        uses: restyled-io/actions/setup@da77999fc52ee0d74212e9f0391b1b23150a4547 # v4.4.21
+        uses: restyled-io/actions/setup@f31a2185676c560a98c4f9e0185e9bfe8ec3eaf9 # v4.4.24
 
       - name: Run Restyled
-        uses: restyled-io/actions/run@da77999fc52ee0d74212e9f0391b1b23150a4547 # v4.4.21
+        uses: restyled-io/actions/run@f31a2185676c560a98c4f9e0185e9bfe8ec3eaf9 # v4.4.24
         with:
           fail-on-differences: false
           suggestions: true
