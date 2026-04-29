@@ -504,7 +504,7 @@ function createManageMockVSCode(options: {
 
         return {
           set items(value: T[]) {
-            capturedItems = value as unknown as CapturedManageQuickPickItem[];
+            capturedItems = value;
           },
           get items(): T[] {
             return capturedItems as unknown as T[];
@@ -519,7 +519,7 @@ function createManageMockVSCode(options: {
             return capturedButtons;
           },
           set activeItems(value: T[]) {
-            capturedActiveItems = value as unknown as CapturedManageQuickPickItem[];
+            capturedActiveItems = value;
           },
           get activeItems(): T[] {
             return capturedActiveItems as unknown as T[];

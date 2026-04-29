@@ -417,7 +417,7 @@ async function testCheckSyncWithCancellationBeforeStart(): Promise<void> {
   try {
     const identity = createIdentity();
     const token = { isCancellationRequested: true, onCancellationRequested: () => ({ dispose: () => {} }) };
-    const result = await checkSync(identity, false, token as any);
+    const result = await checkSync(identity, false, token);
 
     assert.strictEqual(result.state, 'unknown');
     assert.strictEqual(readerCalled, false);
@@ -442,7 +442,7 @@ async function testCheckSyncCancelledAfterRead(): Promise<void> {
 
   try {
     const identity = createIdentity();
-    const result = await checkSync(identity, false, token as any);
+    const result = await checkSync(identity, false, token);
 
     assert.strictEqual(result.state, 'unknown');
     assert.strictEqual(result.mismatches.length, 0);

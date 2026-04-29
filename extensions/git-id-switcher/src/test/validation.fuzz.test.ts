@@ -246,7 +246,7 @@ function testValidateIdentitiesLargeArrays(): void {
     fc.property(
       fc.array(arbitraryIdentity, { maxLength: 100 }),
       (identities) => {
-        const result = validateIdentities(identities as Identity[]);
+        const result = validateIdentities(identities);
         assert.strictEqual(typeof result.valid, 'boolean');
         assert.ok(Array.isArray(result.errors));
       }
