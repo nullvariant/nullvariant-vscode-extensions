@@ -134,7 +134,7 @@ async function showFieldSelectionQuickPick(
 
     return {
       item: selection,
-      field: selection.field as EditableFieldOrId,
+      field: selection.field,
     };
   } finally {
     quickPick.dispose();

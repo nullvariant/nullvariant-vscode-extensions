@@ -338,7 +338,7 @@ function createMockVSCode(options: {
             // Notify test callback with QuickPick state
             if (options.onQuickPickCreated) {
               options.onQuickPickCreated({
-                items: _items as unknown[],
+                items: _items,
                 buttons: _buttons,
                 title: _title,
                 placeholder: _placeholder,

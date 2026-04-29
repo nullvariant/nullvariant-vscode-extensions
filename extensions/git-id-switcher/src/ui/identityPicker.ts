@@ -389,7 +389,7 @@ export async function showManageIdentitiesQuickPick(
     {
       label: '',
       kind: vs.QuickPickItemKind.Separator,
-    } as ManageIdentityQuickPickItem,
+    },
     {
       label: vs.l10n.t('New Identity'),
       iconPath: new vs.ThemeIcon('add'),
