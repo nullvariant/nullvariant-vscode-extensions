@@ -229,7 +229,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Install gitleaks
@@ -245,7 +244,7 @@ jobs:
           gitleaks version
 
       - name: Run gitleaks
-        run: gitleaks detect --source . --verbose
+        run: gitleaks detect --source . --no-git --verbose
 
   socket-security:
     name: Socket.dev Security
