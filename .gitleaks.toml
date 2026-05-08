@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[[allowlist.paths]]
+description = "Test fixtures contain intentional dummy secrets for security testing"
+regex = '''src/test/'''
+
+[[allowlist.paths]]
+description = "SSH key format detection uses PEM header strings as constants"
+regex = '''src/sshAgent\.ts'''
