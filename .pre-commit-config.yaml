@@ -26,3 +26,9 @@ repos:
         args: ['--maxkb=1000']
       - id: mixed-line-ending
         args: ['--fix=lf']
+
+  # Secret detection
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks

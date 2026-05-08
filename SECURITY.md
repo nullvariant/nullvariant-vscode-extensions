@@ -67,6 +67,7 @@ This repository contains VS Code extensions with the following security measures
 - **Fork Protection**: Sensitive workflows skip on fork repositories
 - **SAST (Snyk Code)**: [Snyk](https://snyk.io/) runs static analysis; test fixtures are excluded via `.snyk` policy
 - **License & Vulnerability Scanning**: [FOSSA](https://app.fossa.com/) runs license compliance, dependency quality, and security analysis on every commit (GitHub App integration)
+- **Secret Detection**: [Gitleaks](https://github.com/gitleaks/gitleaks) scans for hardcoded secrets in both CI (`security.yml`) and pre-commit hooks (`.pre-commit-config.yaml`)
 - **Runtime Security Monitoring**: [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) monitors all workflow runs for suspicious network egress, file access, and process execution
 - **Branch Protection**: Main branch requires PR approval (1 reviewer minimum). All PRs are automatically approved by nullvariant-justice[bot] after CI passes (solo-developer workflow for [OpenSSF Scorecard](https://securityscorecards.dev/) compliance). Dependency bot PRs receive additional safety review before approval. Enforced by [Allstar](https://github.com/ossf/allstar/)
 

@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''(src|out)/test/''',
+  '''(src|out)/ssh/sshAgent\.(ts|js)''',
+  '''\.vscode-test/''',
+  '''node_modules/''',
+]

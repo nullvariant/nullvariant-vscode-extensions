@@ -12,6 +12,7 @@
 [![Snyk monitored](https://img.shields.io/badge/Snyk-monitored-4C4A73?logo=snyk&logoColor=white)](https://snyk.io/)
 [![Socket.dev](https://img.shields.io/badge/Socket.dev-monitored-7042F5)](https://socket.dev/dashboard/org/null-variant/repo/nullvariant-vscode-extensions)
 [![GitGuardian](https://img.shields.io/badge/GitGuardian-monitored-7042F5?logo=gitguardian)](https://www.gitguardian.com/)
+[![Gitleaks](https://img.shields.io/badge/Gitleaks-enabled-blue?logo=git&logoColor=white)](https://github.com/gitleaks/gitleaks)
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](https://renovatebot.com)
 [![FOSSA License](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_shield&issueType=license)
 [![FOSSA Security](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_shield&issueType=security)
