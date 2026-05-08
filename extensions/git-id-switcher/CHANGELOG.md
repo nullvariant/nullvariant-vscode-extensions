@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.5] - 2026-05-09
+
+### Added
+
+- **Gitleaks secret detection**: Added gitleaks v8.30.1 for multi-layered secret scanning via pre-commit hook and CI job with SHA256 checksum verification
+- **Gitleaks badge**: Added Gitleaks badge to the root README, extension README, and all 26 localized READMEs
+
+### Changed
+
+- **.gitignore security baseline**: Rewrote .gitignore with comprehensive secret insurance patterns (`**/` prefix, credential files, key files) and project-specific negation for extension `.vscode/` dev configs
+- **Workflow hardening**: Added `persist-credentials: false` to all 8 checkout steps in `security.yml`
+
 ## [0.19.4] - 2026-04-16
 
 ### Removed
