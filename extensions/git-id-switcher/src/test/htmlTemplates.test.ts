@@ -1402,18 +1402,14 @@ function testBarrelReExportSurface(): void {
     'CspValidationError must extend Error'
   );
 
-  // Type-only symbols: assignment proves compile-time availability and
-  // structural value. A future drop/rename of the type in the barrel would
-  // fail to compile before this test ever runs.
-  // Assignment + runtime assertion proves compile-time type availability
-  // without tripping `sonarjs/void-use`. If the barrel ever stops exporting
-  // one of these types the file fails to compile before reaching runtime.
-  const bodyClass: BodyClass = 'gis-doc';
-  const errorType: ErrorType = 'network';
-  const sanitized: SanitizedHtml = asSanitizedHtml('<p>x</p>');
-  assert.strictEqual(bodyClass, 'gis-doc');
-  assert.strictEqual(errorType, 'network');
-  assert.strictEqual(sanitized, '<p>x</p>');
+  // Type-only symbols: compile-time availability check.
+  // If the barrel drops any of these types, this file fails to compile.
+  const _bodyClass: BodyClass = 'gis-doc';
+  const _errorType: ErrorType = 'network';
+  const _sanitized: SanitizedHtml = asSanitizedHtml('<p>x</p>');
+  assert.ok(_bodyClass, 'BodyClass type is available from barrel');
+  assert.ok(_errorType, 'ErrorType type is available from barrel');
+  assert.ok(_sanitized, 'SanitizedHtml type is available from barrel');
 
   console.log('  barrel re-export surface passed!');
 }

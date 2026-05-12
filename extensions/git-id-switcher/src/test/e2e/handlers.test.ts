@@ -20,7 +20,7 @@
  */
 
 import * as assert from 'node:assert';
-import { handleDeleteIdentity, handleAddIdentity } from '../../commands/handlers';
+import { handleDeleteIdentity, handleAddIdentity, handleEditIdentity } from '../../commands/handlers';
 import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
 import { invalidateIdentityCache, type Identity } from '../../identity/identity';
 import { MAX_IDENTITIES } from '../../core/constants';
@@ -818,14 +818,23 @@ describe('Security Logger Integration E2E Test Suite', function () {
   });
 
   describe('Edit Operation Logging', () => {
-    it('should complete successfully (securityLogger called internally via showEditProfileFlow)', async () => {
-      // Note: Edit logging is tested via identityManager.test.ts
-      // This test documents that handlers.ts relies on identityManager for edit logging
-      // The securityLogger.logConfigChange call is in identityManager.ts saveEditedField()
+    it('should show warning when no identities configured', async () => {
+      const mockVSCode = createMockVSCode({
+        identities: [],
+      });
+      _setMockVSCode(mockVSCode as never);
 
-      // This is a documentation test - edit operations through handlers
-      // delegate to showEditProfileFlow which handles logging
-      assert.ok(true, 'Edit logging is handled by identityManager module');
+      const context = createMockContext();
+      const statusBar = createMockStatusBar();
+
+      await handleEditIdentity(statusBar, context);
+
+      const warningCalls = mockVSCode._getShowWarningMessageCalls();
+      assert.strictEqual(warningCalls.length, 1, 'Should show one warning message');
+      assert.ok(
+        warningCalls[0].message.includes('No identities configured'),
+        'Warning should mention no identities'
+      );
     });
   });
 });
