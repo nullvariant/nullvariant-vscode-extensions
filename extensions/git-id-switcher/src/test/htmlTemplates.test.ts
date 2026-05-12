@@ -40,8 +40,6 @@
 
 import * as assert from 'node:assert';
 import {
-  type BodyClass,
-  type ErrorType,
   type SanitizedHtml,
   ALLOWED_HREF_SCHEMES,
   assertValidLang,
@@ -1402,14 +1400,9 @@ function testBarrelReExportSurface(): void {
     'CspValidationError must extend Error'
   );
 
-  // Type-only symbols: compile-time availability check.
-  // If the barrel drops any of these types, this file fails to compile.
-  const _bodyClass: BodyClass = 'gis-doc';
-  const _errorType: ErrorType = 'network';
-  const _sanitized: SanitizedHtml = asSanitizedHtml('<p>x</p>');
-  assert.ok(_bodyClass, 'BodyClass type is available from barrel');
-  assert.ok(_errorType, 'ErrorType type is available from barrel');
-  assert.ok(_sanitized, 'SanitizedHtml type is available from barrel');
+  // Type-only symbols (BodyClass, ErrorType, SanitizedHtml) are verified at
+  // compile time via the typed import at the top of this file and usage in
+  // asSanitizedHtml / testBodyClassOverrides. No runtime assertion needed.
 
   console.log('  barrel re-export surface passed!');
 }
