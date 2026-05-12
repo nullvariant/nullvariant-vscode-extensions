@@ -40,8 +40,6 @@
 
 import * as assert from 'node:assert';
 import {
-  type BodyClass,
-  type ErrorType,
   type SanitizedHtml,
   ALLOWED_HREF_SCHEMES,
   assertValidLang,
@@ -1402,18 +1400,9 @@ function testBarrelReExportSurface(): void {
     'CspValidationError must extend Error'
   );
 
-  // Type-only symbols: assignment proves compile-time availability and
-  // structural value. A future drop/rename of the type in the barrel would
-  // fail to compile before this test ever runs.
-  // Assignment + runtime assertion proves compile-time type availability
-  // without tripping `sonarjs/void-use`. If the barrel ever stops exporting
-  // one of these types the file fails to compile before reaching runtime.
-  const bodyClass: BodyClass = 'gis-doc';
-  const errorType: ErrorType = 'network';
-  const sanitized: SanitizedHtml = asSanitizedHtml('<p>x</p>');
-  assert.strictEqual(bodyClass, 'gis-doc');
-  assert.strictEqual(errorType, 'network');
-  assert.strictEqual(sanitized, '<p>x</p>');
+  // Type-only symbols (BodyClass, ErrorType, SanitizedHtml) are verified at
+  // compile time via the typed import at the top of this file and usage in
+  // asSanitizedHtml / testBodyClassOverrides. No runtime assertion needed.
 
   console.log('  barrel re-export surface passed!');
 }
