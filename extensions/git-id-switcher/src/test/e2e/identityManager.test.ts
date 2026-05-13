@@ -37,34 +37,45 @@
  * UI interactions require VS Code window API.
  */
 
-import * as assert from 'node:assert';
-import * as path from 'node:path';
-import { showEditProfileFlow, showAddIdentityForm } from '../../ui/identityManager';
-import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
-import { invalidateIdentityCache, type Identity } from '../../identity/identity';
-import { MAX_IDENTITIES, MAX_ID_LENGTH, MAX_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_SSH_HOST_LENGTH } from '../../core/constants';
+import * as assert from "node:assert";
+import {
+  showEditProfileFlow,
+  showAddIdentityForm,
+} from "../../ui/identityManager";
+import { _setMockVSCode, _resetCache } from "../../core/vscodeLoader";
+import {
+  invalidateIdentityCache,
+  type Identity,
+} from "../../identity/identity";
+import {
+  MAX_IDENTITIES,
+  MAX_ID_LENGTH,
+  MAX_NAME_LENGTH,
+  MAX_EMAIL_LENGTH,
+  MAX_SSH_HOST_LENGTH,
+} from "../../core/constants";
 
 /**
  * Test identity fixtures
  */
 const TEST_IDENTITIES = {
   work: {
-    id: 'work',
-    name: 'Work User',
-    email: 'work@example.com',
+    id: "work",
+    name: "Work User",
+    email: "work@example.com",
   },
   personal: {
-    id: 'personal',
-    name: 'Personal User',
-    email: 'personal@example.com',
-    icon: '🏠',
-    service: 'GitHub',
-    description: 'Personal projects',
+    id: "personal",
+    name: "Personal User",
+    email: "personal@example.com",
+    icon: "🏠",
+    service: "GitHub",
+    description: "Personal projects",
   },
 };
 
 /** Symbol for Back button */
-const BACK_BUTTON = Symbol('QuickInputButtons.Back');
+const BACK_BUTTON = Symbol("QuickInputButtons.Back");
 
 /**
  * Mock ThemeIcon class for testing
@@ -74,19 +85,19 @@ class MockThemeIcon {
 }
 
 /** Special symbol to represent back button trigger in inputBox tests */
-const INPUT_BOX_BACK = Symbol('InputBox.Back');
+const INPUT_BOX_BACK = Symbol("InputBox.Back");
 
 /** Special symbol to represent file picker button click */
-const FILE_PICKER_CLICK = Symbol('InputBox.FilePicker');
+const FILE_PICKER_CLICK = Symbol("InputBox.FilePicker");
 
 /**
  * Check if buttons array contains a file picker button (folder-opened icon)
  */
 function hasFilePickerButtonInArray(buttons: unknown[]): boolean {
   return buttons.some((btn: unknown) => {
-    if (typeof btn === 'object' && btn !== null && 'iconPath' in btn) {
+    if (typeof btn === "object" && btn !== null && "iconPath" in btn) {
       const iconPath = (btn as { iconPath: { id?: string } }).iconPath;
-      return iconPath?.id === 'folder-opened';
+      return iconPath?.id === "folder-opened";
     }
     return false;
   });
@@ -102,11 +113,18 @@ function hasFilePickerButtonInArray(buttons: unknown[]): boolean {
  */
 function createMockVSCode(options: {
   identities?: Identity[];
-  showQuickPickResult?: { identity?: Identity; field?: keyof Identity } | undefined;
+  showQuickPickResult?:
+    | { identity?: Identity; field?: keyof Identity }
+    | undefined;
   showInputBoxResults?: (string | undefined)[];
   configUpdateError?: Error;
   quickPickSelections?: unknown[];
-  inputBoxSelections?: (string | typeof INPUT_BOX_BACK | typeof FILE_PICKER_CLICK | undefined)[];
+  inputBoxSelections?: (
+    | string
+    | typeof INPUT_BOX_BACK
+    | typeof FILE_PICKER_CLICK
+    | undefined
+  )[];
   showOpenDialogResult?: string | undefined;
   onShowOpenDialog?: (dialogOptions: {
     canSelectFiles?: boolean;
@@ -142,7 +160,7 @@ function createMockVSCode(options: {
       isTrusted: true,
       getConfiguration: () => ({
         get: (key: string) => {
-          if (key === 'identities') {
+          if (key === "identities") {
             return options.identities ?? [];
           }
           return undefined;
@@ -175,10 +193,23 @@ function createMockVSCode(options: {
         }
         // Find matching item
         return items.find((item: unknown) => {
-          if ('identity' in result && typeof item === 'object' && item !== null && 'identity' in item) {
-            return (item as { identity: Identity }).identity.id === result.identity?.id;
+          if (
+            "identity" in result &&
+            typeof item === "object" &&
+            item !== null &&
+            "identity" in item
+          ) {
+            return (
+              (item as { identity: Identity }).identity.id ===
+              result.identity?.id
+            );
           }
-          if ('field' in result && typeof item === 'object' && item !== null && 'field' in item) {
+          if (
+            "field" in result &&
+            typeof item === "object" &&
+            item !== null &&
+            "field" in item
+          ) {
             return (item as { field: keyof Identity }).field === result.field;
           }
           return false;
@@ -203,27 +234,45 @@ function createMockVSCode(options: {
         let hideCallback: (() => void) | undefined;
         let buttonCallback: ((button: unknown) => void) | undefined;
         let changeCallback: ((value: string) => void) | undefined;
-        let _value = '';
+        let _value = "";
         let _validationMessage: string | undefined;
         let _buttons: unknown[] = [];
-        let _title = '';
-        let _placeholder = '';
+        let _title = "";
+        let _placeholder = "";
 
         const inputBox = {
-          get value() { return _value; },
+          get value() {
+            return _value;
+          },
           set value(v: string) {
             _value = v;
             if (changeCallback) changeCallback(v);
           },
-          get validationMessage() { return _validationMessage; },
-          set validationMessage(v: string | undefined) { _validationMessage = v; },
-          get placeholder() { return _placeholder; },
-          set placeholder(v: string) { _placeholder = v; },
-          prompt: '',
-          get title() { return _title; },
-          set title(v: string) { _title = v; },
-          get buttons() { return _buttons; },
-          set buttons(value: unknown[]) { _buttons = value; },
+          get validationMessage() {
+            return _validationMessage;
+          },
+          set validationMessage(v: string | undefined) {
+            _validationMessage = v;
+          },
+          get placeholder() {
+            return _placeholder;
+          },
+          set placeholder(v: string) {
+            _placeholder = v;
+          },
+          prompt: "",
+          get title() {
+            return _title;
+          },
+          set title(v: string) {
+            _title = v;
+          },
+          get buttons() {
+            return _buttons;
+          },
+          set buttons(value: unknown[]) {
+            _buttons = value;
+          },
           show: () => {
             // Notify test callback with InputBox state
             if (options.onInputBoxCreated) {
@@ -234,7 +283,8 @@ function createMockVSCode(options: {
               });
             }
             // Auto-trigger based on test configuration
-            const selections = options.inputBoxSelections ?? options.showInputBoxResults ?? [];
+            const selections =
+              options.inputBoxSelections ?? options.showInputBoxResults ?? [];
             const selection = selections[inputBoxSelectionIndex];
             inputBoxSelectionIndex++;
             setTimeout(async () => {
@@ -243,7 +293,10 @@ function createMockVSCode(options: {
               } else if (selection === FILE_PICKER_CLICK && buttonCallback) {
                 // Simulate file picker button click (non-back button)
                 // The button callback is async, so we need to wait for showOpenDialog to complete
-                const filePickerButton = { iconPath: { id: 'folder-opened' }, tooltip: 'Browse for SSH key path...' };
+                const filePickerButton = {
+                  iconPath: { id: "folder-opened" },
+                  tooltip: "Browse for SSH key path...",
+                };
                 await Promise.resolve(buttonCallback(filePickerButton));
                 // After file picker completes, cancel the InputBox (test only needs to verify dialog options)
                 setTimeout(() => {
@@ -251,7 +304,7 @@ function createMockVSCode(options: {
                 }, 10);
               } else if (selection === undefined && hideCallback) {
                 hideCallback();
-              } else if (typeof selection === 'string' && acceptCallback) {
+              } else if (typeof selection === "string" && acceptCallback) {
                 _value = selection;
                 // Trigger onDidChangeValue callback (this sets validationMessage via real implementation)
                 if (changeCallback) {
@@ -315,25 +368,51 @@ function createMockVSCode(options: {
         let _items: T[] = [];
         let _selectedItems: T[] = [];
         let _activeItems: T[] = [];
-        let _title = '';
-        let _placeholder = '';
+        let _title = "";
+        let _placeholder = "";
         let _buttons: unknown[] = [];
         let _ignoreFocusOut = false;
 
         const quickPick = {
-          get title() { return _title; },
-          set title(value: string) { _title = value; },
-          get placeholder() { return _placeholder; },
-          set placeholder(value: string) { _placeholder = value; },
-          get buttons() { return _buttons; },
-          set buttons(value: unknown[]) { _buttons = value; },
-          get ignoreFocusOut() { return _ignoreFocusOut; },
-          set ignoreFocusOut(value: boolean) { _ignoreFocusOut = value; },
-          get items() { return _items; },
-          set items(value: T[]) { _items = value; },
-          get selectedItems() { return _selectedItems; },
-          get activeItems() { return _activeItems; },
-          set activeItems(value: T[]) { _activeItems = value; },
+          get title() {
+            return _title;
+          },
+          set title(value: string) {
+            _title = value;
+          },
+          get placeholder() {
+            return _placeholder;
+          },
+          set placeholder(value: string) {
+            _placeholder = value;
+          },
+          get buttons() {
+            return _buttons;
+          },
+          set buttons(value: unknown[]) {
+            _buttons = value;
+          },
+          get ignoreFocusOut() {
+            return _ignoreFocusOut;
+          },
+          set ignoreFocusOut(value: boolean) {
+            _ignoreFocusOut = value;
+          },
+          get items() {
+            return _items;
+          },
+          set items(value: T[]) {
+            _items = value;
+          },
+          get selectedItems() {
+            return _selectedItems;
+          },
+          get activeItems() {
+            return _activeItems;
+          },
+          set activeItems(value: T[]) {
+            _activeItems = value;
+          },
           show: () => {
             // Notify test callback with QuickPick state
             if (options.onQuickPickCreated) {
@@ -350,19 +429,35 @@ function createMockVSCode(options: {
             const selection = selections[quickPickSelectionIndex];
             quickPickSelectionIndex++;
             setTimeout(() => {
-              if (selection === 'back' && buttonCallback) {
+              if (selection === "back" && buttonCallback) {
                 buttonCallback(BACK_BUTTON);
               } else if (selection === undefined && hideCallback) {
                 hideCallback();
               } else if (acceptCallback) {
                 // Find matching item from _items
                 const matchedItem = _items.find((item: unknown) => {
-                  if (typeof selection === 'object' && selection !== null) {
-                    if ('field' in selection && typeof item === 'object' && item !== null && 'field' in item) {
-                      return (item as { field: string }).field === (selection as { field: string }).field;
+                  if (typeof selection === "object" && selection !== null) {
+                    if (
+                      "field" in selection &&
+                      typeof item === "object" &&
+                      item !== null &&
+                      "field" in item
+                    ) {
+                      return (
+                        (item as { field: string }).field ===
+                        (selection as { field: string }).field
+                      );
                     }
-                    if ('_isSaveButton' in selection && typeof item === 'object' && item !== null && '_isSaveButton' in item) {
-                      return (item as { _isSaveButton: boolean })._isSaveButton === (selection as { _isSaveButton: boolean })._isSaveButton;
+                    if (
+                      "_isSaveButton" in selection &&
+                      typeof item === "object" &&
+                      item !== null &&
+                      "_isSaveButton" in item
+                    ) {
+                      return (
+                        (item as { _isSaveButton: boolean })._isSaveButton ===
+                        (selection as { _isSaveButton: boolean })._isSaveButton
+                      );
                     }
                   }
                   return false;
@@ -420,12 +515,14 @@ function createMockVSCode(options: {
     _getConfigUpdateCalls: () => configUpdateCalls,
     _getLastValidateInput: () => lastValidateInput,
     _getAllValidateInputs: () => allValidateInputs,
-    _resetInputBoxCallIndex: () => { inputBoxCallIndex = 0; },
+    _resetInputBoxCallIndex: () => {
+      inputBoxCallIndex = 0;
+    },
     _getInputBoxCallIndex: () => inputBoxCallIndex,
   };
 }
 
-describe('identityManager E2E Test Suite', function () {
+describe("identityManager E2E Test Suite", function () {
   // Set suite-level timeout for all tests
   this.timeout(10_000);
 
@@ -443,31 +540,35 @@ describe('identityManager E2E Test Suite', function () {
   // Add Form Flow Tests (with Esc-back navigation)
   // ===========================================================================
 
-  describe('Add Form: Normal Flow', () => {
-    it('should return Identity when all required fields completed', async () => {
+  describe("Add Form: Normal Flow", () => {
+    it("should return Identity when all required fields completed", async () => {
       // showAddIdentityForm returns Identity | undefined
       // User flow: QuickPick shows fields → select id → enter value → select name → enter value → ...
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },     // Select id field
-          { field: 'name' },   // Select name field
-          { field: 'email' },  // Select email field
+          { field: "id" }, // Select id field
+          { field: "name" }, // Select name field
+          { field: "email" }, // Select email field
           { _isSaveButton: true }, // Click save
         ],
-        inputBoxSelections: ['test-id', 'Test User', 'test@example.com'],
+        inputBoxSelections: ["test-id", "Test User", "test@example.com"],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.ok(result !== undefined, 'Should return Identity on success');
-      assert.strictEqual(result?.id, 'test-id', 'Should return created Identity with correct id');
+      assert.ok(result !== undefined, "Should return Identity on success");
+      assert.strictEqual(
+        result?.id,
+        "test-id",
+        "Should return created Identity with correct id",
+      );
       const infoCalls = mockVSCode._getShowInformationMessageCalls();
-      assert.ok(infoCalls.length > 0, 'Should show success message');
+      assert.ok(infoCalls.length > 0, "Should show success message");
     });
 
-    it('should return undefined when cancelled (Esc)', async () => {
+    it("should return undefined when cancelled (Esc)", async () => {
       // Cancel at QuickPick (property list)
       const mockVSCode = createMockVSCode({
         identities: [],
@@ -477,64 +578,74 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, undefined, 'Should return undefined when cancelled at QuickPick');
+      assert.strictEqual(
+        result,
+        undefined,
+        "Should return undefined when cancelled at QuickPick",
+      );
     });
   });
 
-  describe('Add Form: Esc-back Navigation', () => {
-    it('should go back to field list when back pressed at InputBox, preserving ID value', async () => {
+  describe("Add Form: Esc-back Navigation", () => {
+    it("should go back to field list when back pressed at InputBox, preserving ID value", async () => {
       // In property list style: select id → enter value → select name → back → select name again
       // Note: INPUT_BOX_BACK in inputBoxSelections triggers back button, returns to QuickPick
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },     // Select id field
-          { field: 'name' },   // Select name field
+          { field: "id" }, // Select id field
+          { field: "name" }, // Select name field
           // After back from InputBox, QuickPick shows again
-          { field: 'name' },   // Select name field again
-          { field: 'email' },  // Select email field
+          { field: "name" }, // Select name field again
+          { field: "email" }, // Select email field
           { _isSaveButton: true }, // Click save
         ],
         inputBoxSelections: [
-          'my-id',        // Enter id value
+          "my-id", // Enter id value
           INPUT_BOX_BACK, // Press back at name input
-          'My Name',      // Enter name value (after back)
-          'my@test.com',  // Enter email value
+          "My Name", // Enter name value (after back)
+          "my@test.com", // Enter email value
         ],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.ok(result !== undefined, 'Should complete successfully after back-navigation');
-      assert.strictEqual(result?.id, 'my-id', 'Should preserve ID value');
+      assert.ok(
+        result !== undefined,
+        "Should complete successfully after back-navigation",
+      );
+      assert.strictEqual(result?.id, "my-id", "Should preserve ID value");
     });
 
-    it('should go back to field list when back pressed at email, preserving Name value', async () => {
+    it("should go back to field list when back pressed at email, preserving Name value", async () => {
       // In property list style: complete id/name, then back at email input
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },
-          { field: 'email' },
+          { field: "id" },
+          { field: "name" },
+          { field: "email" },
           // After back from InputBox, QuickPick shows again
-          { field: 'email' }, // Select email again
+          { field: "email" }, // Select email again
           { _isSaveButton: true },
         ],
         inputBoxSelections: [
-          'my-id',
-          'My Name',
+          "my-id",
+          "My Name",
           INPUT_BOX_BACK, // Press back at email input
-          'my@test.com',  // Enter email (after back)
+          "my@test.com", // Enter email (after back)
         ],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.ok(result !== undefined, 'Should complete successfully after back-navigation');
-      assert.strictEqual(result?.name, 'My Name', 'Should preserve Name value');
+      assert.ok(
+        result !== undefined,
+        "Should complete successfully after back-navigation",
+      );
+      assert.strictEqual(result?.name, "My Name", "Should preserve Name value");
     });
 
     it('should NOT set "back" as field value when back button pressed (required and optional fields)', async () => {
@@ -544,29 +655,37 @@ describe('identityManager E2E Test Suite', function () {
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },      // Select required name field
-          { field: 'name' },      // Re-select after back
-          { field: 'email' },
-          { field: 'service' },   // Select optional service field
+          { field: "id" },
+          { field: "name" }, // Select required name field
+          { field: "name" }, // Re-select after back
+          { field: "email" },
+          { field: "service" }, // Select optional service field
           { _isSaveButton: true },
         ],
         inputBoxSelections: [
-          'test-id',
-          INPUT_BOX_BACK,         // Press back at required name field
-          'Valid Name',           // Enter name value after back
-          'test@test.com',
-          INPUT_BOX_BACK,         // Press back at optional service field
+          "test-id",
+          INPUT_BOX_BACK, // Press back at required name field
+          "Valid Name", // Enter name value after back
+          "test@test.com",
+          INPUT_BOX_BACK, // Press back at optional service field
         ],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.ok(result !== undefined, 'Should complete successfully');
-      assert.strictEqual(result?.id, 'test-id', 'ID should be preserved');
-      assert.strictEqual(result?.name, 'Valid Name', 'Required field should have entered value, not "back"');
-      assert.strictEqual(result?.service, undefined, 'Optional field should remain undefined after back');
+      assert.ok(result !== undefined, "Should complete successfully");
+      assert.strictEqual(result?.id, "test-id", "ID should be preserved");
+      assert.strictEqual(
+        result?.name,
+        "Valid Name",
+        'Required field should have entered value, not "back"',
+      );
+      assert.strictEqual(
+        result?.service,
+        undefined,
+        "Optional field should remain undefined after back",
+      );
     });
   });
 
@@ -574,44 +693,47 @@ describe('identityManager E2E Test Suite', function () {
   // Edit Profile Flow Tests
   // ===========================================================================
 
-  describe('Edit Profile: targetIdentity Support', () => {
-    it('should skip identity selection when targetIdentity is provided', async () => {
+  describe("Edit Profile: targetIdentity Support", () => {
+    it("should skip identity selection when targetIdentity is provided", async () => {
       // Edit wizard now uses createQuickPick for field selection
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work, TEST_IDENTITIES.personal],
         quickPickSelections: [
-          { field: 'name' },  // Select name field
-          undefined,          // Cancel after saving (exit loop)
+          { field: "name" }, // Select name field
+          undefined, // Cancel after saving (exit loop)
         ],
-        inputBoxSelections: ['Updated Name'],
+        inputBoxSelections: ["Updated Name"],
       });
       _setMockVSCode(mockVSCode as never);
 
       // Pass targetIdentity to skip selection
       const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, true, 'Should return true on success');
+      assert.strictEqual(result, true, "Should return true on success");
       const infoCalls = mockVSCode._getShowInformationMessageCalls();
-      assert.ok(infoCalls.some(msg => msg.includes('updated')), 'Should show update message');
+      assert.ok(
+        infoCalls.some((msg) => msg.includes("updated")),
+        "Should show update message",
+      );
     });
 
-    it('should return true when edit completes successfully', async () => {
+    it("should return true when edit completes successfully", async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
         quickPickSelections: [
-          { field: 'email' }, // Select email field
-          undefined,          // Cancel after saving (exit loop)
+          { field: "email" }, // Select email field
+          undefined, // Cancel after saving (exit loop)
         ],
-        inputBoxSelections: ['new@example.com'],
+        inputBoxSelections: ["new@example.com"],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, true, 'Should return true (boolean)');
+      assert.strictEqual(result, true, "Should return true (boolean)");
     });
 
-    it('should return false when field selection cancelled (Esc)', async () => {
+    it("should return false when field selection cancelled (Esc)", async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
         quickPickSelections: [undefined], // Cancel field selection
@@ -620,25 +742,25 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, false, 'Should return false when cancelled');
+      assert.strictEqual(result, false, "Should return false when cancelled");
     });
   });
 
-  describe('Edit Profile: Esc-back Navigation', () => {
-    it('should go back to field selection when Esc pressed at value input', async () => {
+  describe("Edit Profile: Esc-back Navigation", () => {
+    it("should go back to field selection when Esc pressed at value input", async () => {
       // First attempt: select field, press back at InputBox
       // Second attempt: select field again, enter value
       let quickPickShowCount = 0;
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
         quickPickSelections: [
-          { field: 'name' },  // Select name field (first attempt)
-          { field: 'name' },  // Select name field again (after back)
-          undefined,          // Cancel after saving
+          { field: "name" }, // Select name field (first attempt)
+          { field: "name" }, // Select name field again (after back)
+          undefined, // Cancel after saving
         ],
         inputBoxSelections: [
-          INPUT_BOX_BACK,   // First: press back button
-          'Updated Name',   // Second: enter value
+          INPUT_BOX_BACK, // First: press back button
+          "Updated Name", // Second: enter value
         ],
         onQuickPickCreated: () => {
           quickPickShowCount++;
@@ -648,49 +770,72 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, true, 'Should complete after back-navigation');
-      assert.ok(quickPickShowCount >= 2, `Should show QuickPick multiple times due to back-navigation, got ${quickPickShowCount}`);
+      assert.strictEqual(result, true, "Should complete after back-navigation");
+      assert.ok(
+        quickPickShowCount >= 2,
+        `Should show QuickPick multiple times due to back-navigation, got ${quickPickShowCount}`,
+      );
     });
   });
 
-  describe('Edit Profile: Success Path', () => {
-    it('should return true when a field is successfully edited', async () => {
+  describe("Edit Profile: Success Path", () => {
+    it("should return true when a field is successfully edited", async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
-        quickPickSelections: [
-          { field: 'name' },
-          undefined,
-        ],
-        inputBoxSelections: ['New Name'],
+        quickPickSelections: [{ field: "name" }, undefined],
+        inputBoxSelections: ["New Name"],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, true, 'Should return true after successful edit');
+      assert.strictEqual(
+        result,
+        true,
+        "Should return true after successful edit",
+      );
     });
   });
 
-  describe('Add Form: Success Path', () => {
-    it('should return Identity with correct id/name/email after completing all fields', async () => {
+  describe("Add Form: Success Path", () => {
+    it("should return Identity with correct id/name/email after completing all fields", async () => {
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },
-          { field: 'email' },
+          { field: "id" },
+          { field: "name" },
+          { field: "email" },
           { _isSaveButton: true },
         ],
-        inputBoxSelections: ['return-type-id', 'Return Type Name', 'email@test.com'],
+        inputBoxSelections: [
+          "return-type-id",
+          "Return Type Name",
+          "email@test.com",
+        ],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.ok(result !== undefined, 'Should return Identity object on success');
-      assert.strictEqual(result?.id, 'return-type-id', 'Should have correct id');
-      assert.strictEqual(result?.name, 'Return Type Name', 'Should have correct name');
-      assert.strictEqual(result?.email, 'email@test.com', 'Should have correct email');
+      assert.ok(
+        result !== undefined,
+        "Should return Identity object on success",
+      );
+      assert.strictEqual(
+        result?.id,
+        "return-type-id",
+        "Should have correct id",
+      );
+      assert.strictEqual(
+        result?.name,
+        "Return Type Name",
+        "Should have correct name",
+      );
+      assert.strictEqual(
+        result?.email,
+        "email@test.com",
+        "Should have correct email",
+      );
     });
   });
 
@@ -700,140 +845,167 @@ describe('identityManager E2E Test Suite', function () {
   // Invalid input triggers validation error, causing the flow to cancel.
   // ===========================================================================
 
-  describe('Security: ID Input Validation', () => {
-    it('should reject ID with invalid characters (validation causes cancel)', async () => {
+  describe("Security: ID Input Validation", () => {
+    it("should reject ID with invalid characters (validation causes cancel)", async () => {
       // Invalid ID with symbols - validation will fail, causing cancel
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },  // Select id field
-          undefined,        // Cancel after validation failure
+          { field: "id" }, // Select id field
+          undefined, // Cancel after validation failure
         ],
-        inputBoxSelections: ['id@with#symbols!'], // Invalid ID
+        inputBoxSelections: ["id@with#symbols!"], // Invalid ID
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
       // Validation error causes hide (cancel), so result is undefined
-      assert.strictEqual(result, undefined, 'Invalid ID should cause validation failure');
+      assert.strictEqual(
+        result,
+        undefined,
+        "Invalid ID should cause validation failure",
+      );
     });
 
     // Duplicate ID validation is covered by 'Duplicate ID Check' tests in Add Identity Form section
   });
 
-  describe('Security: Name Input Validation', () => {
-    it('should reject name with dangerous characters ($, backtick)', async () => {
+  describe("Security: Name Input Validation", () => {
+    it("should reject name with dangerous characters ($, backtick)", async () => {
       // Name with dangerous characters - validation will fail
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },  // Select name field
-          undefined,          // Cancel after validation failure
+          { field: "id" },
+          { field: "name" }, // Select name field
+          undefined, // Cancel after validation failure
         ],
-        inputBoxSelections: ['valid-id', 'User $HOME'], // Valid ID, Invalid name
+        inputBoxSelections: ["valid-id", "User $HOME"], // Valid ID, Invalid name
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, undefined, 'Name with dangerous characters should cause validation failure');
+      assert.strictEqual(
+        result,
+        undefined,
+        "Name with dangerous characters should cause validation failure",
+      );
     });
 
-    it('should reject name exceeding MAX_NAME_LENGTH', async () => {
-      const longName = 'a'.repeat(MAX_NAME_LENGTH + 1);
+    it("should reject name exceeding MAX_NAME_LENGTH", async () => {
+      const longName = "a".repeat(MAX_NAME_LENGTH + 1);
       const mockVSCode = createMockVSCode({
         identities: [],
-        quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },
-          undefined,
-        ],
-        inputBoxSelections: ['valid-id', longName],
+        quickPickSelections: [{ field: "id" }, { field: "name" }, undefined],
+        inputBoxSelections: ["valid-id", longName],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, undefined, 'Name exceeding max length should cause validation failure');
-    });
-  });
-
-  describe('Security: Email Input Validation', () => {
-    it('should reject invalid email format', async () => {
-      const mockVSCode = createMockVSCode({
-        identities: [],
-        quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },
-          { field: 'email' },
-          undefined,
-        ],
-        inputBoxSelections: ['valid-id', 'Valid Name', 'notanemail'], // Invalid email
-      });
-      _setMockVSCode(mockVSCode as never);
-
-      const result = await showAddIdentityForm();
-
-      assert.strictEqual(result, undefined, 'Invalid email format should cause validation failure');
-    });
-
-    it('should reject email exceeding MAX_EMAIL_LENGTH', async () => {
-      const longEmail = 'a'.repeat(MAX_EMAIL_LENGTH) + '@example.com';
-      const mockVSCode = createMockVSCode({
-        identities: [],
-        quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },
-          { field: 'email' },
-          undefined,
-        ],
-        inputBoxSelections: ['valid-id', 'Valid Name', longEmail],
-      });
-      _setMockVSCode(mockVSCode as never);
-
-      const result = await showAddIdentityForm();
-
-      assert.strictEqual(result, undefined, 'Email exceeding max length should cause validation failure');
+      assert.strictEqual(
+        result,
+        undefined,
+        "Name exceeding max length should cause validation failure",
+      );
     });
   });
 
-  describe('Security: validateInput - Valid Values', () => {
-    it('should accept valid input values and complete successfully', async () => {
+  describe("Security: Email Input Validation", () => {
+    it("should reject invalid email format", async () => {
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },
-          { field: 'email' },
+          { field: "id" },
+          { field: "name" },
+          { field: "email" },
+          undefined,
+        ],
+        inputBoxSelections: ["valid-id", "Valid Name", "notanemail"], // Invalid email
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showAddIdentityForm();
+
+      assert.strictEqual(
+        result,
+        undefined,
+        "Invalid email format should cause validation failure",
+      );
+    });
+
+    it("should reject email exceeding MAX_EMAIL_LENGTH", async () => {
+      const longEmail = "a".repeat(MAX_EMAIL_LENGTH) + "@example.com";
+      const mockVSCode = createMockVSCode({
+        identities: [],
+        quickPickSelections: [
+          { field: "id" },
+          { field: "name" },
+          { field: "email" },
+          undefined,
+        ],
+        inputBoxSelections: ["valid-id", "Valid Name", longEmail],
+      });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showAddIdentityForm();
+
+      assert.strictEqual(
+        result,
+        undefined,
+        "Email exceeding max length should cause validation failure",
+      );
+    });
+  });
+
+  describe("Security: validateInput - Valid Values", () => {
+    it("should accept valid input values and complete successfully", async () => {
+      const mockVSCode = createMockVSCode({
+        identities: [],
+        quickPickSelections: [
+          { field: "id" },
+          { field: "name" },
+          { field: "email" },
           { _isSaveButton: true },
         ],
-        inputBoxSelections: ['valid-id', 'Valid Name', 'valid@example.com'],
+        inputBoxSelections: ["valid-id", "Valid Name", "valid@example.com"],
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.ok(result !== undefined, 'Valid values should complete successfully');
-      assert.strictEqual(result?.id, 'valid-id', 'Should return Identity with correct id');
+      assert.ok(
+        result !== undefined,
+        "Valid values should complete successfully",
+      );
+      assert.strictEqual(
+        result?.id,
+        "valid-id",
+        "Should return Identity with correct id",
+      );
     });
 
-    it('should reject empty string inputs', async () => {
+    it("should reject empty string inputs", async () => {
       // Empty string for required field should fail validation
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },  // Select id field
-          undefined,        // Cancel after validation failure
+          { field: "id" }, // Select id field
+          undefined, // Cancel after validation failure
         ],
-        inputBoxSelections: [''], // Empty ID
+        inputBoxSelections: [""], // Empty ID
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, undefined, 'Empty string should cause validation failure');
+      assert.strictEqual(
+        result,
+        undefined,
+        "Empty string should cause validation failure",
+      );
     });
   });
 
@@ -841,8 +1013,8 @@ describe('identityManager E2E Test Suite', function () {
   // MAX_IDENTITIES Limit Tests
   // ===========================================================================
 
-  describe('MAX_IDENTITIES Limit', () => {
-    it('should show warning when MAX_IDENTITIES reached', async () => {
+  describe("MAX_IDENTITIES Limit", () => {
+    it("should show warning when MAX_IDENTITIES reached", async () => {
       // Create array with MAX_IDENTITIES identities
       const maxIdentities: Identity[] = [];
       for (let i = 0; i < MAX_IDENTITIES; i++) {
@@ -860,12 +1032,16 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, undefined, 'Should return undefined when limit reached');
+      assert.strictEqual(
+        result,
+        undefined,
+        "Should return undefined when limit reached",
+      );
       const warnings = mockVSCode._getShowWarningMessageCalls();
-      assert.strictEqual(warnings.length, 1, 'Should show warning');
+      assert.strictEqual(warnings.length, 1, "Should show warning");
       assert.ok(
         warnings[0].includes(String(MAX_IDENTITIES)),
-        'Warning should mention max limit'
+        "Warning should mention max limit",
       );
     });
   });
@@ -874,9 +1050,9 @@ describe('identityManager E2E Test Suite', function () {
   // Add Identity Form (Property List Style) Tests
   // ===========================================================================
 
-  describe('Add Identity Form: Property List Style', () => {
-    describe('Property List Display', () => {
-      it('should show QuickPick with all 9 FIELD_METADATA fields', async () => {
+  describe("Add Identity Form: Property List Style", () => {
+    describe("Property List Display", () => {
+      it("should show QuickPick with all 9 FIELD_METADATA fields", async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -891,33 +1067,42 @@ describe('identityManager E2E Test Suite', function () {
         await showAddIdentityForm();
 
         // 9 fields + 1 separator + 1 save button = 11 items
-        assert.ok(capturedItems.length >= 10, `Should have at least 10 items, got ${capturedItems.length}`);
+        assert.ok(
+          capturedItems.length >= 10,
+          `Should have at least 10 items, got ${capturedItems.length}`,
+        );
 
         // Verify all 9 fields are present with correct icons
         const expectedFields = [
-          { field: 'id', icon: 'lock' },
-          { field: 'name', icon: 'person' },
-          { field: 'email', icon: 'mail' },
-          { field: 'service', icon: 'server' },
-          { field: 'icon', icon: 'symbol-color' },
-          { field: 'description', icon: 'note' },
-          { field: 'sshKeyPath', icon: 'key' },
-          { field: 'sshHost', icon: 'globe' },
-          { field: 'gpgKeyId', icon: 'key' },
+          { field: "id", icon: "lock" },
+          { field: "name", icon: "person" },
+          { field: "email", icon: "mail" },
+          { field: "service", icon: "server" },
+          { field: "icon", icon: "symbol-color" },
+          { field: "description", icon: "note" },
+          { field: "sshKeyPath", icon: "key" },
+          { field: "sshHost", icon: "globe" },
+          { field: "gpgKeyId", icon: "key" },
         ];
 
         for (const { field, icon } of expectedFields) {
-          const item = capturedItems.find((i: unknown) =>
-            typeof i === 'object' && i !== null && 'field' in i &&
-            (i as { field: string }).field === field
+          const item = capturedItems.find(
+            (i: unknown) =>
+              typeof i === "object" &&
+              i !== null &&
+              "field" in i &&
+              (i as { field: string }).field === field,
           );
           assert.ok(item, `Field '${field}' should be present`);
           const label = (item as { label: string }).label;
-          assert.ok(label.includes(`$(${icon})`), `Field '${field}' should have $(${icon}) icon, got: ${label}`);
+          assert.ok(
+            label.includes(`$(${icon})`),
+            `Field '${field}' should have $(${icon}) icon, got: ${label}`,
+          );
         }
       });
 
-      it('should set ignoreFocusOut to prevent data loss on focus change', async () => {
+      it("should set ignoreFocusOut to prevent data loss on focus change", async () => {
         let capturedIgnoreFocusOut = false;
 
         const mockVSCode = createMockVSCode({
@@ -931,10 +1116,14 @@ describe('identityManager E2E Test Suite', function () {
 
         await showAddIdentityForm();
 
-        assert.strictEqual(capturedIgnoreFocusOut, true, 'Add form QuickPick should have ignoreFocusOut=true');
+        assert.strictEqual(
+          capturedIgnoreFocusOut,
+          true,
+          "Add form QuickPick should have ignoreFocusOut=true",
+        );
       });
 
-      it('should mark required fields (id, name, email) with asterisk', async () => {
+      it("should mark required fields (id, name, email) with asterisk", async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -948,31 +1137,50 @@ describe('identityManager E2E Test Suite', function () {
 
         await showAddIdentityForm();
 
-        const requiredFields = ['id', 'name', 'email'];
+        const requiredFields = ["id", "name", "email"];
         for (const field of requiredFields) {
-          const item = capturedItems.find((i: unknown) =>
-            typeof i === 'object' && i !== null && 'field' in i &&
-            (i as { field: string }).field === field
+          const item = capturedItems.find(
+            (i: unknown) =>
+              typeof i === "object" &&
+              i !== null &&
+              "field" in i &&
+              (i as { field: string }).field === field,
           );
           assert.ok(item, `Field '${field}' should be present`);
           const label = (item as { label: string }).label;
-          assert.ok(label.endsWith('*'), `Required field '${field}' should have * mark, got: ${label}`);
+          assert.ok(
+            label.endsWith("*"),
+            `Required field '${field}' should have * mark, got: ${label}`,
+          );
         }
 
-        const optionalFields = ['service', 'icon', 'description', 'sshKeyPath', 'sshHost', 'gpgKeyId'];
+        const optionalFields = [
+          "service",
+          "icon",
+          "description",
+          "sshKeyPath",
+          "sshHost",
+          "gpgKeyId",
+        ];
         for (const field of optionalFields) {
-          const item = capturedItems.find((i: unknown) =>
-            typeof i === 'object' && i !== null && 'field' in i &&
-            (i as { field: string }).field === field
+          const item = capturedItems.find(
+            (i: unknown) =>
+              typeof i === "object" &&
+              i !== null &&
+              "field" in i &&
+              (i as { field: string }).field === field,
           );
           if (item) {
             const label = (item as { label: string }).label;
-            assert.ok(!label.endsWith('*'), `Optional field '${field}' should NOT have * mark, got: ${label}`);
+            assert.ok(
+              !label.endsWith("*"),
+              `Optional field '${field}' should NOT have * mark, got: ${label}`,
+            );
           }
         }
       });
 
-      it('should show separator line', async () => {
+      it("should show separator line", async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -986,15 +1194,22 @@ describe('identityManager E2E Test Suite', function () {
 
         await showAddIdentityForm();
 
-        const separator = capturedItems.find((i: unknown) =>
-          typeof i === 'object' && i !== null && 'label' in i &&
-          (i as { label: string }).label.includes('─────────────')
+        const separator = capturedItems.find(
+          (i: unknown) =>
+            typeof i === "object" &&
+            i !== null &&
+            "label" in i &&
+            (i as { label: string }).label.includes("─────────────"),
         );
-        assert.ok(separator, 'Separator should be present');
-        assert.strictEqual((separator as { _isDisabled?: boolean })._isDisabled, true, 'Separator should be disabled');
+        assert.ok(separator, "Separator should be present");
+        assert.strictEqual(
+          (separator as { _isDisabled?: boolean })._isDisabled,
+          true,
+          "Separator should be disabled",
+        );
       });
 
-      it('should show save button at bottom', async () => {
+      it("should show save button at bottom", async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -1008,21 +1223,32 @@ describe('identityManager E2E Test Suite', function () {
 
         await showAddIdentityForm();
 
-        const saveButton = capturedItems.find((i: unknown) =>
-          typeof i === 'object' && i !== null && 'field' in i &&
-          (i as { field: string }).field === 'save'
+        const saveButton = capturedItems.find(
+          (i: unknown) =>
+            typeof i === "object" &&
+            i !== null &&
+            "field" in i &&
+            (i as { field: string }).field === "save",
         );
-        assert.ok(saveButton, 'Save button should be present');
-        assert.strictEqual((saveButton as { _isSaveButton?: boolean })._isSaveButton, true, 'Save button should have _isSaveButton flag');
+        assert.ok(saveButton, "Save button should be present");
+        assert.strictEqual(
+          (saveButton as { _isSaveButton?: boolean })._isSaveButton,
+          true,
+          "Save button should have _isSaveButton flag",
+        );
 
         // Save button should be at the end
         const lastItem = capturedItems.at(-1);
-        assert.strictEqual((lastItem as { field: string }).field, 'save', 'Save button should be the last item');
+        assert.strictEqual(
+          (lastItem as { field: string }).field,
+          "save",
+          "Save button should be the last item",
+        );
       });
     });
 
-    describe('Required Field Validation for Save Button', () => {
-      it('should disable save button when id is empty', async () => {
+    describe("Required Field Validation for Save Button", () => {
+      it("should disable save button when id is empty", async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -1036,28 +1262,38 @@ describe('identityManager E2E Test Suite', function () {
 
         await showAddIdentityForm();
 
-        const saveButton = capturedItems.find((i: unknown) =>
-          typeof i === 'object' && i !== null && 'field' in i &&
-          (i as { field: string }).field === 'save'
+        const saveButton = capturedItems.find(
+          (i: unknown) =>
+            typeof i === "object" &&
+            i !== null &&
+            "field" in i &&
+            (i as { field: string }).field === "save",
         );
-        assert.ok(saveButton, 'Save button should be present');
+        assert.ok(saveButton, "Save button should be present");
         const label = (saveButton as { label: string }).label;
-        assert.ok(label.includes('$(session-in-progress)'), `Save button should show $(session-in-progress) when disabled, got: ${label}`);
-        assert.strictEqual((saveButton as { _isDisabled?: boolean })._isDisabled, true, 'Save button should be disabled');
+        assert.ok(
+          label.includes("$(session-in-progress)"),
+          `Save button should show $(session-in-progress) when disabled, got: ${label}`,
+        );
+        assert.strictEqual(
+          (saveButton as { _isDisabled?: boolean })._isDisabled,
+          true,
+          "Save button should be disabled",
+        );
       });
 
-      it('should enable save button when all required fields are filled', async () => {
+      it("should enable save button when all required fields are filled", async () => {
         const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [],
           quickPickSelections: [
-            { field: 'id' },     // Select id field
-            { field: 'name' },   // Select name field
-            { field: 'email' },  // Select email field
+            { field: "id" }, // Select id field
+            { field: "name" }, // Select name field
+            { field: "email" }, // Select email field
             { _isSaveButton: true }, // Click save
           ],
-          inputBoxSelections: ['test-id', 'Test User', 'test@example.com'],
+          inputBoxSelections: ["test-id", "Test User", "test@example.com"],
           onQuickPickCreated: (quickPick) => {
             capturedItemsHistory.push([...quickPick.items]);
           },
@@ -1067,29 +1303,42 @@ describe('identityManager E2E Test Suite', function () {
         await showAddIdentityForm();
 
         // After all fields filled, save button should be enabled
-        assert.ok(capturedItemsHistory.length >= 4, `Expected at least 4 QuickPick displays, got ${capturedItemsHistory.length}`);
-        const lastItems = capturedItemsHistory.at(-1);
-        assert.ok(lastItems, 'Last items should exist');
-        const saveButton = lastItems.find((i: unknown) =>
-          typeof i === 'object' && i !== null && 'field' in i &&
-          (i as { field: string }).field === 'save'
+        assert.ok(
+          capturedItemsHistory.length >= 4,
+          `Expected at least 4 QuickPick displays, got ${capturedItemsHistory.length}`,
         );
-        assert.ok(saveButton, 'Save button should exist');
+        const lastItems = capturedItemsHistory.at(-1);
+        assert.ok(lastItems, "Last items should exist");
+        const saveButton = lastItems.find(
+          (i: unknown) =>
+            typeof i === "object" &&
+            i !== null &&
+            "field" in i &&
+            (i as { field: string }).field === "save",
+        );
+        assert.ok(saveButton, "Save button should exist");
         const label = (saveButton as { label: string }).label;
-        assert.ok(label.includes('$(check)'), `Save button should show $(check) when enabled, got: ${label}`);
-        assert.strictEqual((saveButton as { _isDisabled?: boolean })._isDisabled, false, 'Save button should be enabled');
+        assert.ok(
+          label.includes("$(check)"),
+          `Save button should show $(check) when enabled, got: ${label}`,
+        );
+        assert.strictEqual(
+          (saveButton as { _isDisabled?: boolean })._isDisabled,
+          false,
+          "Save button should be enabled",
+        );
       });
 
-      it('should disable save button when only id is filled', async () => {
+      it("should disable save button when only id is filled", async () => {
         const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [],
           quickPickSelections: [
-            { field: 'id' },  // Select id field
-            undefined,       // Cancel after
+            { field: "id" }, // Select id field
+            undefined, // Cancel after
           ],
-          inputBoxSelections: ['test-id'],
+          inputBoxSelections: ["test-id"],
           onQuickPickCreated: (quickPick) => {
             capturedItemsHistory.push([...quickPick.items]);
           },
@@ -1099,29 +1348,38 @@ describe('identityManager E2E Test Suite', function () {
         await showAddIdentityForm();
 
         // After id filled but name/email empty, save should still be disabled
-        assert.ok(capturedItemsHistory.length >= 2, `Expected at least 2 QuickPick displays, got ${capturedItemsHistory.length}`);
-        const lastItems = capturedItemsHistory.at(-1);
-        assert.ok(lastItems, 'Last items should exist');
-        const saveButton = lastItems.find((i: unknown) =>
-          typeof i === 'object' && i !== null && 'field' in i &&
-          (i as { field: string }).field === 'save'
+        assert.ok(
+          capturedItemsHistory.length >= 2,
+          `Expected at least 2 QuickPick displays, got ${capturedItemsHistory.length}`,
         );
-        assert.ok(saveButton, 'Save button should exist');
-        assert.strictEqual((saveButton as { _isDisabled?: boolean })._isDisabled, true,
-          'Save button should be disabled when only id is filled');
+        const lastItems = capturedItemsHistory.at(-1);
+        assert.ok(lastItems, "Last items should exist");
+        const saveButton = lastItems.find(
+          (i: unknown) =>
+            typeof i === "object" &&
+            i !== null &&
+            "field" in i &&
+            (i as { field: string }).field === "save",
+        );
+        assert.ok(saveButton, "Save button should exist");
+        assert.strictEqual(
+          (saveButton as { _isDisabled?: boolean })._isDisabled,
+          true,
+          "Save button should be disabled when only id is filled",
+        );
       });
 
-      it('should disable save button when id and name filled but email empty', async () => {
+      it("should disable save button when id and name filled but email empty", async () => {
         const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [],
           quickPickSelections: [
-            { field: 'id' },    // Select id field
-            { field: 'name' }, // Select name field
-            undefined,         // Cancel after
+            { field: "id" }, // Select id field
+            { field: "name" }, // Select name field
+            undefined, // Cancel after
           ],
-          inputBoxSelections: ['test-id', 'Test User'],
+          inputBoxSelections: ["test-id", "Test User"],
           onQuickPickCreated: (quickPick) => {
             capturedItemsHistory.push([...quickPick.items]);
           },
@@ -1131,21 +1389,30 @@ describe('identityManager E2E Test Suite', function () {
         await showAddIdentityForm();
 
         // After id and name filled but email empty, save should still be disabled
-        assert.ok(capturedItemsHistory.length >= 3, `Expected at least 3 QuickPick displays, got ${capturedItemsHistory.length}`);
-        const lastItems = capturedItemsHistory.at(-1);
-        assert.ok(lastItems, 'Last items should exist');
-        const saveButton = lastItems.find((i: unknown) =>
-          typeof i === 'object' && i !== null && 'field' in i &&
-          (i as { field: string }).field === 'save'
+        assert.ok(
+          capturedItemsHistory.length >= 3,
+          `Expected at least 3 QuickPick displays, got ${capturedItemsHistory.length}`,
         );
-        assert.ok(saveButton, 'Save button should exist');
-        assert.strictEqual((saveButton as { _isDisabled?: boolean })._isDisabled, true,
-          'Save button should be disabled when email is empty');
+        const lastItems = capturedItemsHistory.at(-1);
+        assert.ok(lastItems, "Last items should exist");
+        const saveButton = lastItems.find(
+          (i: unknown) =>
+            typeof i === "object" &&
+            i !== null &&
+            "field" in i &&
+            (i as { field: string }).field === "save",
+        );
+        assert.ok(saveButton, "Save button should exist");
+        assert.strictEqual(
+          (saveButton as { _isDisabled?: boolean })._isDisabled,
+          true,
+          "Save button should be disabled when email is empty",
+        );
       });
     });
 
-    describe('Duplicate ID Check', () => {
-      it('should show ID already exists detail when duplicate ID entered', async () => {
+    describe("Duplicate ID Check", () => {
+      it("should show ID already exists detail when duplicate ID entered", async () => {
         // Note: Duplicate ID detection happens at two levels:
         // 1. InputBox validation (validateIdInput) - prevents accepting duplicate ID
         // 2. buildAddFormItems - shows "ID already exists" detail when state has duplicate ID
@@ -1156,31 +1423,35 @@ describe('identityManager E2E Test Suite', function () {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work], // Existing identity with id 'work'
           quickPickSelections: [
-            { field: 'id' },   // Select id field
-            undefined,        // Cancel after validation failure
+            { field: "id" }, // Select id field
+            undefined, // Cancel after validation failure
           ],
-          inputBoxSelections: ['work'], // Enter duplicate ID (will be rejected by validation)
+          inputBoxSelections: ["work"], // Enter duplicate ID (will be rejected by validation)
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showAddIdentityForm();
 
         // Duplicate ID is rejected at InputBox validation level, causing cancel
-        assert.strictEqual(result, undefined, 'Should return undefined when duplicate ID validation fails');
+        assert.strictEqual(
+          result,
+          undefined,
+          "Should return undefined when duplicate ID validation fails",
+        );
       });
 
-      it('should keep save button disabled when ID is duplicate', async () => {
+      it("should keep save button disabled when ID is duplicate", async () => {
         const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
-            { field: 'id' },
-            { field: 'name' },
-            { field: 'email' },
+            { field: "id" },
+            { field: "name" },
+            { field: "email" },
             undefined,
           ],
-          inputBoxSelections: ['work', 'Test Name', 'test@example.com'], // Duplicate ID
+          inputBoxSelections: ["work", "Test Name", "test@example.com"], // Duplicate ID
           onQuickPickCreated: (quickPick) => {
             capturedItemsHistory.push([...quickPick.items]);
           },
@@ -1190,21 +1461,30 @@ describe('identityManager E2E Test Suite', function () {
         await showAddIdentityForm();
 
         // Even with all fields filled, save should be disabled due to duplicate ID
-        assert.ok(capturedItemsHistory.length >= 4, `Expected at least 4 QuickPick displays, got ${capturedItemsHistory.length}`);
-        const lastItems = capturedItemsHistory.at(-1);
-        assert.ok(lastItems, 'Last items should exist');
-        const saveButton = lastItems.find((i: unknown) =>
-          typeof i === 'object' && i !== null && 'field' in i &&
-          (i as { field: string }).field === 'save'
+        assert.ok(
+          capturedItemsHistory.length >= 4,
+          `Expected at least 4 QuickPick displays, got ${capturedItemsHistory.length}`,
         );
-        assert.ok(saveButton, 'Save button should exist');
-        assert.strictEqual((saveButton as { _isDisabled?: boolean })._isDisabled, true,
-          'Save button should remain disabled with duplicate ID');
+        const lastItems = capturedItemsHistory.at(-1);
+        assert.ok(lastItems, "Last items should exist");
+        const saveButton = lastItems.find(
+          (i: unknown) =>
+            typeof i === "object" &&
+            i !== null &&
+            "field" in i &&
+            (i as { field: string }).field === "save",
+        );
+        assert.ok(saveButton, "Save button should exist");
+        assert.strictEqual(
+          (saveButton as { _isDisabled?: boolean })._isDisabled,
+          true,
+          "Save button should remain disabled with duplicate ID",
+        );
       });
     });
 
-    describe('Back Button (Add Form)', () => {
-      it('should have QuickInputButtons.Back in buttons array', async () => {
+    describe("Back Button (Add Form)", () => {
+      it("should have QuickInputButtons.Back in buttons array", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -1218,19 +1498,26 @@ describe('identityManager E2E Test Suite', function () {
 
         await showAddIdentityForm();
 
-        assert.ok(capturedButtons.includes(BACK_BUTTON), 'QuickPick should have Back button');
+        assert.ok(
+          capturedButtons.includes(BACK_BUTTON),
+          "QuickPick should have Back button",
+        );
       });
 
-      it('should return undefined when back button clicked', async () => {
+      it("should return undefined when back button clicked", async () => {
         const mockVSCode = createMockVSCode({
           identities: [],
-          quickPickSelections: ['back'], // Trigger back button
+          quickPickSelections: ["back"], // Trigger back button
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showAddIdentityForm();
 
-        assert.strictEqual(result, undefined, 'Should return undefined when back pressed');
+        assert.strictEqual(
+          result,
+          undefined,
+          "Should return undefined when back pressed",
+        );
       });
     });
   });
@@ -1239,9 +1526,9 @@ describe('identityManager E2E Test Suite', function () {
   // Edit Identity Form Tests
   // ===========================================================================
 
-  describe('Edit Identity Form', () => {
-    describe('Focus Retention', () => {
-      it('should set ignoreFocusOut to prevent data loss on focus change', async () => {
+  describe("Edit Identity Form", () => {
+    describe("Focus Retention", () => {
+      it("should set ignoreFocusOut to prevent data loss on focus change", async () => {
         let capturedIgnoreFocusOut = false;
 
         const mockVSCode = createMockVSCode({
@@ -1255,12 +1542,16 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(capturedIgnoreFocusOut, true, 'Edit form QuickPick should have ignoreFocusOut=true');
+        assert.strictEqual(
+          capturedIgnoreFocusOut,
+          true,
+          "Edit form QuickPick should have ignoreFocusOut=true",
+        );
       });
     });
 
-    describe('Back Button (Field Selection)', () => {
-      it('should have QuickInputButtons.Back in field selection', async () => {
+    describe("Back Button (Field Selection)", () => {
+      it("should have QuickInputButtons.Back in field selection", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -1274,24 +1565,31 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.ok(capturedButtons.includes(BACK_BUTTON), 'Field selection QuickPick should have Back button');
+        assert.ok(
+          capturedButtons.includes(BACK_BUTTON),
+          "Field selection QuickPick should have Back button",
+        );
       });
 
-      it('should return false when back button clicked at field selection', async () => {
+      it("should return false when back button clicked at field selection", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: ['back'], // Trigger back button
+          quickPickSelections: ["back"], // Trigger back button
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Should return false when back pressed at field selection');
+        assert.strictEqual(
+          result,
+          false,
+          "Should return false when back pressed at field selection",
+        );
       });
     });
 
-    describe('ID Field Non-Editable (Multiple Profiles)', () => {
-      it('should have ID field with field: null when 2+ profiles exist', async () => {
+    describe("ID Field Non-Editable (Multiple Profiles)", () => {
+      it("should have ID field with field: null when 2+ profiles exist", async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -1307,15 +1605,19 @@ describe('identityManager E2E Test Suite', function () {
 
         // Find ID item - it should have field: null
         const idItem = capturedItems.find((i: unknown) => {
-          if (typeof i !== 'object' || i === null) return false;
+          if (typeof i !== "object" || i === null) return false;
           const item = i as { label?: string };
-          return item.label?.includes('$(lock)');
+          return item.label?.includes("$(lock)");
         });
-        assert.ok(idItem, 'ID item should be present');
-        assert.strictEqual((idItem as { field: unknown }).field, null, 'ID field should be null');
+        assert.ok(idItem, "ID item should be present");
+        assert.strictEqual(
+          (idItem as { field: unknown }).field,
+          null,
+          "ID field should be null",
+        );
       });
 
-      it('should have ID field with _isDisabled: true when 2+ profiles exist', async () => {
+      it("should have ID field with _isDisabled: true when 2+ profiles exist", async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -1330,15 +1632,19 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         const idItem = capturedItems.find((i: unknown) => {
-          if (typeof i !== 'object' || i === null) return false;
+          if (typeof i !== "object" || i === null) return false;
           const item = i as { label?: string };
-          return item.label?.includes('$(lock)');
+          return item.label?.includes("$(lock)");
         });
-        assert.ok(idItem, 'ID item should be present');
-        assert.strictEqual((idItem as { _isDisabled?: boolean })._isDisabled, true, 'ID field should be disabled');
+        assert.ok(idItem, "ID item should be present");
+        assert.strictEqual(
+          (idItem as { _isDisabled?: boolean })._isDisabled,
+          true,
+          "ID field should be disabled",
+        );
       });
 
-      it('should have ID field with $(lock) icon when 2+ profiles exist', async () => {
+      it("should have ID field with $(lock) icon when 2+ profiles exist", async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -1353,21 +1659,21 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         const idItem = capturedItems.find((i: unknown) => {
-          if (typeof i !== 'object' || i === null) return false;
+          if (typeof i !== "object" || i === null) return false;
           const item = i as { label?: string };
-          return item.label?.includes('$(lock)');
+          return item.label?.includes("$(lock)");
         });
-        assert.ok(idItem, 'ID item with $(lock) icon should be present');
+        assert.ok(idItem, "ID item with $(lock) icon should be present");
       });
 
-      it('should not close QuickPick when ID field is clicked (returns undefined for loop continuation)', async () => {
+      it("should not close QuickPick when ID field is clicked (returns undefined for loop continuation)", async () => {
         let quickPickShowCount = 0;
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work, TEST_IDENTITIES.personal],
           quickPickSelections: [
             { field: null }, // Click ID field (disabled)
-            undefined,       // Cancel after
+            undefined, // Cancel after
           ],
           onQuickPickCreated: () => {
             quickPickShowCount++;
@@ -1379,13 +1685,13 @@ describe('identityManager E2E Test Suite', function () {
 
         // When disabled item is clicked, it should return undefined and loop continues
         // The wizard should still be able to exit normally
-        assert.strictEqual(result, false, 'Should return false when cancelled');
+        assert.strictEqual(result, false, "Should return false when cancelled");
         // QuickPick should be shown at least once
-        assert.ok(quickPickShowCount >= 1, 'QuickPick should be shown');
+        assert.ok(quickPickShowCount >= 1, "QuickPick should be shown");
       });
     });
 
-    describe('ID Field Editable (Single Profile)', () => {
+    describe("ID Field Editable (Single Profile)", () => {
       it('should have ID field with field: "id" when only 1 profile exists', async () => {
         let capturedItems: unknown[] = [];
 
@@ -1401,15 +1707,19 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         const idItem = capturedItems.find((i: unknown) => {
-          if (typeof i !== 'object' || i === null) return false;
+          if (typeof i !== "object" || i === null) return false;
           const item = i as { field?: string | null };
-          return item.field === 'id';
+          return item.field === "id";
         });
         assert.ok(idItem, 'ID item with field: "id" should be present');
-        assert.strictEqual((idItem as { _isDisabled?: boolean })._isDisabled, undefined, 'ID field should not be disabled');
+        assert.strictEqual(
+          (idItem as { _isDisabled?: boolean })._isDisabled,
+          undefined,
+          "ID field should not be disabled",
+        );
       });
 
-      it('should have ID field with $(pencil) icon when only 1 profile exists', async () => {
+      it("should have ID field with $(pencil) icon when only 1 profile exists", async () => {
         let capturedItems: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
@@ -1424,23 +1734,26 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         const idItem = capturedItems.find((i: unknown) => {
-          if (typeof i !== 'object' || i === null) return false;
+          if (typeof i !== "object" || i === null) return false;
           const item = i as { label?: string };
-          return item.label?.includes('$(pencil)');
+          return item.label?.includes("$(pencil)");
         });
-        assert.ok(idItem, 'ID item with $(pencil) icon should be present when single profile');
+        assert.ok(
+          idItem,
+          "ID item with $(pencil) icon should be present when single profile",
+        );
       });
 
-      it('should show $(check) Saved for ID field after saving', async () => {
+      it("should show $(check) Saved for ID field after saving", async () => {
         const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
-            { field: 'id' },  // Select ID field
-            undefined,        // Cancel after returning
+            { field: "id" }, // Select ID field
+            undefined, // Cancel after returning
           ],
-          inputBoxSelections: ['new-id'],
+          inputBoxSelections: ["new-id"],
           onQuickPickCreated: (quickPick) => {
             capturedItemsHistory.push([...quickPick.items]);
           },
@@ -1450,99 +1763,106 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // After saving, the ID field should show "Saved" feedback
-        assert.ok(capturedItemsHistory.length >= 2, `Should capture items at least twice (initial + after save), got ${capturedItemsHistory.length}`);
+        assert.ok(
+          capturedItemsHistory.length >= 2,
+          `Should capture items at least twice (initial + after save), got ${capturedItemsHistory.length}`,
+        );
         const itemsAfterSave = capturedItemsHistory[1];
         const idItem = itemsAfterSave.find((i: unknown) => {
-          if (typeof i !== 'object' || i === null) return false;
-          return (i as { field?: string | null }).field === 'id';
+          if (typeof i !== "object" || i === null) return false;
+          return (i as { field?: string | null }).field === "id";
         });
-        assert.ok(idItem, 'Should find ID field item after save');
+        assert.ok(idItem, "Should find ID field item after save");
         const description = (idItem as { description?: string }).description;
-        assert.ok(description?.includes('Saved'), `ID field should show 'Saved' feedback, got: ${description}`);
+        assert.ok(
+          description?.includes("Saved"),
+          `ID field should show 'Saved' feedback, got: ${description}`,
+        );
       });
 
-      it('should accept valid new ID and save successfully', async () => {
+      it("should accept valid new ID and save successfully", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'id' },
-            undefined,
-          ],
-          inputBoxSelections: ['my-new-id'],
+          quickPickSelections: [{ field: "id" }, undefined],
+          inputBoxSelections: ["my-new-id"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, 'Editing ID with valid value should succeed');
+        assert.strictEqual(
+          result,
+          true,
+          "Editing ID with valid value should succeed",
+        );
         const configUpdates = mockVSCode._getConfigUpdateCalls();
-        assert.ok(configUpdates.length > 0, 'Config should be updated');
+        assert.ok(configUpdates.length > 0, "Config should be updated");
       });
 
-      it('should reject empty ID input', async () => {
+      it("should reject empty ID input", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'id' },
-            undefined,
-          ],
-          inputBoxSelections: [''], // Empty input
+          quickPickSelections: [{ field: "id" }, undefined],
+          inputBoxSelections: [""], // Empty input
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Empty ID should be rejected');
+        assert.strictEqual(result, false, "Empty ID should be rejected");
       });
 
-      it('should reject ID with invalid characters (@#$)', async () => {
+      it("should reject ID with invalid characters (@#$)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'id' },
-            undefined,
-          ],
-          inputBoxSelections: ['invalid@#$'],
+          quickPickSelections: [{ field: "id" }, undefined],
+          inputBoxSelections: ["invalid@#$"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'ID with invalid characters should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "ID with invalid characters should be rejected",
+        );
       });
 
-      it('should reject ID exceeding max length (65 chars)', async () => {
-        const tooLong = 'a'.repeat(MAX_ID_LENGTH + 1); // 65 chars
+      it("should reject ID exceeding max length (65 chars)", async () => {
+        const tooLong = "a".repeat(MAX_ID_LENGTH + 1); // 65 chars
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'id' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "id" }, undefined],
           inputBoxSelections: [tooLong],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'ID exceeding max length should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "ID exceeding max length should be rejected",
+        );
       });
 
-      it('should allow current ID value (self-exclusion in duplicate check)', async () => {
+      it("should allow current ID value (self-exclusion in duplicate check)", async () => {
         // When editing ID, entering the same ID as current should be allowed
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'id' },
-            undefined,
-          ],
-          inputBoxSelections: ['work'], // Same as current ID
+          quickPickSelections: [{ field: "id" }, undefined],
+          inputBoxSelections: ["work"], // Same as current ID
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, 'Current ID value should be allowed (self-exclusion)');
+        assert.strictEqual(
+          result,
+          true,
+          "Current ID value should be allowed (self-exclusion)",
+        );
       });
 
       // Note: QuickPick title update after ID change cannot be tested with current mock
@@ -1551,17 +1871,17 @@ describe('identityManager E2E Test Suite', function () {
       // correctly finds the identity with the new ID. This is verified by manual testing.
     });
 
-    describe('Edit Loop Continuation', () => {
-      it('should return to field selection after editing a field', async () => {
+    describe("Edit Loop Continuation", () => {
+      it("should return to field selection after editing a field", async () => {
         let quickPickShowCount = 0;
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
-            { field: 'name' },  // Select name field
-            undefined,         // Cancel after returning
+            { field: "name" }, // Select name field
+            undefined, // Cancel after returning
           ],
-          inputBoxSelections: ['Updated Name'],
+          inputBoxSelections: ["Updated Name"],
           onQuickPickCreated: () => {
             quickPickShowCount++;
           },
@@ -1571,19 +1891,22 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // QuickPick should be shown at least twice (initial + after edit)
-        assert.ok(quickPickShowCount >= 2, `QuickPick should be shown at least twice, got ${quickPickShowCount}`);
+        assert.ok(
+          quickPickShowCount >= 2,
+          `QuickPick should be shown at least twice, got ${quickPickShowCount}`,
+        );
       });
 
-      it('should show $(check) Saved for just-saved field', async () => {
+      it("should show $(check) Saved for just-saved field", async () => {
         const capturedItemsHistory: unknown[][] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
-            { field: 'name' },  // Select name field
-            undefined,         // Cancel after returning
+            { field: "name" }, // Select name field
+            undefined, // Cancel after returning
           ],
-          inputBoxSelections: ['Updated Name'],
+          inputBoxSelections: ["Updated Name"],
           onQuickPickCreated: (quickPick) => {
             capturedItemsHistory.push([...quickPick.items]);
           },
@@ -1593,28 +1916,34 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // After saving, the name field should show "Saved" feedback
-        assert.ok(capturedItemsHistory.length >= 2, `Should capture items at least twice (initial + after save), got ${capturedItemsHistory.length}`);
+        assert.ok(
+          capturedItemsHistory.length >= 2,
+          `Should capture items at least twice (initial + after save), got ${capturedItemsHistory.length}`,
+        );
         const itemsAfterSave = capturedItemsHistory[1];
         const nameItem = itemsAfterSave.find((i: unknown) => {
-          if (typeof i !== 'object' || i === null) return false;
-          return (i as { field?: string }).field === 'name';
+          if (typeof i !== "object" || i === null) return false;
+          return (i as { field?: string }).field === "name";
         });
-        assert.ok(nameItem, 'Should find name field item after save');
+        assert.ok(nameItem, "Should find name field item after save");
         const description = (nameItem as { description?: string }).description;
-        assert.ok(description?.includes('Saved'), `Name field should show 'Saved' feedback, got: ${description}`);
+        assert.ok(
+          description?.includes("Saved"),
+          `Name field should show 'Saved' feedback, got: ${description}`,
+        );
       });
 
-      it('should allow re-selecting the same field after saving', async () => {
+      it("should allow re-selecting the same field after saving", async () => {
         let quickPickShowCount = 0;
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
-            { field: 'name' },  // Select name field first time
-            { field: 'name' },  // Select name field again
-            undefined,         // Cancel
+            { field: "name" }, // Select name field first time
+            { field: "name" }, // Select name field again
+            undefined, // Cancel
           ],
-          inputBoxSelections: ['Updated Name', 'Updated Name Again'],
+          inputBoxSelections: ["Updated Name", "Updated Name Again"],
           onQuickPickCreated: () => {
             quickPickShowCount++;
           },
@@ -1624,13 +1953,16 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // QuickPick should be shown at least 3 times
-        assert.ok(quickPickShowCount >= 3, `QuickPick should be shown at least 3 times for re-selection, got ${quickPickShowCount}`);
+        assert.ok(
+          quickPickShowCount >= 3,
+          `QuickPick should be shown at least 3 times for re-selection, got ${quickPickShowCount}`,
+        );
       });
     });
 
-    describe('Placeholder', () => {
-      it('should have Filter... placeholder in field selection', async () => {
-        let capturedPlaceholder = '';
+    describe("Placeholder", () => {
+      it("should have Filter... placeholder in field selection", async () => {
+        let capturedPlaceholder = "";
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
@@ -1643,7 +1975,11 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(capturedPlaceholder, 'Filter...', 'Placeholder should be "Filter..."');
+        assert.strictEqual(
+          capturedPlaceholder,
+          "Filter...",
+          'Placeholder should be "Filter..."',
+        );
       });
     });
   });
@@ -1659,215 +1995,229 @@ describe('identityManager E2E Test Suite', function () {
   // - File picker button ($(folder-opened)) and showOpenDialog integration
   // ===========================================================================
 
-  describe('SSH/GPG Field Editing', () => {
+  describe("SSH/GPG Field Editing", () => {
     /**
      * Test identity fixture with SSH/GPG fields
      */
     const TEST_IDENTITY_WITH_SSH: Identity = {
-      id: 'ssh-test',
-      name: 'SSH Test User',
-      email: 'ssh@example.com',
-      sshKeyPath: '~/.ssh/id_rsa',
-      sshHost: 'github-work',
-      gpgKeyId: 'ABCD1234',
+      id: "ssh-test",
+      name: "SSH Test User",
+      email: "ssh@example.com",
+      sshKeyPath: "~/.ssh/id_rsa",
+      sshHost: "github-work",
+      gpgKeyId: "ABCD1234",
     };
 
     // =========================================================================
     // sshKeyPath Field Editing Tests
     // =========================================================================
 
-    describe('sshKeyPath Field Editing', () => {
-      describe('Validation', () => {
-        it('should accept valid SSH key path (~/.ssh/id_rsa)', async () => {
+    describe("sshKeyPath Field Editing", () => {
+      describe("Validation", () => {
+        it("should accept valid SSH key path (~/.ssh/id_rsa)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
             quickPickSelections: [
-              { field: 'sshKeyPath' },
+              { field: "sshKeyPath" },
               undefined, // Cancel after save
             ],
-            inputBoxSelections: ['~/.ssh/id_rsa'],
+            inputBoxSelections: ["~/.ssh/id_rsa"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, 'Valid SSH key path should be accepted');
+          assert.strictEqual(
+            result,
+            true,
+            "Valid SSH key path should be accepted",
+          );
         });
 
-        it('should accept SSH key path in subdirectory (~/.ssh/keys/work_key)', async () => {
+        it("should accept SSH key path in subdirectory (~/.ssh/keys/work_key)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: ['~/.ssh/keys/work_key'],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: ["~/.ssh/keys/work_key"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, 'SSH key path in subdirectory should be accepted');
+          assert.strictEqual(
+            result,
+            true,
+            "SSH key path in subdirectory should be accepted",
+          );
         });
 
         // SSH directory restriction tests (isUnderSshDirectory)
-        it('should reject path outside .ssh directory (~/documents/key)', async () => {
+        it("should reject path outside .ssh directory (~/documents/key)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: ['~/documents/key'],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: ["~/documents/key"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'Path outside .ssh directory should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "Path outside .ssh directory should be rejected",
+          );
         });
 
-        it('should reject path in .ssh_backup directory (~/.ssh_backup/key)', async () => {
+        it("should reject path in .ssh_backup directory (~/.ssh_backup/key)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: ['~/.ssh_backup/key'],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: ["~/.ssh_backup/key"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'Path in .ssh_backup (not .ssh) should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "Path in .ssh_backup (not .ssh) should be rejected",
+          );
         });
 
-        it('should reject path with traversal (~/.ssh/../../../etc/passwd)', async () => {
+        it("should reject path with traversal (~/.ssh/../../../etc/passwd)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
             quickPickSelections: [
-              { field: 'sshKeyPath' },
+              { field: "sshKeyPath" },
               undefined, // Cancel after validation failure
             ],
-            inputBoxSelections: ['~/.ssh/../../../etc/passwd'],
+            inputBoxSelections: ["~/.ssh/../../../etc/passwd"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           // Validation error causes flow to cancel
-          assert.strictEqual(result, false, 'Path traversal should cause validation failure');
+          assert.strictEqual(
+            result,
+            false,
+            "Path traversal should cause validation failure",
+          );
         });
 
-        it('should allow single dot in path (~/.ssh/./id_rsa)', async () => {
+        it("should allow single dot in path (~/.ssh/./id_rsa)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: ['~/.ssh/./id_rsa'],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: ["~/.ssh/./id_rsa"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           // Single dot is harmless, should be accepted
-          assert.strictEqual(result, true, 'Single dot in path should be allowed');
+          assert.strictEqual(
+            result,
+            true,
+            "Single dot in path should be allowed",
+          );
         });
 
-        it('should reject backtick command substitution (`whoami`)', async () => {
+        it("should reject backtick command substitution (`whoami`)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: ['~/.ssh/`whoami`'],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: ["~/.ssh/`whoami`"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'Backtick command should cause validation failure');
+          assert.strictEqual(
+            result,
+            false,
+            "Backtick command should cause validation failure",
+          );
         });
 
-        it('should reject dollar command substitution ($(command))', async () => {
+        it("should reject dollar command substitution ($(command))", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: ['~/.ssh/$(whoami)'],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: ["~/.ssh/$(whoami)"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'Dollar command substitution should cause validation failure');
+          assert.strictEqual(
+            result,
+            false,
+            "Dollar command substitution should cause validation failure",
+          );
         });
 
-        it('should reject semicolon in path (key;rm -rf /)', async () => {
+        it("should reject semicolon in path (key;rm -rf /)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: ['~/.ssh/key;rm -rf /'],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: ["~/.ssh/key;rm -rf /"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'Semicolon in path should cause validation failure');
+          assert.strictEqual(
+            result,
+            false,
+            "Semicolon in path should cause validation failure",
+          );
         });
 
-        it('should reject path not starting with / or ~', async () => {
+        it("should reject path not starting with / or ~", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: ['relative/path/key'],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: ["relative/path/key"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'Relative path should cause validation failure');
+          assert.strictEqual(
+            result,
+            false,
+            "Relative path should cause validation failure",
+          );
         });
 
-        it('should allow clearing sshKeyPath (empty string for optional field)', async () => {
+        it("should allow clearing sshKeyPath (empty string for optional field)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITY_WITH_SSH],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: [''], // Clear the field
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: [""], // Clear the field
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITY_WITH_SSH);
 
-          assert.strictEqual(result, true, 'Clearing optional sshKeyPath should be allowed');
+          assert.strictEqual(
+            result,
+            true,
+            "Clearing optional sshKeyPath should be allowed",
+          );
         });
       });
 
-      describe('File Picker Button', () => {
-        it('should show file picker button ($(folder-opened)) in InputBox', async () => {
+      describe("File Picker Button", () => {
+        it("should show file picker button ($(folder-opened)) in InputBox", async () => {
           let capturedButtons: unknown[] = [];
 
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
             inputBoxSelections: [undefined], // Cancel at InputBox
             onInputBoxCreated: (inputBox) => {
               capturedButtons = inputBox.buttons;
@@ -1878,28 +2228,31 @@ describe('identityManager E2E Test Suite', function () {
           await showEditProfileFlow(TEST_IDENTITIES.work);
 
           // Should have Back button and file picker button
-          assert.ok(capturedButtons.length >= 2, `Should have at least 2 buttons, got ${capturedButtons.length}`);
+          assert.ok(
+            capturedButtons.length >= 2,
+            `Should have at least 2 buttons, got ${capturedButtons.length}`,
+          );
 
           // Find file picker button (has ThemeIcon with 'folder-opened')
           const hasFilePickerButton = capturedButtons.some((btn: unknown) => {
-            if (typeof btn === 'object' && btn !== null && 'iconPath' in btn) {
+            if (typeof btn === "object" && btn !== null && "iconPath" in btn) {
               const iconPath = (btn as { iconPath: { id?: string } }).iconPath;
-              return iconPath?.id === 'folder-opened';
+              return iconPath?.id === "folder-opened";
             }
             return false;
           });
-          assert.ok(hasFilePickerButton, 'Should have file picker button with $(folder-opened) icon');
+          assert.ok(
+            hasFilePickerButton,
+            "Should have file picker button with $(folder-opened) icon",
+          );
         });
 
-        it('should have showOpenDialog available for file picker', async () => {
+        it("should have showOpenDialog available for file picker", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
-            inputBoxSelections: ['~/.ssh/selected_key'],
-            showOpenDialogResult: '/home/user/.ssh/selected_key',
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+            inputBoxSelections: ["~/.ssh/selected_key"],
+            showOpenDialogResult: "/home/user/.ssh/selected_key",
           });
 
           _setMockVSCode(mockVSCode as never);
@@ -1908,8 +2261,11 @@ describe('identityManager E2E Test Suite', function () {
 
           // Verify showOpenDialog is available in the mock
           // The actual file picker button click is handled by the mock infrastructure
-          assert.strictEqual(typeof mockVSCode.window.showOpenDialog, 'function',
-            'showOpenDialog should be available');
+          assert.strictEqual(
+            typeof mockVSCode.window.showOpenDialog,
+            "function",
+            "showOpenDialog should be available",
+          );
         });
 
         it('should have file picker button tooltip "Browse for SSH key path..."', async () => {
@@ -1917,10 +2273,7 @@ describe('identityManager E2E Test Suite', function () {
 
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
             inputBoxSelections: [undefined],
             onInputBoxCreated: (inputBox) => {
               capturedButtons = inputBox.buttons;
@@ -1932,40 +2285,44 @@ describe('identityManager E2E Test Suite', function () {
 
           // Find file picker button and verify tooltip
           const filePickerButton = capturedButtons.find((btn: unknown) => {
-            if (typeof btn === 'object' && btn !== null && 'iconPath' in btn) {
+            if (typeof btn === "object" && btn !== null && "iconPath" in btn) {
               const iconPath = (btn as { iconPath: { id?: string } }).iconPath;
-              return iconPath?.id === 'folder-opened';
+              return iconPath?.id === "folder-opened";
             }
             return false;
           });
 
-          if (filePickerButton && typeof filePickerButton === 'object' && 'tooltip' in filePickerButton) {
+          if (
+            filePickerButton &&
+            typeof filePickerButton === "object" &&
+            "tooltip" in filePickerButton
+          ) {
             const tooltip = (filePickerButton as { tooltip?: string }).tooltip;
-            assert.ok(tooltip?.includes('Browse for SSH key path'), `File picker button should have 'Browse for SSH key path' tooltip, got: ${tooltip}`);
+            assert.ok(
+              tooltip?.includes("Browse for SSH key path"),
+              `File picker button should have 'Browse for SSH key path' tooltip, got: ${tooltip}`,
+            );
           }
         });
       });
 
-      describe('showOpenDialog default path', () => {
-        it('should use HOME/.ssh as defaultUri on Unix', async () => {
+      describe("showOpenDialog default path", () => {
+        it("should use HOME/.ssh as defaultUri on Unix", async () => {
           // Save original env
           const originalHome = process.env.HOME;
           const originalUserProfile = process.env.USERPROFILE;
 
           // Set up Unix environment
-          process.env.HOME = '/home/testuser';
+          process.env.HOME = "/home/testuser";
           delete process.env.USERPROFILE;
 
           let capturedDefaultUri: { fsPath: string } | undefined;
 
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
             inputBoxSelections: [FILE_PICKER_CLICK, undefined],
-            showOpenDialogResult: '/home/testuser/.ssh/id_rsa',
+            showOpenDialogResult: "/home/testuser/.ssh/id_rsa",
             onShowOpenDialog: (dialogOptions) => {
               capturedDefaultUri = dialogOptions.defaultUri;
             },
@@ -1974,9 +2331,15 @@ describe('identityManager E2E Test Suite', function () {
 
           try {
             await showEditProfileFlow(TEST_IDENTITIES.work);
-            assert.ok(capturedDefaultUri, 'showOpenDialog should have been called');
-            assert.strictEqual(capturedDefaultUri?.fsPath, '/home/testuser/.ssh',
-              'defaultUri should be HOME/.ssh');
+            assert.ok(
+              capturedDefaultUri,
+              "showOpenDialog should have been called",
+            );
+            assert.strictEqual(
+              capturedDefaultUri?.fsPath,
+              "/home/testuser/.ssh",
+              "defaultUri should be HOME/.ssh",
+            );
           } finally {
             // Restore original env
             process.env.HOME = originalHome;
@@ -1986,7 +2349,7 @@ describe('identityManager E2E Test Suite', function () {
           }
         });
 
-        it('should use USERPROFILE/.ssh as defaultUri on Windows', async () => {
+        it("should use USERPROFILE/.ssh as defaultUri on Windows", async () => {
           // Save original env
           const originalHome = process.env.HOME;
           const originalUserProfile = process.env.USERPROFILE;
@@ -1999,10 +2362,7 @@ describe('identityManager E2E Test Suite', function () {
 
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
             inputBoxSelections: [FILE_PICKER_CLICK, undefined],
             showOpenDialogResult: String.raw`C:\Users\testuser\.ssh\id_rsa`,
             onShowOpenDialog: (dialogOptions) => {
@@ -2013,9 +2373,15 @@ describe('identityManager E2E Test Suite', function () {
 
           try {
             await showEditProfileFlow(TEST_IDENTITIES.work);
-            assert.ok(capturedDefaultUri, 'showOpenDialog should have been called');
-            assert.strictEqual(capturedDefaultUri?.fsPath, String.raw`C:\Users\testuser/.ssh`,
-              'defaultUri should be USERPROFILE/.ssh');
+            assert.ok(
+              capturedDefaultUri,
+              "showOpenDialog should have been called",
+            );
+            assert.strictEqual(
+              capturedDefaultUri?.fsPath,
+              String.raw`C:\Users\testuser/.ssh`,
+              "defaultUri should be USERPROFILE/.ssh",
+            );
           } finally {
             // Restore original env
             if (originalHome !== undefined) {
@@ -2025,7 +2391,7 @@ describe('identityManager E2E Test Suite', function () {
           }
         });
 
-        it('should use undefined defaultUri when both HOME and USERPROFILE are undefined', async () => {
+        it("should use undefined defaultUri when both HOME and USERPROFILE are undefined", async () => {
           // Save original env
           const originalHome = process.env.HOME;
           const originalUserProfile = process.env.USERPROFILE;
@@ -2034,15 +2400,14 @@ describe('identityManager E2E Test Suite', function () {
           delete process.env.HOME;
           delete process.env.USERPROFILE;
 
-          let capturedDefaultUri: { fsPath: string } | undefined = { fsPath: 'sentinel' };
+          let capturedDefaultUri: { fsPath: string } | undefined = {
+            fsPath: "sentinel",
+          };
           let dialogWasCalled = false;
 
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
             inputBoxSelections: [FILE_PICKER_CLICK, undefined],
             showOpenDialogResult: undefined,
             onShowOpenDialog: (dialogOptions) => {
@@ -2054,9 +2419,15 @@ describe('identityManager E2E Test Suite', function () {
 
           try {
             await showEditProfileFlow(TEST_IDENTITIES.work);
-            assert.ok(dialogWasCalled, 'showOpenDialog should have been called');
-            assert.strictEqual(capturedDefaultUri, undefined,
-              'defaultUri should be undefined when HOME and USERPROFILE are both undefined');
+            assert.ok(
+              dialogWasCalled,
+              "showOpenDialog should have been called",
+            );
+            assert.strictEqual(
+              capturedDefaultUri,
+              undefined,
+              "defaultUri should be undefined when HOME and USERPROFILE are both undefined",
+            );
           } finally {
             // Restore original env
             if (originalHome !== undefined) {
@@ -2074,135 +2445,139 @@ describe('identityManager E2E Test Suite', function () {
     // sshHost Field Editing Tests
     // =========================================================================
 
-    describe('sshHost Field Editing', () => {
-      describe('Validation with SSH_HOST_REGEX', () => {
-        it('should accept valid hostname (github-work)', async () => {
+    describe("sshHost Field Editing", () => {
+      describe("Validation with SSH_HOST_REGEX", () => {
+        it("should accept valid hostname (github-work)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshHost' },
-              undefined,
-            ],
-            inputBoxSelections: ['github-work'],
+            quickPickSelections: [{ field: "sshHost" }, undefined],
+            inputBoxSelections: ["github-work"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, 'Valid SSH host should be accepted');
+          assert.strictEqual(result, true, "Valid SSH host should be accepted");
         });
 
-        it('should accept hostname with dot (gitlab.personal)', async () => {
+        it("should accept hostname with dot (gitlab.personal)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshHost' },
-              undefined,
-            ],
-            inputBoxSelections: ['gitlab.personal'],
+            quickPickSelections: [{ field: "sshHost" }, undefined],
+            inputBoxSelections: ["gitlab.personal"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, 'SSH host with dot should be accepted');
+          assert.strictEqual(
+            result,
+            true,
+            "SSH host with dot should be accepted",
+          );
         });
 
-        it('should accept hostname with underscore (my_server)', async () => {
+        it("should accept hostname with underscore (my_server)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshHost' },
-              undefined,
-            ],
-            inputBoxSelections: ['my_server'],
+            quickPickSelections: [{ field: "sshHost" }, undefined],
+            inputBoxSelections: ["my_server"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, 'SSH host with underscore should be accepted');
+          assert.strictEqual(
+            result,
+            true,
+            "SSH host with underscore should be accepted",
+          );
         });
 
-        it('should reject hostname with space', async () => {
+        it("should reject hostname with space", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshHost' },
-              undefined,
-            ],
-            inputBoxSelections: ['invalid host'],
+            quickPickSelections: [{ field: "sshHost" }, undefined],
+            inputBoxSelections: ["invalid host"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'SSH host with space should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "SSH host with space should be rejected",
+          );
         });
 
-        it('should reject hostname with special characters (!@#)', async () => {
+        it("should reject hostname with special characters (!@#)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshHost' },
-              undefined,
-            ],
-            inputBoxSelections: ['invalid!@#host'],
+            quickPickSelections: [{ field: "sshHost" }, undefined],
+            inputBoxSelections: ["invalid!@#host"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'SSH host with special characters should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "SSH host with special characters should be rejected",
+          );
         });
 
-        it('should reject hostname starting with hyphen', async () => {
+        it("should reject hostname starting with hyphen", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshHost' },
-              undefined,
-            ],
-            inputBoxSelections: ['-invalid-start'],
+            quickPickSelections: [{ field: "sshHost" }, undefined],
+            inputBoxSelections: ["-invalid-start"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'SSH host starting with hyphen should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "SSH host starting with hyphen should be rejected",
+          );
         });
 
-        it('should reject hostname exceeding MAX_SSH_HOST_LENGTH', async () => {
-          const longHost = 'a'.repeat(MAX_SSH_HOST_LENGTH + 1);
+        it("should reject hostname exceeding MAX_SSH_HOST_LENGTH", async () => {
+          const longHost = "a".repeat(MAX_SSH_HOST_LENGTH + 1);
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshHost' },
-              undefined,
-            ],
+            quickPickSelections: [{ field: "sshHost" }, undefined],
             inputBoxSelections: [longHost],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'SSH host exceeding max length should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "SSH host exceeding max length should be rejected",
+          );
         });
 
-        it('should allow clearing sshHost (empty string for optional field)', async () => {
+        it("should allow clearing sshHost (empty string for optional field)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITY_WITH_SSH],
-            quickPickSelections: [
-              { field: 'sshHost' },
-              undefined,
-            ],
-            inputBoxSelections: [''],
+            quickPickSelections: [{ field: "sshHost" }, undefined],
+            inputBoxSelections: [""],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITY_WITH_SSH);
 
-          assert.strictEqual(result, true, 'Clearing optional sshHost should be allowed');
+          assert.strictEqual(
+            result,
+            true,
+            "Clearing optional sshHost should be allowed",
+          );
         });
       });
     });
@@ -2211,152 +2586,161 @@ describe('identityManager E2E Test Suite', function () {
     // gpgKeyId Field Editing Tests
     // =========================================================================
 
-    describe('gpgKeyId Field Editing', () => {
-      describe('Validation with GPG_KEY_REGEX', () => {
-        it('should accept valid 8-character hex key ID (ABCD1234)', async () => {
+    describe("gpgKeyId Field Editing", () => {
+      describe("Validation with GPG_KEY_REGEX", () => {
+        it("should accept valid 8-character hex key ID (ABCD1234)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'gpgKeyId' },
-              undefined,
-            ],
-            inputBoxSelections: ['ABCD1234'],
+            quickPickSelections: [{ field: "gpgKeyId" }, undefined],
+            inputBoxSelections: ["ABCD1234"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, 'Valid 8-char GPG key ID should be accepted');
+          assert.strictEqual(
+            result,
+            true,
+            "Valid 8-char GPG key ID should be accepted",
+          );
         });
 
-        it('should accept valid 16-character hex key ID', async () => {
+        it("should accept valid 16-character hex key ID", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'gpgKeyId' },
-              undefined,
-            ],
-            inputBoxSelections: ['ABCD1234ABCD1234'],
+            quickPickSelections: [{ field: "gpgKeyId" }, undefined],
+            inputBoxSelections: ["ABCD1234ABCD1234"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, 'Valid 16-char GPG key ID should be accepted');
+          assert.strictEqual(
+            result,
+            true,
+            "Valid 16-char GPG key ID should be accepted",
+          );
         });
 
-        it('should accept valid 40-character hex fingerprint', async () => {
-          const fullFingerprint = 'ABCD1234ABCD1234ABCD1234ABCD1234ABCD1234';
+        it("should accept valid 40-character hex fingerprint", async () => {
+          const fullFingerprint = "ABCD1234ABCD1234ABCD1234ABCD1234ABCD1234";
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'gpgKeyId' },
-              undefined,
-            ],
+            quickPickSelections: [{ field: "gpgKeyId" }, undefined],
             inputBoxSelections: [fullFingerprint],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, 'Valid 40-char GPG fingerprint should be accepted');
+          assert.strictEqual(
+            result,
+            true,
+            "Valid 40-char GPG fingerprint should be accepted",
+          );
         });
 
-        it('should accept lowercase hex characters', async () => {
+        it("should accept lowercase hex characters", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'gpgKeyId' },
-              undefined,
-            ],
-            inputBoxSelections: ['abcdef12'],
+            quickPickSelections: [{ field: "gpgKeyId" }, undefined],
+            inputBoxSelections: ["abcdef12"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, 'Lowercase hex GPG key ID should be accepted');
+          assert.strictEqual(
+            result,
+            true,
+            "Lowercase hex GPG key ID should be accepted",
+          );
         });
 
-        it('should reject key ID with less than 8 characters (7 chars)', async () => {
+        it("should reject key ID with less than 8 characters (7 chars)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'gpgKeyId' },
-              undefined,
-            ],
-            inputBoxSelections: ['ABCD123'], // 7 characters
+            quickPickSelections: [{ field: "gpgKeyId" }, undefined],
+            inputBoxSelections: ["ABCD123"], // 7 characters
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'GPG key ID with 7 chars should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "GPG key ID with 7 chars should be rejected",
+          );
         });
 
-        it('should reject key ID with more than 40 characters (41 chars)', async () => {
-          const tooLong = 'A'.repeat(41);
+        it("should reject key ID with more than 40 characters (41 chars)", async () => {
+          const tooLong = "A".repeat(41);
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'gpgKeyId' },
-              undefined,
-            ],
+            quickPickSelections: [{ field: "gpgKeyId" }, undefined],
             inputBoxSelections: [tooLong],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'GPG key ID with 41 chars should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "GPG key ID with 41 chars should be rejected",
+          );
         });
 
-        it('should reject non-hex characters (GHIJKLMN)', async () => {
+        it("should reject non-hex characters (GHIJKLMN)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'gpgKeyId' },
-              undefined,
-            ],
-            inputBoxSelections: ['GHIJKLMN'],
+            quickPickSelections: [{ field: "gpgKeyId" }, undefined],
+            inputBoxSelections: ["GHIJKLMN"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'GPG key ID with non-hex chars should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "GPG key ID with non-hex chars should be rejected",
+          );
         });
 
-        it('should reject key ID with spaces', async () => {
+        it("should reject key ID with spaces", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'gpgKeyId' },
-              undefined,
-            ],
-            inputBoxSelections: ['ABCD 1234'],
+            quickPickSelections: [{ field: "gpgKeyId" }, undefined],
+            inputBoxSelections: ["ABCD 1234"],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, 'GPG key ID with spaces should be rejected');
+          assert.strictEqual(
+            result,
+            false,
+            "GPG key ID with spaces should be rejected",
+          );
         });
 
-        it('should allow clearing gpgKeyId (empty string for optional field)', async () => {
+        it("should allow clearing gpgKeyId (empty string for optional field)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITY_WITH_SSH],
-            quickPickSelections: [
-              { field: 'gpgKeyId' },
-              undefined,
-            ],
-            inputBoxSelections: [''],
+            quickPickSelections: [{ field: "gpgKeyId" }, undefined],
+            inputBoxSelections: [""],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITY_WITH_SSH);
 
-          assert.strictEqual(result, true, 'Clearing optional gpgKeyId should be allowed');
+          assert.strictEqual(
+            result,
+            true,
+            "Clearing optional gpgKeyId should be allowed",
+          );
         });
       });
     });
@@ -2366,17 +2750,14 @@ describe('identityManager E2E Test Suite', function () {
   // InputBox Back Button, File Picker, onDidChangeValue Tests
   // ===========================================================================
 
-  describe('InputBox Back Button Tests', () => {
-    describe('QuickInputButtons.Back in InputBox', () => {
-      it('should have QuickInputButtons.Back set in showFieldInputBox() for name field', async () => {
+  describe("InputBox Back Button Tests", () => {
+    describe("QuickInputButtons.Back in InputBox", () => {
+      it("should have QuickInputButtons.Back set in showFieldInputBox() for name field", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'name' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "name" }, undefined],
           inputBoxSelections: [undefined], // Cancel InputBox
           onInputBoxCreated: (inputBox) => {
             capturedButtons = inputBox.buttons;
@@ -2387,19 +2768,22 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // Should have Back button
-        assert.ok(capturedButtons.length > 0, `Should have at least 1 button, got ${capturedButtons.length}`);
-        assert.ok(capturedButtons.includes(BACK_BUTTON), 'InputBox should have Back button');
+        assert.ok(
+          capturedButtons.length > 0,
+          `Should have at least 1 button, got ${capturedButtons.length}`,
+        );
+        assert.ok(
+          capturedButtons.includes(BACK_BUTTON),
+          "InputBox should have Back button",
+        );
       });
 
-      it('should have QuickInputButtons.Back set in showFieldInputBox() for email field', async () => {
+      it("should have QuickInputButtons.Back set in showFieldInputBox() for email field", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'email' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "email" }, undefined],
           inputBoxSelections: [undefined],
           onInputBoxCreated: (inputBox) => {
             capturedButtons = inputBox.buttons;
@@ -2409,7 +2793,10 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.ok(capturedButtons.includes(BACK_BUTTON), 'InputBox for email should have Back button');
+        assert.ok(
+          capturedButtons.includes(BACK_BUTTON),
+          "InputBox for email should have Back button",
+        );
       });
 
       it('should return "back" when back button clicked in InputBox', async () => {
@@ -2419,8 +2806,8 @@ describe('identityManager E2E Test Suite', function () {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
-            { field: 'name' },  // Select name field
-            undefined,          // Cancel at field selection (after back)
+            { field: "name" }, // Select name field
+            undefined, // Cancel at field selection (after back)
           ],
           inputBoxSelections: [INPUT_BOX_BACK], // Trigger back button
           onQuickPickCreated: () => {
@@ -2432,16 +2819,16 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // QuickPick should be shown at least twice (initial + after back)
-        assert.ok(quickPickShowCount >= 2, `QuickPick should show at least twice due to back navigation, got ${quickPickShowCount}`);
+        assert.ok(
+          quickPickShowCount >= 2,
+          `QuickPick should show at least twice due to back navigation, got ${quickPickShowCount}`,
+        );
       });
 
-      it('should discard value when back button pressed (value not saved)', async () => {
+      it("should discard value when back button pressed (value not saved)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'name' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "name" }, undefined],
           inputBoxSelections: [INPUT_BOX_BACK], // Press back - value discarded
         });
         _setMockVSCode(mockVSCode as never);
@@ -2449,25 +2836,30 @@ describe('identityManager E2E Test Suite', function () {
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // Result should be false (cancelled without saving)
-        assert.strictEqual(result, false, 'Should return false when back pressed without saving');
+        assert.strictEqual(
+          result,
+          false,
+          "Should return false when back pressed without saving",
+        );
         // No config update should have occurred
         const configUpdates = mockVSCode._getConfigUpdateCalls();
-        assert.strictEqual(configUpdates.length, 0, 'No config update should occur when back pressed');
+        assert.strictEqual(
+          configUpdates.length,
+          0,
+          "No config update should occur when back pressed",
+        );
       });
     });
   });
 
-  describe('File Picker Button Tests (sshKeyPath only)', () => {
-    describe('File picker button visibility', () => {
-      it('should NOT show file picker button for name field', async () => {
+  describe("File Picker Button Tests (sshKeyPath only)", () => {
+    describe("File picker button visibility", () => {
+      it("should NOT show file picker button for name field", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'name' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "name" }, undefined],
           inputBoxSelections: [undefined],
           onInputBoxCreated: (inputBox) => {
             capturedButtons = inputBox.buttons;
@@ -2478,19 +2870,19 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // Should only have Back button, no file picker
-        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
-          'Name field should NOT have file picker button');
+        assert.strictEqual(
+          hasFilePickerButtonInArray(capturedButtons),
+          false,
+          "Name field should NOT have file picker button",
+        );
       });
 
-      it('should NOT show file picker button for email field', async () => {
+      it("should NOT show file picker button for email field", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'email' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "email" }, undefined],
           inputBoxSelections: [undefined],
           onInputBoxCreated: (inputBox) => {
             capturedButtons = inputBox.buttons;
@@ -2500,19 +2892,19 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
-          'Email field should NOT have file picker button');
+        assert.strictEqual(
+          hasFilePickerButtonInArray(capturedButtons),
+          false,
+          "Email field should NOT have file picker button",
+        );
       });
 
-      it('should NOT show file picker button for service field', async () => {
+      it("should NOT show file picker button for service field", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'service' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "service" }, undefined],
           inputBoxSelections: [undefined],
           onInputBoxCreated: (inputBox) => {
             capturedButtons = inputBox.buttons;
@@ -2522,19 +2914,19 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
-          'Service field should NOT have file picker button');
+        assert.strictEqual(
+          hasFilePickerButtonInArray(capturedButtons),
+          false,
+          "Service field should NOT have file picker button",
+        );
       });
 
-      it('should NOT show file picker button for gpgKeyId field', async () => {
+      it("should NOT show file picker button for gpgKeyId field", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'gpgKeyId' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "gpgKeyId" }, undefined],
           inputBoxSelections: [undefined],
           onInputBoxCreated: (inputBox) => {
             capturedButtons = inputBox.buttons;
@@ -2544,19 +2936,19 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
-          'GPG Key ID field should NOT have file picker button');
+        assert.strictEqual(
+          hasFilePickerButtonInArray(capturedButtons),
+          false,
+          "GPG Key ID field should NOT have file picker button",
+        );
       });
 
-      it('should NOT show file picker button for sshHost field', async () => {
+      it("should NOT show file picker button for sshHost field", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshHost' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "sshHost" }, undefined],
           inputBoxSelections: [undefined],
           onInputBoxCreated: (inputBox) => {
             capturedButtons = inputBox.buttons;
@@ -2566,19 +2958,19 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(hasFilePickerButtonInArray(capturedButtons), false,
-          'SSH Host field should NOT have file picker button');
+        assert.strictEqual(
+          hasFilePickerButtonInArray(capturedButtons),
+          false,
+          "SSH Host field should NOT have file picker button",
+        );
       });
 
-      it('should show file picker button ONLY for sshKeyPath field', async () => {
+      it("should show file picker button ONLY for sshKeyPath field", async () => {
         let capturedButtons: unknown[] = [];
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
           inputBoxSelections: [undefined],
           onInputBoxCreated: (inputBox) => {
             capturedButtons = inputBox.buttons;
@@ -2588,38 +2980,40 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.ok(hasFilePickerButtonInArray(capturedButtons),
-          'sshKeyPath field SHOULD have file picker button');
+        assert.ok(
+          hasFilePickerButtonInArray(capturedButtons),
+          "sshKeyPath field SHOULD have file picker button",
+        );
       });
     });
 
-    describe('File selection updates InputBox value', () => {
-      it('should update InputBox value after file selection (Unix)', async () => {
+    describe("File selection updates InputBox value", () => {
+      it("should update InputBox value after file selection (Unix)", async () => {
         // Save original env
         const originalHome = process.env.HOME;
-        process.env.HOME = '/home/testuser';
+        process.env.HOME = "/home/testuser";
 
         let inputBoxValueAfterFilePick: string | undefined;
 
         // Custom mock to capture the InputBox value after file pick
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
           inputBoxSelections: [FILE_PICKER_CLICK, undefined], // Click file picker, then cancel
-          showOpenDialogResult: '/home/testuser/.ssh/selected_key',
+          showOpenDialogResult: "/home/testuser/.ssh/selected_key",
         });
 
         // Intercept the createInputBox to track value changes
         const originalCreateInputBox = mockVSCode.window.createInputBox;
         mockVSCode.window.createInputBox = () => {
           const inputBox = originalCreateInputBox();
-          const originalValueSetter = Object.getOwnPropertyDescriptor(inputBox, 'value')?.set;
-          let internalValue = '';
+          const originalValueSetter = Object.getOwnPropertyDescriptor(
+            inputBox,
+            "value",
+          )?.set;
+          let internalValue = "";
 
-          Object.defineProperty(inputBox, 'value', {
+          Object.defineProperty(inputBox, "value", {
             get: () => internalValue,
             set: (v: string) => {
               internalValue = v;
@@ -2636,14 +3030,17 @@ describe('identityManager E2E Test Suite', function () {
 
         try {
           await showEditProfileFlow(TEST_IDENTITIES.work);
-          assert.strictEqual(inputBoxValueAfterFilePick, '~/.ssh/selected_key',
-            'InputBox value should be updated to selected file path with ~ prefix');
+          assert.strictEqual(
+            inputBoxValueAfterFilePick,
+            "~/.ssh/selected_key",
+            "InputBox value should be updated to selected file path with ~ prefix",
+          );
         } finally {
           process.env.HOME = originalHome;
         }
       });
 
-      it('should normalize Windows backslashes to forward slashes after tilde compression', async () => {
+      it("should normalize Windows backslashes to forward slashes after tilde compression", async () => {
         // Save original env
         const originalHome = process.env.HOME;
         const originalUserProfile = process.env.USERPROFILE;
@@ -2656,10 +3053,7 @@ describe('identityManager E2E Test Suite', function () {
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
           inputBoxSelections: [FILE_PICKER_CLICK, undefined],
           showOpenDialogResult: String.raw`C:\Users\testuser\.ssh\selected_key`,
         });
@@ -2667,10 +3061,13 @@ describe('identityManager E2E Test Suite', function () {
         const originalCreateInputBox = mockVSCode.window.createInputBox;
         mockVSCode.window.createInputBox = () => {
           const inputBox = originalCreateInputBox();
-          const originalValueSetter = Object.getOwnPropertyDescriptor(inputBox, 'value')?.set;
-          let internalValue = '';
+          const originalValueSetter = Object.getOwnPropertyDescriptor(
+            inputBox,
+            "value",
+          )?.set;
+          let internalValue = "";
 
-          Object.defineProperty(inputBox, 'value', {
+          Object.defineProperty(inputBox, "value", {
             get: () => internalValue,
             set: (v: string) => {
               internalValue = v;
@@ -2687,8 +3084,11 @@ describe('identityManager E2E Test Suite', function () {
 
         try {
           await showEditProfileFlow(TEST_IDENTITIES.work);
-          assert.strictEqual(inputBoxValueAfterFilePick, '~/.ssh/selected_key',
-            'Windows backslashes should be normalized to forward slashes after ~ compression');
+          assert.strictEqual(
+            inputBoxValueAfterFilePick,
+            "~/.ssh/selected_key",
+            "Windows backslashes should be normalized to forward slashes after ~ compression",
+          );
         } finally {
           if (originalHome !== undefined) {
             process.env.HOME = originalHome;
@@ -2700,30 +3100,30 @@ describe('identityManager E2E Test Suite', function () {
       });
     });
 
-    describe('Validation after file selection', () => {
-      it('should run validation after file selection (valid path)', async () => {
+    describe("Validation after file selection", () => {
+      it("should run validation after file selection (valid path)", async () => {
         const originalHome = process.env.HOME;
-        process.env.HOME = '/home/testuser';
+        process.env.HOME = "/home/testuser";
 
-        let validationMessageAfterFilePick: string | undefined = 'not_set';
+        let validationMessageAfterFilePick: string | undefined = "not_set";
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
           inputBoxSelections: [FILE_PICKER_CLICK, undefined],
-          showOpenDialogResult: '/home/testuser/.ssh/valid_key', // Valid path under .ssh
+          showOpenDialogResult: "/home/testuser/.ssh/valid_key", // Valid path under .ssh
         });
 
         const originalCreateInputBox = mockVSCode.window.createInputBox;
         mockVSCode.window.createInputBox = () => {
           const inputBox = originalCreateInputBox();
-          const originalValidationSetter = Object.getOwnPropertyDescriptor(inputBox, 'validationMessage')?.set;
+          const originalValidationSetter = Object.getOwnPropertyDescriptor(
+            inputBox,
+            "validationMessage",
+          )?.set;
           let internalValidation: string | undefined;
 
-          Object.defineProperty(inputBox, 'validationMessage', {
+          Object.defineProperty(inputBox, "validationMessage", {
             get: () => internalValidation,
             set: (v: string | undefined) => {
               internalValidation = v;
@@ -2741,8 +3141,11 @@ describe('identityManager E2E Test Suite', function () {
         try {
           await showEditProfileFlow(TEST_IDENTITIES.work);
           // For a valid path, validationMessage should be undefined (no error)
-          assert.strictEqual(validationMessageAfterFilePick, undefined,
-            'Validation should pass for valid path (validationMessage should be undefined)');
+          assert.strictEqual(
+            validationMessageAfterFilePick,
+            undefined,
+            "Validation should pass for valid path (validationMessage should be undefined)",
+          );
         } finally {
           process.env.HOME = originalHome;
         }
@@ -2754,7 +3157,7 @@ describe('identityManager E2E Test Suite', function () {
   // Security Tests (ARCHITECTURE.md Compliance)
   // ===========================================================================
 
-  describe('Security: Multi-Layer Validation (Defense-in-Depth)', () => {
+  describe("Security: Multi-Layer Validation (Defense-in-Depth)", () => {
     /**
      * Tests for ARCHITECTURE.md Defense-in-Depth compliance
      *
@@ -2764,362 +3167,373 @@ describe('identityManager E2E Test Suite', function () {
      * - Layer 3: isUnderSshDirectory() - SSH directory restriction (includes path normalization)
      */
 
-    describe('Layer 1: hasDangerousCharsForPath() for sshKeyPath', () => {
-      const dangerousChars = ['$', '`', '|', ';', '&', '<', '>'];
+    describe("Layer 1: hasDangerousCharsForPath() for sshKeyPath", () => {
+      const dangerousChars = ["$", "`", "|", ";", "&", "<", ">"];
 
       for (const char of dangerousChars) {
         it(`should reject sshKeyPath containing "${char}" character`, async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
-            quickPickSelections: [
-              { field: 'sshKeyPath' },
-              undefined,
-            ],
+            quickPickSelections: [{ field: "sshKeyPath" }, undefined],
             inputBoxSelections: [`~/.ssh/key${char}file`],
           });
           _setMockVSCode(mockVSCode as never);
 
           const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, false, `sshKeyPath with "${char}" should be rejected`);
+          assert.strictEqual(
+            result,
+            false,
+            `sshKeyPath with "${char}" should be rejected`,
+          );
         });
       }
     });
 
-    describe('Layer 2: hasPathTraversal() for sshKeyPath', () => {
-      it('should reject path with .. traversal', async () => {
+    describe("Layer 2: hasPathTraversal() for sshKeyPath", () => {
+      it("should reject path with .. traversal", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
-          inputBoxSelections: ['~/.ssh/../etc/passwd'],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+          inputBoxSelections: ["~/.ssh/../etc/passwd"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Path traversal should be rejected');
+        assert.strictEqual(result, false, "Path traversal should be rejected");
       });
 
-      it('should reject deep path traversal (~/.ssh/../../../../etc/passwd)', async () => {
+      it("should reject deep path traversal (~/.ssh/../../../../etc/passwd)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
-          inputBoxSelections: ['~/.ssh/../../../../etc/passwd'],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+          inputBoxSelections: ["~/.ssh/../../../../etc/passwd"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Deep path traversal should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Deep path traversal should be rejected",
+        );
       });
     });
 
-    describe('Layer 3: isUnderSshDirectory() restriction', () => {
-      it('should accept path under ~/.ssh/', async () => {
+    describe("Layer 3: isUnderSshDirectory() restriction", () => {
+      it("should accept path under ~/.ssh/", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
-          inputBoxSelections: ['~/.ssh/id_ed25519'],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+          inputBoxSelections: ["~/.ssh/id_ed25519"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, 'Path under ~/.ssh/ should be accepted');
+        assert.strictEqual(
+          result,
+          true,
+          "Path under ~/.ssh/ should be accepted",
+        );
       });
 
-      it('should accept absolute path under user home .ssh/', async () => {
-        // Use actual home directory for cross-platform compatibility
-        // Use path.join to ensure correct path separators on Windows
-        const homeDir = process.env.HOME ?? process.env.USERPROFILE ?? '';
-        const absoluteSshPath = homeDir ? path.join(homeDir, '.ssh', 'id_rsa') : '~/.ssh/id_rsa';
+      it("should accept tilde path under .ssh/", async () => {
+        // Use ~/.ssh/ format for cross-platform compatibility
+        // Windows drive letter paths (C:\...) are rejected — use ~/.ssh/ instead
+        const tildeSshPath = "~/.ssh/id_rsa";
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
-          inputBoxSelections: [absoluteSshPath],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+          inputBoxSelections: [tildeSshPath],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, 'Absolute path under .ssh/ should be accepted');
+        assert.strictEqual(
+          result,
+          true,
+          "Tilde path under .ssh/ should be accepted on all platforms",
+        );
       });
 
-      it('should reject path in home directory but not under .ssh', async () => {
+      it("should reject path in home directory but not under .ssh", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
-          inputBoxSelections: ['~/my_keys/id_rsa'],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+          inputBoxSelections: ["~/my_keys/id_rsa"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Path not under ~/.ssh/ should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Path not under ~/.ssh/ should be rejected",
+        );
       });
 
-      it('should reject absolute path not under .ssh (/etc/ssh/key)', async () => {
+      it("should reject absolute path not under .ssh (/etc/ssh/key)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
-          inputBoxSelections: ['/etc/ssh/key'],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+          inputBoxSelections: ["/etc/ssh/key"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Absolute path /etc/ssh/ should be rejected (not user .ssh)');
+        assert.strictEqual(
+          result,
+          false,
+          "Absolute path /etc/ssh/ should be rejected (not user .ssh)",
+        );
       });
 
-      it('should reject path with similar name (~/.ssh_backup/key)', async () => {
+      it("should reject path with similar name (~/.ssh_backup/key)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
-          inputBoxSelections: ['~/.ssh_backup/key'],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+          inputBoxSelections: ["~/.ssh_backup/key"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Path in .ssh_backup (not .ssh) should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Path in .ssh_backup (not .ssh) should be rejected",
+        );
       });
     });
 
-    describe('Validation layers are independently testable', () => {
-      it('should reject at Layer 1 before reaching Layer 2 or 3', async () => {
+    describe("Validation layers are independently testable", () => {
+      it("should reject at Layer 1 before reaching Layer 2 or 3", async () => {
         // A path with dangerous char should fail immediately at Layer 1
         // without needing Layer 2 (traversal) or Layer 3 (directory) checks
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
-          inputBoxSelections: ['~/.ssh/key`whoami`'], // Dangerous char
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+          inputBoxSelections: ["~/.ssh/key`whoami`"], // Dangerous char
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Should fail at Layer 1 (dangerous char)');
+        assert.strictEqual(
+          result,
+          false,
+          "Should fail at Layer 1 (dangerous char)",
+        );
       });
     });
   });
 
-  describe('Security: Field-specific Dangerous Character Detection', () => {
-    describe('name field: hasDangerousCharsForText() allows semicolon', () => {
-      it('should accept name with semicolon (Null;Variant)', async () => {
+  describe("Security: Field-specific Dangerous Character Detection", () => {
+    describe("name field: hasDangerousCharsForText() allows semicolon", () => {
+      it("should accept name with semicolon (Null;Variant)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'name' },
-            undefined,
-          ],
-          inputBoxSelections: ['Null;Variant'],
+          quickPickSelections: [{ field: "name" }, undefined],
+          inputBoxSelections: ["Null;Variant"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, 'Name with semicolon should be accepted');
+        assert.strictEqual(
+          result,
+          true,
+          "Name with semicolon should be accepted",
+        );
       });
 
-      it('should reject name with backtick', async () => {
+      it("should reject name with backtick", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'name' },
-            undefined,
-          ],
-          inputBoxSelections: ['User `whoami`'],
+          quickPickSelections: [{ field: "name" }, undefined],
+          inputBoxSelections: ["User `whoami`"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Name with backtick should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Name with backtick should be rejected",
+        );
       });
 
-      it('should reject name with dollar sign', async () => {
+      it("should reject name with dollar sign", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'name' },
-            undefined,
-          ],
-          inputBoxSelections: ['User $HOME'],
+          quickPickSelections: [{ field: "name" }, undefined],
+          inputBoxSelections: ["User $HOME"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Name with dollar sign should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Name with dollar sign should be rejected",
+        );
       });
     });
 
-    describe('service field: validateFieldForDangerousPatterns()', () => {
-      it('should reject service with ampersand', async () => {
+    describe("service field: validateFieldForDangerousPatterns()", () => {
+      it("should reject service with ampersand", async () => {
         // ampersand is a shell metacharacter blocked by SAFE_TEXT_REGEX
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'service' },
-            undefined,
-          ],
-          inputBoxSelections: ['AT&T GitHub'],
+          quickPickSelections: [{ field: "service" }, undefined],
+          inputBoxSelections: ["AT&T GitHub"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Service with ampersand should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Service with ampersand should be rejected",
+        );
       });
 
-      it('should reject service with backtick', async () => {
+      it("should reject service with backtick", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'service' },
-            undefined,
-          ],
-          inputBoxSelections: ['`whoami`'],
+          quickPickSelections: [{ field: "service" }, undefined],
+          inputBoxSelections: ["`whoami`"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Service with backtick should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Service with backtick should be rejected",
+        );
       });
 
-      it('should reject service with dollar sign', async () => {
+      it("should reject service with dollar sign", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'service' },
-            undefined,
-          ],
-          inputBoxSelections: ['GitHub$Enterprise'],
+          quickPickSelections: [{ field: "service" }, undefined],
+          inputBoxSelections: ["GitHub$Enterprise"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Service with dollar sign should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Service with dollar sign should be rejected",
+        );
       });
     });
 
-    describe('description field: validateFieldForDangerousPatterns()', () => {
-      it('should reject description with angle brackets', async () => {
+    describe("description field: validateFieldForDangerousPatterns()", () => {
+      it("should reject description with angle brackets", async () => {
         // angle brackets are shell metacharacters blocked by SAFE_TEXT_REGEX
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'description' },
-            undefined,
-          ],
-          inputBoxSelections: ['Primary account <main>'],
+          quickPickSelections: [{ field: "description" }, undefined],
+          inputBoxSelections: ["Primary account <main>"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Description with angle brackets should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Description with angle brackets should be rejected",
+        );
       });
 
-      it('should reject description with backtick', async () => {
+      it("should reject description with backtick", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'description' },
-            undefined,
-          ],
-          inputBoxSelections: ['Run `rm -rf /`'],
+          quickPickSelections: [{ field: "description" }, undefined],
+          inputBoxSelections: ["Run `rm -rf /`"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'Description with backtick should be rejected');
-      });
-    });
-
-    describe('icon field: hasDangerousCharsForText()', () => {
-      it('should accept valid emoji icon', async () => {
-        const mockVSCode = createMockVSCode({
-          identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'icon' },
-            undefined,
-          ],
-          inputBoxSelections: ['🏠'],
-        });
-        _setMockVSCode(mockVSCode as never);
-
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
-
-        assert.strictEqual(result, true, 'Emoji icon should be accepted');
-      });
-
-      it('should reject icon with backtick', async () => {
-        const mockVSCode = createMockVSCode({
-          identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'icon' },
-            undefined,
-          ],
-          inputBoxSelections: ['`'],
-        });
-        _setMockVSCode(mockVSCode as never);
-
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
-
-        assert.strictEqual(result, false, 'Icon with backtick should be rejected');
+        assert.strictEqual(
+          result,
+          false,
+          "Description with backtick should be rejected",
+        );
       });
     });
 
-    describe('sshKeyPath field: hasDangerousCharsForPath() (stricter)', () => {
-      it('should reject sshKeyPath with semicolon (unlike name field)', async () => {
+    describe("icon field: hasDangerousCharsForText()", () => {
+      it("should accept valid emoji icon", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'sshKeyPath' },
-            undefined,
-          ],
-          inputBoxSelections: ['~/.ssh/key;rm'],
+          quickPickSelections: [{ field: "icon" }, undefined],
+          inputBoxSelections: ["🏠"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, 'sshKeyPath with semicolon should be rejected (stricter than text fields)');
+        assert.strictEqual(result, true, "Emoji icon should be accepted");
+      });
+
+      it("should reject icon with backtick", async () => {
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [{ field: "icon" }, undefined],
+          inputBoxSelections: ["`"],
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        assert.strictEqual(
+          result,
+          false,
+          "Icon with backtick should be rejected",
+        );
+      });
+    });
+
+    describe("sshKeyPath field: hasDangerousCharsForPath() (stricter)", () => {
+      it("should reject sshKeyPath with semicolon (unlike name field)", async () => {
+        const mockVSCode = createMockVSCode({
+          identities: [TEST_IDENTITIES.work],
+          quickPickSelections: [{ field: "sshKeyPath" }, undefined],
+          inputBoxSelections: ["~/.ssh/key;rm"],
+        });
+        _setMockVSCode(mockVSCode as never);
+
+        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+
+        assert.strictEqual(
+          result,
+          false,
+          "sshKeyPath with semicolon should be rejected (stricter than text fields)",
+        );
       });
     });
   });
 
-  describe('Security: MAX_IDENTITIES Limit Tests', () => {
-    it('should show warning message when MAX_IDENTITIES reached', async () => {
+  describe("Security: MAX_IDENTITIES Limit Tests", () => {
+    it("should show warning message when MAX_IDENTITIES reached", async () => {
       const maxIdentities: Identity[] = [];
       for (let i = 0; i < MAX_IDENTITIES; i++) {
         maxIdentities.push({
@@ -3136,16 +3550,20 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, undefined, 'Should return undefined when limit reached');
+      assert.strictEqual(
+        result,
+        undefined,
+        "Should return undefined when limit reached",
+      );
       const warnings = mockVSCode._getShowWarningMessageCalls();
-      assert.strictEqual(warnings.length, 1, 'Should show warning');
+      assert.strictEqual(warnings.length, 1, "Should show warning");
       assert.ok(
         warnings[0].includes(String(MAX_IDENTITIES)),
-        `Warning should mention max limit (${MAX_IDENTITIES})`
+        `Warning should mention max limit (${MAX_IDENTITIES})`,
       );
     });
 
-    it('should return undefined from showAddIdentityForm() when MAX_IDENTITIES reached', async () => {
+    it("should return undefined from showAddIdentityForm() when MAX_IDENTITIES reached", async () => {
       const maxIdentities: Identity[] = [];
       for (let i = 0; i < MAX_IDENTITIES; i++) {
         maxIdentities.push({
@@ -3162,11 +3580,15 @@ describe('identityManager E2E Test Suite', function () {
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, undefined, 'showAddIdentityForm() should return undefined at MAX_IDENTITIES');
+      assert.strictEqual(
+        result,
+        undefined,
+        "showAddIdentityForm() should return undefined at MAX_IDENTITIES",
+      );
     });
   });
 
-  describe('Security: Audit Log Tests (securityLogger.logConfigChange)', () => {
+  describe("Security: Audit Log Tests (securityLogger.logConfigChange)", () => {
     /**
      * Tests verify that securityLogger.logConfigChange('identities') is called
      * when identities are added, edited, or deleted.
@@ -3175,113 +3597,137 @@ describe('identityManager E2E Test Suite', function () {
      * These tests verify that identityManager.ts calls the logging function.
      */
 
-    describe('Add identity: logConfigChange called on success', () => {
-      it('should call logConfigChange after successful identity creation', async () => {
+    describe("Add identity: logConfigChange called on success", () => {
+      it("should call logConfigChange after successful identity creation", async () => {
         // saveNewIdentity calls securityLogger.logConfigChange('identities')
         // We verify indirectly by checking successful completion and info message
         const mockVSCode = createMockVSCode({
           identities: [],
           quickPickSelections: [
-            { field: 'id' },
-            { field: 'name' },
-            { field: 'email' },
-            { field: 'save' }, // Save button in property list form
+            { field: "id" },
+            { field: "name" },
+            { field: "email" },
+            { field: "save" }, // Save button in property list form
           ],
-          inputBoxSelections: ['new-id', 'New User', 'new@example.com'],
+          inputBoxSelections: ["new-id", "New User", "new@example.com"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showAddIdentityForm();
 
-        assert.ok(result !== undefined, 'Should return new identity on success');
+        assert.ok(
+          result !== undefined,
+          "Should return new identity on success",
+        );
         const infoCalls = mockVSCode._getShowInformationMessageCalls();
-        assert.ok(infoCalls.length > 0, 'Should show success message (indicates logConfigChange path was executed)');
-        assert.ok(infoCalls[0].includes('created'), 'Success message should mention creation');
+        assert.ok(
+          infoCalls.length > 0,
+          "Should show success message (indicates logConfigChange path was executed)",
+        );
+        assert.ok(
+          infoCalls[0].includes("created"),
+          "Success message should mention creation",
+        );
       });
     });
 
-    describe('Edit identity: logConfigChange called on success', () => {
-      it('should call logConfigChange after successful identity update', async () => {
+    describe("Edit identity: logConfigChange called on success", () => {
+      it("should call logConfigChange after successful identity update", async () => {
         // saveEditedField calls securityLogger.logConfigChange('identities')
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'name' },
-            undefined,
-          ],
-          inputBoxSelections: ['Updated Name'],
+          quickPickSelections: [{ field: "name" }, undefined],
+          inputBoxSelections: ["Updated Name"],
         });
         _setMockVSCode(mockVSCode as never);
 
         const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, 'Should return true on success');
+        assert.strictEqual(result, true, "Should return true on success");
         const infoCalls = mockVSCode._getShowInformationMessageCalls();
-        assert.ok(infoCalls.length > 0, 'Should show success message (indicates logConfigChange path was executed)');
-        assert.ok(infoCalls[0].includes('updated'), 'Success message should mention update');
+        assert.ok(
+          infoCalls.length > 0,
+          "Should show success message (indicates logConfigChange path was executed)",
+        );
+        assert.ok(
+          infoCalls[0].includes("updated"),
+          "Success message should mention update",
+        );
       });
     });
 
     // Delete identity audit logging is covered by deleteIdentityPicker.test.ts
   });
 
-  describe('Config Update Error: saveNewIdentity/saveEditedField error paths', () => {
-    it('should return undefined and show error message when saveNewIdentity fails due to config update error', async () => {
+  describe("Config Update Error: saveNewIdentity/saveEditedField error paths", () => {
+    it("should return undefined and show error message when saveNewIdentity fails due to config update error", async () => {
       const mockVSCode = createMockVSCode({
         identities: [],
         quickPickSelections: [
-          { field: 'id' },
-          { field: 'name' },
-          { field: 'email' },
+          { field: "id" },
+          { field: "name" },
+          { field: "email" },
           { _isSaveButton: true },
         ],
-        inputBoxSelections: ['error-test-id', 'Error Test Name', 'error@test.com'],
-        configUpdateError: new Error('Permission denied'),
+        inputBoxSelections: [
+          "error-test-id",
+          "Error Test Name",
+          "error@test.com",
+        ],
+        configUpdateError: new Error("Permission denied"),
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showAddIdentityForm();
 
-      assert.strictEqual(result, undefined, 'Should return undefined when config update fails');
+      assert.strictEqual(
+        result,
+        undefined,
+        "Should return undefined when config update fails",
+      );
       const errorCalls = mockVSCode._getShowErrorMessageCalls();
-      assert.ok(errorCalls.length > 0, 'Should show error notification to user');
+      assert.ok(
+        errorCalls.length > 0,
+        "Should show error notification to user",
+      );
     });
 
-    it('should show error message and return false when saveEditedField fails and user cancels', async () => {
+    it("should show error message and return false when saveEditedField fails and user cancels", async () => {
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work],
-        quickPickSelections: [
-          { field: 'name' },
-          undefined,
-        ],
-        inputBoxSelections: ['Updated Name'],
-        configUpdateError: new Error('Permission denied'),
+        quickPickSelections: [{ field: "name" }, undefined],
+        inputBoxSelections: ["Updated Name"],
+        configUpdateError: new Error("Permission denied"),
       });
       _setMockVSCode(mockVSCode as never);
 
       const result = await showEditProfileFlow(TEST_IDENTITIES.work);
 
       const errorCalls = mockVSCode._getShowErrorMessageCalls();
-      assert.ok(errorCalls.length > 0, 'Should show error notification to user');
+      assert.ok(
+        errorCalls.length > 0,
+        "Should show error notification to user",
+      );
       // saveEditedField failure does not set hasUpdated=true, so cancelling returns false
-      assert.strictEqual(result, false, 'Edit flow should return false when save failed and user cancelled');
+      assert.strictEqual(
+        result,
+        false,
+        "Edit flow should return false when save failed and user cancelled",
+      );
     });
   });
 
-  describe('onDidChangeValue Tests', () => {
-    describe('Real-time validation on input change', () => {
-      it('should trigger validation when input value changes', async () => {
+  describe("onDidChangeValue Tests", () => {
+    describe("Real-time validation on input change", () => {
+      it("should trigger validation when input value changes", async () => {
         // This test verifies that onDidChangeValue is properly wired up
         // The mock's createInputBox simulates value change and validation
         let validationWasCalled = false;
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'name' },
-            undefined,
-          ],
-          inputBoxSelections: ['New Name'], // Entering a value triggers onDidChangeValue
+          quickPickSelections: [{ field: "name" }, undefined],
+          inputBoxSelections: ["New Name"], // Entering a value triggers onDidChangeValue
         });
 
         const originalCreateInputBox = mockVSCode.window.createInputBox;
@@ -3301,30 +3747,36 @@ describe('identityManager E2E Test Suite', function () {
 
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.ok(validationWasCalled, 'onDidChangeValue should be registered for validation');
+        assert.ok(
+          validationWasCalled,
+          "onDidChangeValue should be registered for validation",
+        );
       });
 
-      it('should set validationMessage when validation error occurs', async () => {
+      it("should set validationMessage when validation error occurs", async () => {
         // Test with invalid input that triggers validation error
         // Using a name with dangerous characters ($ or backtick)
-        let capturedValidationMessage: string | undefined = 'not_set';
+        let capturedValidationMessage: string | undefined = "not_set";
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [
-            { field: 'name' },
+            { field: "name" },
             undefined, // Cancel after validation failure
           ],
-          inputBoxSelections: ['User $HOME'], // Invalid name (contains $)
+          inputBoxSelections: ["User $HOME"], // Invalid name (contains $)
         });
 
         const originalCreateInputBox = mockVSCode.window.createInputBox;
         mockVSCode.window.createInputBox = () => {
           const inputBox = originalCreateInputBox();
-          const originalValidationSetter = Object.getOwnPropertyDescriptor(inputBox, 'validationMessage')?.set;
+          const originalValidationSetter = Object.getOwnPropertyDescriptor(
+            inputBox,
+            "validationMessage",
+          )?.set;
           let internalValidation: string | undefined;
 
-          Object.defineProperty(inputBox, 'validationMessage', {
+          Object.defineProperty(inputBox, "validationMessage", {
             get: () => internalValidation,
             set: (v: string | undefined) => {
               internalValidation = v;
@@ -3344,32 +3796,37 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // validationMessage should be set (not 'not_set' and not undefined)
-        assert.notStrictEqual(capturedValidationMessage, 'not_set',
-          'validationMessage should be set when validation error occurs');
-        assert.ok(capturedValidationMessage !== undefined,
-          'validationMessage should not be undefined for invalid input');
+        assert.notStrictEqual(
+          capturedValidationMessage,
+          "not_set",
+          "validationMessage should be set when validation error occurs",
+        );
+        assert.ok(
+          capturedValidationMessage !== undefined,
+          "validationMessage should not be undefined for invalid input",
+        );
       });
 
-      it('should set validationMessage to undefined when validation succeeds', async () => {
+      it("should set validationMessage to undefined when validation succeeds", async () => {
         // Test with valid input
-        let lastValidationMessage: string | undefined = 'initial';
+        let lastValidationMessage: string | undefined = "initial";
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
-          quickPickSelections: [
-            { field: 'name' },
-            undefined,
-          ],
-          inputBoxSelections: ['Valid Name'], // Valid name
+          quickPickSelections: [{ field: "name" }, undefined],
+          inputBoxSelections: ["Valid Name"], // Valid name
         });
 
         const originalCreateInputBox = mockVSCode.window.createInputBox;
         mockVSCode.window.createInputBox = () => {
           const inputBox = originalCreateInputBox();
-          const originalValidationSetter = Object.getOwnPropertyDescriptor(inputBox, 'validationMessage')?.set;
+          const originalValidationSetter = Object.getOwnPropertyDescriptor(
+            inputBox,
+            "validationMessage",
+          )?.set;
           let internalValidation: string | undefined;
 
-          Object.defineProperty(inputBox, 'validationMessage', {
+          Object.defineProperty(inputBox, "validationMessage", {
             get: () => internalValidation,
             set: (v: string | undefined) => {
               internalValidation = v;
@@ -3387,8 +3844,11 @@ describe('identityManager E2E Test Suite', function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // For valid input, validationMessage should be undefined
-        assert.strictEqual(lastValidationMessage, undefined,
-          'validationMessage should be undefined for valid input');
+        assert.strictEqual(
+          lastValidationMessage,
+          undefined,
+          "validationMessage should be undefined for valid input",
+        );
       });
     });
   });
