@@ -66,6 +66,7 @@
   "Email is too long (max {0} characters)": "Az e-mail túl hosszú (max {0} karakter)",
   "Invalid email format": "Érvénytelen e-mail formátum",
   "Invalid SSH key path": "Érvénytelen SSH kulcs útvonal",
+  "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)": "Érvénytelen SSH kulcs útvonal: használja a ~/.ssh/ formátumot (pl. ~/.ssh/id_ed25519)",
   "Invalid SSH key path format": "Érvénytelen SSH kulcs útvonal formátum",
   "SSH key path must be under ~/.ssh/ directory": "Az SSH kulcs útvonalnak a ~/.ssh/ könyvtárban kell lennie",
   "SSH key file validation failed": "Az SSH kulcs fájl ellenőrzése sikertelen",

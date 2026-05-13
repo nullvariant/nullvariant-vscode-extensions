@@ -7,9 +7,9 @@
  * Uses vscodeLoader for testability (allows mocking in E2E tests).
  */
 
-import { getVSCode } from '../core/vscodeLoader';
-import { validateIdentitySchema } from './configSchema';
-import { securityLogger } from '../security/securityLogger';
+import { getVSCode } from "../core/vscodeLoader";
+import { validateIdentitySchema } from "./configSchema";
+import { securityLogger } from "../security/securityLogger";
 import {
   MAX_IDENTITIES,
   MAX_ID_LENGTH,
@@ -19,7 +19,7 @@ import {
   MAX_DESCRIPTION_LENGTH,
   MAX_SSH_HOST_LENGTH,
   MAX_GPG_KEY_LENGTH,
-} from '../core/constants';
+} from "../core/constants";
 import {
   isValidIdentityId,
   isValidEmail,
@@ -28,8 +28,9 @@ import {
   hasPathTraversal,
   hasDangerousCharsForPath,
   hasDangerousCharsForText,
-} from '../validators/common';
-import { isUnderSshDirectory } from '../security/pathUtils';
+  isWindowsAbsolutePath,
+} from "../validators/common";
+import { isUnderSshDirectory } from "../security/pathUtils";
 
 /**
  * Session-level flag to prevent multiple validation error notifications.
@@ -63,31 +64,31 @@ function showValidationErrorNotification(invalidCount: number): void {
   // Set flag immediately to prevent concurrent notifications
   hasShownValidationError = true;
 
-  const message = invalidCount === 1
-    ? vs.l10n.t(
-        'Git ID Switcher: 1 identity configuration is invalid and was skipped. Check the settings.'
-      )
-    : vs.l10n.t(
-        'Git ID Switcher: {0} identity configurations are invalid and were skipped. Check the settings.',
-        invalidCount
-      );
+  const message =
+    invalidCount === 1
+      ? vs.l10n.t(
+          "Git ID Switcher: 1 identity configuration is invalid and was skipped. Check the settings.",
+        )
+      : vs.l10n.t(
+          "Git ID Switcher: {0} identity configurations are invalid and were skipped. Check the settings.",
+          invalidCount,
+        );
 
   // Fire and forget: notification is non-blocking
   // Note: VS Code's Thenable doesn't have .catch(), so we use .then(onFulfilled, onRejected)
-  vs.window.showWarningMessage(message, vs.l10n.t('Open Settings'))
-    .then(
-      action => {
-        if (action) {
-          vs.commands.executeCommand(
-            'workbench.action.openSettings',
-            'gitIdSwitcher.identities'
-          );
-        }
-      },
-      () => {
-        // SECURITY: Don't let notification errors affect validation flow
+  vs.window.showWarningMessage(message, vs.l10n.t("Open Settings")).then(
+    (action) => {
+      if (action) {
+        vs.commands.executeCommand(
+          "workbench.action.openSettings",
+          "gitIdSwitcher.identities",
+        );
       }
-    );
+    },
+    () => {
+      // SECURITY: Don't let notification errors affect validation flow
+    },
+  );
 }
 
 export interface Identity {
@@ -140,7 +141,7 @@ export interface FieldMetadata {
   editable: boolean;
 
   /** Input type hint for UI */
-  inputType: 'text' | 'file' | 'email';
+  inputType: "text" | "file" | "email";
 
   /** VSCode Codicon name for UI display (e.g., 'lock', 'person', 'mail') */
   icon: string;
@@ -164,42 +165,51 @@ export interface FieldMetadata {
  * (service, icon, description, sshKeyPath, sshHost, gpgKeyId).
  */
 export const EDITABLE_FIELDS: ReadonlyArray<keyof Identity> = [
-  'id',
-  'name',
-  'email',
-  'service',
-  'icon',
-  'description',
-  'sshKeyPath',
-  'sshHost',
-  'gpgKeyId',
+  "id",
+  "name",
+  "email",
+  "service",
+  "icon",
+  "description",
+  "sshKeyPath",
+  "sshHost",
+  "gpgKeyId",
 ];
 
 /**
  * Validate SSH key path format
  *
  * Defense-in-depth validation (lightest to heaviest):
+ * - Layer 0: isWindowsAbsolutePath() - Windows drive letter rejection
  * - Layer 1: hasDangerousCharsForPath() - dangerous character detection
  * - Layer 2: hasPathTraversal() - path traversal detection
  * - Layer 3: isUnderSshDirectory() - SSH directory restriction
+ *
+ * Note: Windows path detection also exists in inputValidator.ts validateSshKeyPathFormat().
+ * This function is called from FIELD_METADATA validators (UI-layer) independently.
  *
  * @param value - The SSH key path to validate
  * @returns Error message if invalid, undefined if valid
  */
 function validateSshKeyPathForField(value: string): string | undefined {
+  // Layer 0: Windows drive letter paths — guide users to cross-platform format
+  if (isWindowsAbsolutePath(value)) {
+    return "sshKeyPath: use ~/.ssh/ format instead of drive letter paths (e.g., ~/.ssh/id_ed25519)";
+  }
+
   // Layer 1: Dangerous characters (fastest check)
   if (hasDangerousCharsForPath(value)) {
-    return 'sshKeyPath contains dangerous characters';
+    return "sshKeyPath contains dangerous characters";
   }
 
   // Layer 2: Path traversal
   if (hasPathTraversal(value)) {
-    return 'sshKeyPath: path traversal (..) is not allowed';
+    return "sshKeyPath: path traversal (..) is not allowed";
   }
 
   // Layer 3: Must be under ~/.ssh/ directory
   if (!isUnderSshDirectory(value)) {
-    return 'sshKeyPath must be under ~/.ssh/ directory';
+    return "sshKeyPath must be under ~/.ssh/ directory";
   }
 
   return undefined;
@@ -213,12 +223,12 @@ function validateSshKeyPathForField(value: string): string | undefined {
  */
 export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
   {
-    key: 'id',
-    labelKey: 'ID',
+    key: "id",
+    labelKey: "ID",
     required: true,
     editable: true, // Editable during creation, but changing ID requires special handling
-    inputType: 'text',
-    icon: 'lock',
+    inputType: "text",
+    icon: "lock",
     maxLength: MAX_ID_LENGTH,
     validator: (value: string) =>
       isValidIdentityId(value, MAX_ID_LENGTH)
@@ -226,95 +236,103 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
         : `ID must be 1-${MAX_ID_LENGTH} alphanumeric characters, underscores, or hyphens`,
   },
   {
-    key: 'name',
-    labelKey: 'Name',
+    key: "name",
+    labelKey: "Name",
     required: true,
     editable: true,
-    inputType: 'text',
-    icon: 'person',
+    inputType: "text",
+    icon: "person",
     maxLength: MAX_NAME_LENGTH,
     validator: (value: string) =>
-      hasDangerousCharsForText(value) ? 'Name contains invalid characters' : undefined,
-  },
-  {
-    key: 'email',
-    labelKey: 'Email',
-    required: true,
-    editable: true,
-    inputType: 'email',
-    icon: 'mail',
-    maxLength: MAX_EMAIL_LENGTH,
-    validator: (value: string) =>
-      isValidEmail(value) ? undefined : 'Invalid email format',
-  },
-  {
-    key: 'service',
-    labelKey: 'Service',
-    required: false,
-    editable: true,
-    inputType: 'text',
-    icon: 'server',
-    maxLength: MAX_SERVICE_LENGTH,
-    validator: (value: string) =>
-      hasDangerousCharsForText(value) ? 'Service contains invalid characters' : undefined,
-  },
-  {
-    key: 'icon',
-    labelKey: 'Icon',
-    required: false,
-    editable: true,
-    inputType: 'text',
-    icon: 'symbol-color',
-    // Note: Grapheme cluster validation is handled by configSchema
-    // Here we only check for dangerous characters (command injection prevention)
-    validator: (value: string) =>
-      hasDangerousCharsForText(value) ? 'Icon contains invalid characters' : undefined,
-  },
-  {
-    key: 'description',
-    labelKey: 'Description',
-    required: false,
-    editable: true,
-    inputType: 'text',
-    icon: 'note',
-    maxLength: MAX_DESCRIPTION_LENGTH,
-    validator: (value: string) =>
       hasDangerousCharsForText(value)
-        ? 'Description contains invalid characters'
+        ? "Name contains invalid characters"
         : undefined,
   },
   {
-    key: 'sshKeyPath',
-    labelKey: 'SSH Key Path',
+    key: "email",
+    labelKey: "Email",
+    required: true,
+    editable: true,
+    inputType: "email",
+    icon: "mail",
+    maxLength: MAX_EMAIL_LENGTH,
+    validator: (value: string) =>
+      isValidEmail(value) ? undefined : "Invalid email format",
+  },
+  {
+    key: "service",
+    labelKey: "Service",
     required: false,
     editable: true,
-    inputType: 'file',
-    icon: 'key',
+    inputType: "text",
+    icon: "server",
+    maxLength: MAX_SERVICE_LENGTH,
+    validator: (value: string) =>
+      hasDangerousCharsForText(value)
+        ? "Service contains invalid characters"
+        : undefined,
+  },
+  {
+    key: "icon",
+    labelKey: "Icon",
+    required: false,
+    editable: true,
+    inputType: "text",
+    icon: "symbol-color",
+    // Note: Grapheme cluster validation is handled by configSchema
+    // Here we only check for dangerous characters (command injection prevention)
+    validator: (value: string) =>
+      hasDangerousCharsForText(value)
+        ? "Icon contains invalid characters"
+        : undefined,
+  },
+  {
+    key: "description",
+    labelKey: "Description",
+    required: false,
+    editable: true,
+    inputType: "text",
+    icon: "note",
+    maxLength: MAX_DESCRIPTION_LENGTH,
+    validator: (value: string) =>
+      hasDangerousCharsForText(value)
+        ? "Description contains invalid characters"
+        : undefined,
+  },
+  {
+    key: "sshKeyPath",
+    labelKey: "SSH Key Path",
+    required: false,
+    editable: true,
+    inputType: "file",
+    icon: "key",
     validator: validateSshKeyPathForField,
   },
   {
-    key: 'sshHost',
-    labelKey: 'SSH Host',
+    key: "sshHost",
+    labelKey: "SSH Host",
     required: false,
     editable: true,
-    inputType: 'text',
-    icon: 'globe',
+    inputType: "text",
+    icon: "globe",
     maxLength: MAX_SSH_HOST_LENGTH,
     validator: (value: string) =>
       isValidSshHost(value)
         ? undefined
-        : 'SSH host must contain only alphanumeric characters, dots, underscores, and hyphens',
+        : "SSH host must contain only alphanumeric characters, dots, underscores, and hyphens",
   },
   {
-    key: 'gpgKeyId',
-    labelKey: 'GPG Key ID',
+    key: "gpgKeyId",
+    labelKey: "GPG Key ID",
     required: false,
     editable: true,
-    inputType: 'text',
-    icon: 'key',
+    inputType: "text",
+    icon: "key",
     maxLength: MAX_GPG_KEY_LENGTH,
     validator: (value: string) =>
-      isValidGpgKeyId(value) ? undefined : 'GPG key ID must be 8-40 hexadecimal characters',
+      isValidGpgKeyId(value)
+        ? undefined
+        : "GPG key ID must be 8-40 hexadecimal characters",
   },
 ];
 
@@ -324,8 +342,10 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
  * @param key - The field key to look up
  * @returns FieldMetadata for the key, or undefined if not found
  */
-export function getFieldMetadata(key: keyof Identity): FieldMetadata | undefined {
-  return FIELD_METADATA.find(f => f.key === key);
+export function getFieldMetadata(
+  key: keyof Identity,
+): FieldMetadata | undefined {
+  return FIELD_METADATA.find((f) => f.key === key);
 }
 
 /**
@@ -343,8 +363,8 @@ export function getIdentities(): Identity[] {
   if (!vs) {
     return [];
   }
-  const config = vs.workspace.getConfiguration('gitIdSwitcher');
-  const identities = config.get<Identity[]>('identities', []);
+  const config = vs.workspace.getConfiguration("gitIdSwitcher");
+  const identities = config.get<Identity[]>("identities", []);
   return identities;
 }
 
@@ -367,16 +387,16 @@ export function getIdentitiesWithValidation(): Identity[] {
     return [];
   }
 
-  const config = vs.workspace.getConfiguration('gitIdSwitcher');
-  const rawIdentities = config.get<unknown[]>('identities', []);
+  const config = vs.workspace.getConfiguration("gitIdSwitcher");
+  const rawIdentities = config.get<unknown[]>("identities", []);
 
   // Type check: must be an array
   if (!Array.isArray(rawIdentities)) {
     // Log type error but don't show notification (configuration might be in transition)
     securityLogger.logValidationFailure(
-      'identities',
-      'Configuration must be an array',
-      typeof rawIdentities
+      "identities",
+      "Configuration must be an array",
+      typeof rawIdentities,
     );
     return [];
   }
@@ -391,9 +411,9 @@ export function getIdentitiesWithValidation(): Identity[] {
   // VS Code settings should enforce this, but defense-in-depth requires explicit check
   if (rawIdentities.length > MAX_IDENTITIES) {
     securityLogger.logValidationFailure(
-      'identities',
+      "identities",
       `Array length exceeds maximum (${MAX_IDENTITIES})`,
-      rawIdentities.length
+      rawIdentities.length,
     );
     // Cache and return empty array to fail securely (avoids repeated security log spam)
     identityCache = [];
@@ -415,7 +435,7 @@ export function getIdentitiesWithValidation(): Identity[] {
         securityLogger.logValidationFailure(
           `identities[${i}].${error.field}`,
           error.message,
-          error.value
+          error.value,
         );
       }
       continue;
@@ -432,7 +452,7 @@ export function getIdentitiesWithValidation(): Identity[] {
       securityLogger.logValidationFailure(
         `identities[${i}].id`,
         `Duplicate ID: ${id}`,
-        id
+        id,
       );
       continue;
     }
@@ -466,7 +486,7 @@ export function invalidateIdentityCache(): void {
  * Get identity by ID (with validation)
  */
 export function getIdentityById(id: string): Identity | undefined {
-  return getIdentitiesWithValidation().find(i => i.id === id);
+  return getIdentitiesWithValidation().find((i) => i.id === id);
 }
 
 /**
@@ -479,8 +499,8 @@ export function getDefaultIdentity(): Identity | undefined {
     return undefined;
   }
 
-  const config = vs.workspace.getConfiguration('gitIdSwitcher');
-  const defaultId = config.get<string>('defaultIdentity', '');
+  const config = vs.workspace.getConfiguration("gitIdSwitcher");
+  const defaultId = config.get<string>("defaultIdentity", "");
 
   const identities = getIdentitiesWithValidation();
   if (identities.length === 0) {
@@ -488,7 +508,7 @@ export function getDefaultIdentity(): Identity | undefined {
   }
 
   if (defaultId) {
-    const found = identities.find(i => i.id === defaultId);
+    const found = identities.find((i) => i.id === defaultId);
     if (found) {
       return found;
     }
@@ -549,7 +569,7 @@ export function formatGitAuthor(identity: Identity): string {
 export async function deleteIdentityFromConfig(id: string): Promise<void> {
   const vs = getVSCode();
   if (!vs) {
-    throw new Error('VS Code API not available');
+    throw new Error("VS Code API not available");
   }
 
   // Validate ID format
@@ -557,23 +577,27 @@ export async function deleteIdentityFromConfig(id: string): Promise<void> {
     throw new Error(`Invalid identity ID format: ${id}`);
   }
 
-  const config = vs.workspace.getConfiguration('gitIdSwitcher');
-  const identities = config.get<Identity[]>('identities', []);
+  const config = vs.workspace.getConfiguration("gitIdSwitcher");
+  const identities = config.get<Identity[]>("identities", []);
 
   // Find the identity to delete
-  const index = identities.findIndex(i => i.id === id);
+  const index = identities.findIndex((i) => i.id === id);
   if (index === -1) {
     throw new Error(`Identity not found: ${id}`);
   }
 
   // Remove the identity from array
-  const updatedIdentities = identities.filter(i => i.id !== id);
+  const updatedIdentities = identities.filter((i) => i.id !== id);
 
   // Update configuration
-  await config.update('identities', updatedIdentities, vs.ConfigurationTarget.Global);
+  await config.update(
+    "identities",
+    updatedIdentities,
+    vs.ConfigurationTarget.Global,
+  );
 
   // Log security event
-  securityLogger.logConfigChange('identities');
+  securityLogger.logConfigChange("identities");
 }
 
 /**
@@ -597,23 +621,23 @@ export async function deleteIdentityFromConfig(id: string): Promise<void> {
 export async function addIdentityToConfig(identity: Identity): Promise<void> {
   const vs = getVSCode();
   if (!vs) {
-    throw new Error('VS Code API not available');
+    throw new Error("VS Code API not available");
   }
 
   // Validate schema
   const validationResult = validateIdentitySchema(identity);
   if (!validationResult.valid) {
     const errorMessages = validationResult.errors
-      .map(e => `${e.field}: ${e.message}`)
-      .join(', ');
+      .map((e) => `${e.field}: ${e.message}`)
+      .join(", ");
     throw new Error(`Invalid identity schema: ${errorMessages}`);
   }
 
-  const config = vs.workspace.getConfiguration('gitIdSwitcher');
-  const identities = config.get<Identity[]>('identities', []);
+  const config = vs.workspace.getConfiguration("gitIdSwitcher");
+  const identities = config.get<Identity[]>("identities", []);
 
   // Check for duplicate ID
-  const duplicateExists = identities.some(i => i.id === identity.id);
+  const duplicateExists = identities.some((i) => i.id === identity.id);
   if (duplicateExists) {
     throw new Error(`Identity with ID already exists: ${identity.id}`);
   }
@@ -627,10 +651,14 @@ export async function addIdentityToConfig(identity: Identity): Promise<void> {
   const updatedIdentities = [...identities, identity];
 
   // Update configuration
-  await config.update('identities', updatedIdentities, vs.ConfigurationTarget.Global);
+  await config.update(
+    "identities",
+    updatedIdentities,
+    vs.ConfigurationTarget.Global,
+  );
 
   // Log security event
-  securityLogger.logConfigChange('identities');
+  securityLogger.logConfigChange("identities");
 }
 
 /**
@@ -659,11 +687,11 @@ export async function addIdentityToConfig(identity: Identity): Promise<void> {
 export async function updateIdentityInConfig(
   id: string,
   field: keyof Identity,
-  value: string | undefined
+  value: string | undefined,
 ): Promise<void> {
   const vs = getVSCode();
   if (!vs) {
-    throw new Error('VS Code API not available');
+    throw new Error("VS Code API not available");
   }
 
   // Validate ID format
@@ -672,27 +700,27 @@ export async function updateIdentityInConfig(
   }
 
   // Required fields cannot be set to undefined
-  const requiredFields: (keyof Identity)[] = ['id', 'name', 'email'];
+  const requiredFields: (keyof Identity)[] = ["id", "name", "email"];
   if (requiredFields.includes(field) && value === undefined) {
     throw new Error(`Cannot set required field to undefined: ${field}`);
   }
 
-  const config = vs.workspace.getConfiguration('gitIdSwitcher');
-  const identities = config.get<Identity[]>('identities', []);
+  const config = vs.workspace.getConfiguration("gitIdSwitcher");
+  const identities = config.get<Identity[]>("identities", []);
 
   // If changing ID, validate new ID format and check for duplicates
-  if (field === 'id' && value !== undefined && value !== id) {
+  if (field === "id" && value !== undefined && value !== id) {
     if (!isValidIdentityId(value, MAX_ID_LENGTH)) {
       throw new Error(`Invalid new identity ID format: ${value}`);
     }
-    const duplicateExists = identities.some(i => i.id === value);
+    const duplicateExists = identities.some((i) => i.id === value);
     if (duplicateExists) {
       throw new Error(`Identity with ID already exists: ${value}`);
     }
   }
 
   // Find the identity to update
-  const index = identities.findIndex(i => i.id === id);
+  const index = identities.findIndex((i) => i.id === id);
   if (index === -1) {
     throw new Error(`Identity not found: ${id}`);
   }
@@ -712,8 +740,8 @@ export async function updateIdentityInConfig(
   const validationResult = validateIdentitySchema(updatedIdentity);
   if (!validationResult.valid) {
     const errorMessages = validationResult.errors
-      .map(e => `${e.field}: ${e.message}`)
-      .join(', ');
+      .map((e) => `${e.field}: ${e.message}`)
+      .join(", ");
     throw new Error(`Invalid identity after update: ${errorMessages}`);
   }
 
@@ -722,10 +750,14 @@ export async function updateIdentityInConfig(
   updatedIdentities[index] = updatedIdentity;
 
   // Update configuration
-  await config.update('identities', updatedIdentities, vs.ConfigurationTarget.Global);
+  await config.update(
+    "identities",
+    updatedIdentities,
+    vs.ConfigurationTarget.Global,
+  );
 
   // Log security event
-  securityLogger.logConfigChange('identities');
+  securityLogger.logConfigChange("identities");
 }
 
 /**
@@ -748,11 +780,11 @@ export async function updateIdentityInConfig(
  */
 export async function moveIdentityInConfig(
   id: string,
-  direction: 'up' | 'down'
+  direction: "up" | "down",
 ): Promise<boolean> {
   const vs = getVSCode();
   if (!vs) {
-    throw new Error('VS Code API not available');
+    throw new Error("VS Code API not available");
   }
 
   // Validate ID format
@@ -760,17 +792,17 @@ export async function moveIdentityInConfig(
     throw new Error(`Invalid identity ID format: ${id}`);
   }
 
-  const config = vs.workspace.getConfiguration('gitIdSwitcher');
-  const identities = [...(config.get<Identity[]>('identities') ?? [])];
+  const config = vs.workspace.getConfiguration("gitIdSwitcher");
+  const identities = [...(config.get<Identity[]>("identities") ?? [])];
 
   // Find the identity to move
-  const currentIndex = identities.findIndex(i => i.id === id);
+  const currentIndex = identities.findIndex((i) => i.id === id);
   if (currentIndex === -1) {
     throw new Error(`Identity not found: ${id}`);
   }
 
   // Calculate new index
-  const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+  const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
 
   // Boundary check: return false if cannot move
   if (newIndex < 0 || newIndex >= identities.length) {
@@ -778,14 +810,16 @@ export async function moveIdentityInConfig(
   }
 
   // Swap identities
-  [identities[currentIndex], identities[newIndex]] =
-    [identities[newIndex], identities[currentIndex]];
+  [identities[currentIndex], identities[newIndex]] = [
+    identities[newIndex],
+    identities[currentIndex],
+  ];
 
   // Update configuration
-  await config.update('identities', identities, vs.ConfigurationTarget.Global);
+  await config.update("identities", identities, vs.ConfigurationTarget.Global);
 
   // Log security event
-  securityLogger.logConfigChange('identities');
+  securityLogger.logConfigChange("identities");
 
   return true;
 }

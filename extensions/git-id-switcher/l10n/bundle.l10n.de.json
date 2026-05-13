@@ -66,6 +66,7 @@
   "Email is too long (max {0} characters)": "E-Mail ist zu lang (max. {0} Zeichen)",
   "Invalid email format": "Ungültiges E-Mail-Format",
   "Invalid SSH key path": "Ungültiger SSH-Schlüsselpfad",
+  "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)": "Ungültiger SSH-Schlüsselpfad: Verwenden Sie das ~/.ssh/-Format (z.B. ~/.ssh/id_ed25519)",
   "Invalid SSH key path format": "Ungültiges SSH-Schlüsselpfad-Format",
   "SSH key path must be under ~/.ssh/ directory": "SSH-Schlüsselpfad muss im Verzeichnis ~/.ssh/ sein",
   "SSH key file validation failed": "SSH-Schlüsseldatei-Validierung fehlgeschlagen",

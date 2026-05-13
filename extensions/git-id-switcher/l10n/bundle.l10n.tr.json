@@ -66,6 +66,7 @@
   "Email is too long (max {0} characters)": "E-posta çok uzun (maks. {0} karakter)",
   "Invalid email format": "Geçersiz e-posta formatı",
   "Invalid SSH key path": "Geçersiz SSH anahtar yolu",
+  "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)": "Geçersiz SSH anahtar yolu: ~/.ssh/ biçimini kullanın (ör. ~/.ssh/id_ed25519)",
   "Invalid SSH key path format": "Geçersiz SSH anahtar yolu formatı",
   "SSH key path must be under ~/.ssh/ directory": "SSH anahtar yolu ~/.ssh/ dizininde olmalıdır",
   "SSH key file validation failed": "SSH anahtar dosyası doğrulaması başarısız",

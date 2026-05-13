@@ -8,7 +8,7 @@
  * @see https://cwe.mitre.org/data/definitions/78.html
  */
 
-import { Identity } from './identity';
+import { Identity } from "./identity";
 import {
   isValidEmail,
   hasPathTraversal,
@@ -18,7 +18,7 @@ import {
   SSH_HOST_REGEX,
   DANGEROUS_PATTERNS,
   isWindowsAbsolutePath,
-} from '../validators/common';
+} from "../validators/common";
 import {
   MAX_ID_LENGTH,
   MAX_EMAIL_LENGTH,
@@ -27,7 +27,7 @@ import {
   MAX_SERVICE_LENGTH,
   MAX_DESCRIPTION_LENGTH,
   MAX_ICON_BYTE_LENGTH,
-} from '../core/constants';
+} from "../core/constants";
 
 export interface ValidationResult {
   valid: boolean;
@@ -49,7 +49,7 @@ export interface ValidationResult {
 export function validateFieldForDangerousPatterns(
   value: string | undefined,
   fieldName: string,
-  errors: string[]
+  errors: string[],
 ): void {
   if (!value) {
     return;
@@ -77,19 +77,24 @@ export function validateFieldForDangerousPatterns(
  * @param email - The email to validate
  * @param errors - Array to accumulate validation errors
  */
-export function validateEmailField(email: string | undefined, errors: string[]): void {
+export function validateEmailField(
+  email: string | undefined,
+  errors: string[],
+): void {
   if (!email) {
     return;
   }
 
   if (!isValidEmail(email)) {
-    errors.push('email: invalid email format');
+    errors.push("email: invalid email format");
   }
 
   // Additional length check (RFC 5321)
   // Note: isValidEmail already checks for 254 chars, but identity config allows 320
   if (email.length > MAX_EMAIL_LENGTH) {
-    errors.push(`email: exceeds maximum length (${MAX_EMAIL_LENGTH} characters)`);
+    errors.push(
+      `email: exceeds maximum length (${MAX_EMAIL_LENGTH} characters)`,
+    );
   }
 }
 
@@ -112,57 +117,77 @@ export function validateEmailField(email: string | undefined, errors: string[]):
  */
 export function validateSshKeyPathFormat(
   sshKeyPath: string | undefined,
-  errors: string[]
+  errors: string[],
 ): void {
   if (!sshKeyPath) {
     return;
   }
 
-  // Must start with /, ~, or Windows drive letter (C:\)
-  const isUnixAbsolute = sshKeyPath.startsWith('/');
-  const isTildePath = sshKeyPath.startsWith('~');
+  // Windows drive letter paths are not supported — use ~/.ssh/ format
+  if (isWindowsAbsolutePath(sshKeyPath)) {
+    errors.push(
+      "sshKeyPath: use ~/.ssh/ format instead of drive letter paths (e.g., ~/.ssh/id_ed25519)",
+    );
+    return;
+  }
 
-  if (!isUnixAbsolute && !isTildePath && !isWindowsAbsolutePath(sshKeyPath)) {
-    errors.push('sshKeyPath: must be an absolute path or start with ~');
+  // Must start with / or ~
+  const isUnixAbsolute = sshKeyPath.startsWith("/");
+  const isTildePath = sshKeyPath.startsWith("~");
+
+  if (!isUnixAbsolute && !isTildePath) {
+    errors.push(
+      "sshKeyPath: must be an absolute path (/) or start with ~ (e.g., ~/.ssh/id_ed25519)",
+    );
   }
 
   // No path traversal
   if (hasPathTraversal(sshKeyPath)) {
-    errors.push('sshKeyPath: path traversal (..) is not allowed');
+    errors.push("sshKeyPath: path traversal (..) is not allowed");
   }
 
   // No dangerous characters in path
-  validateFieldForDangerousPatterns(sshKeyPath, 'sshKeyPath', errors);
+  validateFieldForDangerousPatterns(sshKeyPath, "sshKeyPath", errors);
 }
 
 /**
  * Validate GPG key ID
  */
-export function validateGpgKeyId(gpgKeyId: string | undefined, errors: string[]): void {
+export function validateGpgKeyId(
+  gpgKeyId: string | undefined,
+  errors: string[],
+): void {
   if (!gpgKeyId) {
     return;
   }
 
   if (!GPG_KEY_REGEX.test(gpgKeyId)) {
-    errors.push('gpgKeyId: must be 8-40 hexadecimal characters');
+    errors.push("gpgKeyId: must be 8-40 hexadecimal characters");
   }
 }
 
 /**
  * Validate SSH host alias
  */
-export function validateSshHost(sshHost: string | undefined, errors: string[]): void {
+export function validateSshHost(
+  sshHost: string | undefined,
+  errors: string[],
+): void {
   if (!sshHost) {
     return;
   }
 
   if (!SSH_HOST_REGEX.test(sshHost)) {
-    errors.push('sshHost: must contain only alphanumeric characters, dots, underscores, and hyphens');
+    errors.push(
+      "sshHost: must contain only alphanumeric characters, dots, underscores, and hyphens",
+    );
   }
 
   // DNS maximum label length
   if (sshHost.length > MAX_SSH_HOST_LENGTH) {
-    errors.push(`sshHost: exceeds maximum length (${MAX_SSH_HOST_LENGTH} characters)`);
+    errors.push(
+      `sshHost: exceeds maximum length (${MAX_SSH_HOST_LENGTH} characters)`,
+    );
   }
 }
 
@@ -189,26 +214,32 @@ export function validateIdentity(identity: Identity): ValidationResult {
 
   // Required fields
   if (!identity.id) {
-    errors.push('id is required');
+    errors.push("id is required");
   }
   if (!identity.name) {
-    errors.push('name is required');
+    errors.push("name is required");
   }
   if (!identity.email) {
-    errors.push('email is required');
+    errors.push("email is required");
   }
 
   // ID validation (alphanumeric, underscores, hyphens only)
   if (identity.id && !isValidIdentityId(identity.id, MAX_ID_LENGTH)) {
-    errors.push(`id: must be 1-${MAX_ID_LENGTH} alphanumeric characters, underscores, or hyphens`);
+    errors.push(
+      `id: must be 1-${MAX_ID_LENGTH} alphanumeric characters, underscores, or hyphens`,
+    );
   }
 
   // Text field validation (dangerous patterns)
-  validateFieldForDangerousPatterns(identity.name, 'name', errors);
-  validateFieldForDangerousPatterns(identity.email, 'email', errors);
-  validateFieldForDangerousPatterns(identity.service, 'service', errors);
-  validateFieldForDangerousPatterns(identity.description, 'description', errors);
-  validateFieldForDangerousPatterns(identity.icon, 'icon', errors);
+  validateFieldForDangerousPatterns(identity.name, "name", errors);
+  validateFieldForDangerousPatterns(identity.email, "email", errors);
+  validateFieldForDangerousPatterns(identity.service, "service", errors);
+  validateFieldForDangerousPatterns(
+    identity.description,
+    "description",
+    errors,
+  );
+  validateFieldForDangerousPatterns(identity.icon, "icon", errors);
 
   // Format-specific validation
   validateEmailField(identity.email, errors);
@@ -221,14 +252,21 @@ export function validateIdentity(identity: Identity): ValidationResult {
     errors.push(`name: exceeds maximum length (${MAX_NAME_LENGTH} characters)`);
   }
   if (identity.service && identity.service.length > MAX_SERVICE_LENGTH) {
-    errors.push(`service: exceeds maximum length (${MAX_SERVICE_LENGTH} characters)`);
+    errors.push(
+      `service: exceeds maximum length (${MAX_SERVICE_LENGTH} characters)`,
+    );
   }
-  if (identity.description && identity.description.length > MAX_DESCRIPTION_LENGTH) {
-    errors.push(`description: exceeds maximum length (${MAX_DESCRIPTION_LENGTH} characters)`);
+  if (
+    identity.description &&
+    identity.description.length > MAX_DESCRIPTION_LENGTH
+  ) {
+    errors.push(
+      `description: exceeds maximum length (${MAX_DESCRIPTION_LENGTH} characters)`,
+    );
   }
   if (identity.icon && identity.icon.length > MAX_ICON_BYTE_LENGTH) {
     // MAX_ICON_BYTE_LENGTH allows for complex composed emoji (e.g., family emoji with ZWJ sequences)
-    errors.push('icon: exceeds maximum length');
+    errors.push("icon: exceeds maximum length");
   }
 
   return {
@@ -247,10 +285,10 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
   const errors: string[] = [];
 
   // Check for duplicate IDs
-  const ids = identities.map(i => i.id);
+  const ids = identities.map((i) => i.id);
   const uniqueIds = new Set(ids);
   if (ids.length !== uniqueIds.size) {
-    errors.push('Duplicate identity IDs found');
+    errors.push("Duplicate identity IDs found");
   }
 
   // Validate each identity
@@ -258,7 +296,9 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
     const result = validateIdentity(identity);
     if (!result.valid) {
       for (const error of result.errors) {
-        errors.push(`identities[${index}] (${identity.id || 'unknown'}): ${error}`);
+        errors.push(
+          `identities[${index}] (${identity.id || "unknown"}): ${error}`,
+        );
       }
     }
   }

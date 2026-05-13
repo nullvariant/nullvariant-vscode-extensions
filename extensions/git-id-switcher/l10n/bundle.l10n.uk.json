@@ -66,6 +66,7 @@
   "Email is too long (max {0} characters)": "Email занадто довгий (макс. {0} символів)",
   "Invalid email format": "Невірний формат email",
   "Invalid SSH key path": "Невірний шлях до SSH ключа",
+  "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)": "Невірний шлях до SSH ключа: використовуйте формат ~/.ssh/ (напр. ~/.ssh/id_ed25519)",
   "Invalid SSH key path format": "Невірний формат шляху SSH ключа",
   "SSH key path must be under ~/.ssh/ directory": "Шлях до SSH ключа має бути в каталозі ~/.ssh/",
   "SSH key file validation failed": "Не вдалося перевірити файл SSH ключа",

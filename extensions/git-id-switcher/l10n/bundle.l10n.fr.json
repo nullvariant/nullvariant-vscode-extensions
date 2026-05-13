@@ -66,6 +66,7 @@
   "Email is too long (max {0} characters)": "L'e-mail est trop long (max {0} caractères)",
   "Invalid email format": "Format d'e-mail invalide",
   "Invalid SSH key path": "Chemin de clé SSH invalide",
+  "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)": "Chemin de clé SSH invalide : utilisez le format ~/.ssh/ (ex. ~/.ssh/id_ed25519)",
   "Invalid SSH key path format": "Format de chemin de clé SSH invalide",
   "SSH key path must be under ~/.ssh/ directory": "Le chemin de clé SSH doit être dans le répertoire ~/.ssh/",
   "SSH key file validation failed": "Échec de la validation du fichier de clé SSH",

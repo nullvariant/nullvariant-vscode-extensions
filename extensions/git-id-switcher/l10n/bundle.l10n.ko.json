@@ -66,6 +66,7 @@
   "Email is too long (max {0} characters)": "이메일이 너무 깁니다 (최대 {0}자)",
   "Invalid email format": "이메일 형식이 올바르지 않습니다",
   "Invalid SSH key path": "잘못된 SSH 키 경로",
+  "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)": "잘못된 SSH 키 경로: ~/.ssh/ 형식을 사용하세요 (예: ~/.ssh/id_ed25519)",
   "Invalid SSH key path format": "잘못된 SSH 키 경로 형식",
   "SSH key path must be under ~/.ssh/ directory": "SSH 키 경로는 ~/.ssh/ 디렉터리 내에 있어야 합니다",
   "SSH key file validation failed": "SSH 키 파일 검증 실패",

@@ -8,18 +8,19 @@
  * @see https://owasp.org/www-community/attacks/Command_Injection
  */
 
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import * as vscode from 'vscode';
-import { Identity, getIdentitiesWithValidation } from '../identity/identity';
-import { sshAgentExec, sshKeygenExec } from '../security/secureExec';
-import { isShellSafePath } from '../identity/inputValidator';
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import * as vscode from "vscode";
+import { Identity, getIdentitiesWithValidation } from "../identity/identity";
+import { sshAgentExec, sshKeygenExec } from "../security/secureExec";
+import { isShellSafePath } from "../identity/inputValidator";
+import { isWindowsAbsolutePath } from "../validators/common";
 import {
   normalizeAndValidatePath,
   validateSshKeyPath,
-} from '../security/pathUtils';
-import { createSecurityViolationError, wrapError } from '../core/errors';
-import { securityLogger } from '../security/securityLogger';
+} from "../security/pathUtils";
+import { createSecurityViolationError, wrapError } from "../core/errors";
+import { securityLogger } from "../security/securityLogger";
 
 /**
  * Maximum allowed SSH key file size (1MB)
@@ -52,14 +53,14 @@ const OWNER_EXECUTE_BIT = 0o100;
  * These are the standard formats supported by ssh-add
  */
 const VALID_SSH_KEY_HEADERS = [
-  '-----BEGIN OPENSSH PRIVATE KEY-----',      // OpenSSH format (modern)
-  '-----BEGIN RSA PRIVATE KEY-----',          // RSA PEM format
-  '-----BEGIN DSA PRIVATE KEY-----',          // DSA PEM format
-  '-----BEGIN EC PRIVATE KEY-----',           // EC PEM format
-  '-----BEGIN PRIVATE KEY-----',              // PKCS#8 unencrypted
-  '-----BEGIN ENCRYPTED PRIVATE KEY-----',    // PKCS#8 encrypted
-  'PuTTY-User-Key-File-2:',                   // PuTTY PPK v2
-  'PuTTY-User-Key-File-3:',                   // PuTTY PPK v3
+  "-----BEGIN OPENSSH PRIVATE KEY-----", // OpenSSH format (modern)
+  "-----BEGIN RSA PRIVATE KEY-----", // RSA PEM format
+  "-----BEGIN DSA PRIVATE KEY-----", // DSA PEM format
+  "-----BEGIN EC PRIVATE KEY-----", // EC PEM format
+  "-----BEGIN PRIVATE KEY-----", // PKCS#8 unencrypted
+  "-----BEGIN ENCRYPTED PRIVATE KEY-----", // PKCS#8 encrypted
+  "PuTTY-User-Key-File-2:", // PuTTY PPK v2
+  "PuTTY-User-Key-File-3:", // PuTTY PPK v3
 ] as const;
 
 /**
@@ -95,23 +96,29 @@ function isBasenameMatch(comment: string, basename: string): boolean {
     return true;
   }
   // Path match: comment ends with /<basename>
-  if (comment.endsWith('/' + basename) || comment.endsWith('\\' + basename)) {
+  if (comment.endsWith("/" + basename) || comment.endsWith("\\" + basename)) {
     return true;
   }
   // Space-separated match: comment starts with <basename> followed by space
   // (ssh-keygen comments like "id_ed25519 user@host")
-  if (comment.startsWith(basename + ' ')) {
+  if (comment.startsWith(basename + " ")) {
     return true;
   }
   // Path + space match: comment contains /<basename> followed by space
   // (full path with additional comment like "/home/user/.ssh/id_ed25519 user@host")
-  if (comment.includes('/' + basename + ' ') || comment.includes('\\' + basename + ' ')) {
+  if (
+    comment.includes("/" + basename + " ") ||
+    comment.includes("\\" + basename + " ")
+  ) {
     return true;
   }
   // Token match: basename appears as a standalone space-delimited token
   // defense-in-depth: handles fallback case where listSshKeys() uses entire
   // ssh-add -l line as comment (e.g., "256 SHA256:xxx id_ed25519 (unknown)")
-  if (comment.includes(' ' + basename + ' ') || comment.endsWith(' ' + basename)) {
+  if (
+    comment.includes(" " + basename + " ") ||
+    comment.endsWith(" " + basename)
+  ) {
     return true;
   }
   return false;
@@ -137,6 +144,16 @@ export interface SshKeyInfo {
  * @throws Error if path is invalid or insecure
  */
 function expandPath(keyPath: string): string {
+  // defense-in-depth: called directly by keyFileExists without validateKeyPathOrThrow
+  if (isWindowsAbsolutePath(keyPath)) {
+    throw createSecurityViolationError(
+      vscode.l10n.t(
+        "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)",
+      ),
+      { field: "sshKeyPath", context: { reason: "Windows drive letter path" } },
+    );
+  }
+
   const result = validateSshKeyPath(keyPath, {
     resolveSymlinks: true,
     requireExists: false, // Don't require existence for all operations
@@ -144,8 +161,8 @@ function expandPath(keyPath: string): string {
 
   if (!result.valid) {
     // SECURITY: Don't expose the actual path or detailed reason to users
-    throw createSecurityViolationError(vscode.l10n.t('Invalid SSH key path'), {
-      field: 'sshKeyPath',
+    throw createSecurityViolationError(vscode.l10n.t("Invalid SSH key path"), {
+      field: "sshKeyPath",
       context: { reason: result.reason },
     });
   }
@@ -163,12 +180,21 @@ function expandPath(keyPath: string): string {
  * @throws SecurityViolationError if path is potentially dangerous
  */
 function validateKeyPathOrThrow(keyPath: string): void {
+  if (isWindowsAbsolutePath(keyPath)) {
+    throw createSecurityViolationError(
+      vscode.l10n.t(
+        "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)",
+      ),
+      { field: "sshKeyPath", context: { reason: "Windows drive letter path" } },
+    );
+  }
+
   // Use both legacy validation and new secure validation
   if (!isShellSafePath(keyPath)) {
     // SECURITY: Don't include the actual path in error message to prevent information leakage
-    throw createSecurityViolationError(vscode.l10n.t('Invalid SSH key path'), {
-      field: 'sshKeyPath',
-      context: { check: 'legacy' },
+    throw createSecurityViolationError(vscode.l10n.t("Invalid SSH key path"), {
+      field: "sshKeyPath",
+      context: { check: "legacy" },
     });
   }
 
@@ -176,8 +202,8 @@ function validateKeyPathOrThrow(keyPath: string): void {
   const result = normalizeAndValidatePath(keyPath);
   if (!result.valid) {
     // SECURITY: Only log the reason internally, don't expose to users
-    throw createSecurityViolationError(vscode.l10n.t('Invalid SSH key path'), {
-      field: 'sshKeyPath',
+    throw createSecurityViolationError(vscode.l10n.t("Invalid SSH key path"), {
+      field: "sshKeyPath",
       context: { reason: result.reason },
     });
   }
@@ -188,7 +214,7 @@ function validateKeyPathOrThrow(keyPath: string): void {
  * @param token Optional cancellation token for aborting the operation
  */
 export async function listSshKeys(
-  token?: vscode.CancellationToken
+  token?: vscode.CancellationToken,
 ): Promise<SshKeyInfo[]> {
   if (token?.isCancellationRequested) {
     return [];
@@ -196,27 +222,31 @@ export async function listSshKeys(
 
   try {
     // SECURITY: Using sshAgentExec with array args
-    const { stdout } = await sshAgentExec(['-l']);
+    const { stdout } = await sshAgentExec(["-l"]);
 
     if (token?.isCancellationRequested) {
       return [];
     }
 
-    const lines = stdout.trim().split('\n').filter(line => line.length > 0);
+    const lines = stdout
+      .trim()
+      .split("\n")
+      .filter((line) => line.length > 0);
 
-    return lines.map(line => {
+    return lines.map((line) => {
       // Format: "256 SHA256:xxx comment (type)"
       // SECURITY: Use split-based parsing to avoid ReDoS (SonarQube S5852)
       const parts = line.split(/\s+/);
       if (parts.length >= 4) {
         // Extract type from last part: "(type)" -> "type"
-        const lastPart = parts.at(-1) ?? '';
-        const typeMatch = lastPart.startsWith('(') && lastPart.endsWith(')')
-          ? lastPart.slice(1, -1)
-          : null;
+        const lastPart = parts.at(-1) ?? "";
+        const typeMatch =
+          lastPart.startsWith("(") && lastPart.endsWith(")")
+            ? lastPart.slice(1, -1)
+            : null;
         if (typeMatch && /^\w+$/.test(typeMatch)) {
           // Comment is everything between fingerprint and type
-          const comment = parts.slice(2, -1).join(' ');
+          const comment = parts.slice(2, -1).join(" ");
           return {
             fingerprint: parts[1],
             comment,
@@ -225,9 +255,9 @@ export async function listSshKeys(
         }
       }
       return {
-        fingerprint: '',
+        fingerprint: "",
         comment: line,
-        type: 'unknown',
+        type: "unknown",
       };
     });
   } catch {
@@ -258,11 +288,11 @@ export async function addSshKey(keyPath: string): Promise<void> {
   const fileValidation = await validateKeyFileBeforeAddToAgent(expandedPath);
   if (!fileValidation.valid) {
     throw createSecurityViolationError(
-      vscode.l10n.t('SSH key file validation failed'),
+      vscode.l10n.t("SSH key file validation failed"),
       {
-        field: 'sshKeyPath',
+        field: "sshKeyPath",
         context: { reason: fileValidation.reason },
-      }
+      },
     );
   }
 
@@ -271,10 +301,10 @@ export async function addSshKey(keyPath: string): Promise<void> {
 
   try {
     // eslint-disable-next-line unicorn/prefer-ternary -- security-critical: each branch has distinct SECURITY comments
-    if (platform === 'darwin') {
+    if (platform === "darwin") {
       // macOS: Use Keychain integration
       // SECURITY: Using sshAgentExec with array args prevents injection
-      await sshAgentExec(['--apple-use-keychain', expandedPath]);
+      await sshAgentExec(["--apple-use-keychain", expandedPath]);
     } else {
       // Windows, Linux and others
       // SECURITY: Path is passed as a single array element, not interpolated
@@ -282,8 +312,8 @@ export async function addSshKey(keyPath: string): Promise<void> {
     }
   } catch (error) {
     // SECURITY: Wrap error to hide internal details from users
-    throw wrapError(error, vscode.l10n.t('Failed to add SSH key'), {
-      field: 'sshKeyPath',
+    throw wrapError(error, vscode.l10n.t("Failed to add SSH key"), {
+      field: "sshKeyPath",
       context: { platform },
     });
   }
@@ -302,7 +332,7 @@ export async function removeSshKey(keyPath: string): Promise<void> {
 
   try {
     // SECURITY: Using sshAgentExec with array args
-    await sshAgentExec(['-d', expandedPath]);
+    await sshAgentExec(["-d", expandedPath]);
   } catch {
     // Ignore errors (key might not be loaded)
   }
@@ -316,11 +346,11 @@ export async function removeSshKey(keyPath: string): Promise<void> {
 export async function removeAllIdentityKeys(): Promise<void> {
   const identities = getIdentitiesWithValidation();
   const removePromises = identities
-    .filter(identity => identity.sshKeyPath)
-    .map(identity =>
+    .filter((identity) => identity.sshKeyPath)
+    .map((identity) =>
       removeSshKey(identity.sshKeyPath!).catch(() => {
         // Ignore individual errors
-      })
+      }),
     );
 
   await Promise.all(removePromises);
@@ -331,7 +361,9 @@ export async function removeAllIdentityKeys(): Promise<void> {
  *
  * Removes all identity keys and adds only the selected one
  */
-export async function switchToIdentitySshKey(identity: Identity): Promise<void> {
+export async function switchToIdentitySshKey(
+  identity: Identity,
+): Promise<void> {
   if (!identity.sshKeyPath) {
     // No SSH key configured for this identity
     return;
@@ -363,7 +395,7 @@ export async function checkKeyLoadedInAgent(keyPath: string): Promise<boolean> {
   // (ssh-add uses the key path as comment by default)
   // defense-in-depth: use exact/word-boundary matching to prevent
   // partial matches (e.g., "id_rsa" matching "id_rsa_work")
-  return keys.some(key => {
+  return keys.some((key) => {
     const keyPathBasename = path.basename(expandedPath);
     return isBasenameMatch(key.comment, keyPathBasename);
   });
@@ -374,7 +406,7 @@ export async function checkKeyLoadedInAgent(keyPath: string): Promise<boolean> {
  * @param token Optional cancellation token for aborting the operation
  */
 export async function detectCurrentIdentityFromSsh(
-  token?: vscode.CancellationToken
+  token?: vscode.CancellationToken,
 ): Promise<Identity | undefined> {
   if (token?.isCancellationRequested) {
     return undefined;
@@ -399,7 +431,9 @@ export async function detectCurrentIdentityFromSsh(
 
     const keyPathBasename = path.basename(expandPath(identity.sshKeyPath));
     // defense-in-depth: exact/word-boundary matching (see isBasenameMatch)
-    const isLoaded = keys.some(key => isBasenameMatch(key.comment, keyPathBasename));
+    const isLoaded = keys.some((key) =>
+      isBasenameMatch(key.comment, keyPathBasename),
+    );
     if (isLoaded) {
       return identity;
     }
@@ -413,7 +447,9 @@ export async function detectCurrentIdentityFromSsh(
  *
  * SECURITY: Path is validated before use
  */
-export async function getKeyFingerprint(keyPath: string): Promise<string | undefined> {
+export async function getKeyFingerprint(
+  keyPath: string,
+): Promise<string | undefined> {
   // SECURITY: Validate path before use
   validateKeyPathOrThrow(keyPath);
 
@@ -421,7 +457,7 @@ export async function getKeyFingerprint(keyPath: string): Promise<string | undef
 
   try {
     // SECURITY: Using sshKeygenExec with array args
-    const { stdout } = await sshKeygenExec(['-lf', expandedPath]);
+    const { stdout } = await sshKeygenExec(["-lf", expandedPath]);
     // SECURITY: Use split-based parsing to avoid ReDoS (SonarQube S5852)
     const parts = stdout.trim().split(/\s+/);
     return parts.length >= 2 ? parts[1] : undefined;
@@ -471,9 +507,14 @@ export interface KeyFileValidationResult {
 async function validateSshKeyFormat(filePath: string): Promise<boolean> {
   let fileHandle: Awaited<ReturnType<typeof fs.open>> | null = null;
   try {
-    fileHandle = await fs.open(filePath, 'r');
+    fileHandle = await fs.open(filePath, "r");
     const buffer = Buffer.alloc(FORMAT_CHECK_BYTES);
-    const { bytesRead } = await fileHandle.read(buffer, 0, FORMAT_CHECK_BYTES, 0);
+    const { bytesRead } = await fileHandle.read(
+      buffer,
+      0,
+      FORMAT_CHECK_BYTES,
+      0,
+    );
 
     if (bytesRead === 0) {
       return false;
@@ -483,24 +524,24 @@ async function validateSshKeyFormat(filePath: string): Promise<boolean> {
     // PuTTY format headers are ASCII-compatible, so UTF-8 should work
     let header: string;
     try {
-      header = buffer.subarray(0, bytesRead).toString('utf8').trimStart();
+      header = buffer.subarray(0, bytesRead).toString("utf8").trimStart();
     } catch {
       // Fallback to Latin-1 if UTF-8 decoding fails (shouldn't happen for valid SSH keys)
-      header = buffer.subarray(0, bytesRead).toString('latin1').trimStart();
+      header = buffer.subarray(0, bytesRead).toString("latin1").trimStart();
     }
 
     // Check if the file starts with any valid SSH key header
     // Note: PuTTY format headers are ASCII, so UTF-8 decoding works fine
-    return VALID_SSH_KEY_HEADERS.some(validHeader =>
-      header.startsWith(validHeader)
+    return VALID_SSH_KEY_HEADERS.some((validHeader) =>
+      header.startsWith(validHeader),
     );
   } catch (error) {
     // SECURITY: Log read errors for security audit
     // If we can't read the file, it's not a valid key
     securityLogger.logValidationFailure(
-      'ssh-key-format',
-      'Failed to read file for format validation',
-      error instanceof Error ? error.name : 'unknown'
+      "ssh-key-format",
+      "Failed to read file for format validation",
+      error instanceof Error ? error.name : "unknown",
     );
     return false;
   } finally {
@@ -511,9 +552,9 @@ async function validateSshKeyFormat(filePath: string): Promise<boolean> {
       } catch (closeError) {
         // Log but don't throw - we're in cleanup
         securityLogger.logValidationFailure(
-          'ssh-key-format',
-          'Failed to close file handle',
-          closeError instanceof Error ? closeError.name : 'unknown'
+          "ssh-key-format",
+          "Failed to close file handle",
+          closeError instanceof Error ? closeError.name : "unknown",
         );
       }
     }
@@ -525,45 +566,50 @@ async function validateSshKeyFormat(filePath: string): Promise<boolean> {
  * @internal
  */
 function handleFileStatError(error: unknown): KeyFileValidationResult {
-  const errorName = error instanceof Error ? error.name : 'unknown';
+  const errorName = error instanceof Error ? error.name : "unknown";
   const errorCode = (error as NodeJS.ErrnoException)?.code;
 
-  if (errorCode === 'ENOENT') {
-    securityLogger.logValidationFailure('ssh-key-file', 'File does not exist');
-    return { valid: false, reason: 'file_not_found' };
+  if (errorCode === "ENOENT") {
+    securityLogger.logValidationFailure("ssh-key-file", "File does not exist");
+    return { valid: false, reason: "file_not_found" };
   }
 
-  if (errorCode === 'EACCES' || errorCode === 'EPERM') {
-    securityLogger.logValidationFailure('ssh-key-file', 'File access denied');
-    return { valid: false, reason: 'access_denied' };
+  if (errorCode === "EACCES" || errorCode === "EPERM") {
+    securityLogger.logValidationFailure("ssh-key-file", "File access denied");
+    return { valid: false, reason: "access_denied" };
   }
 
   securityLogger.logValidationFailure(
-    'ssh-key-file',
-    `File stat failed: ${errorName} (${errorCode ?? 'unknown'})`
+    "ssh-key-file",
+    `File stat failed: ${errorName} (${errorCode ?? "unknown"})`,
   );
-  return { valid: false, reason: 'stat_error' };
+  return { valid: false, reason: "stat_error" };
 }
 
 /**
  * Validate file type (must be regular file).
  * @internal
  */
-function validateKeyFileType(stats: Awaited<ReturnType<typeof fs.stat>>): KeyFileValidationResult | null {
+function validateKeyFileType(
+  stats: Awaited<ReturnType<typeof fs.stat>>,
+): KeyFileValidationResult | null {
   if (stats.isFile()) {
     return null; // Valid
   }
 
   if (stats.isDirectory()) {
     securityLogger.logValidationFailure(
-      'ssh-key-file',
-      'Path points to a directory, not a file'
+      "ssh-key-file",
+      "Path points to a directory, not a file",
     );
-    return { valid: false, reason: 'is_directory' };
+    return { valid: false, reason: "is_directory" };
   }
 
-  securityLogger.logValidationFailure('ssh-key-file', 'Path is not a regular file');
-  return { valid: false, reason: 'not_regular_file' };
+  securityLogger.logValidationFailure(
+    "ssh-key-file",
+    "Path is not a regular file",
+  );
+  return { valid: false, reason: "not_regular_file" };
 }
 
 /**
@@ -573,18 +619,18 @@ function validateKeyFileType(stats: Awaited<ReturnType<typeof fs.stat>>): KeyFil
 function validateKeyFileSize(size: number): KeyFileValidationResult | null {
   if (size < MIN_SSH_KEY_FILE_SIZE) {
     securityLogger.logValidationFailure(
-      'ssh-key-file',
-      `File size ${size} is below minimum ${MIN_SSH_KEY_FILE_SIZE}`
+      "ssh-key-file",
+      `File size ${size} is below minimum ${MIN_SSH_KEY_FILE_SIZE}`,
     );
-    return { valid: false, reason: 'file_too_small' };
+    return { valid: false, reason: "file_too_small" };
   }
 
   if (size > MAX_SSH_KEY_FILE_SIZE) {
     securityLogger.logValidationFailure(
-      'ssh-key-file',
-      `File size ${size} exceeds maximum ${MAX_SSH_KEY_FILE_SIZE}`
+      "ssh-key-file",
+      `File size ${size} exceeds maximum ${MAX_SSH_KEY_FILE_SIZE}`,
     );
-    return { valid: false, reason: 'file_too_large' };
+    return { valid: false, reason: "file_too_large" };
   }
 
   return null; // Valid
@@ -594,30 +640,34 @@ function validateKeyFileSize(size: number): KeyFileValidationResult | null {
  * Validate file permissions (Unix only).
  * @internal
  */
-function validateKeyFilePermissions(mode: number): KeyFileValidationResult | null {
+function validateKeyFilePermissions(
+  mode: number,
+): KeyFileValidationResult | null {
   // Skip on Windows (uses ACL-based permissions)
-  if (process.platform === 'win32') {
+  if (process.platform === "win32") {
     return null;
   }
 
   const modeString = (mode & 0o777).toString(8); // eslint-disable-line no-bitwise -- file permission extraction
 
   // Check if group or others have any permissions
-  if ((mode & INSECURE_PERMISSION_BITS) !== 0) { // eslint-disable-line no-bitwise -- permission check
+  // eslint-disable-next-line no-bitwise -- permission bit extraction
+  if ((mode & INSECURE_PERMISSION_BITS) !== 0) {
     securityLogger.logValidationFailure(
-      'ssh-key-file',
-      `Insecure permissions: ${modeString} (group/others have access)`
+      "ssh-key-file",
+      `Insecure permissions: ${modeString} (group/others have access)`,
     );
-    return { valid: false, reason: 'insecure_permissions' };
+    return { valid: false, reason: "insecure_permissions" };
   }
 
   // Check if owner execute bit is set (SSH keys should not be executable)
-  if ((mode & OWNER_EXECUTE_BIT) !== 0) { // eslint-disable-line no-bitwise -- permission check
+  // eslint-disable-next-line no-bitwise -- permission bit extraction
+  if ((mode & OWNER_EXECUTE_BIT) !== 0) {
     securityLogger.logValidationFailure(
-      'ssh-key-file',
-      `Insecure permissions: ${modeString} (owner execute bit set)`
+      "ssh-key-file",
+      `Insecure permissions: ${modeString} (owner execute bit set)`,
     );
-    return { valid: false, reason: 'insecure_permissions' };
+    return { valid: false, reason: "insecure_permissions" };
   }
 
   return null; // Valid
@@ -644,7 +694,7 @@ function validateKeyFilePermissions(mode: number): KeyFileValidationResult | nul
  * @returns Validation result
  */
 async function validateKeyFileBeforeAddToAgent(
-  expandedPath: string
+  expandedPath: string,
 ): Promise<KeyFileValidationResult> {
   try {
     // Get file stats
@@ -671,25 +721,26 @@ async function validateKeyFileBeforeAddToAgent(
     const isValidFormat = await validateSshKeyFormat(expandedPath);
     if (!isValidFormat) {
       securityLogger.logValidationFailure(
-        'ssh-key-file',
-        'File does not have a valid SSH private key format'
+        "ssh-key-file",
+        "File does not have a valid SSH private key format",
       );
-      return { valid: false, reason: 'invalid_format' };
+      return { valid: false, reason: "invalid_format" };
     }
 
     return { valid: true };
   } catch (error) {
     // SECURITY: Log unexpected errors with details for security audit
-    const errorName = error instanceof Error ? error.name : 'unknown';
+    const errorName = error instanceof Error ? error.name : "unknown";
     const errorMessage = error instanceof Error ? error.message : String(error);
-    const truncatedMessage = errorMessage.length > 100
-      ? errorMessage.slice(0, 100) + '...[truncated]'
-      : errorMessage;
+    const truncatedMessage =
+      errorMessage.length > 100
+        ? errorMessage.slice(0, 100) + "...[truncated]"
+        : errorMessage;
     securityLogger.logValidationFailure(
-      'ssh-key-file',
+      "ssh-key-file",
       `Unexpected error during validation: ${errorName}`,
-      truncatedMessage
+      truncatedMessage,
     );
-    return { valid: false, reason: 'validation_error' };
+    return { valid: false, reason: "validation_error" };
   }
 }
