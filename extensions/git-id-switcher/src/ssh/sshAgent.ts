@@ -651,8 +651,8 @@ function validateKeyFilePermissions(
   const modeString = (mode & 0o777).toString(8); // eslint-disable-line no-bitwise -- file permission extraction
 
   // Check if group or others have any permissions
+  // eslint-disable-next-line no-bitwise -- permission bit extraction
   if ((mode & INSECURE_PERMISSION_BITS) !== 0) {
-    // eslint-disable-line no-bitwise -- permission check
     securityLogger.logValidationFailure(
       "ssh-key-file",
       `Insecure permissions: ${modeString} (group/others have access)`,
@@ -661,8 +661,8 @@ function validateKeyFilePermissions(
   }
 
   // Check if owner execute bit is set (SSH keys should not be executable)
+  // eslint-disable-next-line no-bitwise -- permission bit extraction
   if ((mode & OWNER_EXECUTE_BIT) !== 0) {
-    // eslint-disable-line no-bitwise -- permission check
     securityLogger.logValidationFailure(
       "ssh-key-file",
       `Insecure permissions: ${modeString} (owner execute bit set)`,
