@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.6] - 2026-05-13
+
+### Fixed
+
+- **Windows SSH key path validation** ([#492](https://github.com/nullvariant/nullvariant-vscode-extensions/issues/492)): Windows users entering drive letter paths (`C:/...` or `C:\...`) now receive a clear error message guiding them to use the cross-platform `~/.ssh/` format instead of a generic "Invalid SSH key path" error
+- **Config schema consistency**: `configSchema.ts` now rejects Windows drive letter paths at the schema level, consistent with all other validation layers
+
+### Changed
+
+- **Localization**: Added SSH key path guidance message in all 17 supported languages
+
 ## [0.19.5] - 2026-05-09
 
 ### Added

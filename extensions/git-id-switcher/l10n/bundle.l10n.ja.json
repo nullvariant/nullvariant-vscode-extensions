@@ -66,6 +66,7 @@
   "Email is too long (max {0} characters)": "メールアドレスが長すぎます（最大{0}文字）",
   "Invalid email format": "メールアドレスの形式が正しくありません",
   "Invalid SSH key path": "無効なSSH鍵パスです",
+  "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)": "無効なSSHキーパス: ~/.ssh/ 形式を使用してください（例: ~/.ssh/id_ed25519）",
   "Invalid SSH key path format": "無効なSSH鍵パス形式です",
   "SSH key path must be under ~/.ssh/ directory": "SSH鍵のパスは ~/.ssh/ 内である必要があります",
   "SSH key file validation failed": "SSH鍵ファイルの検証に失敗しました",

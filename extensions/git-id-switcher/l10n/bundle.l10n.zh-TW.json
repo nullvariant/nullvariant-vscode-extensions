@@ -66,6 +66,7 @@
   "Email is too long (max {0} characters)": "電子郵件過長（最多{0}個字元）",
   "Invalid email format": "電子郵件格式無效",
   "Invalid SSH key path": "無效的SSH金鑰路徑",
+  "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)": "無效的SSH金鑰路徑：請使用 ~/.ssh/ 格式（例如 ~/.ssh/id_ed25519）",
   "Invalid SSH key path format": "無效的SSH金鑰路徑格式",
   "SSH key path must be under ~/.ssh/ directory": "SSH金鑰路徑必須在 ~/.ssh/ 目錄下",
   "SSH key file validation failed": "SSH金鑰檔案驗證失敗",

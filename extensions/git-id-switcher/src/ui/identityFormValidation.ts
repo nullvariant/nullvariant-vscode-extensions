@@ -8,27 +8,22 @@
  * @module ui/identityFormValidation
  */
 
-import type { VSCodeAPI } from './identityFormUtils';
+import type { VSCodeAPI } from "./identityFormUtils";
 import {
   type Identity,
   getIdentities,
   getFieldMetadata,
-} from '../identity/identity';
-import {
-  MAX_ID_LENGTH,
-  MAX_NAME_LENGTH,
-} from '../core/constants';
-import {
-  isValidIdentityId,
-} from '../validators/common';
+} from "../identity/identity";
+import { MAX_ID_LENGTH, MAX_NAME_LENGTH } from "../core/constants";
+import { isValidIdentityId } from "../validators/common";
 import {
   validateSshKeyPathFormat,
   validateFieldForDangerousPatterns,
   validateEmailField,
   validateGpgKeyId,
   validateSshHost,
-} from '../identity/inputValidator';
-import { isUnderSshDirectory } from '../security/pathUtils';
+} from "../identity/inputValidator";
+import { isUnderSshDirectory } from "../security/pathUtils";
 
 // ============================================================================
 // Constants
@@ -36,8 +31,12 @@ import { isUnderSshDirectory } from '../security/pathUtils';
 
 /** Optional fields that can be cleared */
 export const OPTIONAL_FIELDS: ReadonlySet<keyof Identity> = new Set([
-  'service', 'icon', 'description',
-  'sshKeyPath', 'sshHost', 'gpgKeyId',
+  "service",
+  "icon",
+  "description",
+  "sshKeyPath",
+  "sshHost",
+  "gpgKeyId",
 ]);
 
 // ============================================================================
@@ -72,19 +71,19 @@ export function isOptionalField(field: keyof Identity): boolean {
 export function validateIdInput(
   vs: VSCodeAPI,
   value: string,
-  existingIds: Set<string>
+  existingIds: Set<string>,
 ): string | null {
   if (!value) {
-    return vs.l10n.t('ID cannot be empty');
+    return vs.l10n.t("ID cannot be empty");
   }
   if (!isValidIdentityId(value, MAX_ID_LENGTH)) {
     return vs.l10n.t(
-      'ID must be 1-{0} alphanumeric characters, underscores, or hyphens',
-      MAX_ID_LENGTH
+      "ID must be 1-{0} alphanumeric characters, underscores, or hyphens",
+      MAX_ID_LENGTH,
     );
   }
   if (existingIds.has(value)) {
-    return vs.l10n.t('ID already exists');
+    return vs.l10n.t("ID already exists");
   }
   return null;
 }
@@ -101,16 +100,16 @@ export function validateIdInput(
  */
 function validateNameInput(vs: VSCodeAPI, value: string): string | null {
   if (!value || value.trim().length === 0) {
-    return vs.l10n.t('Name cannot be empty');
+    return vs.l10n.t("Name cannot be empty");
   }
   if (value.length > MAX_NAME_LENGTH) {
-    return vs.l10n.t('Name is too long (max {0} characters)', MAX_NAME_LENGTH);
+    return vs.l10n.t("Name is too long (max {0} characters)", MAX_NAME_LENGTH);
   }
   // SECURITY: Delegate to identity layer (SSoT for dangerous pattern detection)
   const errors: string[] = [];
-  validateFieldForDangerousPatterns(value, 'name', errors);
+  validateFieldForDangerousPatterns(value, "name", errors);
   if (errors.length > 0) {
-    return vs.l10n.t('Name contains invalid characters');
+    return vs.l10n.t("Name contains invalid characters");
   }
   return null;
 }
@@ -127,13 +126,13 @@ function validateNameInput(vs: VSCodeAPI, value: string): string | null {
  */
 function validateEmailInput(vs: VSCodeAPI, value: string): string | null {
   if (!value) {
-    return vs.l10n.t('Email cannot be empty');
+    return vs.l10n.t("Email cannot be empty");
   }
   // Delegate format and length validation to identity layer (SSoT)
   const errors: string[] = [];
   validateEmailField(value, errors);
   if (errors.length > 0) {
-    return vs.l10n.t('Invalid email format');
+    return vs.l10n.t("Invalid email format");
   }
   return null;
 }
@@ -151,14 +150,14 @@ function validateEmailInput(vs: VSCodeAPI, value: string): string | null {
 function validateSshKeyPathInput(vs: VSCodeAPI, value: string): string | null {
   if (!value) return null; // Optional field
   const errors: string[] = [];
-  // Reuse existing validator (Defense-in-depth)
+  // validateSshKeyPathFormat checks format: Windows paths, prefix (/ or ~), traversal, dangerous chars
   validateSshKeyPathFormat(value, errors);
   if (errors.length > 0) {
-    return vs.l10n.t('Invalid SSH key path format');
+    return errors[0];
   }
-  // Safety First: Also check that path is under ~/.ssh directory
+  // isUnderSshDirectory adds path-destination constraint (must be under ~/.ssh/)
   if (!isUnderSshDirectory(value)) {
-    return vs.l10n.t('SSH key path must be under ~/.ssh/ directory');
+    return vs.l10n.t("SSH key path must be under ~/.ssh/ directory");
   }
   return null;
 }
@@ -179,7 +178,7 @@ function validateGpgKeyIdInput(vs: VSCodeAPI, value: string): string | null {
   const errors: string[] = [];
   validateGpgKeyId(value, errors);
   if (errors.length > 0) {
-    return vs.l10n.t('GPG key ID must be 8-40 hexadecimal characters');
+    return vs.l10n.t("GPG key ID must be 8-40 hexadecimal characters");
   }
   return null;
 }
@@ -200,7 +199,7 @@ function validateSshHostInput(vs: VSCodeAPI, value: string): string | null {
   const errors: string[] = [];
   validateSshHost(value, errors);
   if (errors.length > 0) {
-    return vs.l10n.t('SSH host must contain only valid hostname characters');
+    return vs.l10n.t("SSH host must contain only valid hostname characters");
   }
   return null;
 }
@@ -224,36 +223,34 @@ export function validateFieldInput(
   field: keyof Identity,
   value: string,
   isOptional: boolean,
-  currentIdentityId?: string
+  currentIdentityId?: string,
 ): string | null {
   // Optional fields can be empty
-  if (isOptional && value.trim() === '') {
+  if (isOptional && value.trim() === "") {
     return null;
   }
 
   switch (field) {
-    case 'id': {
+    case "id": {
       const identities = getIdentities();
       const existingIds = new Set(
-        identities
-          .filter(i => i.id !== currentIdentityId)
-          .map(i => i.id)
+        identities.filter((i) => i.id !== currentIdentityId).map((i) => i.id),
       );
       return validateIdInput(vs, value, existingIds);
     }
-    case 'name': {
+    case "name": {
       return validateNameInput(vs, value);
     }
-    case 'email': {
+    case "email": {
       return validateEmailInput(vs, value);
     }
-    case 'sshKeyPath': {
+    case "sshKeyPath": {
       return validateSshKeyPathInput(vs, value);
     }
-    case 'gpgKeyId': {
+    case "gpgKeyId": {
       return validateGpgKeyIdInput(vs, value);
     }
-    case 'sshHost': {
+    case "sshHost": {
       return validateSshHostInput(vs, value);
     }
     default: {
@@ -261,12 +258,16 @@ export function validateFieldInput(
       const errors: string[] = [];
       validateFieldForDangerousPatterns(value, field, errors);
       if (errors.length > 0) {
-        return vs.l10n.t('{0} contains invalid characters', field);
+        return vs.l10n.t("{0} contains invalid characters", field);
       }
       // Length validation from FIELD_METADATA
       const meta = getFieldMetadata(field);
       if (meta?.maxLength && value.length > meta.maxLength) {
-        return vs.l10n.t('{0} is too long (max {1} characters)', field, meta.maxLength);
+        return vs.l10n.t(
+          "{0} is too long (max {1} characters)",
+          field,
+          meta.maxLength,
+        );
       }
       return null;
     }
