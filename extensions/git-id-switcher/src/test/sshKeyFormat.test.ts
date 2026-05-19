@@ -6,6 +6,7 @@
  */
 
 import * as assert from 'node:assert';
+import type { FileHandle } from 'node:fs/promises';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
@@ -48,7 +49,7 @@ async function cleanupTempDir(tmpDir: string): Promise<void> {
  * (Test implementation, matching sshAgent.ts logic)
  */
 async function isValidSshKeyFormat(filePath: string): Promise<boolean> {
-  let fileHandle: Awaited<ReturnType<typeof fs.open>> | null = null;
+  let fileHandle: FileHandle | null = null;
   try {
     fileHandle = await fs.open(filePath, 'r');
     const buffer = Buffer.alloc(64);
