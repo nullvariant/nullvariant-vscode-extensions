@@ -8,6 +8,8 @@
  * @see https://owasp.org/www-community/attacks/Command_Injection
  */
 
+import type { Stats } from "node:fs";
+import type { FileHandle } from "node:fs/promises";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as vscode from "vscode";
@@ -505,7 +507,7 @@ export interface KeyFileValidationResult {
  * @returns true if the file has a valid SSH key header
  */
 async function validateSshKeyFormat(filePath: string): Promise<boolean> {
-  let fileHandle: Awaited<ReturnType<typeof fs.open>> | null = null;
+  let fileHandle: FileHandle | null = null;
   try {
     fileHandle = await fs.open(filePath, "r");
     const buffer = Buffer.alloc(FORMAT_CHECK_BYTES);
@@ -591,7 +593,7 @@ function handleFileStatError(error: unknown): KeyFileValidationResult {
  * @internal
  */
 function validateKeyFileType(
-  stats: Awaited<ReturnType<typeof fs.stat>>,
+  stats: Stats,
 ): KeyFileValidationResult | null {
   if (stats.isFile()) {
     return null; // Valid
@@ -698,7 +700,7 @@ async function validateKeyFileBeforeAddToAgent(
 ): Promise<KeyFileValidationResult> {
   try {
     // Get file stats
-    let stats: Awaited<ReturnType<typeof fs.stat>>;
+    let stats: Stats;
     try {
       stats = await fs.stat(expandedPath);
     } catch (error) {
