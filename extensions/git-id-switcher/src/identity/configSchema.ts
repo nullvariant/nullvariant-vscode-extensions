@@ -37,6 +37,7 @@ interface PropertySchema {
   maxLength?: number;
   minLength?: number;
   pattern?: string;
+  compiledPattern?: RegExp;
   format?: "email" | "uri" | "date" | "hex" | "single-grapheme";
   minimum?: number;
   maximum?: number;
@@ -119,7 +120,14 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     maxLength: MAX_GPG_KEY_LENGTH, // SHA-1 fingerprint length
     format: "hex",
   },
-} as const;
+};
+
+// Pre-compile all regex patterns at module load to avoid per-validation RegExp instantiation
+for (const schema of Object.values(IDENTITY_SCHEMA)) {
+  if (schema.pattern) {
+    schema.compiledPattern = new RegExp(schema.pattern);
+  }
+}
 
 /**
  * Schema validation result
@@ -165,34 +173,22 @@ function validateStringLength(
 }
 
 /**
- * Validate string pattern constraint.
+ * Validate string pattern constraint using pre-compiled RegExp.
  * @internal
  */
 function validateStringPattern(
   field: string,
   value: string,
-  pattern: string,
+  compiledPattern: RegExp,
   errors: SchemaError[],
 ): void {
-  try {
-    const regex = new RegExp(pattern);
-    if (!regex.test(value)) {
-      errors.push({
-        field,
-        message: `Does not match required pattern`,
-        value,
-      });
-    }
-    /* c8 ignore start: defensive - schema patterns are hardcoded valid */
-  } catch {
-    // SECURITY: Invalid regex pattern in schema is a programming error
+  if (!compiledPattern.test(value)) {
     errors.push({
       field,
-      message: "Invalid validation pattern (internal error)",
-      value: undefined,
+      message: `Does not match required pattern`,
+      value,
     });
   }
-  /* c8 ignore stop */
 }
 
 /**
@@ -231,8 +227,8 @@ function validateStringValue(
   errors: SchemaError[],
 ): void {
   validateStringLength(field, value, schema, errors);
-  if (schema.pattern) {
-    validateStringPattern(field, value, schema.pattern, errors);
+  if (schema.compiledPattern) {
+    validateStringPattern(field, value, schema.compiledPattern, errors);
   }
   if (schema.format) {
     validateStringFormat(field, value, schema.format, errors);
