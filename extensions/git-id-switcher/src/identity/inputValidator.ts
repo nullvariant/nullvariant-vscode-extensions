@@ -14,9 +14,11 @@ import {
   hasPathTraversal,
   isValidIdentityId,
   hasDangerousChars,
+  hasDangerousCharsForText,
   GPG_KEY_REGEX,
   SSH_HOST_REGEX,
   DANGEROUS_PATTERNS,
+  DANGEROUS_PATTERNS_FOR_TEXT,
   isWindowsAbsolutePath,
 } from "../validators/common";
 import {
@@ -35,16 +37,15 @@ export interface ValidationResult {
 }
 
 /**
- * Validate a string field for dangerous command injection patterns.
+ * Validate a string field for dangerous command injection patterns (strict).
  *
  * Checks both hasDangerousChars() (SAFE_TEXT_REGEX — catches control characters
  * and shell metacharacters) and DANGEROUS_PATTERNS (catches literal hex escape
- * sequences like `\x00` in text). This ensures consistency with UI-layer
- * validation while retaining detection of text-level injection patterns.
+ * sequences like `\x00` in text).
  *
- * @param value - The field value to validate
- * @param fieldName - The name of the field (for error messages)
- * @param errors - Array to accumulate validation errors
+ * Use for fields where shell metacharacters like |&<>(){} must be blocked
+ * (e.g., name, email). For fields that allow these characters (service,
+ * description, icon), use validateTextFieldForDangerousPatterns instead.
  */
 export function validateFieldForDangerousPatterns(
   value: string | undefined,
@@ -55,8 +56,6 @@ export function validateFieldForDangerousPatterns(
     return;
   }
 
-  // Check DANGEROUS_PATTERNS first for specific error messages
-  // (includes hex escape sequence detection that SAFE_TEXT_REGEX doesn't cover)
   for (const { pattern, description } of DANGEROUS_PATTERNS) {
     if (pattern.test(value)) {
       errors.push(`${fieldName} contains ${description}`);
@@ -64,9 +63,38 @@ export function validateFieldForDangerousPatterns(
     }
   }
 
-  // Also check hasDangerousChars (SAFE_TEXT_REGEX) for control characters
-  // not covered by DANGEROUS_PATTERNS (e.g., 0x02-0x09, 0x7F)
   if (hasDangerousChars(value)) {
+    errors.push(`${fieldName} contains control characters`);
+  }
+}
+
+/**
+ * Validate a text field for dangerous patterns (relaxed).
+ *
+ * Only blocks command substitution characters (backtick, dollar sign),
+ * newlines, hex escapes, null bytes, and control characters.
+ * Allows shell metacharacters like |&<>(){} that may appear in
+ * service names (e.g., "AT&T") or descriptions.
+ *
+ * Aligned with configSchema patterns for service/description fields.
+ */
+export function validateTextFieldForDangerousPatterns(
+  value: string | undefined,
+  fieldName: string,
+  errors: string[],
+): void {
+  if (!value) {
+    return;
+  }
+
+  for (const { pattern, description } of DANGEROUS_PATTERNS_FOR_TEXT) {
+    if (pattern.test(value)) {
+      errors.push(`${fieldName} contains ${description}`);
+      return;
+    }
+  }
+
+  if (hasDangerousCharsForText(value)) {
     errors.push(`${fieldName} contains control characters`);
   }
 }
@@ -231,15 +259,17 @@ export function validateIdentity(identity: Identity): ValidationResult {
   }
 
   // Text field validation (dangerous patterns)
+  // name/email: strict — blocks all shell metacharacters (aligned with configSchema name pattern)
   validateFieldForDangerousPatterns(identity.name, "name", errors);
   validateFieldForDangerousPatterns(identity.email, "email", errors);
-  validateFieldForDangerousPatterns(identity.service, "service", errors);
-  validateFieldForDangerousPatterns(
+  // service/description/icon: relaxed — allows |&<>(){} (aligned with configSchema service/description patterns)
+  validateTextFieldForDangerousPatterns(identity.service, "service", errors);
+  validateTextFieldForDangerousPatterns(
     identity.description,
     "description",
     errors,
   );
-  validateFieldForDangerousPatterns(identity.icon, "icon", errors);
+  validateTextFieldForDangerousPatterns(identity.icon, "icon", errors);
 
   // Format-specific validation
   validateEmailField(identity.email, errors);

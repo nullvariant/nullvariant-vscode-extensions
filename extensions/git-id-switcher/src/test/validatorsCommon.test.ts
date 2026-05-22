@@ -420,6 +420,10 @@ function testHasDangerousCharsForText(): void {
   assert.strictEqual(hasDangerousCharsForText('hello-world_123'), false, 'Alphanumeric with hyphen/underscore should be safe');
   assert.strictEqual(hasDangerousCharsForText('user@example.com'), false, 'Email format should be safe');
 
+  // Control characters should be dangerous (aligned with configSchema service/description patterns)
+  assert.strictEqual(hasDangerousCharsForText('\u0001hello'), true, 'SOH control char should be dangerous');
+  assert.strictEqual(hasDangerousCharsForText('hello\u007F'), true, 'DEL should be dangerous');
+
   // Verify regex constant exists
   assert.ok(DANGEROUS_CHARS_FOR_TEXT_REGEX instanceof RegExp, 'DANGEROUS_CHARS_FOR_TEXT_REGEX should be a RegExp');
 

@@ -397,6 +397,26 @@ export const DANGEROUS_PATTERNS: ReadonlyArray<{ pattern: RegExp; description: s
 ] as const;
 
 /**
+ * Dangerous character patterns for text fields (relaxed mode)
+ *
+ * Only blocks command substitution characters (backtick, dollar sign),
+ * newlines, hex escapes, and null bytes. Allows shell metacharacters
+ * like pipe, ampersand, angle brackets that may appear in service names
+ * (e.g., "AT&T") or descriptions.
+ *
+ * Aligned with configSchema patterns for service/description fields.
+ *
+ * Note: For simple boolean check, use hasDangerousCharsForText() instead.
+ * This array is for cases where you need specific error messages.
+ */
+export const DANGEROUS_PATTERNS_FOR_TEXT: ReadonlyArray<{ pattern: RegExp; description: string }> = [
+  { pattern: /[`$]/, description: 'command substitution characters' },
+  { pattern: /[\n\r]/, description: 'newline characters' },
+  { pattern: /\\x[0-9a-f]{2}/i, description: 'hex escape sequences' },
+  { pattern: /\0/, description: 'null bytes' },
+] as const;
+
+/**
  * Check if text contains dangerous characters
  *
  * Uses SAFE_TEXT_REGEX for efficient single-pass validation.
@@ -435,7 +455,8 @@ export const DANGEROUS_CHARS_FOR_PATH_REGEX = /[`$|;&<>]/;
 /**
  * Pattern for dangerous characters in text fields (relaxed mode)
  *
- * Only blocks command substitution characters:
+ * Blocks:
+ * - Control characters: \x00-\x1f, \x7f
  * - Backtick (`): Command substitution
  * - Dollar sign ($): Variable expansion / command substitution
  *
@@ -444,8 +465,11 @@ export const DANGEROUS_CHARS_FOR_PATH_REGEX = /[`$|;&<>]/;
  * - Pipe (|): May appear in descriptions
  * - Ampersand (&): May appear in company names like "AT&T"
  * - Angle brackets (<>): May appear in descriptions
+ *
+ * Aligned with configSchema patterns for service/description fields.
  */
-export const DANGEROUS_CHARS_FOR_TEXT_REGEX = /[`$]/;
+// eslint-disable-next-line no-control-regex
+export const DANGEROUS_CHARS_FOR_TEXT_REGEX = /[\u0000-\u001F\u007F`$]/;
 
 /**
  * Check for dangerous characters in file paths (strict mode)
@@ -463,9 +487,9 @@ export function hasDangerousCharsForPath(value: string): boolean {
 /**
  * Check for dangerous characters in text fields (relaxed mode)
  *
- * Only blocks command substitution characters, allows semicolons and other
- * characters that may legitimately appear in names and descriptions.
- * Use this for name, service, description, and icon fields.
+ * Only blocks command substitution characters and control characters, allows
+ * semicolons and other characters that may legitimately appear in descriptions.
+ * Use this for service, description, and icon fields.
  *
  * @param value - The text string to check
  * @returns true if text contains dangerous characters

@@ -3336,7 +3336,7 @@ describe("identityManager E2E Test Suite", function () {
   });
 
   describe("Security: Field-specific Dangerous Character Detection", () => {
-    describe("name field: hasDangerousCharsForText() allows semicolon", () => {
+    describe("name field: hasDangerousChars() allows semicolon", () => {
       it("should accept name with semicolon (Null;Variant)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],

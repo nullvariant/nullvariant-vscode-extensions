@@ -892,6 +892,59 @@ function testIdentitySchemaStructure(): void {
     }
   }
 
+  // Test 6: Expected fields must have pattern defined
+  {
+    const fieldsRequiringPattern = [
+      "id",
+      "name",
+      "service",
+      "description",
+      "sshKeyPath",
+      "sshHost",
+      "icon",
+    ];
+    for (const field of fieldsRequiringPattern) {
+      assert.ok(
+        IDENTITY_SCHEMA[field].pattern,
+        `${field} must have a pattern defined for input validation`,
+      );
+    }
+  }
+
+  // Test 7: Fields without pattern should not accidentally gain one
+  {
+    const fieldsWithoutPattern = ["email", "gpgKeyId"];
+    for (const field of fieldsWithoutPattern) {
+      assert.strictEqual(
+        IDENTITY_SCHEMA[field].pattern,
+        undefined,
+        `${field} should use format-based validation, not pattern`,
+      );
+    }
+  }
+
+  // Test 8: name pattern should allow semicolons (e.g., "Null;Variant")
+  {
+    const namePattern = new RegExp(IDENTITY_SCHEMA["name"].pattern!);
+    assert.ok(
+      namePattern.test("Null;Variant"),
+      "name pattern should allow semicolons for names like Null;Variant",
+    );
+  }
+
+  // Test 9: name pattern should block shell metacharacters
+  {
+    const namePattern = new RegExp(IDENTITY_SCHEMA["name"].pattern!);
+    const blockedChars = ["`", "$", "(", ")", "{", "}", "|", "&", "<", ">"];
+    for (const char of blockedChars) {
+      assert.strictEqual(
+        namePattern.test(`Test${char}Name`),
+        false,
+        `name pattern should block "${char}"`,
+      );
+    }
+  }
+
   console.log("  IDENTITY_SCHEMA structure tests passed!");
 }
 

@@ -10,6 +10,7 @@ import {
   validateIdentities,
   isShellSafePath,
   validateFieldForDangerousPatterns,
+  validateTextFieldForDangerousPatterns,
 } from "../identity/inputValidator";
 import { hasDangerousChars } from "../validators/common";
 import { Identity } from "../identity/identity";
@@ -416,6 +417,40 @@ function testValidateIdentity(): void {
     );
   }
 
+  // Test 22: ID at exact max length (64) should pass
+  {
+    const maxLengthId: Identity = {
+      id: "a".repeat(64), // exactly 64 chars
+      name: "Test User",
+      email: "test@example.com",
+    };
+    const result = validateIdentity(maxLengthId);
+    assert.strictEqual(
+      result.valid,
+      true,
+      "ID at exact max length (64) should pass",
+    );
+  }
+
+  // Test 23: ID exceeding max length (64) should fail
+  {
+    const longId: Identity = {
+      id: "a".repeat(65), // > 64 chars
+      name: "Test User",
+      email: "test@example.com",
+    };
+    const result = validateIdentity(longId);
+    assert.strictEqual(
+      result.valid,
+      false,
+      "ID exceeding max length should fail",
+    );
+    assert.ok(
+      result.errors.some((e) => e.includes("id") && e.includes("64")),
+      "Error should mention id max length 64",
+    );
+  }
+
   console.log("✅ All validateIdentity tests passed!");
 }
 
@@ -453,6 +488,10 @@ function testValidateIdentities(): void {
     ];
     const result = validateIdentities(duplicates);
     assert.strictEqual(result.valid, false, "Duplicate IDs should fail");
+    assert.ok(
+      result.errors.some((e) => e.includes("Duplicate")),
+      "Error should mention duplicate IDs",
+    );
   }
 
   // Test 4: One invalid identity should fail the whole array
@@ -700,6 +739,113 @@ function testValidationConsistency(): void {
 }
 
 /**
+ * Test suite for validateTextFieldForDangerousPatterns (relaxed mode)
+ */
+function testValidateTextFieldForDangerousPatterns(): void {
+  console.log("Testing validateTextFieldForDangerousPatterns...");
+
+  // Test 1: Command substitution should be rejected
+  {
+    const errors: string[] = [];
+    validateTextFieldForDangerousPatterns("test$(cmd)", "service", errors);
+    assert.ok(errors.length > 0, "Command substitution should be rejected");
+    assert.ok(
+      errors.some((e) => e.includes("command substitution")),
+      "Error should mention command substitution",
+    );
+  }
+
+  // Test 2: Backtick should be rejected
+  {
+    const errors: string[] = [];
+    validateTextFieldForDangerousPatterns("test`id`", "service", errors);
+    assert.ok(errors.length > 0, "Backtick should be rejected");
+    assert.ok(
+      errors.some((e) => e.includes("command substitution")),
+      "Error should mention command substitution",
+    );
+  }
+
+  // Test 3: Shell metacharacters should be allowed (relaxed mode)
+  {
+    const allowedChars = [
+      { value: "AT&T", reason: "ampersand in company name" },
+      { value: "A|B", reason: "pipe in text" },
+      { value: "<main>", reason: "angle brackets in description" },
+      { value: "func()", reason: "parentheses in text" },
+      { value: "{key}", reason: "braces in text" },
+    ];
+    for (const { value, reason } of allowedChars) {
+      const errors: string[] = [];
+      validateTextFieldForDangerousPatterns(value, "service", errors);
+      assert.strictEqual(
+        errors.length,
+        0,
+        `Relaxed mode should allow: ${reason}`,
+      );
+    }
+  }
+
+  // Test 4: Control characters should be rejected via hasDangerousCharsForText
+  {
+    const errors: string[] = [];
+    validateTextFieldForDangerousPatterns("test\u0007bell", "service", errors);
+    assert.ok(errors.length > 0, "Control characters should be rejected");
+    assert.ok(
+      errors.some((e) => e.includes("control characters")),
+      "Error should specifically mention control characters",
+    );
+  }
+
+  // Test 5: Hex escape sequences should be rejected
+  {
+    const errors: string[] = [];
+    validateTextFieldForDangerousPatterns(
+      String.raw`test\x00user`,
+      "service",
+      errors,
+    );
+    assert.ok(errors.length > 0, "Hex escape sequences should be rejected");
+  }
+
+  // Test 6: Newline characters should be rejected
+  {
+    const errors: string[] = [];
+    validateTextFieldForDangerousPatterns("line1\nline2", "service", errors);
+    assert.ok(errors.length > 0, "Newline should be rejected");
+    assert.ok(
+      errors.some((e) => e.includes("newline")),
+      "Error should mention newline characters",
+    );
+  }
+
+  // Test 7: Null byte should be rejected
+  {
+    const errors: string[] = [];
+    validateTextFieldForDangerousPatterns("test\0user", "service", errors);
+    assert.ok(errors.length > 0, "Null byte should be rejected");
+  }
+
+  // Test 8: Boundary values
+  {
+    const errors: string[] = [];
+    validateTextFieldForDangerousPatterns(undefined, "service", errors);
+    assert.strictEqual(errors.length, 0, "undefined should produce no errors");
+  }
+  {
+    const errors: string[] = [];
+    validateTextFieldForDangerousPatterns("", "service", errors);
+    assert.strictEqual(
+      errors.length,
+      0,
+      "empty string should produce no errors",
+    );
+  }
+
+  console.log("✅ All validateTextFieldForDangerousPatterns tests passed!");
+}
+
+/**
  * Run all tests
  */
 export function runSecurityTests(): void {
@@ -710,6 +856,7 @@ export function runSecurityTests(): void {
     testValidateIdentities();
     testIsPathSafe();
     testValidationConsistency();
+    testValidateTextFieldForDangerousPatterns();
 
     console.log("\n✅ All security tests passed!\n");
   } catch (error) {
