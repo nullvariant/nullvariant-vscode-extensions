@@ -26,6 +26,7 @@ import {
   isValidSshHost,
   isValidGpgKeyId,
   hasPathTraversal,
+  hasDangerousChars,
   hasDangerousCharsForPath,
   hasDangerousCharsForText,
   isWindowsAbsolutePath,
@@ -243,8 +244,9 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
     inputType: "text",
     icon: "person",
     maxLength: MAX_NAME_LENGTH,
+    // strict: configSchema name pattern blocks (){}|&<> unlike service/description
     validator: (value: string) =>
-      hasDangerousCharsForText(value)
+      hasDangerousChars(value)
         ? "Name contains invalid characters"
         : undefined,
   },

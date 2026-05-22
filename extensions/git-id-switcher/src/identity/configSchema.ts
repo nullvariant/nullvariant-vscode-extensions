@@ -62,6 +62,8 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     description: "Display emoji (single emoji character)",
     maxLength: MAX_ICON_BYTE_LENGTH, // Allow for complex composed emoji (byte length)
     format: "single-grapheme", // Validate as single visible character
+    // defense-in-depth: block control chars at schema layer too
+    pattern: "^[^\\x00-\\x1f\\x7f`$]+$",
   },
   name: {
     type: "string",
@@ -127,7 +129,9 @@ for (const schema of Object.values(IDENTITY_SCHEMA)) {
   if (schema.pattern) {
     schema.compiledPattern = new RegExp(schema.pattern);
   }
+  Object.freeze(schema);
 }
+Object.freeze(IDENTITY_SCHEMA);
 
 /**
  * Schema validation result

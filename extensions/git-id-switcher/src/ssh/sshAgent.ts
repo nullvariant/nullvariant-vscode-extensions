@@ -146,7 +146,7 @@ export interface SshKeyInfo {
  * @throws Error if path is invalid or insecure
  */
 function expandPath(keyPath: string): string {
-  // defense-in-depth: called directly by keyFileExists without validateKeyPathOrThrow
+  // defense-in-depth: expandPath retains its own validation as a second layer
   if (isWindowsAbsolutePath(keyPath)) {
     throw createSecurityViolationError(
       vscode.l10n.t(
@@ -472,6 +472,7 @@ export async function getKeyFingerprint(
  * Check if SSH key file exists
  */
 export async function keyFileExists(keyPath: string): Promise<boolean> {
+  validateKeyPathOrThrow(keyPath);
   const expandedPath = expandPath(keyPath);
 
   try {
