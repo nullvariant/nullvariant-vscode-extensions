@@ -314,9 +314,9 @@
     "eslint-plugin-unicorn": "^64.0.0",
     "fast-check": "^4.8.0",
     "glob": "^13.0.6",
-    "mocha": "^11.7.5",
+    "mocha": "^11.7.6",
     "typescript": "^6.0.0",
-    "typescript-eslint": "^8.59.3"
+    "typescript-eslint": "^8.60.0"
   },
   "repository": {
     "type": "git",
