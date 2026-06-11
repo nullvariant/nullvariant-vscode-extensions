@@ -228,14 +228,14 @@ describe('Git Config E2E Test Suite', function () {
     });
 
     it('should write user.signingkey to local git config', () => {
-      const signingKey = 'ABCD1234EFGH5678';
+      const userSigningKey = 'ABCD1234EFGH5678';
 
       // Write signing key
-      gitSync(['config', '--local', 'user.signingkey', signingKey], tempRepoPath);
+      gitSync(['config', '--local', 'user.signingkey', userSigningKey], tempRepoPath);
 
       // Verify
       const readBack = gitSync(['config', '--get', 'user.signingkey'], tempRepoPath);
-      assert.strictEqual(readBack, signingKey, 'Written user.signingkey should be readable');
+      assert.strictEqual(readBack, userSigningKey, 'Written user.signingkey should be readable');
 
       // Clean up - unset the key
       gitSync(['config', '--local', '--unset', 'user.signingkey'], tempRepoPath);
@@ -432,7 +432,7 @@ describe('Git Config E2E Test Suite', function () {
       // Should return empty config immediately
       assert.strictEqual(config.userName, undefined, 'userName should be undefined');
       assert.strictEqual(config.userEmail, undefined, 'userEmail should be undefined');
-      assert.strictEqual(config.signingKey, undefined, 'signingKey should be undefined');
+      assert.strictEqual(config.userSigningKey, undefined, 'userSigningKey should be undefined');
 
       // Should complete very quickly (within 100ms)
       assert.ok(duration < 100, `Should return immediately for cancelled token, took ${duration}ms`);
@@ -455,7 +455,7 @@ describe('Git Config E2E Test Suite', function () {
       // Should return empty config when cancelled
       assert.strictEqual(config.userName, undefined, 'userName should be undefined after cancellation');
       assert.strictEqual(config.userEmail, undefined, 'userEmail should be undefined after cancellation');
-      assert.strictEqual(config.signingKey, undefined, 'signingKey should be undefined after cancellation');
+      assert.strictEqual(config.userSigningKey, undefined, 'userSigningKey should be undefined after cancellation');
 
       tokenSource.dispose();
     });
@@ -470,7 +470,7 @@ describe('Git Config E2E Test Suite', function () {
       assert.ok(typeof config === 'object', 'Should return a config object');
       assert.ok('userName' in config, 'Config should have userName property');
       assert.ok('userEmail' in config, 'Config should have userEmail property');
-      assert.ok('signingKey' in config, 'Config should have signingKey property');
+      assert.ok('userSigningKey' in config, 'Config should have userSigningKey property');
 
       tokenSource.dispose();
     });

@@ -917,7 +917,7 @@ function testArgumentLimits(): void {
 
   // Too many arguments
   {
-    const manyArgs = Array.from<string>({length: 25}).fill('-l');
+    const manyArgs = Array.from({length: 25}, () => '-l');
     const result = isCommandAllowed('ssh-add', manyArgs);
     assert.strictEqual(result.allowed, false, 'Too many arguments should be blocked');
     assert.ok(

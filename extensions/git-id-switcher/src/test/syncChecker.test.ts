@@ -55,7 +55,7 @@ function createGitConfig(overrides: Partial<GitConfig> = {}): GitConfig {
   return {
     userName: 'John Doe',
     userEmail: 'john@example.com',
-    signingKey: undefined,
+    userSigningKey: undefined,
     ...overrides,
   };
 }
@@ -168,7 +168,7 @@ function testCompareSyncStateGpgKeyMismatch(): void {
   console.log('  Testing compareSyncState() GPG key mismatch...');
 
   const identity = createIdentity({ gpgKeyId: 'ABCD1234' });
-  const gitConfig = createGitConfig({ signingKey: 'EFGH5678' });
+  const gitConfig = createGitConfig({ userSigningKey: 'EFGH5678' });
 
   const result = compareSyncState(identity, gitConfig, false);
 
@@ -183,7 +183,7 @@ function testCompareSyncStateGpgKeyMatch(): void {
   console.log('  Testing compareSyncState() GPG key match...');
 
   const identity = createIdentity({ gpgKeyId: 'ABCD1234' });
-  const gitConfig = createGitConfig({ signingKey: 'ABCD1234' });
+  const gitConfig = createGitConfig({ userSigningKey: 'ABCD1234' });
 
   const result = compareSyncState(identity, gitConfig, false);
 
@@ -194,10 +194,10 @@ function testCompareSyncStateGpgKeyMatch(): void {
 function testCompareSyncStateGpgKeyNotInGitConfig(): void {
   console.log('  Testing compareSyncState() GPG key in identity but not in git config...');
 
-  // Identity has GPG key but git config doesn't have signingKey set
+  // Identity has GPG key but git config doesn't have userSigningKey set
   // This is not a mismatch - the key might not be set yet
   const identity = createIdentity({ gpgKeyId: 'ABCD1234' });
-  const gitConfig = createGitConfig({ signingKey: undefined });
+  const gitConfig = createGitConfig({ userSigningKey: undefined });
 
   const result = compareSyncState(identity, gitConfig, false);
 
@@ -210,7 +210,7 @@ function testCompareSyncStateNoGpgKeyInIdentity(): void {
 
   // Identity has no GPG key, git config has one → should be ignored
   const identity = createIdentity();
-  const gitConfig = createGitConfig({ signingKey: 'ABCD1234' });
+  const gitConfig = createGitConfig({ userSigningKey: 'ABCD1234' });
 
   const result = compareSyncState(identity, gitConfig, false);
 
@@ -225,7 +225,7 @@ function testCompareSyncStateUnknown(): void {
   const gitConfig: GitConfig = {
     userName: undefined,
     userEmail: undefined,
-    signingKey: undefined,
+    userSigningKey: undefined,
   };
 
   const result = compareSyncState(identity, gitConfig, false);
@@ -299,7 +299,7 @@ function testCompareSyncStatePartialGitConfigOnlyName(): void {
   const gitConfig: GitConfig = {
     userName: 'John Doe',
     userEmail: undefined,
-    signingKey: undefined,
+    userSigningKey: undefined,
   };
 
   // userName matches, email is undefined → no email mismatch
@@ -316,7 +316,7 @@ function testCompareSyncStatePartialGitConfigOnlyEmail(): void {
   const gitConfig: GitConfig = {
     userName: undefined,
     userEmail: 'john@example.com',
-    signingKey: undefined,
+    userSigningKey: undefined,
   };
 
   // userName is undefined, email matches → no mismatch
@@ -350,7 +350,7 @@ async function testCheckSyncSynced(): Promise<void> {
   _setGitConfigReader(async () => ({
     userName: 'John Doe',
     userEmail: 'john@example.com',
-    signingKey: undefined,
+    userSigningKey: undefined,
   }));
 
   try {
@@ -371,7 +371,7 @@ async function testCheckSyncOutOfSync(): Promise<void> {
   _setGitConfigReader(async () => ({
     userName: 'Wrong Name',
     userEmail: 'wrong@example.com',
-    signingKey: undefined,
+    userSigningKey: undefined,
   }));
 
   try {
@@ -411,7 +411,7 @@ async function testCheckSyncWithCancellationBeforeStart(): Promise<void> {
   let readerCalled = false;
   _setGitConfigReader(async () => {
     readerCalled = true;
-    return { userName: 'John', userEmail: 'j@e.com', signingKey: undefined };
+    return { userName: 'John', userEmail: 'j@e.com', userSigningKey: undefined };
   });
 
   try {
@@ -437,7 +437,7 @@ async function testCheckSyncCancelledAfterRead(): Promise<void> {
   _setGitConfigReader(async () => {
     // Simulate cancellation occurring during git config read
     token.isCancellationRequested = true;
-    return { userName: 'John Doe', userEmail: 'john@example.com', signingKey: undefined };
+    return { userName: 'John Doe', userEmail: 'john@example.com', userSigningKey: undefined };
   });
 
   try {
@@ -458,7 +458,7 @@ async function testCheckSyncFallsBackToSetting(): Promise<void> {
   _setGitConfigReader(async () => ({
     userName: 'John Doe',
     userEmail: 'john@example.com',
-    signingKey: undefined,
+    userSigningKey: undefined,
   }));
 
   try {
@@ -481,7 +481,7 @@ async function testCheckSyncWithIconSetting(): Promise<void> {
   _setGitConfigReader(async () => ({
     userName: '🏢 John Doe',
     userEmail: 'john@example.com',
-    signingKey: undefined,
+    userSigningKey: undefined,
   }));
 
   try {

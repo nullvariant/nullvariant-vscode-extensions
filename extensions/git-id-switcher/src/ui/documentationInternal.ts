@@ -458,7 +458,7 @@ export function renderMarkdown(raw: string): SanitizedHtml {
   html = `<p>${html}</p>`;
 
   // Clean up empty paragraphs and paragraphs around block elements
-  const blockElements = String.raw`h[1-6]|pre|table|blockquote|hr|ul|ol|li|img`;
+  const blockElements = 'h[1-6]|pre|table|blockquote|hr|ul|ol|li|img';
   html = html.replaceAll(/<p>\s*<\/p>/g, '');
   html = html.replaceAll(new RegExp(String.raw`<p>\s*(<(?:${blockElements})[^>]*>)`, 'g'), '$1');
   html = html.replaceAll(new RegExp(String.raw`(</(?:${blockElements})>)\s*</p>`, 'g'), '$1');
@@ -495,7 +495,7 @@ export function getDocumentLocaleFromString(vscodeLocale: string): string {
   }
 
   // 3. Try base locale (en-US → en)
-  const baseLocale = vscodeLocale.split('-')[0];
+  const baseLocale = vscodeLocale.split('-', 1)[0];
   if (SUPPORTED_LOCALES.includes(baseLocale)) {
     return baseLocale;
   }

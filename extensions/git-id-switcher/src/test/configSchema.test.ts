@@ -481,7 +481,7 @@ function testWhitespaceHandling(): void {
       id: "test",
       name: "Test User",
       email: "test@example.com",
-      service: "   ",
+      service: " ".repeat(3),
     };
     const result = validateIdentitySchema(identity);
     // Current behavior: whitespace passes pattern validation
@@ -496,7 +496,7 @@ function testWhitespaceHandling(): void {
   // Test 2: Whitespace-only id should fail (still needs to match pattern)
   {
     const identity = {
-      id: "   ",
+      id: " ".repeat(3),
       name: "Test User",
       email: "test@example.com",
     };

@@ -367,7 +367,7 @@ function testValidateSubmodulePath(): void {
 
   // Test whitespace-only submodule path
   {
-    const result = validateSubmodulePath('   ', workspacePath);
+    const result = validateSubmodulePath(' '.repeat(3), workspacePath);
     assert.strictEqual(result.valid, false, 'Whitespace path should fail');
   }
 

@@ -193,7 +193,7 @@ async function resolveWithWhich(command: string): Promise<string | null> {
 
     // 'which' returns the path on stdout
     // 'where' on Windows may return multiple paths, take the first
-    const resolvedPath = stdout.trim().split(/[\r\n]/)[0];
+    const resolvedPath = stdout.trim().split(/[\r\n]/, 1)[0];
 
     /* c8 ignore next 3 - Empty which output */
     if (!resolvedPath) {
