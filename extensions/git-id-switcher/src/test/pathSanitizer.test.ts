@@ -1000,7 +1000,7 @@ function testSanitizePathEmptyWhitespace(): void {
   );
 
   // Whitespace only - this is valid but unusual
-  const whitespaceResult = sanitizePath('   ');
+  const whitespaceResult = sanitizePath(' '.repeat(3));
   assert.ok(
     whitespaceResult !== '[INVALID_PATH]',
     'Whitespace-only path should be processed (though unusual)'

@@ -62,7 +62,7 @@ function buildGitUserName(identity: Identity): string {
 export interface GitConfig {
   userName?: string;
   userEmail?: string;
-  signingKey?: string;
+  userSigningKey?: string;
 }
 
 /**
@@ -112,12 +112,12 @@ export async function getCurrentGitConfig(
   token?: vscodeTypes.CancellationToken
 ): Promise<GitConfig> {
   if (token?.isCancellationRequested) {
-    return { userName: undefined, userEmail: undefined, signingKey: undefined };
+    return { userName: undefined, userEmail: undefined, userSigningKey: undefined };
   }
 
   // If no token provided, execute normally
   if (!token) {
-    const [userName, userEmail, signingKey] = await Promise.all([
+    const [userName, userEmail, userSigningKey] = await Promise.all([
       execGitInWorkspace(['config', 'user.name']),
       execGitInWorkspace(['config', 'user.email']),
       execGitInWorkspace(['config', 'user.signingkey']),
@@ -126,7 +126,7 @@ export async function getCurrentGitConfig(
     return {
       userName: userName || undefined,
       userEmail: userEmail || undefined,
-      signingKey: signingKey || undefined,
+      userSigningKey: userSigningKey || undefined,
     };
   }
 
@@ -153,7 +153,7 @@ export async function getCurrentGitConfig(
   });
 
   try {
-    const [userName, userEmail, signingKey] = await Promise.race([
+    const [userName, userEmail, userSigningKey] = await Promise.race([
       configPromise,
       cancellationPromise,
     ]);
@@ -161,12 +161,12 @@ export async function getCurrentGitConfig(
     return {
       userName: userName || undefined,
       userEmail: userEmail || undefined,
-      signingKey: signingKey || undefined,
+      userSigningKey: userSigningKey || undefined,
     };
   } catch (error) {
     // If cancelled, return empty config
     if (token.isCancellationRequested) {
-      return { userName: undefined, userEmail: undefined, signingKey: undefined };
+      return { userName: undefined, userEmail: undefined, userSigningKey: undefined };
     }
     // Re-throw other errors
     throw error;
