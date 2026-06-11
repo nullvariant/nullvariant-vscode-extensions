@@ -505,8 +505,8 @@ function testLogConfigChangesEmpty(): void {
 
   const output = capture.getOutput();
   // Empty array should produce no output
-  const configChangeLog = output.find(line => line.includes('CONFIG_CHANGE'));
-  assert.ok(!configChangeLog, 'Empty changes should not produce CONFIG_CHANGE log');
+  const hasConfigChangeLog = output.some(line => line.includes('CONFIG_CHANGE'));
+  assert.ok(!hasConfigChangeLog, 'Empty changes should not produce CONFIG_CHANGE log');
 
   console.log('✅ logConfigChanges empty array passed!');
 }
