@@ -113,13 +113,13 @@ export function compareSyncState(
   // Compare user.signingkey (only if identity has a GPG key configured)
   if (
     identity.gpgKeyId
-    && gitConfig.signingKey !== undefined
-    && gitConfig.signingKey !== identity.gpgKeyId
+    && gitConfig.userSigningKey !== undefined
+    && gitConfig.userSigningKey !== identity.gpgKeyId
   ) {
     mismatches.push({
       field: 'signingKey',
       expected: identity.gpgKeyId,
-      actual: gitConfig.signingKey,
+      actual: gitConfig.userSigningKey,
     });
   }
 

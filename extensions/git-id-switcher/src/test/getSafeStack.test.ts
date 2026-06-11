@@ -346,7 +346,7 @@ function testGetSafeStackFrameParsing(): void {
         parenFrame('test', '/tmp/safe.js', 1, 1),
       ].join('\n');
       const safe = createErrorWithStack(stack).getSafeStack()!;
-      const firstLine = safe.split('\n')[0];
+      const firstLine = safe.split('\n', 1)[0];
       assert.strictEqual(
         firstLine,
         'SecurityError: /home/testuser/project message',

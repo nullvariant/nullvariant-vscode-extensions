@@ -1119,11 +1119,11 @@ function testBase64DiversityEdgeCases(): void {
   {
     // Upper + lower + digit = 3 types (should detect)
     const threeTypes = 'Aa1' + 'Bb2'.repeat(10) + 'Cc3';
-    const paddedTo32 = (threeTypes + 'X'.repeat(32)).slice(0, 32);
+    const exactly32 = threeTypes.padEnd(32, 'X').slice(0, 32);
     // Ensure it has 3 types: A-Z, a-z, 0-9
-    assert.strictEqual(paddedTo32.length, 32);
+    assert.strictEqual(exactly32.length, 32);
     assert.strictEqual(
-      looksLikeSensitiveData(paddedTo32),
+      looksLikeSensitiveData(exactly32),
       true,
       'String with exactly 3 character types should be detected'
     );

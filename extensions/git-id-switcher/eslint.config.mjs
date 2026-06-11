@@ -109,6 +109,9 @@ export default [
       // === Unicorn overrides (disable overly opinionated rules) ===
       "unicorn/no-null": "off",
       "unicorn/prevent-abbreviations": "off",
+      // userName/userEmail/userSigningKey mirror git config keys (user.name/user.email/user.signingkey);
+      // "username" connotes a login handle, which these display-name values are not
+      "unicorn/consistent-compound-words": ["error", { replacements: { userName: false } }],
       "unicorn/filename-case": "off",
       "unicorn/no-process-exit": "off",
       "unicorn/prefer-module": "off",
@@ -157,6 +160,8 @@ export default [
       "unicorn/prefer-number-properties": "off", // isNaN() is clearer in test assertions
       "unicorn/text-encoding-identifier-case": "off", // tests may use 'utf-8' matching external APIs
       "unicorn/prefer-code-point": "off", // charCodeAt() in tests mirrors production code
+      "unicorn/no-this-outside-of-class": "off", // mocha function-style hooks use this.timeout()
+      "unicorn/prefer-https": "off", // http:// URLs are intentional test data for URL validation
     },
   },
   {
