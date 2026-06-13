@@ -308,7 +308,7 @@
     "@types/vscode": "^1.85.0",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
-    "@vscode/vsce": "^3.9.1",
+    "@vscode/vsce": "^3.9.2",
     "eslint": "^10.4.1",
     "eslint-plugin-sonarjs": "^4.0.3",
     "eslint-plugin-unicorn": "^65.0.0",
@@ -316,7 +316,7 @@
     "glob": "^13.0.6",
     "mocha": "^11.7.6",
     "typescript": "^6.0.0",
-    "typescript-eslint": "^8.60.1"
+    "typescript-eslint": "^8.61.0"
   },
   "repository": {
     "type": "git",
