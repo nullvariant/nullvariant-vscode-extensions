@@ -371,7 +371,7 @@ function createMockVSCode(options: {
         let _title = "";
         let _placeholder = "";
         let _buttons: unknown[] = [];
-        let _ignoreFocusOut = false;
+        let _isIgnoreFocusOut = false;
 
         const quickPick = {
           get title() {
@@ -393,10 +393,10 @@ function createMockVSCode(options: {
             _buttons = value;
           },
           get ignoreFocusOut() {
-            return _ignoreFocusOut;
+            return _isIgnoreFocusOut;
           },
           set ignoreFocusOut(value: boolean) {
-            _ignoreFocusOut = value;
+            _isIgnoreFocusOut = value;
           },
           get items() {
             return _items;
@@ -421,7 +421,7 @@ function createMockVSCode(options: {
                 buttons: _buttons,
                 title: _title,
                 placeholder: _placeholder,
-                ignoreFocusOut: _ignoreFocusOut,
+                ignoreFocusOut: _isIgnoreFocusOut,
               });
             }
             // Auto-trigger selection based on test configuration
@@ -707,9 +707,9 @@ describe("identityManager E2E Test Suite", function () {
       _setMockVSCode(mockVSCode as never);
 
       // Pass targetIdentity to skip selection
-      const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+      const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, true, "Should return true on success");
+      assert.strictEqual(isResult, true, "Should return true on success");
       const infoCalls = mockVSCode._getShowInformationMessageCalls();
       assert.ok(
         infoCalls.some((msg) => msg.includes("updated")),
@@ -728,9 +728,9 @@ describe("identityManager E2E Test Suite", function () {
       });
       _setMockVSCode(mockVSCode as never);
 
-      const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+      const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, true, "Should return true (boolean)");
+      assert.strictEqual(isResult, true, "Should return true (boolean)");
     });
 
     it("should return false when field selection cancelled (Esc)", async () => {
@@ -740,9 +740,9 @@ describe("identityManager E2E Test Suite", function () {
       });
       _setMockVSCode(mockVSCode as never);
 
-      const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+      const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, false, "Should return false when cancelled");
+      assert.strictEqual(isResult, false, "Should return false when cancelled");
     });
   });
 
@@ -768,9 +768,9 @@ describe("identityManager E2E Test Suite", function () {
       });
       _setMockVSCode(mockVSCode as never);
 
-      const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+      const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, true, "Should complete after back-navigation");
+      assert.strictEqual(isResult, true, "Should complete after back-navigation");
       assert.ok(
         quickPickShowCount >= 2,
         `Should show QuickPick multiple times due to back-navigation, got ${quickPickShowCount}`,
@@ -787,10 +787,10 @@ describe("identityManager E2E Test Suite", function () {
       });
       _setMockVSCode(mockVSCode as never);
 
-      const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+      const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
       assert.strictEqual(
-        result,
+        isResult,
         true,
         "Should return true after successful edit",
       );
@@ -1103,13 +1103,13 @@ describe("identityManager E2E Test Suite", function () {
       });
 
       it("should set ignoreFocusOut to prevent data loss on focus change", async () => {
-        let capturedIgnoreFocusOut = false;
+        let isCapturedIgnoreFocusOut = false;
 
         const mockVSCode = createMockVSCode({
           identities: [],
           quickPickSelections: [undefined],
           onQuickPickCreated: (quickPick) => {
-            capturedIgnoreFocusOut = quickPick.ignoreFocusOut;
+            isCapturedIgnoreFocusOut = quickPick.ignoreFocusOut;
           },
         });
         _setMockVSCode(mockVSCode as never);
@@ -1117,7 +1117,7 @@ describe("identityManager E2E Test Suite", function () {
         await showAddIdentityForm();
 
         assert.strictEqual(
-          capturedIgnoreFocusOut,
+          isCapturedIgnoreFocusOut,
           true,
           "Add form QuickPick should have ignoreFocusOut=true",
         );
@@ -1529,13 +1529,13 @@ describe("identityManager E2E Test Suite", function () {
   describe("Edit Identity Form", () => {
     describe("Focus Retention", () => {
       it("should set ignoreFocusOut to prevent data loss on focus change", async () => {
-        let capturedIgnoreFocusOut = false;
+        let isCapturedIgnoreFocusOut = false;
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [undefined],
           onQuickPickCreated: (quickPick) => {
-            capturedIgnoreFocusOut = quickPick.ignoreFocusOut;
+            isCapturedIgnoreFocusOut = quickPick.ignoreFocusOut;
           },
         });
         _setMockVSCode(mockVSCode as never);
@@ -1543,7 +1543,7 @@ describe("identityManager E2E Test Suite", function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          capturedIgnoreFocusOut,
+          isCapturedIgnoreFocusOut,
           true,
           "Edit form QuickPick should have ignoreFocusOut=true",
         );
@@ -1578,10 +1578,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Should return false when back pressed at field selection",
         );
@@ -1681,11 +1681,11 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // When disabled item is clicked, it should return undefined and loop continues
         // The wizard should still be able to exit normally
-        assert.strictEqual(result, false, "Should return false when cancelled");
+        assert.strictEqual(isResult, false, "Should return false when cancelled");
         // QuickPick should be shown at least once
         assert.ok(quickPickShowCount >= 1, "QuickPick should be shown");
       });
@@ -1788,10 +1788,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           true,
           "Editing ID with valid value should succeed",
         );
@@ -1807,9 +1807,9 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, "Empty ID should be rejected");
+        assert.strictEqual(isResult, false, "Empty ID should be rejected");
       });
 
       it("should reject ID with invalid characters (@#$)", async () => {
@@ -1820,10 +1820,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "ID with invalid characters should be rejected",
         );
@@ -1838,10 +1838,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "ID exceeding max length should be rejected",
         );
@@ -1856,10 +1856,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           true,
           "Current ID value should be allowed (self-exclusion)",
         );
@@ -2025,10 +2025,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "Valid SSH key path should be accepted",
           );
@@ -2042,10 +2042,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "SSH key path in subdirectory should be accepted",
           );
@@ -2060,10 +2060,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "Path outside .ssh directory should be rejected",
           );
@@ -2077,10 +2077,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "Path in .ssh_backup (not .ssh) should be rejected",
           );
@@ -2097,11 +2097,11 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           // Validation error causes flow to cancel
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "Path traversal should cause validation failure",
           );
@@ -2115,11 +2115,11 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           // Single dot is harmless, should be accepted
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "Single dot in path should be allowed",
           );
@@ -2133,10 +2133,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "Backtick command should cause validation failure",
           );
@@ -2150,10 +2150,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "Dollar command substitution should cause validation failure",
           );
@@ -2167,10 +2167,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "Semicolon in path should cause validation failure",
           );
@@ -2184,10 +2184,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "Relative path should cause validation failure",
           );
@@ -2201,10 +2201,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITY_WITH_SSH);
+          const isResult = await showEditProfileFlow(TEST_IDENTITY_WITH_SSH);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "Clearing optional sshKeyPath should be allowed",
           );
@@ -2403,7 +2403,7 @@ describe("identityManager E2E Test Suite", function () {
           let capturedDefaultUri: { fsPath: string } | undefined = {
             fsPath: "sentinel",
           };
-          let dialogWasCalled = false;
+          let isDialogWasCalled = false;
 
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
@@ -2411,7 +2411,7 @@ describe("identityManager E2E Test Suite", function () {
             inputBoxSelections: [FILE_PICKER_CLICK, undefined],
             showOpenDialogResult: undefined,
             onShowOpenDialog: (dialogOptions) => {
-              dialogWasCalled = true;
+              isDialogWasCalled = true;
               capturedDefaultUri = dialogOptions.defaultUri;
             },
           });
@@ -2420,7 +2420,7 @@ describe("identityManager E2E Test Suite", function () {
           try {
             await showEditProfileFlow(TEST_IDENTITIES.work);
             assert.ok(
-              dialogWasCalled,
+              isDialogWasCalled,
               "showOpenDialog should have been called",
             );
             assert.strictEqual(
@@ -2455,9 +2455,9 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-          assert.strictEqual(result, true, "Valid SSH host should be accepted");
+          assert.strictEqual(isResult, true, "Valid SSH host should be accepted");
         });
 
         it("should accept hostname with dot (gitlab.personal)", async () => {
@@ -2468,10 +2468,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "SSH host with dot should be accepted",
           );
@@ -2485,10 +2485,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "SSH host with underscore should be accepted",
           );
@@ -2502,10 +2502,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "SSH host with space should be rejected",
           );
@@ -2519,10 +2519,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "SSH host with special characters should be rejected",
           );
@@ -2536,10 +2536,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "SSH host starting with hyphen should be rejected",
           );
@@ -2554,10 +2554,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "SSH host exceeding max length should be rejected",
           );
@@ -2571,10 +2571,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITY_WITH_SSH);
+          const isResult = await showEditProfileFlow(TEST_IDENTITY_WITH_SSH);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "Clearing optional sshHost should be allowed",
           );
@@ -2596,10 +2596,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "Valid 8-char GPG key ID should be accepted",
           );
@@ -2613,10 +2613,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "Valid 16-char GPG key ID should be accepted",
           );
@@ -2631,10 +2631,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "Valid 40-char GPG fingerprint should be accepted",
           );
@@ -2648,10 +2648,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "Lowercase hex GPG key ID should be accepted",
           );
@@ -2665,10 +2665,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "GPG key ID with 7 chars should be rejected",
           );
@@ -2683,10 +2683,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "GPG key ID with 41 chars should be rejected",
           );
@@ -2700,10 +2700,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "GPG key ID with non-hex chars should be rejected",
           );
@@ -2717,10 +2717,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             "GPG key ID with spaces should be rejected",
           );
@@ -2734,10 +2734,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITY_WITH_SSH);
+          const isResult = await showEditProfileFlow(TEST_IDENTITY_WITH_SSH);
 
           assert.strictEqual(
-            result,
+            isResult,
             true,
             "Clearing optional gpgKeyId should be allowed",
           );
@@ -2833,11 +2833,11 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         // Result should be false (cancelled without saving)
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Should return false when back pressed without saving",
         );
@@ -3179,10 +3179,10 @@ describe("identityManager E2E Test Suite", function () {
           });
           _setMockVSCode(mockVSCode as never);
 
-          const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+          const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
           assert.strictEqual(
-            result,
+            isResult,
             false,
             `sshKeyPath with "${char}" should be rejected`,
           );
@@ -3199,9 +3199,9 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, false, "Path traversal should be rejected");
+        assert.strictEqual(isResult, false, "Path traversal should be rejected");
       });
 
       it("should reject deep path traversal (~/.ssh/../../../../etc/passwd)", async () => {
@@ -3212,10 +3212,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Deep path traversal should be rejected",
         );
@@ -3231,10 +3231,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           true,
           "Path under ~/.ssh/ should be accepted",
         );
@@ -3252,10 +3252,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           true,
           "Tilde path under .ssh/ should be accepted on all platforms",
         );
@@ -3269,10 +3269,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Path not under ~/.ssh/ should be rejected",
         );
@@ -3286,10 +3286,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Absolute path /etc/ssh/ should be rejected (not user .ssh)",
         );
@@ -3303,10 +3303,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Path in .ssh_backup (not .ssh) should be rejected",
         );
@@ -3324,10 +3324,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Should fail at Layer 1 (dangerous char)",
         );
@@ -3345,10 +3345,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           true,
           "Name with semicolon should be accepted",
         );
@@ -3362,10 +3362,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Name with backtick should be rejected",
         );
@@ -3379,10 +3379,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Name with dollar sign should be rejected",
         );
@@ -3399,10 +3399,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Service with ampersand should be rejected",
         );
@@ -3416,10 +3416,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Service with backtick should be rejected",
         );
@@ -3433,10 +3433,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Service with dollar sign should be rejected",
         );
@@ -3453,10 +3453,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Description with angle brackets should be rejected",
         );
@@ -3470,10 +3470,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Description with backtick should be rejected",
         );
@@ -3489,9 +3489,9 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, "Emoji icon should be accepted");
+        assert.strictEqual(isResult, true, "Emoji icon should be accepted");
       });
 
       it("should reject icon with backtick", async () => {
@@ -3502,10 +3502,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "Icon with backtick should be rejected",
         );
@@ -3521,10 +3521,10 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.strictEqual(
-          result,
+          isResult,
           false,
           "sshKeyPath with semicolon should be rejected (stricter than text fields)",
         );
@@ -3641,9 +3641,9 @@ describe("identityManager E2E Test Suite", function () {
         });
         _setMockVSCode(mockVSCode as never);
 
-        const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+        const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
-        assert.strictEqual(result, true, "Should return true on success");
+        assert.strictEqual(isResult, true, "Should return true on success");
         const infoCalls = mockVSCode._getShowInformationMessageCalls();
         assert.ok(
           infoCalls.length > 0,
@@ -3701,7 +3701,7 @@ describe("identityManager E2E Test Suite", function () {
       });
       _setMockVSCode(mockVSCode as never);
 
-      const result = await showEditProfileFlow(TEST_IDENTITIES.work);
+      const isResult = await showEditProfileFlow(TEST_IDENTITIES.work);
 
       const errorCalls = mockVSCode._getShowErrorMessageCalls();
       assert.ok(
@@ -3710,7 +3710,7 @@ describe("identityManager E2E Test Suite", function () {
       );
       // saveEditedField failure does not set hasUpdated=true, so cancelling returns false
       assert.strictEqual(
-        result,
+        isResult,
         false,
         "Edit flow should return false when save failed and user cancelled",
       );
@@ -3722,7 +3722,7 @@ describe("identityManager E2E Test Suite", function () {
       it("should trigger validation when input value changes", async () => {
         // This test verifies that onDidChangeValue is properly wired up
         // The mock's createInputBox simulates value change and validation
-        let validationWasCalled = false;
+        let isValidationWasCalled = false;
 
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
@@ -3736,7 +3736,7 @@ describe("identityManager E2E Test Suite", function () {
           const originalOnDidChangeValue = inputBox.onDidChangeValue;
 
           inputBox.onDidChangeValue = (callback: (value: string) => void) => {
-            validationWasCalled = true;
+            isValidationWasCalled = true;
             return originalOnDidChangeValue(callback);
           };
 
@@ -3748,7 +3748,7 @@ describe("identityManager E2E Test Suite", function () {
         await showEditProfileFlow(TEST_IDENTITIES.work);
 
         assert.ok(
-          validationWasCalled,
+          isValidationWasCalled,
           "onDidChangeValue should be registered for validation",
         );
       });

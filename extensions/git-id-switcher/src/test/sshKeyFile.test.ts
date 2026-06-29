@@ -46,13 +46,13 @@ async function testKeyFileExists(): Promise<void> {
     await fs.writeFile(testFile, 'test content');
 
     // Should return true for existing file
-    const exists = await keyFileExists(testFile);
-    assert.strictEqual(exists, true, 'Should return true for existing file');
+    const isExists = await keyFileExists(testFile);
+    assert.strictEqual(isExists, true, 'Should return true for existing file');
 
     // Should return false for non-existing file
     const nonExistentPath = path.join(tmpDir, 'non_existent_key');
-    const notExists = await keyFileExists(nonExistentPath);
-    assert.strictEqual(notExists, false, 'Should return false for non-existing file');
+    const isNotExists = await keyFileExists(nonExistentPath);
+    assert.strictEqual(isNotExists, false, 'Should return false for non-existing file');
 
     console.log('✅ keyFileExists tests passed!');
   } finally {
@@ -73,16 +73,16 @@ async function testFileTypeValidation(): Promise<void> {
     await fs.mkdir(dirAsKey);
 
     // The directory exists but should fail type validation
-    const existsCheck = await keyFileExists(dirAsKey);
+    const isExistsCheck = await keyFileExists(dirAsKey);
     // keyFileExists checks existence, not type - so directory passes
     // The type check happens in validateKeyFileForSshAdd
-    assert.strictEqual(existsCheck, true, 'Directory exists check should pass');
+    assert.strictEqual(isExistsCheck, true, 'Directory exists check should pass');
 
     // Create a valid key file
     const validKey = path.join(tmpDir, 'valid_key');
     await fs.writeFile(validKey, 'valid ssh key content');
-    const validCheck = await keyFileExists(validKey);
-    assert.strictEqual(validCheck, true, 'Valid file should exist');
+    const isValidCheck = await keyFileExists(validKey);
+    assert.strictEqual(isValidCheck, true, 'Valid file should exist');
 
     console.log('✅ File type validation scenarios tested!');
   } finally {
@@ -154,8 +154,8 @@ async function testFileSizeLimit(): Promise<void> {
     // Create an empty file (should be rejected by min size check)
     const emptyKey = path.join(tmpDir, 'empty_key');
     await fs.writeFile(emptyKey, '');
-    const emptyExists = await keyFileExists(emptyKey);
-    assert.strictEqual(emptyExists, true, 'Empty file exists');
+    const isEmptyExists = await keyFileExists(emptyKey);
+    assert.strictEqual(isEmptyExists, true, 'Empty file exists');
 
     // Verify the file is actually empty
     const emptyStats = await fs.stat(emptyKey);
@@ -164,20 +164,20 @@ async function testFileSizeLimit(): Promise<void> {
     // Create a very small file (below minimum threshold of 10 bytes)
     const tinyKey = path.join(tmpDir, 'tiny_key');
     await fs.writeFile(tinyKey, 'abc'); // 3 bytes
-    const tinyExists = await keyFileExists(tinyKey);
-    assert.strictEqual(tinyExists, true, 'Tiny file exists');
+    const isTinyExists = await keyFileExists(tinyKey);
+    assert.strictEqual(isTinyExists, true, 'Tiny file exists');
 
     // Create a small valid key file (typical SSH key is 1-4KB)
     const smallKey = path.join(tmpDir, 'small_key');
     await fs.writeFile(smallKey, 'a'.repeat(4096)); // 4KB
-    const smallExists = await keyFileExists(smallKey);
-    assert.strictEqual(smallExists, true, 'Small key file should exist');
+    const isSmallExists = await keyFileExists(smallKey);
+    assert.strictEqual(isSmallExists, true, 'Small key file should exist');
 
     // Create a moderately large key file (still under limit)
     const mediumKey = path.join(tmpDir, 'medium_key');
     await fs.writeFile(mediumKey, 'a'.repeat(100 * 1024)); // 100KB
-    const mediumExists = await keyFileExists(mediumKey);
-    assert.strictEqual(mediumExists, true, 'Medium key file should exist');
+    const isMediumExists = await keyFileExists(mediumKey);
+    assert.strictEqual(isMediumExists, true, 'Medium key file should exist');
 
     console.log('✅ File size limit scenarios tested!');
   } finally {
@@ -208,8 +208,8 @@ async function testSymlinkScenarios(): Promise<void> {
     await fs.symlink(realKey, symlinkKey);
 
     // Symlink exists
-    const symlinkExists = await keyFileExists(symlinkKey);
-    assert.strictEqual(symlinkExists, true, 'Symlink should exist');
+    const isSymlinkExists = await keyFileExists(symlinkKey);
+    assert.strictEqual(isSymlinkExists, true, 'Symlink should exist');
 
     // Create a dangling symlink
     const danglingTarget = path.join(tmpDir, 'non_existent_target');
@@ -241,8 +241,8 @@ async function testSymlinkTraversalAttack(): Promise<void> {
       await fs.symlink('/etc/passwd', maliciousSymlink);
 
       // The symlink exists
-      const exists = await keyFileExists(maliciousSymlink);
-      assert.strictEqual(exists, true, 'Symlink to /etc/passwd exists');
+      const isExists = await keyFileExists(maliciousSymlink);
+      assert.strictEqual(isExists, true, 'Symlink to /etc/passwd exists');
 
       // But validateSshKeyPath should catch this through symlink resolution
       // The actual protection is in pathUtils.validateSshKeyPath
@@ -273,10 +273,10 @@ async function testDirectoryAsKeyAttack(): Promise<void> {
     await fs.writeFile(path.join(dirAsKey, 'nested_file'), 'content');
 
     // The directory "exists" but is not a valid key
-    const exists = await keyFileExists(dirAsKey);
+    const isExists = await keyFileExists(dirAsKey);
     // keyFileExists returns true because the path exists
     // The type check is in validateKeyFileForSshAdd
-    assert.strictEqual(exists, true, 'Directory exists check passes');
+    assert.strictEqual(isExists, true, 'Directory exists check passes');
 
     console.log('✅ Directory as key file attack scenario tested!');
   } finally {

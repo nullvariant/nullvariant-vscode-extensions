@@ -313,27 +313,27 @@ function testContainsSymlinks(): void {
   // Test with known paths (results depend on actual filesystem)
   {
     // Home directory typically doesn't contain symlinks in its path
-    const result = containsSymlinks(homeDir);
+    const isResult = containsSymlinks(homeDir);
     // Just verify it returns a boolean without throwing
-    assert.strictEqual(typeof result, 'boolean', 'Should return boolean');
+    assert.strictEqual(typeof isResult, 'boolean', 'Should return boolean');
   }
 
   // Test with temp directory
   {
-    const result = containsSymlinks(tempDir);
-    assert.strictEqual(typeof result, 'boolean', 'Should return boolean for tempdir');
+    const isResult = containsSymlinks(tempDir);
+    assert.strictEqual(typeof isResult, 'boolean', 'Should return boolean for tempdir');
   }
 
   // Test with non-existent path (should return false)
   {
-    const result = containsSymlinks('/nonexistent/path/that/does/not/exist');
-    assert.strictEqual(result, false, 'Non-existent path should return false');
+    const isResult = containsSymlinks('/nonexistent/path/that/does/not/exist');
+    assert.strictEqual(isResult, false, 'Non-existent path should return false');
   }
 
   // Test with current directory
   {
-    const result = containsSymlinks(process.cwd());
-    assert.strictEqual(typeof result, 'boolean', 'Should return boolean for cwd');
+    const isResult = containsSymlinks(process.cwd());
+    assert.strictEqual(typeof isResult, 'boolean', 'Should return boolean for cwd');
   }
 
   console.log('✅ containsSymlinks tests passed!');
@@ -395,7 +395,7 @@ function testValidateSubmodulePath(): void {
 
   // Test path with control characters
   {
-    const result = validateSubmodulePath('path\u0000with\u0000nulls', workspacePath);
+    const result = validateSubmodulePath('path\u{0}with\u{0}nulls', workspacePath);
     assert.strictEqual(result.valid, false, 'Control chars should fail');
     assert.ok(
       result.reason?.includes('control'),
@@ -803,7 +803,7 @@ function testNullByteInjection(): void {
 
   // Test null byte in path
   {
-    const result = normalizeAndValidatePath('/path/to\u0000/file.txt');
+    const result = normalizeAndValidatePath('/path/to\u{0}/file.txt');
     assert.strictEqual(result.valid, false, 'Path with null byte should fail');
     assert.ok(
       result.reason?.toLowerCase().includes('null'),
@@ -813,7 +813,7 @@ function testNullByteInjection(): void {
 
   // Test null byte at end
   {
-    const result = normalizeAndValidatePath('/path/to/file.txt\u0000');
+    const result = normalizeAndValidatePath('/path/to/file.txt\u{0}');
     assert.strictEqual(result.valid, false, 'Path with trailing null should fail');
   }
 
@@ -865,11 +865,11 @@ function testControlCharacterPrevention(): void {
 
   // Test various control characters
   const controlChars = [
-    '\u0001', // SOH
-    '\u0007', // Bell
-    '\u0008', // Backspace
-    '\u001B', // Escape
-    '\u007F', // DEL
+    '\u{1}', // SOH
+    '\u{7}', // Bell
+    '\u{8}', // Backspace
+    '\u{1B}', // Escape
+    '\u{7F}', // DEL
   ];
 
   for (const char of controlChars) {
@@ -918,21 +918,21 @@ function testValidateWorkspacePath(): void {
 
   // Test null byte injection
   {
-    const result = validateWorkspacePath('/path/to\u0000file');
+    const result = validateWorkspacePath('/path/to\u{0}file');
     assert.strictEqual(result.valid, false, 'Null byte should fail');
     assert.ok(result.reason?.includes('null byte'), 'Should mention null byte');
   }
 
   // Test control characters
   {
-    const result = validateWorkspacePath('/path/to\u0007file');
+    const result = validateWorkspacePath('/path/to\u{7}file');
     assert.strictEqual(result.valid, false, 'Control char should fail');
     assert.ok(result.reason?.includes('control'), 'Should mention control characters');
   }
 
   // Test invisible Unicode characters
   {
-    const result = validateWorkspacePath('/path/\u200Bfile'); // Zero-width space
+    const result = validateWorkspacePath('/path/\u{200B}file'); // Zero-width space
     assert.strictEqual(result.valid, false, 'Invisible Unicode should fail');
     assert.ok(result.reason?.includes('invisible'), 'Should mention invisible Unicode');
   }

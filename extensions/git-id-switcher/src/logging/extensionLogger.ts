@@ -11,14 +11,14 @@
  */
 
 // Type-only import (stripped at compile time, no runtime dependency)
-import type { OutputChannel } from 'vscode';
-import { getWindow } from '../core/vscodeLoader';
+import type { OutputChannel } from "vscode";
+import { getWindow } from "../core/vscodeLoader";
 
 /** OutputChannel name visible in VS Code's "Output" panel */
-const CHANNEL_NAME = 'Git ID Switcher';
+const CHANNEL_NAME = "Git ID Switcher";
 
 /** Extension name prefix for log messages */
-const PREFIX = '[Git ID Switcher]';
+const PREFIX = "[Git ID Switcher]";
 
 /**
  * Extension logger interface

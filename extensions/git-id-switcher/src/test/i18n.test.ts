@@ -91,7 +91,7 @@ function aggregateKeyGaps(gaps: KeyGap[]): AggregatedKeyGap[] {
       keyToLanguages.set(key, langs);
     }
   }
-  return [...keyToLanguages.entries()]
+  return [...keyToLanguages]
     .map(([key, languages]) => ({ key, languages }))
     .sort((a, b) => b.languages.length - a.languages.length);
 }

@@ -9,10 +9,13 @@
  * Note: Uses vscodeLoader for lazy loading VS Code APIs to enable unit testing.
  */
 
-import { getWorkspace } from './vscodeLoader';
-import { gitExec, gitExecRaw } from '../security/secureExec';
-import { validateSubmodulePath, validateWorkspacePath } from '../security/pathUtils';
-import { securityLogger } from '../security/securityLogger';
+import { getWorkspace } from "./vscodeLoader";
+import { gitExec, gitExecRaw } from "../security/secureExec";
+import {
+  validateSubmodulePath,
+  validateWorkspacePath,
+} from "../security/pathUtils";
+import { securityLogger } from "../security/securityLogger";
 
 /**
  * Maximum allowed submodule recursion depth to prevent DoS attacks.
@@ -36,18 +39,18 @@ export interface Submodule {
  * Valid status characters for git submodule status output.
  * ' ' = initialized, '-' = uninitialized, '+' = modified
  */
-const VALID_STATUS_CHARS = new Set([' ', '-', '+']);
+const VALID_STATUS_CHARS = new Set([" ", "-", "+"]);
 
 /**
  * Valid characters for SHA-1 commit hash (lowercase hex only).
  */
-const HEX_CHARS = new Set('0123456789abcdef');
+const HEX_CHARS = new Set("0123456789abcdef");
 
 /**
  * Check if a code point is a control character (0x00-0x1f or 0x7f).
  */
 function isControlCodePoint(codePoint: number): boolean {
-  return codePoint <= 0x1F || codePoint === 0x7F;
+  return codePoint <= 0x1f || codePoint === 0x7f;
 }
 
 /**
@@ -84,7 +87,7 @@ function isValidCommitHash(str: string): boolean {
  */
 function stripBranchSuffix(str: string): string {
   // Must end with ')'
-  if (!str.endsWith(')')) return str;
+  if (!str.endsWith(")")) return str;
 
   // Find matching '(' scanning backwards
   let parenDepth = 0;
@@ -92,9 +95,9 @@ function stripBranchSuffix(str: string): string {
 
   for (let i = str.length - 1; i >= 0; i--) {
     const char = str[i];
-    if (char === ')') {
+    if (char === ")") {
       parenDepth++;
-    } else if (char === '(') {
+    } else if (char === "(") {
       parenDepth--;
       if (parenDepth === 0) {
         branchStart = i;
@@ -107,7 +110,7 @@ function stripBranchSuffix(str: string): string {
   if (branchStart === -1) return str;
 
   // Check for space before '('
-  if (branchStart > 0 && str[branchStart - 1] === ' ') {
+  if (branchStart > 0 && str[branchStart - 1] === " ") {
     // Validate branch name has no control characters
     const branchName = str.slice(branchStart + 1, -1);
     if (!hasControlChars(branchName)) {
@@ -118,6 +121,12 @@ function stripBranchSuffix(str: string): string {
   return str;
 }
 /* c8 ignore stop */
+
+function getWorkspaceValidationFailureReason(workspaceValidation: {
+  reason?: string;
+}): string {
+  return workspaceValidation.reason ?? "Invalid workspace path";
+}
 
 /**
  * Parse and validate a single submodule entry from git status output.
@@ -133,15 +142,15 @@ function stripBranchSuffix(str: string): string {
  */
 function parseSubmoduleEntry(
   line: string,
-  workspacePath: string
+  workspacePath: string,
 ): Submodule | null {
   // Minimum valid line: status(1) + hash(40) + space(1) + path(1) = 43 chars
   if (line.length < 43) {
     /* c8 ignore start - Short/empty lines from git output */
     if (line.trim()) {
       securityLogger.logValidationFailure(
-        'submoduleStatusLine',
-        'Line too short for valid submodule status'
+        "submoduleStatusLine",
+        "Line too short for valid submodule status",
       );
     }
     return null;
@@ -149,25 +158,25 @@ function parseSubmoduleEntry(
   }
 
   // Extract status character (position 0)
-  const status = line[0];
+  const status = line.at(0)!;
   /* c8 ignore start - Invalid status from malformed git output */
   if (!VALID_STATUS_CHARS.has(status)) {
     securityLogger.logValidationFailure(
-      'submoduleStatus',
-      'Invalid status character'
+      "submoduleStatus",
+      "Invalid status character",
     );
     return null;
   }
   /* c8 ignore stop */
-  const initialized = status !== '-';
+  const isInitialized = status !== "-";
 
   // Extract commit hash (positions 1-40)
   const commitHash = line.slice(1, 41);
   /* c8 ignore start - Invalid hash from malformed git output */
   if (!isValidCommitHash(commitHash)) {
     securityLogger.logValidationFailure(
-      'submoduleCommitHash',
-      'Invalid commit hash format'
+      "submoduleCommitHash",
+      "Invalid commit hash format",
     );
     return null;
   }
@@ -175,7 +184,10 @@ function parseSubmoduleEntry(
 
   // Find first whitespace after commit hash
   let pathStart = 41;
-  while (pathStart < line.length && (line[pathStart] === ' ' || line[pathStart] === '\t')) {
+  while (
+    pathStart < line.length &&
+    (line[pathStart] === " " || line[pathStart] === "\t")
+  ) {
     pathStart++;
   }
 
@@ -187,8 +199,8 @@ function parseSubmoduleEntry(
   /* c8 ignore start - Empty path from malformed git output */
   if (submodulePath.length === 0) {
     securityLogger.logValidationFailure(
-      'submodulePath',
-      'Empty submodule path'
+      "submodulePath",
+      "Empty submodule path",
     );
     return null;
   }
@@ -198,8 +210,8 @@ function parseSubmoduleEntry(
   // Validate path has no control characters
   if (hasControlChars(submodulePath)) {
     securityLogger.logValidationFailure(
-      'submodulePath',
-      'Path contains control characters'
+      "submodulePath",
+      "Path contains control characters",
     );
     return null;
   }
@@ -209,9 +221,9 @@ function parseSubmoduleEntry(
   // SECURITY: Defensive check for commit hash length
   if (commitHash.length !== 40) {
     securityLogger.logValidationFailure(
-      'submoduleCommitHash',
+      "submoduleCommitHash",
       `Invalid commit hash length: ${commitHash.length} (expected 40)`,
-      commitHash
+      commitHash,
     );
     return null;
   }
@@ -219,7 +231,7 @@ function parseSubmoduleEntry(
 
   // Skip uninitialized submodules
   /* c8 ignore start - Uninitialized submodule edge case (requires mock git output with '-' prefix) */
-  if (!initialized) {
+  if (!isInitialized) {
     return null;
   }
   /* c8 ignore stop */
@@ -229,9 +241,9 @@ function parseSubmoduleEntry(
   /* c8 ignore start - Path validation failure edge case (requires mock git output with invalid path) */
   if (!pathResult.valid || !pathResult.normalizedPath) {
     securityLogger.logValidationFailure(
-      'submodulePath',
-      pathResult.reason ?? 'Unknown validation failure',
-      submodulePath
+      "submodulePath",
+      pathResult.reason ?? "Unknown validation failure",
+      submodulePath,
     );
     return null;
   }
@@ -241,7 +253,7 @@ function parseSubmoduleEntry(
     path: submodulePath,
     absolutePath: pathResult.normalizedPath,
     commitHash,
-    initialized,
+    initialized: isInitialized,
   };
 }
 
@@ -251,7 +263,9 @@ function parseSubmoduleEntry(
  * Uses `git submodule status` to get submodule information.
  * Only returns initialized submodules with validated paths.
  */
-export async function listSubmodules(workspacePath: string): Promise<Submodule[]> {
+export async function listSubmodules(
+  workspacePath: string,
+): Promise<Submodule[]> {
   // SECURITY: Validate workspace path before use
   // Use validateWorkspacePath instead of normalizeAndValidatePath because
   // VS Code provides workspace paths in platform-native format (Windows: C:\...)
@@ -261,24 +275,27 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
 
   if (!workspaceValidation.valid || !workspaceValidation.normalizedPath) {
     securityLogger.logValidationFailure(
-      'submoduleWorkspace',
-      workspaceValidation.reason ?? 'Invalid workspace path'
+      "submoduleWorkspace",
+      getWorkspaceValidationFailureReason(workspaceValidation),
     );
     return [];
   }
 
   const validatedWorkspacePath = workspaceValidation.normalizedPath;
 
-  const result = await gitExecRaw(['submodule', 'status'], validatedWorkspacePath);
+  const result = await gitExecRaw(
+    ["submodule", "status"],
+    validatedWorkspacePath,
+  );
 
   /* c8 ignore start - Git command failures (various error conditions) */
   if (!result.success) {
     // SECURITY: Log unexpected errors (except ENOENT for non-git directories)
     const errorCode = (result.error as NodeJS.ErrnoException).code;
-    if (errorCode !== 'ENOENT' && errorCode !== undefined) {
+    if (errorCode !== "ENOENT" && errorCode !== undefined) {
       securityLogger.logValidationFailure(
-        'submoduleList',
-        `Failed to list submodules: ${errorCode}`
+        "submoduleList",
+        `Failed to list submodules: ${errorCode}`,
       );
     }
     return [];
@@ -290,7 +307,7 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
     return [];
   }
 
-  const lines = stdout.split('\n');
+  const lines = stdout.split("\n");
   const submodules: Submodule[] = [];
 
   for (const line of lines) {
@@ -316,26 +333,29 @@ export async function listSubmodules(workspacePath: string): Promise<Submodule[]
 export async function listSubmodulesRecursive(
   workspacePath: string,
   maxDepth: number = 1,
-  currentDepth: number = 0
+  currentDepth: number = 0,
 ): Promise<Submodule[]> {
   // SECURITY: Enforce maximum depth limit to prevent DoS
   // Clamp maxDepth to valid range [0, MAX_SUBMODULE_DEPTH]
-  const effectiveMaxDepth = Math.min(Math.max(0, maxDepth), MAX_SUBMODULE_DEPTH);
+  const effectiveMaxDepth = Math.min(
+    Math.max(0, maxDepth),
+    MAX_SUBMODULE_DEPTH,
+  );
 
   /* c8 ignore start - Depth validation warnings (edge cases) */
   // Log warning on first call if requested depth is outside valid range
   if (currentDepth === 0) {
     if (maxDepth > MAX_SUBMODULE_DEPTH) {
       securityLogger.logValidationFailure(
-        'submoduleDepth',
+        "submoduleDepth",
         `Requested depth ${maxDepth} exceeds maximum allowed (${MAX_SUBMODULE_DEPTH}), clamped to ${effectiveMaxDepth}`,
-        maxDepth
+        maxDepth,
       );
     } else if (maxDepth < 0) {
       securityLogger.logValidationFailure(
-        'submoduleDepth',
+        "submoduleDepth",
         `Requested depth ${maxDepth} is negative, clamped to ${effectiveMaxDepth}`,
-        maxDepth
+        maxDepth,
       );
     }
   }
@@ -353,7 +373,7 @@ export async function listSubmodulesRecursive(
     const nestedSubmodules = await listSubmodulesRecursive(
       submodule.absolutePath,
       effectiveMaxDepth,
-      currentDepth + 1
+      currentDepth + 1,
     );
     allSubmodules.push(...nestedSubmodules);
   }
@@ -373,19 +393,22 @@ export async function listSubmodulesRecursive(
 export async function setSubmoduleGitConfig(
   submodulePath: string,
   key: string,
-  value: string
+  value: string,
 ): Promise<boolean> {
   // SECURITY: Using gitExec with array args prevents command injection
   // The key and value are passed as separate array elements, not interpolated
-  const result = await gitExec(['config', '--local', key, value], submodulePath);
+  const result = await gitExec(
+    ["config", "--local", key, value],
+    submodulePath,
+  );
 
   if (!result.success) {
     // Log failure through security logger (sanitizes path)
     // Note: gitExec already logs the error, but we add context about the submodule operation
     securityLogger.logValidationFailure(
       `submoduleGitConfig.${key}`,
-      'Failed to set git config in submodule',
-      submodulePath
+      "Failed to set git config in submodule",
+      submodulePath,
     );
     return false;
   }
@@ -403,7 +426,7 @@ export async function setIdentityForSubmodules(
   submodules: Submodule[],
   userName: string,
   userEmail: string,
-  gpgKeyId?: string
+  gpgKeyId?: string,
 ): Promise<{ success: number; failed: number }> {
   let success = 0;
   let failed = 0;
@@ -411,38 +434,38 @@ export async function setIdentityForSubmodules(
   const promises = submodules.map(async (submodule) => {
     try {
       // Set user.name
-      const nameResult = await setSubmoduleGitConfig(
+      const isNameResult = await setSubmoduleGitConfig(
         submodule.absolutePath,
-        'user.name',
-        userName
+        "user.name",
+        userName,
       );
 
       // Set user.email
-      const emailResult = await setSubmoduleGitConfig(
+      const isEmailResult = await setSubmoduleGitConfig(
         submodule.absolutePath,
-        'user.email',
-        userEmail
+        "user.email",
+        userEmail,
       );
 
       // Set GPG key if provided
-      let gpgResult = true;
+      let isGpgResult = true;
       if (gpgKeyId) {
-        gpgResult = await setSubmoduleGitConfig(
+        isGpgResult = await setSubmoduleGitConfig(
           submodule.absolutePath,
-          'user.signingkey',
-          gpgKeyId
+          "user.signingkey",
+          gpgKeyId,
         );
 
-        if (gpgResult) {
+        if (isGpgResult) {
           await setSubmoduleGitConfig(
             submodule.absolutePath,
-            'commit.gpgsign',
-            'true'
+            "commit.gpgsign",
+            "true",
           );
         }
       }
 
-      if (nameResult && emailResult && gpgResult) {
+      if (isNameResult && isEmailResult && isGpgResult) {
         success++;
       } else {
         failed++;
@@ -466,8 +489,8 @@ export function isSubmoduleSupportEnabled(): boolean {
   if (!workspace) {
     return true; // Default to enabled for testing
   }
-  const config = workspace.getConfiguration('gitIdSwitcher');
-  return config.get<boolean>('applyToSubmodules', true);
+  const config = workspace.getConfiguration("gitIdSwitcher");
+  return config.get<boolean>("applyToSubmodules", true);
 }
 
 /**
@@ -482,19 +505,22 @@ export function getSubmoduleDepth(): number {
   if (!workspace) {
     return 1; // Default depth for testing
   }
-  const config = workspace.getConfiguration('gitIdSwitcher');
-  const configuredDepth = config.get<number>('submoduleDepth', 1);
+  const config = workspace.getConfiguration("gitIdSwitcher");
+  const configuredDepth = config.get<number>("submoduleDepth", 1);
 
   // SECURITY: Clamp to valid range [0, MAX_SUBMODULE_DEPTH]
-  const clampedDepth = Math.min(Math.max(0, configuredDepth), MAX_SUBMODULE_DEPTH);
+  const clampedDepth = Math.min(
+    Math.max(0, configuredDepth),
+    MAX_SUBMODULE_DEPTH,
+  );
 
   /* c8 ignore start - Depth clamping validation logging (edge case) */
   // Log if configured value was outside valid range
   if (configuredDepth !== clampedDepth) {
     securityLogger.logValidationFailure(
-      'submoduleDepth',
+      "submoduleDepth",
       `Configured depth ${configuredDepth} clamped to ${clampedDepth} (max: ${MAX_SUBMODULE_DEPTH})`,
-      configuredDepth
+      configuredDepth,
     );
   }
   /* c8 ignore stop */
@@ -509,3 +535,12 @@ export function getSubmoduleDepth(): number {
 export function getMaxSubmoduleDepth(): number {
   return MAX_SUBMODULE_DEPTH;
 }
+
+/**
+ * Test-only exports for private validation helpers.
+ */
+export const __testExports = {
+  getWorkspaceValidationFailureReason,
+  isValidCommitHash,
+  stripBranchSuffix,
+};

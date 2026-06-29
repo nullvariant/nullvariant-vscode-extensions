@@ -67,21 +67,25 @@ function createConfigChangePromise(
 ): { promise: Promise<boolean>; cleanup: () => void } {
   let disposable: vscode.Disposable | undefined;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  let resolved = false;
+  let isResolved = false;
 
   const promise = new Promise<boolean>((resolve) => {
     disposable = vscode.workspace.onDidChangeConfiguration((e) => {
-      if (!resolved && e.affectsConfiguration(configKey)) {
-        resolved = true;
-        resolve(true);
+      if (!(!isResolved && e.affectsConfiguration(configKey))) {
+      	return;
       }
+
+      isResolved = true;
+      resolve(true);
     });
 
     timeoutId = setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        resolve(false);
+      if (isResolved) {
+      	return;
       }
+
+      isResolved = true;
+      resolve(false);
     }, timeoutMs);
   });
 
@@ -104,21 +108,25 @@ function createConfigChangeCapture(
 } {
   let disposable: vscode.Disposable | undefined;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  let resolved = false;
+  let isResolved = false;
 
   const promise = new Promise<vscode.ConfigurationChangeEvent | null>((resolve) => {
     disposable = vscode.workspace.onDidChangeConfiguration((e) => {
-      if (!resolved) {
-        resolved = true;
-        resolve(e);
+      if (isResolved) {
+      	return;
       }
+
+      isResolved = true;
+      resolve(e);
     });
 
     timeoutId = setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        resolve(null);
+      if (isResolved) {
+      	return;
       }
+
+      isResolved = true;
+      resolve(null);
     }, timeoutMs);
   });
 
@@ -332,19 +340,19 @@ describe('Identity E2E Test Suite', function () {
       const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
 
       // Save current state
-      const currentValue = config.get<boolean>('showNotifications', true);
+      const isCurrentValue = config.get<boolean>('showNotifications', true);
 
       // Toggle value
-      const newValue = !currentValue;
-      await config.update('showNotifications', newValue, vscode.ConfigurationTarget.Global);
+      const isNewValue = !isCurrentValue;
+      await config.update('showNotifications', isNewValue, vscode.ConfigurationTarget.Global);
 
       // Verify
       const updatedConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
       const updatedValue = updatedConfig.get<boolean>('showNotifications');
-      assert.strictEqual(updatedValue, newValue, 'showNotifications should be toggled');
+      assert.strictEqual(updatedValue, isNewValue, 'showNotifications should be toggled');
 
       // Restore
-      await config.update('showNotifications', currentValue, vscode.ConfigurationTarget.Global);
+      await config.update('showNotifications', isCurrentValue, vscode.ConfigurationTarget.Global);
     });
 
     it('should update number configuration values', async () => {
@@ -370,7 +378,7 @@ describe('Identity E2E Test Suite', function () {
   describe('Configuration Change Detection', () => {
     it('should detect configuration changes via onDidChangeConfiguration', async () => {
       const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
-      const currentValue = config.get<boolean>('showNotifications', true);
+      const isCurrentValue = config.get<boolean>('showNotifications', true);
 
       // Use helper to create config change detection
       const { promise: changeDetected, cleanup } = createConfigChangePromise(
@@ -379,15 +387,15 @@ describe('Identity E2E Test Suite', function () {
 
       try {
         // Trigger configuration change
-        await config.update('showNotifications', !currentValue, vscode.ConfigurationTarget.Global);
+        await config.update('showNotifications', !isCurrentValue, vscode.ConfigurationTarget.Global);
 
         // Wait for change detection
-        const detected = await changeDetected;
-        assert.strictEqual(detected, true, 'Configuration change should be detected');
+        const isDetected = await changeDetected;
+        assert.strictEqual(isDetected, true, 'Configuration change should be detected');
       } finally {
         cleanup();
         // Restore
-        await config.update('showNotifications', currentValue, vscode.ConfigurationTarget.Global);
+        await config.update('showNotifications', isCurrentValue, vscode.ConfigurationTarget.Global);
       }
     });
 
@@ -403,11 +411,11 @@ describe('Identity E2E Test Suite', function () {
         await config.update('defaultIdentity', 'test-value', vscode.ConfigurationTarget.Global);
         const event = await changePromise;
 
-        const affectsGitIdSwitcher = event?.affectsConfiguration(CONFIG_SECTION) ?? false;
-        const affectsOther = event?.affectsConfiguration('someOtherExtension') ?? false;
+        const isAffectsGitIdSwitcher = event?.affectsConfiguration(CONFIG_SECTION) ?? false;
+        const isAffectsOther = event?.affectsConfiguration('someOtherExtension') ?? false;
 
-        assert.strictEqual(affectsGitIdSwitcher, true, 'Should affect gitIdSwitcher configuration');
-        assert.strictEqual(affectsOther, false, 'Should not affect other extensions');
+        assert.strictEqual(isAffectsGitIdSwitcher, true, 'Should affect gitIdSwitcher configuration');
+        assert.strictEqual(isAffectsOther, false, 'Should not affect other extensions');
       } finally {
         cleanup();
         // Restore
@@ -745,7 +753,7 @@ describe('Identity E2E Test Suite', function () {
       const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
       const afterDelete = freshConfig.get<TestIdentity[]>('identities', []);
       assert.ok(
-        !afterDelete.some(i => i.id === 'test-delete-identity'),
+        afterDelete.every(i => i.id !== 'test-delete-identity'),
         'Test identity should be deleted'
       );
 
@@ -774,7 +782,7 @@ describe('Identity E2E Test Suite', function () {
       assert.strictEqual(afterDelete.length, 2, 'Should have 2 identities remaining');
       assert.ok(afterDelete.some(i => i.id === 'test-keep-1'), 'First identity should remain');
       assert.ok(afterDelete.some(i => i.id === 'test-keep-2'), 'Second identity should remain');
-      assert.ok(!afterDelete.some(i => i.id === 'test-delete-me'), 'Deleted identity should not exist');
+      assert.ok(afterDelete.every(i => i.id !== 'test-delete-me'), 'Deleted identity should not exist');
 
       // Restore original state
       await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);
@@ -1251,9 +1259,9 @@ describe('Identity E2E Test Suite', function () {
       await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
 
       // Move first identity down
-      const result = await moveIdentityInConfig('move-a', 'down');
+      const isResult = await moveIdentityInConfig('move-a', 'down');
 
-      assert.strictEqual(result, true, 'Should return true for successful move');
+      assert.strictEqual(isResult, true, 'Should return true for successful move');
 
       // Verify new order: B, A, C
       const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
@@ -1279,9 +1287,9 @@ describe('Identity E2E Test Suite', function () {
       await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
 
       // Move last identity up
-      const result = await moveIdentityInConfig('move-c', 'up');
+      const isResult = await moveIdentityInConfig('move-c', 'up');
 
-      assert.strictEqual(result, true, 'Should return true for successful move');
+      assert.strictEqual(isResult, true, 'Should return true for successful move');
 
       // Verify new order: A, C, B
       const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
@@ -1306,9 +1314,9 @@ describe('Identity E2E Test Suite', function () {
       await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
 
       // Try to move first item up
-      const result = await moveIdentityInConfig('first-item', 'up');
+      const isResult = await moveIdentityInConfig('first-item', 'up');
 
-      assert.strictEqual(result, false, 'Should return false for boundary move');
+      assert.strictEqual(isResult, false, 'Should return false for boundary move');
 
       // Verify order unchanged
       const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
@@ -1332,9 +1340,9 @@ describe('Identity E2E Test Suite', function () {
       await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
 
       // Try to move last item down
-      const result = await moveIdentityInConfig('last-item', 'down');
+      const isResult = await moveIdentityInConfig('last-item', 'down');
 
-      assert.strictEqual(result, false, 'Should return false for boundary move');
+      assert.strictEqual(isResult, false, 'Should return false for boundary move');
 
       // Verify order unchanged
       const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
@@ -1357,9 +1365,9 @@ describe('Identity E2E Test Suite', function () {
       await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
 
       // Try to move single item up
-      const result = await moveIdentityInConfig('only-item', 'up');
+      const isResult = await moveIdentityInConfig('only-item', 'up');
 
-      assert.strictEqual(result, false, 'Should return false for single element move up');
+      assert.strictEqual(isResult, false, 'Should return false for single element move up');
 
       // Verify unchanged
       const freshConfig = vscode.workspace.getConfiguration(CONFIG_SECTION);
@@ -1382,9 +1390,9 @@ describe('Identity E2E Test Suite', function () {
       await config.update('identities', testIdentities, vscode.ConfigurationTarget.Global);
 
       // Try to move single item down
-      const result = await moveIdentityInConfig('only-item', 'down');
+      const isResult = await moveIdentityInConfig('only-item', 'down');
 
-      assert.strictEqual(result, false, 'Should return false for single element move down');
+      assert.strictEqual(isResult, false, 'Should return false for single element move down');
 
       // Restore original state
       await config.update('identities', currentIdentities, vscode.ConfigurationTarget.Global);

@@ -101,8 +101,8 @@ export async function selectIdentityCommand(
  * @returns New lastIndex after add operation
  */
 async function handleManageAdd(lastIndex: number): Promise<number> {
-  const success = await handleAddIdentity();
-  if (success) {
+  const isSuccess = await handleAddIdentity();
+  if (isSuccess) {
     const newIdentities = getIdentitiesWithValidation();
     return newIdentities.length - 1;
   }
@@ -140,8 +140,8 @@ async function handleManageDelete(
   context: vscode.ExtensionContext,
   statusBar: IdentityStatusBar
 ): Promise<number> {
-  const success = await handleDeleteIdentity(context, statusBar, identity);
-  if (success) {
+  const isSuccess = await handleDeleteIdentity(context, statusBar, identity);
+  if (isSuccess) {
     const newIdentities = getIdentitiesWithValidation();
     return Math.min(index, Math.max(0, newIdentities.length - 1));
   }
@@ -163,8 +163,8 @@ async function handleManageMove(
   direction: 'up' | 'down'
 ): Promise<number> {
   try {
-    const moved = await moveIdentityInConfig(identity.id, direction);
-    if (moved) {
+    const isMoved = await moveIdentityInConfig(identity.id, direction);
+    if (isMoved) {
       return direction === 'up' ? index - 1 : index + 1;
     }
     return index;
