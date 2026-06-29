@@ -96,10 +96,12 @@ describe('StatusBar E2E Test Suite', function () {
 
   afterEach(() => {
     // Clean up status bar after each test
-    if (statusBar) {
-      statusBar.dispose();
-      statusBar = undefined;
+    if (!statusBar) {
+    	return;
     }
+
+    statusBar.dispose();
+    statusBar = undefined;
   });
 
   after(() => {

@@ -161,8 +161,8 @@ export async function verifyContentHash(
     return { valid: false, expectedHash: undefined, actualHash, hashKey };
   }
 
-  const valid = actualHash === expectedHash;
-  return { valid, expectedHash, actualHash, hashKey };
+  const isValid = actualHash === expectedHash;
+  return { valid: isValid, expectedHash, actualHash, hashKey };
 }
 
 /**

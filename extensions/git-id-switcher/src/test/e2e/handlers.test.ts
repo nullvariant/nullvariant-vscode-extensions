@@ -400,18 +400,18 @@ function createMockContext(currentIdentityId?: string) {
  * Create a mock IdentityStatusBar
  */
 function createMockStatusBar() {
-  let noIdentityCalled = false;
+  let isNoIdentityCalled = false;
 
   return {
     setNoIdentity: () => {
-      noIdentityCalled = true;
+      isNoIdentityCalled = true;
     },
     setIdentity: () => {},
     setLoading: () => {},
     setError: () => {},
     getCurrentIdentity: () => undefined,
     dispose: () => {},
-    _wasNoIdentityCalled: () => noIdentityCalled,
+    _wasNoIdentityCalled: () => isNoIdentityCalled,
   } as unknown as IdentityStatusBar & { _wasNoIdentityCalled: () => boolean };
 }
 
@@ -631,7 +631,7 @@ describe('handleDeleteIdentity with targetIdentity E2E Test Suite', function () 
 
   describe('targetIdentity Parameter', () => {
     it('should skip selection UI when targetIdentity is provided', async () => {
-      let quickPickCreated = false;
+      let isQuickPickCreated = false;
       const mockVSCode = createMockVSCode({
         identities: [TEST_IDENTITIES.work, TEST_IDENTITIES.personal],
         showWarningMessageResult: 'Delete',
@@ -640,7 +640,7 @@ describe('handleDeleteIdentity with targetIdentity E2E Test Suite', function () 
       // Track if createQuickPick is called
       const originalCreateQuickPick = mockVSCode.window.createQuickPick;
       mockVSCode.window.createQuickPick = () => {
-        quickPickCreated = true;
+        isQuickPickCreated = true;
         return originalCreateQuickPick();
       };
 
@@ -650,10 +650,10 @@ describe('handleDeleteIdentity with targetIdentity E2E Test Suite', function () 
       const statusBar = createMockStatusBar();
 
       // Pass targetIdentity to skip selection
-      const result = await handleDeleteIdentity(context, statusBar, TEST_IDENTITIES.work);
+      const isResult = await handleDeleteIdentity(context, statusBar, TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, true, 'Should return true on success');
-      assert.strictEqual(quickPickCreated, false, 'Should not create quick pick when targetIdentity provided');
+      assert.strictEqual(isResult, true, 'Should return true on success');
+      assert.strictEqual(isQuickPickCreated, false, 'Should not create quick pick when targetIdentity provided');
     });
 
     it('should return false when confirmation cancelled with targetIdentity', async () => {
@@ -666,9 +666,9 @@ describe('handleDeleteIdentity with targetIdentity E2E Test Suite', function () 
       const context = createMockContext();
       const statusBar = createMockStatusBar();
 
-      const result = await handleDeleteIdentity(context, statusBar, TEST_IDENTITIES.work);
+      const isResult = await handleDeleteIdentity(context, statusBar, TEST_IDENTITIES.work);
 
-      assert.strictEqual(result, false, 'Should return false when cancelled');
+      assert.strictEqual(isResult, false, 'Should return false when cancelled');
     });
   });
 });
@@ -698,9 +698,9 @@ describe('handleAddIdentity E2E Test Suite', function () {
       });
       _setMockVSCode(mockVSCode as never);
 
-      const result = await handleAddIdentity();
+      const isResult = await handleAddIdentity();
 
-      assert.strictEqual(result, false, 'Should return false when cancelled');
+      assert.strictEqual(isResult, false, 'Should return false when cancelled');
     });
   });
 
@@ -714,9 +714,9 @@ describe('handleAddIdentity E2E Test Suite', function () {
       });
       _setMockVSCode(mockVSCode as never);
 
-      const result = await handleAddIdentity();
+      const isResult = await handleAddIdentity();
 
-      assert.strictEqual(result, true, 'Should return true on success');
+      assert.strictEqual(isResult, true, 'Should return true on success');
       const configCalls = mockVSCode._getConfigUpdateCalls();
       assert.ok(configCalls.length > 0, 'Should save identity to config');
     });
@@ -739,9 +739,9 @@ describe('handleAddIdentity E2E Test Suite', function () {
       });
       _setMockVSCode(mockVSCode as never);
 
-      const result = await handleAddIdentity();
+      const isResult = await handleAddIdentity();
 
-      assert.strictEqual(result, false, 'Should return false when limit reached');
+      assert.strictEqual(isResult, false, 'Should return false when limit reached');
       const warnings = mockVSCode._getShowWarningMessageCalls();
       assert.ok(warnings.length > 0, 'Should show warning message');
       assert.ok(
@@ -791,10 +791,10 @@ describe('Security Logger Integration E2E Test Suite', function () {
 
       _setMockVSCode(mockVSCode as never);
 
-      const result = await handleAddIdentity();
+      const isResult = await handleAddIdentity();
 
       // If add succeeds, securityLogger.logConfigChange was called
-      assert.strictEqual(result, true, 'Add should succeed (logging occurs internally)');
+      assert.strictEqual(isResult, true, 'Add should succeed (logging occurs internally)');
     });
   });
 
@@ -810,10 +810,10 @@ describe('Security Logger Integration E2E Test Suite', function () {
       const context = createMockContext();
       const statusBar = createMockStatusBar();
 
-      const result = await handleDeleteIdentity(context, statusBar);
+      const isResult = await handleDeleteIdentity(context, statusBar);
 
       // If delete succeeds, securityLogger.logConfigChange was called
-      assert.strictEqual(result, true, 'Delete should succeed (logging occurs internally)');
+      assert.strictEqual(isResult, true, 'Delete should succeed (logging occurs internally)');
     });
   });
 

@@ -61,7 +61,7 @@ const RESOLUTION_TIMEOUT = 5000;
  * Flag to prevent repeated which-fallback warnings within a session.
  * Set to true after the first warning is shown to the user.
  */
-let whichFallbackWarningShown = false;
+let isWhichFallbackWarningShown = false;
 
 /**
  * Error thrown when a binary path cannot be resolved
@@ -158,8 +158,8 @@ async function getWhichCommand(): Promise<string> {
   );
 
   // defense-in-depth: warn user about degraded security (once per session)
-  if (!whichFallbackWarningShown) {
-    whichFallbackWarningShown = true;
+  if (!isWhichFallbackWarningShown) {
+    isWhichFallbackWarningShown = true;
     const window = getWindow();
     if (window) {
       window.showWarningMessage(
@@ -478,6 +478,6 @@ export const __testExports = {
   getWhichCommand,
   isAllowedCommand,
   resetWhichFallbackWarning: (): void => {
-    whichFallbackWarningShown = false;
+    isWhichFallbackWarningShown = false;
   },
 };

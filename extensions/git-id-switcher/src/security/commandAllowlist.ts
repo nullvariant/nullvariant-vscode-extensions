@@ -146,7 +146,7 @@ function resolveSubcommandConfig(
   commandConfig: CommandConfig,
   command: string,
   args: string[]
-): { config: CommandConfig | SubcommandConfig; argsToValidate: string[] } | AllowlistCheckResult {
+): AllowlistCheckResult | { config: CommandConfig | SubcommandConfig; argsToValidate: string[] } {
   if (!commandConfig.subcommands) {
     return { config: commandConfig, argsToValidate: args };
   }
@@ -233,8 +233,8 @@ function validateFlagArgument(
  */
 // eslint-disable-next-line sonarjs/function-return-type -- discriminated union return is intentional
 function validatePathSafety(arg: string): AllowlistCheckResult | 'safe' {
-  const looksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
-  if (looksLikePathForSecurity) {
+  const isLooksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
+  if (isLooksLikePathForSecurity) {
     const pathResult = validatePathSecurity(arg);
     if (!pathResult.valid) {
       return { allowed: false, reason: `Path argument rejected: ${pathResult.reason}` };
@@ -265,7 +265,7 @@ function validateSingleArgument(
     allowedOptionsWithValues: readonly string[];
   }
 ): ArgValidationResult {
-  const { allowedArgs, allowAnyPositional, allowPathPositionals, allowedOptionsWithValues } = config;
+  const { allowedArgs, allowAnyPositional: isAllowAnyPositional, allowPathPositionals: isAllowPathPositionals, allowedOptionsWithValues } = config;
 
   // Length check (path arguments are checked separately)
   if (!isPathArgument(arg) && arg.length > MAX_ARG_LENGTH) {
@@ -277,7 +277,7 @@ function validateSingleArgument(
   if (pathCheck !== 'safe') {
     return pathCheck;
   }
-  const looksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
+  const isLooksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
 
   // 1. Check if this is a value for a previous option
   const valueCheck = isArgumentValueForPrecedingFlag(arg, index, argsToValidate, allowedOptionsWithValues);
@@ -305,12 +305,12 @@ function validateSingleArgument(
   }
 
   // 4. Fallback: arbitrary positionals allowed?
-  if (allowAnyPositional) {
+  if (isAllowAnyPositional) {
     return 'continue';
   }
 
   // 5. Path-only positionals allowed?
-  if (allowPathPositionals && looksLikePathForSecurity) {
+  if (isAllowPathPositionals && isLooksLikePathForSecurity) {
     return 'continue';
   }
 

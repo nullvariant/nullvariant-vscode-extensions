@@ -22,6 +22,7 @@ import {
   setIdentityForSubmodules,
   isSubmoduleSupportEnabled,
   getSubmoduleDepth,
+  __testExports,
 } from '../core/submodule';
 import { _resetCache, _setMockVSCode } from '../core/vscodeLoader';
 
@@ -117,7 +118,7 @@ function testControlCharacterRejection(): void {
 
   // Paths with control characters should be rejected
   const maliciousPaths = [
-    'vendor\u0000/lib',
+    'vendor\u{0}/lib',
     'sub\nmodule',
     'path\twith\ttabs',
     'vendor\rmodule',
@@ -403,6 +404,82 @@ function testWorkspaceBoundary(): void {
 }
 
 /**
+ * Test commit hash validation branch coverage.
+ */
+function testCommitHashValidation(): void {
+  console.log('Testing commit hash validation...');
+
+  const { isValidCommitHash } = __testExports;
+
+  assert.strictEqual(
+    isValidCommitHash('0123456789abcdef0123456789abcdef01234567'),
+    true,
+    '40-character lowercase hex hash should be valid'
+  );
+  assert.strictEqual(
+    isValidCommitHash('a'.repeat(39)),
+    false,
+    'Short hash should be invalid'
+  );
+  assert.strictEqual(
+    isValidCommitHash('g'.repeat(40)),
+    false,
+    'Non-hex hash should be invalid'
+  );
+
+  console.log('  Commit hash validation tests passed');
+}
+
+/**
+ * Test branch suffix parsing branch coverage.
+ */
+function testBranchSuffixParsing(): void {
+  console.log('Testing branch suffix parsing...');
+
+  const { stripBranchSuffix } = __testExports;
+
+  assert.strictEqual(
+    stripBranchSuffix('vendor/lib'),
+    'vendor/lib',
+    'Path without branch suffix should remain unchanged'
+  );
+  assert.strictEqual(
+    stripBranchSuffix('vendor/lib main)'),
+    'vendor/lib main)',
+    'Malformed suffix without opening parenthesis should remain unchanged'
+  );
+  assert.strictEqual(
+    stripBranchSuffix('vendor/lib (main)'),
+    'vendor/lib',
+    'Valid branch suffix should be stripped'
+  );
+
+  console.log('  Branch suffix parsing tests passed');
+}
+
+/**
+ * Test workspace validation failure reason fallback branch coverage.
+ */
+function testWorkspaceValidationFailureReason(): void {
+  console.log('Testing workspace validation failure reason...');
+
+  const { getWorkspaceValidationFailureReason } = __testExports;
+
+  assert.strictEqual(
+    getWorkspaceValidationFailureReason({ reason: 'Workspace path is empty' }),
+    'Workspace path is empty',
+    'Provided workspace validation reason should be used'
+  );
+  assert.strictEqual(
+    getWorkspaceValidationFailureReason({}),
+    'Invalid workspace path',
+    'Fallback reason should be used when validation has no reason'
+  );
+
+  console.log('  Workspace validation failure reason tests passed');
+}
+
+/**
  * Test regex pattern strictness (40-char SHA-1)
  *
  * Tests the SUBMODULE_STATUS_REGEX pattern used in submodule.ts
@@ -421,7 +498,7 @@ function testRegexPatternStrictness(): void {
     ' ' + 'a'.repeat(40) + ' submodule (main)',
     '+' + 'a'.repeat(40) + ' path/to/submodule',
     '-' + 'a'.repeat(40) + ' uninitialized-submodule',
-    ' ' + '0123456789abcdef0123456789abcdef01234567' + ' module (feature/branch)',
+    ' 0123456789abcdef0123456789abcdef01234567 module (feature/branch)',
   ];
 
   for (const valid of validCases) {
@@ -532,8 +609,8 @@ async function testSetSubmoduleGitConfigErrorHandling(): Promise<void> {
     // Create a temporary directory that is NOT a git repository
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gitconfig-test-'));
     try {
-      const result = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
-      assert.strictEqual(result, false, 'Non-git directory should return false');
+      const isResult = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
+      assert.strictEqual(isResult, false, 'Non-git directory should return false');
     } finally {
       // Cleanup
       fs.rmdirSync(tempDir);
@@ -542,12 +619,12 @@ async function testSetSubmoduleGitConfigErrorHandling(): Promise<void> {
 
   // Test 2: Non-existent path returns false
   {
-    const result = await setSubmoduleGitConfig(
+    const isResult = await setSubmoduleGitConfig(
       '/non/existent/path/xyz123',
       'user.name',
       'Test User'
     );
-    assert.strictEqual(result, false, 'Non-existent path should return false');
+    assert.strictEqual(isResult, false, 'Non-existent path should return false');
   }
 
   console.log('✅ setSubmoduleGitConfig error handling tests passed!');
@@ -566,8 +643,8 @@ function testVSCodeApiFallback(): void {
 
   // isSubmoduleSupportEnabled should return true by default
   {
-    const result = isSubmoduleSupportEnabled();
-    assert.strictEqual(result, true, 'Should default to enabled when VS Code not available');
+    const isResult = isSubmoduleSupportEnabled();
+    assert.strictEqual(isResult, true, 'Should default to enabled when VS Code not available');
   }
 
   // getSubmoduleDepth should return 1 by default
@@ -731,8 +808,8 @@ function testIsSubmoduleSupportEnabledWithMock(): void {
 
     try {
       _setMockVSCode(mockVSCode as never);
-      const result = isSubmoduleSupportEnabled();
-      assert.strictEqual(result, false, 'Should return false when configured as false');
+      const isResult = isSubmoduleSupportEnabled();
+      assert.strictEqual(isResult, false, 'Should return false when configured as false');
     } finally {
       _resetCache();
     }
@@ -753,8 +830,8 @@ function testIsSubmoduleSupportEnabledWithMock(): void {
 
     try {
       _setMockVSCode(mockVSCode as never);
-      const result = isSubmoduleSupportEnabled();
-      assert.strictEqual(result, true, 'Should return true when configured as true');
+      const isResult = isSubmoduleSupportEnabled();
+      assert.strictEqual(isResult, true, 'Should return true when configured as true');
     } finally {
       _resetCache();
     }
@@ -796,12 +873,12 @@ async function testSetSubmoduleGitConfigSuccess(): Promise<void> {
     execSync('git init', { cwd: tempDir, stdio: 'ignore' });
 
     // Test setting user.name (should succeed)
-    const result = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
-    assert.strictEqual(result, true, 'setSubmoduleGitConfig should return true on success');
+    const isResult = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
+    assert.strictEqual(isResult, true, 'setSubmoduleGitConfig should return true on success');
 
     // Test setting user.email (should succeed)
-    const result2 = await setSubmoduleGitConfig(tempDir, 'user.email', 'test@example.com');
-    assert.strictEqual(result2, true, 'setSubmoduleGitConfig should return true on success');
+    const isResult2 = await setSubmoduleGitConfig(tempDir, 'user.email', 'test@example.com');
+    assert.strictEqual(isResult2, true, 'setSubmoduleGitConfig should return true on success');
 
     console.log('✅ setSubmoduleGitConfig success path tests passed!');
   } finally {
@@ -1139,6 +1216,9 @@ export async function runSubmoduleTests(): Promise<void> {
     testPermissionErrorHandling();
     testMaxSubmoduleDepth();
     testWorkspaceBoundary();
+    testCommitHashValidation();
+    testBranchSuffixParsing();
+    testWorkspaceValidationFailureReason();
     testRegexPatternStrictness();
     testInvalidWorkspacePaths();
 

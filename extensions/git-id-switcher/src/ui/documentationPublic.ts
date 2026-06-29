@@ -302,9 +302,9 @@ async function handleBack(
     panel.title = getDocumentDisplayName(state.currentPath);
 
     panel.webview.html = getLoadingHtml(panel.webview, nonce);
-    const success = await updateWebviewContent(panel, state, nonce);
+    const isSuccess = await updateWebviewContent(panel, state, nonce);
 
-    if (!success) {
+    if (!isSuccess) {
       // Document no longer available - show error
       panel.webview.html = getErrorHtml(panel.webview, 'network', nonce);
     }

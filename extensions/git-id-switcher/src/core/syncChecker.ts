@@ -177,8 +177,8 @@ export async function checkSync(
       return { state: 'unknown', mismatches: [] };
     }
 
-    const iconSetting = includeIconInGitConfig ?? shouldIncludeIconInGitConfig();
-    return compareSyncState(identity, gitConfig, iconSetting);
+    const isIconSetting = includeIconInGitConfig ?? shouldIncludeIconInGitConfig();
+    return compareSyncState(identity, gitConfig, isIconSetting);
   } catch {
     // Git config read failure (not a git repo, git not installed, etc.)
     return { state: 'unknown', mismatches: [] };

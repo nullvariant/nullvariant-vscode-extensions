@@ -224,7 +224,7 @@ function testBuildCspStringValidation(): void {
     `${TEST_NONCE}<script>`,            // angle bracket
     `${TEST_NONCE}\n; script-src *`,    // newline (CRLF-like smuggling)
     `${TEST_NONCE}\t`,                  // tab
-    `${TEST_NONCE}\u00A0`,              // non-breaking space (Unicode)
+    `${TEST_NONCE}\u{A0}`,              // non-breaking space (Unicode)
     `${TEST_NONCE}\0`,                  // null byte
     '日本語テスト字列xxxxxxxxx',            // non-ASCII (also ≥22 chars)
     'tooShort',                         // character class OK but <22 chars
@@ -848,9 +848,9 @@ function testShellInputValidation(): void {
     `${TEST_NONCE}\n`,
     `${TEST_NONCE}\r`,              // CR
     `${TEST_NONCE}\t`,              // tab
-    `${TEST_NONCE}\u00A0`,          // NBSP
-    `${TEST_NONCE}\u2028`,          // line separator (JS-specific hazard)
-    `${TEST_NONCE}\u0000`,          // NUL
+    `${TEST_NONCE}\u{A0}`,          // NBSP
+    `${TEST_NONCE}\u{2028}`,          // line separator (JS-specific hazard)
+    `${TEST_NONCE}\u{0}`,          // NUL
     'tooShort',
     '',
   ];
@@ -899,10 +899,10 @@ function testShellInputValidation(): void {
     '',                  // empty (coerce happens in shell, not here)
     'x',                 // bare x without private-use subtag
     'x-',                // trailing hyphen after x
-    'en\u0000',          // NUL smuggling
-    'en\u00A0',          // NBSP
+    'en\u{0}',          // NUL smuggling
+    'en\u{A0}',          // NBSP
     'en\r\n',            // CRLF
-    'en\u2028',          // line separator
+    'en\u{2028}',          // line separator
   ];
   for (const bad of badLangs) {
     assert.throws(

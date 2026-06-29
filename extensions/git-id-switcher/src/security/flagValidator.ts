@@ -13,7 +13,7 @@ import {
   CONTROL_CHAR_REGEX_STRICT,
   hasInvisibleUnicode,
   hasNullByte,
-} from '../validators/common';
+} from "../validators/common";
 
 /**
  * Security constants for flag validation
@@ -35,7 +35,7 @@ export interface CombinedFlagResult {
  * Patterns are matched exactly (order matters).
  */
 const ALLOWED_COMBINED_PATTERNS: Record<string, readonly string[]> = {
-  'ssh-keygen': ['lf'], // -lf (list fingerprint of file)
+  "ssh-keygen": ["lf"], // -lf (list fingerprint of file)
 };
 
 /**
@@ -51,22 +51,28 @@ const ALLOWED_COMBINED_PATTERNS: Record<string, readonly string[]> = {
 function detectUnsafeCharsInFlag(flag: string): CombinedFlagResult | null {
   // CRITICAL: Check for leading/trailing whitespace (potential obfuscation)
   if (flag !== flag.trim()) {
-    return { valid: false, reason: 'Flag contains leading or trailing whitespace' };
+    return {
+      valid: false,
+      reason: "Flag contains leading or trailing whitespace",
+    };
   }
 
   // CRITICAL: Check for null bytes (common attack vector)
   if (hasNullByte(flag)) {
-    return { valid: false, reason: 'Flag contains null byte' };
+    return { valid: false, reason: "Flag contains null byte" };
   }
 
   // CRITICAL: Check for control characters (ASCII 0-31 except tab, newline)
   if (CONTROL_CHAR_REGEX_STRICT.test(flag)) {
-    return { valid: false, reason: 'Flag contains control characters' };
+    return { valid: false, reason: "Flag contains control characters" };
   }
 
   // CRITICAL: Check for invisible/zero-width Unicode characters
   if (hasInvisibleUnicode(flag)) {
-    return { valid: false, reason: 'Flag contains invisible Unicode characters' };
+    return {
+      valid: false,
+      reason: "Flag contains invisible Unicode characters",
+    };
   }
 
   return null; // No security issues found
@@ -78,12 +84,12 @@ function detectUnsafeCharsInFlag(flag: string): CombinedFlagResult | null {
  */
 function hasPathLikePattern(flagChars: string): boolean {
   return (
-    flagChars.startsWith('/') ||
-    flagChars.startsWith('~') ||
-    flagChars.startsWith('./') ||
-    flagChars.startsWith('../') ||
-    flagChars.includes('/') ||
-    flagChars.includes('\\')
+    flagChars.startsWith("/") ||
+    flagChars.startsWith("~") ||
+    flagChars.startsWith("./") ||
+    flagChars.startsWith("../") ||
+    flagChars.includes("/") ||
+    flagChars.includes("\\")
   );
 }
 
@@ -91,12 +97,17 @@ function hasPathLikePattern(flagChars: string): boolean {
  * Check if combined flag characters are valid and have no duplicates.
  * @internal
  */
-function validateCombinedFlagChars(flagChars: string): CombinedFlagResult | null {
+function validateCombinedFlagChars(
+  flagChars: string,
+): CombinedFlagResult | null {
   // Check for duplicate characters (e.g., -ll)
   const charSet = new Set<string>();
   for (const char of flagChars) {
     if (charSet.has(char)) {
-      return { valid: false, reason: 'Duplicate flag character in combined flag' };
+      return {
+        valid: false,
+        reason: "Duplicate flag character in combined flag",
+      };
     }
     charSet.add(char);
   }
@@ -116,7 +127,7 @@ function validateCombinedFlagChars(flagChars: string): CombinedFlagResult | null
 function validateCombinedFlagAgainstAllowlist(
   flagChars: string,
   command: string,
-  allowedArgs: readonly string[]
+  allowedArgs: readonly string[],
 ): CombinedFlagResult {
   // Check if this command has allowed combined patterns
   const commandPatterns = ALLOWED_COMBINED_PATTERNS[command];
@@ -127,8 +138,12 @@ function validateCombinedFlagAgainstAllowlist(
   // Extract allowed single-char flags from allowedArgs
   const allowedSingleChars = new Set<string>();
   for (const allowed of allowedArgs) {
-    if (allowed.startsWith('-') && !allowed.startsWith('--') && allowed.length === 2) {
-      allowedSingleChars.add(allowed[1]);
+    if (
+      allowed.startsWith("-") &&
+      !allowed.startsWith("--") &&
+      allowed.length === 2
+    ) {
+      allowedSingleChars.add(allowed.at(1)!);
     }
   }
 
@@ -141,13 +156,17 @@ function validateCombinedFlagAgainstAllowlist(
   }
 
   if (unknownChars.length > 0) {
-    return { valid: false, reason: 'Unknown flag character(s) in combined flag' };
+    return {
+      valid: false,
+      reason: "Unknown flag character(s) in combined flag",
+    };
   }
 
   // All characters are valid individual flags, but require explicit pattern definition
   return {
     valid: false,
-    reason: 'Combined flag is not explicitly allowed. Use separate flags instead.',
+    reason:
+      "Combined flag is not explicitly allowed. Use separate flags instead.",
   };
 }
 
@@ -169,11 +188,11 @@ function validateCombinedFlagAgainstAllowlist(
 export function validateCombinedFlags(
   flag: string,
   command: string,
-  allowedArgs: readonly string[]
+  allowedArgs: readonly string[],
 ): CombinedFlagResult {
   // Basic validation
   if (!flag || flag.length === 0) {
-    return { valid: false, reason: 'Flag is empty' };
+    return { valid: false, reason: "Flag is empty" };
   }
 
   // CRITICAL: Security character checks (whitespace, null bytes, control chars, invisible unicode)
@@ -183,7 +202,7 @@ export function validateCombinedFlags(
   }
 
   // CRITICAL: Normalize Unicode to NFC for consistent comparison
-  const normalizedFlag = flag.normalize('NFC');
+  const normalizedFlag = flag.normalize("NFC");
 
   /* c8 ignore start - Post-normalization check for edge cases in Unicode normalization */
   // CRITICAL: Re-check after normalization
@@ -191,36 +210,37 @@ export function validateCombinedFlags(
   if (normalizedSecurityCheck) {
     return {
       valid: false,
-      reason: normalizedSecurityCheck.reason + ' (after normalization)',
+      reason: normalizedSecurityCheck.reason + " (after normalization)",
     };
   }
   /* c8 ignore stop */
 
   // Non-flag or long option - let caller handle
-  if (!normalizedFlag.startsWith('-')) {
+  if (!normalizedFlag.startsWith("-")) {
     return { valid: true };
   }
-  if (normalizedFlag.startsWith('--')) {
+  if (normalizedFlag.startsWith("--")) {
     return { valid: true };
   }
 
   // Length limit for DoS protection
   if (normalizedFlag.length > MAX_FLAG_LENGTH) {
-    return { valid: false, reason: 'Flag exceeds maximum length' };
+    return { valid: false, reason: "Flag exceeds maximum length" };
   }
 
   // Extract flag characters (remove leading dash)
   const flagChars = normalizedFlag.slice(1);
 
   if (flagChars.length === 0) {
-    return { valid: false, reason: 'Flag contains only dash' };
+    return { valid: false, reason: "Flag contains only dash" };
   }
 
   // CRITICAL: Check for flag-value concatenation (path-like patterns)
   if (hasPathLikePattern(flagChars)) {
     return {
       valid: false,
-      reason: 'Flag contains path-like pattern. Flags and values must be separate arguments.',
+      reason:
+        "Flag contains path-like pattern. Flags and values must be separate arguments.",
     };
   }
 
@@ -229,7 +249,7 @@ export function validateCombinedFlags(
   if (invalidCharRegex.test(flagChars)) {
     return {
       valid: false,
-      reason: 'Flag contains invalid characters. Only ASCII letters allowed.',
+      reason: "Flag contains invalid characters. Only ASCII letters allowed.",
     };
   }
 
@@ -239,12 +259,12 @@ export function validateCombinedFlags(
     if (allowedArgs.includes(singleFlag)) {
       return { valid: true };
     }
-    return { valid: false, reason: 'Flag is not in allowlist' };
+    return { valid: false, reason: "Flag is not in allowlist" };
   }
 
   // Combined flag validation (2+ characters)
   if (flagChars.length > MAX_COMBINED_FLAG_CHARS) {
-    return { valid: false, reason: 'Combined flag has too many characters' };
+    return { valid: false, reason: "Combined flag has too many characters" };
   }
 
   // Check for duplicate characters
