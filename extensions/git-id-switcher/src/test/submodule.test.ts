@@ -117,7 +117,7 @@ function testControlCharacterRejection(): void {
 
   // Paths with control characters should be rejected
   const maliciousPaths = [
-    'vendor\u0000/lib',
+    'vendor\u{0}/lib',
     'sub\nmodule',
     'path\twith\ttabs',
     'vendor\rmodule',
@@ -421,7 +421,7 @@ function testRegexPatternStrictness(): void {
     ' ' + 'a'.repeat(40) + ' submodule (main)',
     '+' + 'a'.repeat(40) + ' path/to/submodule',
     '-' + 'a'.repeat(40) + ' uninitialized-submodule',
-    ' ' + '0123456789abcdef0123456789abcdef01234567' + ' module (feature/branch)',
+    ' 0123456789abcdef0123456789abcdef01234567 module (feature/branch)',
   ];
 
   for (const valid of validCases) {
@@ -532,8 +532,8 @@ async function testSetSubmoduleGitConfigErrorHandling(): Promise<void> {
     // Create a temporary directory that is NOT a git repository
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gitconfig-test-'));
     try {
-      const result = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
-      assert.strictEqual(result, false, 'Non-git directory should return false');
+      const isResult = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
+      assert.strictEqual(isResult, false, 'Non-git directory should return false');
     } finally {
       // Cleanup
       fs.rmdirSync(tempDir);
@@ -542,12 +542,12 @@ async function testSetSubmoduleGitConfigErrorHandling(): Promise<void> {
 
   // Test 2: Non-existent path returns false
   {
-    const result = await setSubmoduleGitConfig(
+    const isResult = await setSubmoduleGitConfig(
       '/non/existent/path/xyz123',
       'user.name',
       'Test User'
     );
-    assert.strictEqual(result, false, 'Non-existent path should return false');
+    assert.strictEqual(isResult, false, 'Non-existent path should return false');
   }
 
   console.log('✅ setSubmoduleGitConfig error handling tests passed!');
@@ -566,8 +566,8 @@ function testVSCodeApiFallback(): void {
 
   // isSubmoduleSupportEnabled should return true by default
   {
-    const result = isSubmoduleSupportEnabled();
-    assert.strictEqual(result, true, 'Should default to enabled when VS Code not available');
+    const isResult = isSubmoduleSupportEnabled();
+    assert.strictEqual(isResult, true, 'Should default to enabled when VS Code not available');
   }
 
   // getSubmoduleDepth should return 1 by default
@@ -731,8 +731,8 @@ function testIsSubmoduleSupportEnabledWithMock(): void {
 
     try {
       _setMockVSCode(mockVSCode as never);
-      const result = isSubmoduleSupportEnabled();
-      assert.strictEqual(result, false, 'Should return false when configured as false');
+      const isResult = isSubmoduleSupportEnabled();
+      assert.strictEqual(isResult, false, 'Should return false when configured as false');
     } finally {
       _resetCache();
     }
@@ -753,8 +753,8 @@ function testIsSubmoduleSupportEnabledWithMock(): void {
 
     try {
       _setMockVSCode(mockVSCode as never);
-      const result = isSubmoduleSupportEnabled();
-      assert.strictEqual(result, true, 'Should return true when configured as true');
+      const isResult = isSubmoduleSupportEnabled();
+      assert.strictEqual(isResult, true, 'Should return true when configured as true');
     } finally {
       _resetCache();
     }
@@ -796,12 +796,12 @@ async function testSetSubmoduleGitConfigSuccess(): Promise<void> {
     execSync('git init', { cwd: tempDir, stdio: 'ignore' });
 
     // Test setting user.name (should succeed)
-    const result = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
-    assert.strictEqual(result, true, 'setSubmoduleGitConfig should return true on success');
+    const isResult = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
+    assert.strictEqual(isResult, true, 'setSubmoduleGitConfig should return true on success');
 
     // Test setting user.email (should succeed)
-    const result2 = await setSubmoduleGitConfig(tempDir, 'user.email', 'test@example.com');
-    assert.strictEqual(result2, true, 'setSubmoduleGitConfig should return true on success');
+    const isResult2 = await setSubmoduleGitConfig(tempDir, 'user.email', 'test@example.com');
+    assert.strictEqual(isResult2, true, 'setSubmoduleGitConfig should return true on success');
 
     console.log('✅ setSubmoduleGitConfig success path tests passed!');
   } finally {

@@ -487,7 +487,7 @@ function testSanitizePathControlChars(): void {
 
   // Path with null byte
   assert.strictEqual(
-    sanitizePath('/path/to\u0000/file'),
+    sanitizePath('/path/to\u{0}/file'),
     '[REDACTED:CONTROL_CHARS]',
     'Path with null byte should be redacted'
   );

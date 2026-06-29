@@ -268,7 +268,7 @@ function testNullByteDetection(): void {
 
   // Null byte in flag
   {
-    const result = validateCombinedFlags('-l\u0000f', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{0}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Null byte should be invalid');
     assert.ok(
       result.reason?.includes('null byte'),
@@ -278,13 +278,13 @@ function testNullByteDetection(): void {
 
   // Null byte at start
   {
-    const result = validateCombinedFlags('\u0000-l', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('\u{0}-l', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Null byte at start should be invalid');
   }
 
   // Null byte at end
   {
-    const result = validateCombinedFlags('-l\u0000', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{0}', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Null byte at end should be invalid');
   }
 
@@ -299,7 +299,7 @@ function testControlCharacterDetection(): void {
 
   // Bell character (ASCII 7)
   {
-    const result = validateCombinedFlags('-l\u0007f', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{7}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Bell character should be invalid');
     assert.ok(
       result.reason?.includes('control character'),
@@ -309,19 +309,19 @@ function testControlCharacterDetection(): void {
 
   // Escape character (ASCII 27)
   {
-    const result = validateCombinedFlags('-l\u001Bf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{1B}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Escape character should be invalid');
   }
 
   // Backspace character (ASCII 8)
   {
-    const result = validateCombinedFlags('-l\u0008f', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{8}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Backspace character should be invalid');
   }
 
   // Form feed (ASCII 12)
   {
-    const result = validateCombinedFlags('-l\u000Cf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{C}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Form feed should be invalid');
   }
 
@@ -342,7 +342,7 @@ function testInvisibleUnicodeDetection(): void {
 
   // Zero-width space (U+200B)
   {
-    const result = validateCombinedFlags('-l\u200Bf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{200B}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Zero-width space should be invalid');
     assert.ok(
       result.reason?.includes('invisible Unicode'),
@@ -352,37 +352,37 @@ function testInvisibleUnicodeDetection(): void {
 
   // Zero-width non-joiner (U+200C)
   {
-    const result = validateCombinedFlags('-l\u200Cf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{200C}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Zero-width non-joiner should be invalid');
   }
 
   // Zero-width joiner (U+200D)
   {
-    const result = validateCombinedFlags('-l\u200Df', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{200D}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Zero-width joiner should be invalid');
   }
 
   // Left-to-right mark (U+200E)
   {
-    const result = validateCombinedFlags('-l\u200Ef', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{200E}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Left-to-right mark should be invalid');
   }
 
   // Right-to-left mark (U+200F)
   {
-    const result = validateCombinedFlags('-l\u200Ff', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{200F}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Right-to-left mark should be invalid');
   }
 
   // Word joiner (U+2060)
   {
-    const result = validateCombinedFlags('-l\u2060f', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{2060}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Word joiner should be invalid');
   }
 
   // Left-to-right embedding (U+202A)
   {
-    const result = validateCombinedFlags('-l\u202Af', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{202A}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Left-to-right embedding should be invalid');
   }
 
@@ -398,7 +398,7 @@ function testUnicodeNormalization(): void {
   // Combining characters (may normalize to different form)
   // é as e + combining acute accent (U+0301)
   {
-    const result = validateCombinedFlags('-le\u0301', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-le\u{301}', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Combining accent should be invalid');
     assert.ok(
       result.reason?.includes('invalid characters') || result.reason?.includes('not in allowlist'),
@@ -409,13 +409,13 @@ function testUnicodeNormalization(): void {
   // Fullwidth letters (should be rejected)
   // Fullwidth 'l' (U+FF4C)
   {
-    const result = validateCombinedFlags('-\uFF4C', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-\u{FF4C}', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Fullwidth letter should be invalid');
   }
 
   // Homoglyph attack: Cyrillic 'а' instead of Latin 'a'
   {
-    const result = validateCombinedFlags('-l\u0430', 'ssh-keygen', ['-l', '-a']);
+    const result = validateCombinedFlags('-l\u{430}', 'ssh-keygen', ['-l', '-a']);
     assert.strictEqual(result.valid, false, 'Cyrillic homoglyph should be invalid');
   }
 
@@ -557,37 +557,37 @@ function testUnicodeAttackVectors(): void {
 
   // Byte order mark (BOM) - U+FEFF
   {
-    const result = validateCombinedFlags('-l\uFEFFf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{FEFF}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'BOM should be invalid');
   }
 
   // Soft hyphen - U+00AD (invisible)
   {
-    const result = validateCombinedFlags('-l\u00ADf', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{AD}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Soft hyphen should be invalid');
   }
 
   // Mongolian vowel separator - U+180E
   {
-    const result = validateCombinedFlags('-l\u180Ef', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{180E}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Mongolian vowel separator should be invalid');
   }
 
   // Right-to-left override - U+202E (can be used for display attacks)
   {
-    const result = validateCombinedFlags('-l\u202Ef', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{202E}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'RTL override should be invalid');
   }
 
   // Zero-width no-break space / BOM - U+FEFF
   {
-    const result = validateCombinedFlags('\uFEFF-l', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('\u{FEFF}-l', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Leading BOM should be invalid');
   }
 
   // Combining Grapheme Joiner - U+034F
   {
-    const result = validateCombinedFlags('-l\u034Ff', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('-l\u{34F}f', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, false, 'Combining grapheme joiner should be invalid');
   }
 
@@ -693,32 +693,32 @@ function testNonAsciiDashCharacters(): void {
 
   // En-dash (U+2013)
   {
-    const result = validateCombinedFlags('\u2013l', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('\u{2013}l', 'ssh-keygen', ['-l', '-f']);
     // En-dash is not a valid flag prefix
     assert.strictEqual(result.valid, true, 'En-dash prefix should pass through (non-flag)');
   }
 
   // Em-dash (U+2014)
   {
-    const result = validateCombinedFlags('\u2014l', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('\u{2014}l', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, true, 'Em-dash prefix should pass through (non-flag)');
   }
 
   // Minus sign (U+2212) - mathematical minus
   {
-    const result = validateCombinedFlags('\u2212l', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('\u{2212}l', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, true, 'Math minus prefix should pass through (non-flag)');
   }
 
   // Hyphen (U+2010)
   {
-    const result = validateCombinedFlags('\u2010l', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('\u{2010}l', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, true, 'Hyphen prefix should pass through (non-flag)');
   }
 
   // Non-breaking hyphen (U+2011)
   {
-    const result = validateCombinedFlags('\u2011l', 'ssh-keygen', ['-l', '-f']);
+    const result = validateCombinedFlags('\u{2011}l', 'ssh-keygen', ['-l', '-f']);
     assert.strictEqual(result.valid, true, 'Non-breaking hyphen should pass through (non-flag)');
   }
 

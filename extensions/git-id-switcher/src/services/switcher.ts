@@ -36,7 +36,7 @@ export async function switchToIdentity(
 
   try {
     const config = vscode.workspace.getConfiguration('gitIdSwitcher');
-    const autoSwitchSshKey = config.get<boolean>('autoSwitchSshKey', true);
+    const isAutoSwitchSshKey = config.get<boolean>('autoSwitchSshKey', true);
 
     // Update Git config if in a repository
     if (await isGitRepository()) {
@@ -44,7 +44,7 @@ export async function switchToIdentity(
     }
 
     // Switch SSH key if enabled and key is configured
-    if (autoSwitchSshKey && identity.sshKeyPath) {
+    if (isAutoSwitchSshKey && identity.sshKeyPath) {
       await switchToIdentitySshKey(identity);
       securityLogger.logSshKeyLoad(identity.sshKeyPath, true);
     }

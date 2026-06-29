@@ -1003,10 +1003,10 @@ function testInitializeWithInvalidFilePath(): void {
 function testShowWithMockOutputChannel(): void {
   console.log('Testing show() with mock OutputChannel...');
 
-  let showCalled = false;
+  let isShowCalled = false;
   const mockOutputChannel = {
     appendLine: () => {},
-    show: () => { showCalled = true; },
+    show: () => { isShowCalled = true; },
     dispose: () => {},
   };
 
@@ -1031,7 +1031,7 @@ function testShowWithMockOutputChannel(): void {
   securityLogger.initialize();
   securityLogger.show();
 
-  assert.strictEqual(showCalled, true, 'show() should call outputChannel.show()');
+  assert.strictEqual(isShowCalled, true, 'show() should call outputChannel.show()');
 
   _resetCache();
   securityLogger.dispose();
@@ -1197,7 +1197,7 @@ function testLogActivationWithNullPackageJSON(): void {
 function testErrorNotificationShown(): void {
   console.log('Testing error notification is shown...');
 
-  let warningMessageCalled = false;
+  let isWarningMessageCalled = false;
   let warningMessage = '';
 
   const mockVSCode = {
@@ -1208,7 +1208,7 @@ function testErrorNotificationShown(): void {
         dispose: () => {},
       }),
       showWarningMessage: (msg: string) => {
-        warningMessageCalled = true;
+        isWarningMessageCalled = true;
         warningMessage = msg;
         return Promise.resolve(undefined);
       },
@@ -1230,7 +1230,7 @@ function testErrorNotificationShown(): void {
   // Log a command blocked event (error severity)
   securityLogger.logCommandBlocked('rm', ['-rf', '/'], 'dangerous command');
 
-  assert.strictEqual(warningMessageCalled, true, 'showWarningMessage should be called for error severity');
+  assert.strictEqual(isWarningMessageCalled, true, 'showWarningMessage should be called for error severity');
   assert.ok(warningMessage.includes('COMMAND_BLOCKED'), 'Warning message should include event type');
 
   _resetCache();

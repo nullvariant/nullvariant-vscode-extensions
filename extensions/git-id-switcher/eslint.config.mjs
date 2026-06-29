@@ -111,7 +111,10 @@ export default [
       "unicorn/prevent-abbreviations": "off",
       // userName/userEmail/userSigningKey mirror git config keys (user.name/user.email/user.signingkey);
       // "username" connotes a login handle, which these display-name values are not
-      "unicorn/consistent-compound-words": ["error", { replacements: { userName: false } }],
+      "unicorn/consistent-compound-words": [
+        "error",
+        { replacements: { userName: false } },
+      ],
       "unicorn/filename-case": "off",
       "unicorn/no-process-exit": "off",
       "unicorn/prefer-module": "off",
@@ -120,6 +123,34 @@ export default [
       "unicorn/import-style": "off",
       "unicorn/no-useless-undefined": "off", // TypeScript requires explicit undefined arguments (resolve(undefined), update(key, undefined))
       "unicorn/no-useless-error-capture-stack-trace": "off", // V8-specific Error.captureStackTrace is guarded by if-check for non-V8 engines
+
+      // ADR-00240 Phase 1: disable v67 rules that conflict with VS Code extension patterns.
+      "unicorn/no-top-level-assignment-in-function": "off",
+      "unicorn/no-top-level-side-effects": "off",
+      "unicorn/no-non-function-verb-prefix": "off",
+      "unicorn/no-error-property-assignment": "off",
+
+      // ADR-00240 Phase 1: keep remaining v67 findings visible while unblocking CI.
+      "unicorn/prefer-await": "warn",
+      "unicorn/max-nested-calls": "warn",
+      "unicorn/consistent-boolean-name": "warn",
+      "unicorn/no-computed-property-existence-check": "warn",
+      "unicorn/consistent-class-member-order": "warn",
+      "unicorn/no-break-in-nested-loop": "warn",
+      "unicorn/no-unsafe-string-replacement": "warn",
+      "unicorn/prefer-unicode-code-point-escapes": "warn",
+      "unicorn/prefer-early-return": "warn",
+      "unicorn/prefer-number-coercion": "warn",
+      "unicorn/no-declarations-before-early-exit": "warn",
+      "unicorn/no-incorrect-template-string-interpolation": "warn",
+      "unicorn/no-unreadable-array-destructuring": "warn",
+      "unicorn/number-literal-case": "warn",
+      "unicorn/require-array-sort-compare": "warn",
+      "unicorn/no-optional-chaining-on-undeclared-variable": "warn",
+      "unicorn/prefer-iterator-to-array": "warn",
+      "unicorn/prefer-minimal-ternary": "warn",
+      "unicorn/prefer-uint8array-base64": "warn",
+      "unicorn/prefer-private-class-fields": "warn",
     },
     linterOptions: {
       reportUnusedDisableDirectives: "warn",
@@ -165,7 +196,12 @@ export default [
     },
   },
   {
-    files: ["**/validators/common.ts", "**/core/constants.ts", "**/ui/htmlTemplates/csp.ts", "**/ui/htmlTemplates/shell.ts"],
+    files: [
+      "**/validators/common.ts",
+      "**/core/constants.ts",
+      "**/ui/htmlTemplates/csp.ts",
+      "**/ui/htmlTemplates/shell.ts",
+    ],
     rules: {
       "no-restricted-syntax": "off",
       "no-magic-numbers": "off",
@@ -204,6 +240,14 @@ export default [
     },
   },
   {
-    ignores: ["out/**", "node_modules/**", "coverage/**", "scripts/**", ".vscode-test/**", "*.js", "*.mjs"],
+    ignores: [
+      "out/**",
+      "node_modules/**",
+      "coverage/**",
+      "scripts/**",
+      ".vscode-test/**",
+      "*.js",
+      "*.mjs",
+    ],
   },
 ];

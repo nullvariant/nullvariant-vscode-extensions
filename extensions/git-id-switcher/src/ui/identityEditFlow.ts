@@ -107,7 +107,7 @@ async function showFieldSelectionQuickPick(
   vs: VSCodeAPI,
   identity: Identity,
   savedField?: keyof Identity
-): Promise<{ item: FieldQuickPickItem; field: EditableFieldOrId } | 'back' | undefined> {
+): Promise<'back' | { item: FieldQuickPickItem; field: EditableFieldOrId } | undefined> {
   const identities = getIdentities();
   const identityCount = identities.length;
 
@@ -161,15 +161,15 @@ async function promptFieldValueInput(
   currentValue: string,
   currentIdentityId?: string
 ): Promise<QuickInputResult<string>> {
-  const optional = isOptionalField(field);
+  const isOptional = isOptionalField(field);
 
   return showFieldInputBox(vs, {
     title: vs.l10n.t('Edit Identity: {0}', vs.l10n.t(getFieldMetadata(field)?.labelKey ?? field)),
     value: currentValue,
     placeholder: getPlaceholderForField(vs, field),
-    prompt: getInputBoxPrompt(vs, optional, 'edit'),
+    prompt: getInputBoxPrompt(vs, isOptional, 'edit'),
     field,
-    validateInput: (value: string) => validateFieldInput(vs, field, value, optional, currentIdentityId),
+    validateInput: (value: string) => validateFieldInput(vs, field, value, isOptional, currentIdentityId),
   });
 }
 
@@ -211,11 +211,11 @@ async function processFieldValueInput(
     return 'back';
   }
 
-  const optional = isOptionalField(field);
-  const finalValue = optional && result.trim() === '' ? undefined : result;
-  const saved = await saveEditedField(vs, state.identity.id, field, finalValue);
+  const isOptional = isOptionalField(field);
+  const finalValue = isOptional && result.trim() === '' ? undefined : result;
+  const isSaved = await saveEditedField(vs, state.identity.id, field, finalValue);
 
-  if (!saved) {
+  if (!isSaved) {
     return 'error';
   }
 

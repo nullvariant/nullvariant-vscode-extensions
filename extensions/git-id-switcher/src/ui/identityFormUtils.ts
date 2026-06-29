@@ -157,8 +157,8 @@ export function buildFieldItems(
 
   for (const meta of FIELD_METADATA) {
     const value = identity[meta.key];
-    const hasValue = value !== undefined && String(value).trim() !== '';
-    const displayValue = hasValue ? String(value) : vs.l10n.t('(none)');
+    const hasValue = value !== undefined && value.trim() !== '';
+    const displayValue = hasValue ? value : vs.l10n.t('(none)');
 
     if (meta.key === 'id') {
       items.push(buildIdFieldItem(vs, meta, displayValue, savedField, identityCount));
@@ -261,15 +261,17 @@ function createDisposableCleanup(): {
   cleanup: (disposables: { dispose(): void }[]) => void;
   isResolved: () => boolean;
 } {
-  let resolved = false;
+  let isResolved = false;
   return {
     cleanup: (disposables: { dispose(): void }[]): void => {
-      if (!resolved) {
-        resolved = true;
-        for (const d of disposables) d.dispose();
+      if (isResolved) {
+      	return;
       }
+
+      isResolved = true;
+      for (const d of disposables) d.dispose();
     },
-    isResolved: (): boolean => resolved,
+    isResolved: (): boolean => isResolved,
   };
 }
 
@@ -294,10 +296,12 @@ export function waitForQuickPickSelection<T extends QuickPickItem>(
         resolve(quickPick.selectedItems[0]);
       }),
       quickPick.onDidTriggerButton(button => {
-        if (button === vs.QuickInputButtons.Back) {
-          cleanup(disposables);
-          resolve('back');
+        if (button !== vs.QuickInputButtons.Back) {
+        	return;
         }
+
+        cleanup(disposables);
+        resolve('back');
       }),
       quickPick.onDidHide(() => {
         cleanup(disposables);
@@ -332,10 +336,12 @@ function waitForInputBoxValue(
         inputBox.validationMessage = validateInput(value) ?? undefined;
       }),
       inputBox.onDidAccept(() => {
-        if (!inputBox.validationMessage) {
-          cleanup(disposables);
-          resolve(inputBox.value);
+        if (inputBox.validationMessage) {
+        	return;
         }
+
+        cleanup(disposables);
+        resolve(inputBox.value);
       }),
       inputBox.onDidTriggerButton(async button => {
         if (button === vs.QuickInputButtons.Back) {

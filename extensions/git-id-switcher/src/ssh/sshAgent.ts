@@ -302,7 +302,7 @@ export async function addSshKey(keyPath: string): Promise<void> {
   const platform = process.platform;
 
   try {
-    // eslint-disable-next-line unicorn/prefer-ternary -- security-critical: each branch has distinct SECURITY comments
+     
     if (platform === "darwin") {
       // macOS: Use Keychain integration
       // SECURITY: Using sshAgentExec with array args prevents injection

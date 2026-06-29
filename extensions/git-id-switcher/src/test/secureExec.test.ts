@@ -1311,10 +1311,10 @@ async function testActualTimeoutBehavior(): Promise<void> {
 
   // Verify mock logger interface matches expected signature
   {
-    let logCalled = false;
+    let isLogCalled = false;
     const mockLogger = {
       logCommandTimeout: (command: string, args: string[], timeoutMs: number, cwd?: string) => {
-        logCalled = true;
+        isLogCalled = true;
         assert.strictEqual(command, 'test', 'Logger receives command');
         assert.deepStrictEqual(args, ['arg1'], 'Logger receives args');
         assert.strictEqual(timeoutMs, 5000, 'Logger receives timeout');
@@ -1327,7 +1327,7 @@ async function testActualTimeoutBehavior(): Promise<void> {
 
     // Simulate what secureExec does when timeout occurs
     mockLogger.logCommandTimeout('test', ['arg1'], 5000, '/tmp');
-    assert.ok(logCalled, 'Logger should be called');
+    assert.ok(isLogCalled, 'Logger should be called');
   }
 
   console.log('✅ Timeout error handling verification tests passed!');

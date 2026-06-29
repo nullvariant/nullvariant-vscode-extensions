@@ -137,20 +137,22 @@ export async function showIdentityQuickPick(
   }
 
   return new Promise<Identity | 'manage' | undefined>(resolve => {
-    let resolved = false;
+    let isResolved = false;
 
     // Handle title bar manage button
     quickPick.onDidTriggerButton(button => {
-      if (button === manageButton) {
-        resolved = true;
-        quickPick.hide();
-        resolve('manage');
+      if (button !== manageButton) {
+      	return;
       }
+
+      isResolved = true;
+      quickPick.hide();
+      resolve('manage');
     });
 
     quickPick.onDidAccept(() => {
       const selected = quickPick.selectedItems[0];
-      resolved = true;
+      isResolved = true;
       quickPick.hide();
       if (selected?._isManageOption) {
         resolve('manage');
@@ -161,7 +163,7 @@ export async function showIdentityQuickPick(
 
     quickPick.onDidHide(() => {
       quickPick.dispose();
-      if (!resolved) {
+      if (!isResolved) {
         resolve(undefined);
       }
     });
@@ -180,9 +182,9 @@ export function showIdentitySwitchedNotification(identity: Identity): void {
   }
 
   const config = vs.workspace.getConfiguration('gitIdSwitcher');
-  const showNotifications = config.get<boolean>('showNotifications', true);
+  const isShowNotifications = config.get<boolean>('showNotifications', true);
 
-  if (showNotifications) {
+  if (isShowNotifications) {
     vs.window.showInformationMessage(
       vs.l10n.t('Switched to {0}', getIdentityLabel(identity))
     );
@@ -414,16 +416,16 @@ export async function showManageIdentitiesQuickPick(
   }
 
   return new Promise<ManageIdentitiesResult | undefined>(resolve => {
-    let resolved = false;
+    let isResolved = false;
 
     // Handle title bar buttons (back and add)
     quickPick.onDidTriggerButton(button => {
       if (button === vs.QuickInputButtons.Back) {
-        resolved = true;
+        isResolved = true;
         quickPick.hide();
         resolve({ action: 'back' });
       } else if (button === addButton) {
-        resolved = true;
+        isResolved = true;
         quickPick.hide();
         resolve({ action: 'add' });
       }
@@ -436,7 +438,7 @@ export async function showManageIdentitiesQuickPick(
         return;
       }
 
-      resolved = true;
+      isResolved = true;
       quickPick.hide();
 
       switch (e.button) {
@@ -475,7 +477,7 @@ export async function showManageIdentitiesQuickPick(
 
       // Handle add option
       if (selected._isAddOption) {
-        resolved = true;
+        isResolved = true;
         quickPick.hide();
         resolve({ action: 'add' });
       }
@@ -484,7 +486,7 @@ export async function showManageIdentitiesQuickPick(
     // Handle hide (Esc or close button)
     quickPick.onDidHide(() => {
       quickPick.dispose();
-      if (!resolved) {
+      if (!isResolved) {
         resolve({ action: 'back' });
       }
     });

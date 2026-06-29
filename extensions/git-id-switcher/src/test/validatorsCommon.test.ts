@@ -64,12 +64,12 @@ function testHasControlChars(): void {
   assert.strictEqual(hasControlChars('test123'), false, 'Alphanumeric string should not contain control chars');
 
   // Control characters (strict mode - excludes tab/newline)
-  assert.strictEqual(hasControlChars('\u0000'), true, 'Null byte should be detected (strict)');
-  assert.strictEqual(hasControlChars('\u0001'), true, 'SOH should be detected (strict)');
-  assert.strictEqual(hasControlChars('\u0008'), true, 'BS should be detected (strict)');
-  assert.strictEqual(hasControlChars('\u000B'), true, 'VT should be detected (strict)');
-  assert.strictEqual(hasControlChars('\u001F'), true, 'US should be detected (strict)');
-  assert.strictEqual(hasControlChars('\u007F'), true, 'DEL should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u{0}'), true, 'Null byte should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u{1}'), true, 'SOH should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u{8}'), true, 'BS should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u{B}'), true, 'VT should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u{1F}'), true, 'US should be detected (strict)');
+  assert.strictEqual(hasControlChars('\u{7F}'), true, 'DEL should be detected (strict)');
 
   // Tab and newline (allowed in strict mode)
   assert.strictEqual(hasControlChars('\t'), false, 'Tab should be allowed (strict)');
@@ -156,8 +156,8 @@ function testHasInvisibleUnicode(): void {
   }
 
   // Mixed content
-  assert.strictEqual(hasInvisibleUnicode('test\u200Bstring'), true, 'Zero-width space should be detected');
-  assert.strictEqual(hasInvisibleUnicode('test\uFEFFstring'), true, 'BOM should be detected');
+  assert.strictEqual(hasInvisibleUnicode('test\u{200B}string'), true, 'Zero-width space should be detected');
+  assert.strictEqual(hasInvisibleUnicode('test\u{FEFF}string'), true, 'BOM should be detected');
 
   console.log('✅ hasInvisibleUnicode tests passed!');
 }
@@ -350,7 +350,7 @@ function testHasDangerousChars(): void {
   assert.strictEqual(hasDangerousChars('a&b'), true, 'Ampersand should be dangerous');
   assert.strictEqual(hasDangerousChars('a\nb'), true, 'Newline should be dangerous');
   assert.strictEqual(hasDangerousChars('a\rb'), true, 'Carriage return should be dangerous');
-  assert.strictEqual(hasDangerousChars('\u0000'), true, 'Null byte should be dangerous');
+  assert.strictEqual(hasDangerousChars('\u{0}'), true, 'Null byte should be dangerous');
   assert.strictEqual(hasDangerousChars('a<b'), true, 'Less than should be dangerous');
   assert.strictEqual(hasDangerousChars('a>b'), true, 'Greater than should be dangerous');
   assert.strictEqual(hasDangerousChars('a{b}'), true, 'Braces should be dangerous');
@@ -421,8 +421,8 @@ function testHasDangerousCharsForText(): void {
   assert.strictEqual(hasDangerousCharsForText('user@example.com'), false, 'Email format should be safe');
 
   // Control characters should be dangerous (aligned with configSchema service/description patterns)
-  assert.strictEqual(hasDangerousCharsForText('\u0001hello'), true, 'SOH control char should be dangerous');
-  assert.strictEqual(hasDangerousCharsForText('hello\u007F'), true, 'DEL should be dangerous');
+  assert.strictEqual(hasDangerousCharsForText('\u{1}hello'), true, 'SOH control char should be dangerous');
+  assert.strictEqual(hasDangerousCharsForText('hello\u{7F}'), true, 'DEL should be dangerous');
 
   // Verify regex constant exists
   assert.ok(DANGEROUS_CHARS_FOR_TEXT_REGEX instanceof RegExp, 'DANGEROUS_CHARS_FOR_TEXT_REGEX should be a RegExp');
