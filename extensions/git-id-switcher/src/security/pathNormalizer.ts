@@ -203,7 +203,7 @@ export function normalizeAndValidatePath(
   inputPath: string,
   options: NormalizePathOptions = {}
 ): NormalizedPathResult {
-  const { resolveSymlinks = false, requireExists = false, baseDir = process.cwd() } = options;
+  const { resolveSymlinks: isResolveSymlinks = false, requireExists: isRequireExists = false, baseDir = process.cwd() } = options;
 
   // Step 1: Basic input validation
   if (!inputPath || inputPath.length === 0) {
@@ -250,8 +250,8 @@ export function normalizeAndValidatePath(
   if (normalizedLengthCheck) return normalizedLengthCheck;
 
   // Step 8: Optionally resolve symlinks
-  let symlinksResolved = false;
-  if (resolveSymlinks) {
+  let isSymlinksResolved = false;
+  if (isResolveSymlinks) {
     const symlinkResult = resolveAndValidateSymlinks(normalizedPath, inputPath);
     /* c8 ignore start - Symlink resolution failure edge case */
     if ('invalidResult' in symlinkResult) {
@@ -259,13 +259,13 @@ export function normalizeAndValidatePath(
     }
     if (symlinkResult.resolvedPath !== normalizedPath) {
       normalizedPath = symlinkResult.resolvedPath;
-      symlinksResolved = true;
+      isSymlinksResolved = true;
     }
     /* c8 ignore stop */
   }
 
   // Step 9: Optionally check file existence (TOCTOU note: acceptable for validation)
-  if (requireExists) {
+  if (isRequireExists) {
     try {
       fs.accessSync(normalizedPath);
     } catch (error) /* c8 ignore start */ {
@@ -274,5 +274,5 @@ export function normalizeAndValidatePath(
     } /* c8 ignore stop */
   }
 
-  return { valid: true, originalPath: inputPath, normalizedPath, symlinksResolved };
+  return { valid: true, originalPath: inputPath, normalizedPath, symlinksResolved: isSymlinksResolved };
 }

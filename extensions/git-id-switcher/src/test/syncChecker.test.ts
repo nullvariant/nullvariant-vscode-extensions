@@ -408,9 +408,9 @@ async function testCheckSyncWithCancellationBeforeStart(): Promise<void> {
   console.log('  Testing checkSync() with pre-cancelled token...');
 
   _resetCache();
-  let readerCalled = false;
+  let isReaderCalled = false;
   _setGitConfigReader(async () => {
-    readerCalled = true;
+    isReaderCalled = true;
     return { userName: 'John', userEmail: 'j@e.com', userSigningKey: undefined };
   });
 
@@ -420,7 +420,7 @@ async function testCheckSyncWithCancellationBeforeStart(): Promise<void> {
     const result = await checkSync(identity, false, token);
 
     assert.strictEqual(result.state, 'unknown');
-    assert.strictEqual(readerCalled, false);
+    assert.strictEqual(isReaderCalled, false);
   } finally {
     _setGitConfigReader(undefined);
   }

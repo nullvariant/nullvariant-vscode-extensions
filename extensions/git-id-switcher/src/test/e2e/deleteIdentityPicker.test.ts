@@ -66,7 +66,7 @@ function createMockVSCode(options: {
 }) {
   let capturedItems: CapturedQuickPickItem[] = [];
   let capturedPlaceholder = '';
-  let capturedIgnoreFocusOut = false;
+  let isCapturedIgnoreFocusOut = false;
   let capturedTitle = '';
   const showWarningMessageCalls: string[] = [];
 
@@ -104,8 +104,8 @@ function createMockVSCode(options: {
           set placeholder(value: string) {
             capturedPlaceholder = value;
           },
-          get ignoreFocusOut() { return capturedIgnoreFocusOut; },
-          set ignoreFocusOut(value: boolean) { capturedIgnoreFocusOut = value; },
+          get ignoreFocusOut() { return isCapturedIgnoreFocusOut; },
+          set ignoreFocusOut(value: boolean) { isCapturedIgnoreFocusOut = value; },
           matchOnDescription: false,
           matchOnDetail: false,
           get selectedItems(): T[] {
@@ -149,7 +149,7 @@ function createMockVSCode(options: {
     _getCapturedItems: () => capturedItems,
     _getCapturedPlaceholder: () => capturedPlaceholder,
     _getCapturedTitle: () => capturedTitle,
-    _getCapturedIgnoreFocusOut: () => capturedIgnoreFocusOut,
+    _getCapturedIgnoreFocusOut: () => isCapturedIgnoreFocusOut,
     _getShowWarningMessageCalls: () => showWarningMessageCalls,
   };
 }

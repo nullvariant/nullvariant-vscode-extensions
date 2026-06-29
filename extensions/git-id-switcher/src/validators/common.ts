@@ -42,34 +42,34 @@
  * - commandAllowlist.ts: path and flag validation
  */
 export const INVISIBLE_CHARS = [
-  '\u200B', // Zero-width space
-  '\u200C', // Zero-width non-joiner
-  '\u200D', // Zero-width joiner
-  '\u200E', // Left-to-right mark
-  '\u200F', // Right-to-left mark
-  '\u2060', // Word joiner
-  '\u2061', // Function application
-  '\u2062', // Invisible times
-  '\u2063', // Invisible separator
-  '\u2064', // Invisible plus
-  '\uFEFF', // Byte order mark (BOM)
-  '\u00AD', // Soft hyphen
+  '\u{200B}', // Zero-width space
+  '\u{200C}', // Zero-width non-joiner
+  '\u{200D}', // Zero-width joiner
+  '\u{200E}', // Left-to-right mark
+  '\u{200F}', // Right-to-left mark
+  '\u{2060}', // Word joiner
+  '\u{2061}', // Function application
+  '\u{2062}', // Invisible times
+  '\u{2063}', // Invisible separator
+  '\u{2064}', // Invisible plus
+  '\u{FEFF}', // Byte order mark (BOM)
+  '\u{AD}', // Soft hyphen
   // Bidirectional Override characters (CVE-2021-42574: Trojan Source)
-  '\u202A', // Left-to-Right Embedding (LRE)
-  '\u202B', // Right-to-Left Embedding (RLE)
-  '\u202C', // Pop Directional Formatting (PDF)
-  '\u202D', // Left-to-Right Override (LRO)
-  '\u202E', // Right-to-Left Override (RLO)
+  '\u{202A}', // Left-to-Right Embedding (LRE)
+  '\u{202B}', // Right-to-Left Embedding (RLE)
+  '\u{202C}', // Pop Directional Formatting (PDF)
+  '\u{202D}', // Left-to-Right Override (LRO)
+  '\u{202E}', // Right-to-Left Override (RLO)
   // Bidirectional Isolate characters
-  '\u2066', // Left-to-Right Isolate (LRI)
-  '\u2067', // Right-to-Left Isolate (RLI)
-  '\u2068', // First Strong Isolate (FSI)
-  '\u2069', // Pop Directional Isolate (PDI)
+  '\u{2066}', // Left-to-Right Isolate (LRI)
+  '\u{2067}', // Right-to-Left Isolate (RLI)
+  '\u{2068}', // First Strong Isolate (FSI)
+  '\u{2069}', // Pop Directional Isolate (PDI)
   // Mongolian Vowel Separator
-  '\u180E', // Mongolian Vowel Separator
+  '\u{180E}', // Mongolian Vowel Separator
   // Line/Paragraph Separators
-  '\u2028', // Line Separator
-  '\u2029', // Paragraph Separator
+  '\u{2028}', // Line Separator
+  '\u{2029}', // Paragraph Separator
 ] as const;
 
 // Re-export control character regexes from core/constants (SSOT)

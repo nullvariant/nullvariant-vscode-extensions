@@ -423,21 +423,21 @@ async function testIsValidExecutable(): Promise<void> {
 
   // Test with non-existent path
   {
-    const result = await isValidExecutable('/nonexistent/path/to/binary');
-    assert.strictEqual(result, false, 'Non-existent path should be invalid');
+    const isResult = await isValidExecutable('/nonexistent/path/to/binary');
+    assert.strictEqual(isResult, false, 'Non-existent path should be invalid');
   }
 
   // Test with a directory
   {
-    const result = await isValidExecutable('/tmp');
-    assert.strictEqual(result, false, 'Directory should be invalid');
+    const isResult = await isValidExecutable('/tmp');
+    assert.strictEqual(isResult, false, 'Directory should be invalid');
   }
 
   // Test with a known executable (if available)
   if (process.platform !== 'win32') {
-    const result = await isValidExecutable('/bin/sh');
+    const isResult = await isValidExecutable('/bin/sh');
     // /bin/sh might exist on Unix systems
-    console.log(`  /bin/sh is ${result ? 'valid' : 'invalid'}`);
+    console.log(`  /bin/sh is ${isResult ? 'valid' : 'invalid'}`);
   }
 
   console.log('✅ isValidExecutable tests passed!');
@@ -808,26 +808,26 @@ async function testVerifyGitBinary(): Promise<void> {
   if (process.platform !== 'win32') {
     // Try common git paths
     const gitPaths = ['/usr/bin/git', '/usr/local/bin/git', '/opt/homebrew/bin/git'];
-    let testedReal = false;
+    let isTestedReal = false;
 
     for (const gitPath of gitPaths) {
       if (await isValidExecutable(gitPath)) {
-        const result = await verifyGitBinary(gitPath);
-        assert.strictEqual(result, true, `Real git at ${gitPath} should be verified`);
+        const isResult = await verifyGitBinary(gitPath);
+        assert.strictEqual(isResult, true, `Real git at ${gitPath} should be verified`);
         console.log(`  ✓ Real git binary verified: ${gitPath}`);
-        testedReal = true;
+        isTestedReal = true;
         break;
       }
     }
 
-    if (!testedReal) {
+    if (!isTestedReal) {
       console.log('  No git binary found at known paths, skipping real binary test');
     }
 
     // Test with a non-git executable (e.g., /bin/sh)
     if (await isValidExecutable('/bin/sh')) {
-      const result = await verifyGitBinary('/bin/sh');
-      assert.strictEqual(result, false, '/bin/sh should not be verified as git');
+      const isResult = await verifyGitBinary('/bin/sh');
+      assert.strictEqual(isResult, false, '/bin/sh should not be verified as git');
       console.log('  ✓ Non-git binary (/bin/sh) correctly rejected');
     }
   }

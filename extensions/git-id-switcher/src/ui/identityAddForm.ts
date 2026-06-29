@@ -323,8 +323,8 @@ export async function showAddIdentityForm(): Promise<Identity | undefined> {
     return undefined;
   }
 
-  const saved = await saveNewIdentity(vs, newIdentity);
-  if (saved) {
+  const isSaved = await saveNewIdentity(vs, newIdentity);
+  if (isSaved) {
     return newIdentity;
   }
   return undefined;

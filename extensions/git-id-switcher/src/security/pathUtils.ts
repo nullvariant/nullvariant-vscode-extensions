@@ -268,7 +268,7 @@ export function validateWorkspacePath(
   workspacePath: string,
   options: { requireExists?: boolean } = {}
 ): NormalizedPathResult {
-  const { requireExists = false } = options;
+  const { requireExists: isRequireExists = false } = options;
 
   // Step 1: Basic input validation
   if (!workspacePath || workspacePath.length === 0) {
@@ -330,7 +330,7 @@ export function validateWorkspacePath(
   }
 
   // Step 8: Existence check (if required)
-  if (requireExists) {
+  if (isRequireExists) {
     try {
       fs.accessSync(normalizedPath);
     } catch (error) {
@@ -370,7 +370,7 @@ export function validateSubmodulePath(
   workspacePath: string,
   options: ValidateSubmodulePathOptions = {}
 ): NormalizedPathResult {
-  const { verifySymlinks = true, requireExists = false } = options;
+  const { verifySymlinks: isVerifySymlinks = true, requireExists: isRequireExists = false } = options;
 
   // First, validate the workspace path itself
   // Use validateWorkspacePath to accept platform-native paths (Windows drive letters, etc.)
@@ -423,7 +423,7 @@ export function validateSubmodulePath(
   /* c8 ignore stop */
 
   // Verify symlinks don't escape workspace (if enabled)
-  if (verifySymlinks) {
+  if (isVerifySymlinks) {
     const symlinkResult = verifySubmoduleSymlinks(normalizedSubmodulePath, normalizedWorkspace, submodulePath);
     if (symlinkResult) {
       return symlinkResult;
@@ -432,7 +432,7 @@ export function validateSubmodulePath(
   }
 
   // Optionally check if path exists
-  if (requireExists) {
+  if (isRequireExists) {
     try {
       fs.accessSync(normalizedSubmodulePath);
     } catch (error) {

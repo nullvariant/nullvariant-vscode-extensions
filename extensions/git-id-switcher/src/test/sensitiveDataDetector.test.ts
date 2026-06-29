@@ -1209,7 +1209,7 @@ function testSpecialJavaScriptTypes(): void {
 
   // BigInt (treated as object by typeof, but has special handling)
   {
-    const bigIntValue = BigInt(12_345_678_901_234_567_890n);
+    const bigIntValue = 12_345_678_901_234_567_890n;
     const result = sanitizeValue(bigIntValue);
     // BigInt is typeof 'bigint', not 'object', so it falls through to [bigint]
     assert.strictEqual(

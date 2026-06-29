@@ -424,7 +424,7 @@ async function testSecurityEdgeCases(): Promise<void> {
     // Test null byte injection - should be blocked
     const nullByteConfig: FileLogConfig = {
       enabled: true,
-      filePath: toForwardSlashes(path.join(tempDir, 'file\u0000.log')),
+      filePath: toForwardSlashes(path.join(tempDir, 'file\u{0}.log')),
       maxFileSizeBytes: 1024 * 1024,
       maxFiles: 5,
     };

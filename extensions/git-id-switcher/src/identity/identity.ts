@@ -639,8 +639,8 @@ export async function addIdentityToConfig(identity: Identity): Promise<void> {
   const identities = config.get<Identity[]>("identities", []);
 
   // Check for duplicate ID
-  const duplicateExists = identities.some((i) => i.id === identity.id);
-  if (duplicateExists) {
+  const isDuplicateExists = identities.some((i) => i.id === identity.id);
+  if (isDuplicateExists) {
     throw new Error(`Identity with ID already exists: ${identity.id}`);
   }
 
@@ -715,8 +715,8 @@ export async function updateIdentityInConfig(
     if (!isValidIdentityId(value, MAX_ID_LENGTH)) {
       throw new Error(`Invalid new identity ID format: ${value}`);
     }
-    const duplicateExists = identities.some((i) => i.id === value);
-    if (duplicateExists) {
+    const isDuplicateExists = identities.some((i) => i.id === value);
+    if (isDuplicateExists) {
       throw new Error(`Identity with ID already exists: ${value}`);
     }
   }
