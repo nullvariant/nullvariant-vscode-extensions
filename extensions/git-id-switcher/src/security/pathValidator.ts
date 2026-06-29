@@ -216,7 +216,7 @@ const validatePathHasAllowedPrefix: Validator = (state) => {
     '.',      // Current directory (but not ..)
   ];
 
-  const startsWithValidPrefix = validPrefixes.some(prefix => {
+  const isStartsWithValidPrefix = validPrefixes.some(prefix => {
     if (prefix === '.') {
       // Special handling for '.': must be exactly '.' or './'
       return state.path === '.' || state.path.startsWith('./');
@@ -224,7 +224,7 @@ const validatePathHasAllowedPrefix: Validator = (state) => {
     return state.path === prefix || state.path.startsWith(prefix);
   });
 
-  if (!startsWithValidPrefix) {
+  if (!isStartsWithValidPrefix) {
     return {
       ...state,
       valid: false,

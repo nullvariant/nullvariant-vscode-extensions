@@ -262,10 +262,10 @@ function testNullByteInjection(): void {
   console.log('Testing null byte injection prevention...');
 
   const nullByteAttacks = [
-    '/home/user\u0000.txt',
-    '/home/user/file\u0000/etc/passwd',
-    '~/.ssh/id_rsa\u0000.pub',
-    './file\u0000.txt',
+    '/home/user\u{0}.txt',
+    '/home/user/file\u{0}/etc/passwd',
+    '~/.ssh/id_rsa\u{0}.pub',
+    './file\u{0}.txt',
   ];
 
   for (const attack of nullByteAttacks) {
@@ -291,10 +291,10 @@ function testControlCharacters(): void {
   console.log('Testing control character prevention...');
 
   const controlCharAttacks = [
-    '/home/user\u0001file',
-    '/home/user\u0007file', // Bell
-    '/home/user\u0008file', // Backspace
-    '/home/user\u001Bfile', // Escape
+    '/home/user\u{1}file',
+    '/home/user\u{7}file', // Bell
+    '/home/user\u{8}file', // Backspace
+    '/home/user\u{1B}file', // Escape
   ];
 
   for (const attack of controlCharAttacks) {
@@ -320,11 +320,11 @@ function testInvisibleCharacters(): void {
   console.log('Testing invisible Unicode character prevention...');
 
   const invisibleCharAttacks = [
-    '/home/user\u200Bfile',  // Zero-width space
-    '/tmp/\uFEFF.txt',       // BOM
-    '~/.ssh\u200Did_rsa',    // Zero-width joiner
-    '/home\u200E/user',      // Left-to-right mark
-    '/path/\u00ADfile',      // Soft hyphen
+    '/home/user\u{200B}file',  // Zero-width space
+    '/tmp/\u{FEFF}.txt',       // BOM
+    '~/.ssh\u{200D}id_rsa',    // Zero-width joiner
+    '/home\u{200E}/user',      // Left-to-right mark
+    '/path/\u{AD}file',      // Soft hyphen
   ];
 
   for (const attack of invisibleCharAttacks) {
@@ -672,7 +672,7 @@ function testCommandAllowedIntegration(): void {
 
   // Valid command with null byte attack
   {
-    const result = isCommandAllowed('ssh-keygen', ['-lf', '/home/user\u0000.txt']);
+    const result = isCommandAllowed('ssh-keygen', ['-lf', '/home/user\u{0}.txt']);
     assert.strictEqual(result.allowed, false, 'Command with null byte should be blocked');
   }
 
@@ -947,14 +947,14 @@ function testSecureLogPathBasicValidation(): void {
 
   // Null byte
   {
-    const result = isSecureLogPath('/home/user\u0000.log', allowedDir);
+    const result = isSecureLogPath('/home/user\u{0}.log', allowedDir);
     assert.strictEqual(result.valid, false, 'Null byte should be rejected');
     assert.ok(result.reason?.includes('null byte'), 'Should mention null byte');
   }
 
   // Control characters
   {
-    const result = isSecureLogPath('/home/user\u0001file.log', allowedDir);
+    const result = isSecureLogPath('/home/user\u{1}file.log', allowedDir);
     assert.strictEqual(result.valid, false, 'Control char should be rejected');
   }
 

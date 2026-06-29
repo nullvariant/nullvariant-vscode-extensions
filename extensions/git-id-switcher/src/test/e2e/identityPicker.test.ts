@@ -85,7 +85,7 @@ function createMockVSCode(options: {
   let capturedPlaceholder = '';
   let capturedTitle = '';
   let capturedButtons: unknown[] = [];
-  let capturedIgnoreFocusOut = false;
+  let isCapturedIgnoreFocusOut = false;
   const showWarningMessageCalls: string[] = [];
 
   return {
@@ -132,8 +132,8 @@ function createMockVSCode(options: {
           set activeItems(_value: T[]) {
             // Capture but don't need to track for tests
           },
-          get ignoreFocusOut() { return capturedIgnoreFocusOut; },
-          set ignoreFocusOut(value: boolean) { capturedIgnoreFocusOut = value; },
+          get ignoreFocusOut() { return isCapturedIgnoreFocusOut; },
+          set ignoreFocusOut(value: boolean) { isCapturedIgnoreFocusOut = value; },
           matchOnDescription: false,
           matchOnDetail: false,
           get selectedItems(): T[] {
@@ -201,7 +201,7 @@ function createMockVSCode(options: {
     _getCapturedPlaceholder: () => capturedPlaceholder,
     _getCapturedTitle: () => capturedTitle,
     _getCapturedButtons: () => capturedButtons,
-    _getCapturedIgnoreFocusOut: () => capturedIgnoreFocusOut,
+    _getCapturedIgnoreFocusOut: () => isCapturedIgnoreFocusOut,
     _getShowWarningMessageCalls: () => showWarningMessageCalls,
   };
 }
@@ -481,7 +481,7 @@ function createManageMockVSCode(options: {
   let capturedTitle = '';
   let capturedButtons: unknown[] = [];
   let capturedActiveItems: CapturedManageQuickPickItem[] = [];
-  let capturedIgnoreFocusOut = false;
+  let isCapturedIgnoreFocusOut = false;
 
   return {
     workspace: {
@@ -524,8 +524,8 @@ function createManageMockVSCode(options: {
           get activeItems(): T[] {
             return capturedActiveItems as unknown as T[];
           },
-          get ignoreFocusOut() { return capturedIgnoreFocusOut; },
-          set ignoreFocusOut(value: boolean) { capturedIgnoreFocusOut = value; },
+          get ignoreFocusOut() { return isCapturedIgnoreFocusOut; },
+          set ignoreFocusOut(value: boolean) { isCapturedIgnoreFocusOut = value; },
           matchOnDescription: false,
           matchOnDetail: false,
           get selectedItems(): T[] {
@@ -650,7 +650,7 @@ function createManageMockVSCode(options: {
     _getCapturedTitle: () => capturedTitle,
     _getCapturedButtons: () => capturedButtons,
     _getCapturedActiveItems: () => capturedActiveItems,
-    _getCapturedIgnoreFocusOut: () => capturedIgnoreFocusOut,
+    _getCapturedIgnoreFocusOut: () => isCapturedIgnoreFocusOut,
   };
 }
 

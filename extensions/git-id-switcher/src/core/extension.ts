@@ -153,36 +153,38 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
         });
     }),
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
-      if (e.affectsConfiguration('gitIdSwitcher')) {
-        try {
-          const newSnapshot = securityLogger.createConfigSnapshot();
-          const changes = securityLogger.detectConfigChanges(newSnapshot);
-          if (changes.length > 0) {
-            securityLogger.logConfigChanges(changes);
-          }
-          securityLogger.storeConfigSnapshot();
-        } catch (error) {
-          extensionLogger.error(`Error handling config change: ${getUserSafeMessage(error)}`);
-          try {
-            securityLogger.storeConfigSnapshot();
-          } catch (snapshotError) {
-            extensionLogger.error(`Error storing config snapshot: ${getUserSafeMessage(snapshotError)}`);
-          }
-        }
-
-        invalidateIdentityCache();
-        initializeState(context)
-          .then(() => performSyncCheck())
-          .catch(error => {
-            const safeMessage = getUserSafeMessage(error);
-            extensionLogger.error(`Failed to initialize after config change: ${safeMessage}`);
-            if (isFatalError(error)) {
-              vscode.window.showErrorMessage(
-                vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
-              );
-            }
-          });
+      if (!e.affectsConfiguration('gitIdSwitcher')) {
+      	return;
       }
+
+      try {
+        const newSnapshot = securityLogger.createConfigSnapshot();
+        const changes = securityLogger.detectConfigChanges(newSnapshot);
+        if (changes.length > 0) {
+          securityLogger.logConfigChanges(changes);
+        }
+        securityLogger.storeConfigSnapshot();
+      } catch (error) {
+        extensionLogger.error(`Error handling config change: ${getUserSafeMessage(error)}`);
+        try {
+          securityLogger.storeConfigSnapshot();
+        } catch (snapshotError) {
+          extensionLogger.error(`Error storing config snapshot: ${getUserSafeMessage(snapshotError)}`);
+        }
+      }
+
+      invalidateIdentityCache();
+      initializeState(context)
+        .then(() => performSyncCheck())
+        .catch(error => {
+          const safeMessage = getUserSafeMessage(error);
+          extensionLogger.error(`Failed to initialize after config change: ${safeMessage}`);
+          if (isFatalError(error)) {
+            vscode.window.showErrorMessage(
+              vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
+            );
+          }
+        });
     }),
     // Sync check on window focus return
     vscode.window.onDidChangeWindowState((state: vscode.WindowState) => {

@@ -419,7 +419,7 @@ function testGetSafeStackRegexEdgeCases(): void {
       ].join('\n');
       const safe = createErrorWithStack(stack).getSafeStack()!;
       assert.ok(safe.startsWith('SecurityError: Test\n'), 'Deep path: error message preserved');
-      assert.ok(safe.includes('~/' + 'dir0/'), 'Deep path: home replaced, structure preserved');
+      assert.ok(safe.includes('~/dir0/'), 'Deep path: home replaced, structure preserved');
     }
 
     // --- Empty stack (only error message) ---

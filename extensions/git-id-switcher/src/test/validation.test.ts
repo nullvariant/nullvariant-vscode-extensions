@@ -613,25 +613,25 @@ function testValidationConsistency(): void {
     { value: "test\0null", reason: "null byte" },
     // Control characters caught by hasDangerousChars (SAFE_TEXT_REGEX)
     // AND now also by validateFieldForDangerousPatterns (Issue-00103 fix)
-    { value: "test\u0002ctrl", reason: "STX control character (0x02)" },
-    { value: "test\u0007bell", reason: "BEL control character (0x07)" },
-    { value: "test\u001Bescape", reason: "ESC control character (0x1B)" },
-    { value: "test\u007Fdel", reason: "DEL control character (0x7F)" },
+    { value: "test\u{2}ctrl", reason: "STX control character (0x02)" },
+    { value: "test\u{7}bell", reason: "BEL control character (0x07)" },
+    { value: "test\u{1B}escape", reason: "ESC control character (0x1B)" },
+    { value: "test\u{7F}del", reason: "DEL control character (0x7F)" },
   ];
 
   for (const { value, reason } of bothReject) {
-    const uiRejects = hasDangerousChars(value);
+    const isUiRejects = hasDangerousChars(value);
     const errors: string[] = [];
     validateFieldForDangerousPatterns(value, "test", errors);
-    const identityRejects = errors.length > 0;
+    const isIdentityRejects = errors.length > 0;
 
     assert.strictEqual(
-      uiRejects,
+      isUiRejects,
       true,
       `hasDangerousChars should reject: ${reason}`,
     );
     assert.strictEqual(
-      identityRejects,
+      isIdentityRejects,
       true,
       `validateFieldForDangerousPatterns should reject: ${reason}`,
     );
@@ -655,16 +655,16 @@ function testValidationConsistency(): void {
   ];
 
   for (const { value, reason } of identityOnlyRejects) {
-    const uiRejects = hasDangerousChars(value);
+    const isUiRejects = hasDangerousChars(value);
     const errors: string[] = [];
     validateFieldForDangerousPatterns(value, "test", errors);
-    const identityRejects = errors.length > 0;
+    const isIdentityRejects = errors.length > 0;
 
     // hasDangerousChars does NOT reject (all bytes are printable)
-    assert.strictEqual(uiRejects, false, `hasDangerousChars allows: ${reason}`);
+    assert.strictEqual(isUiRejects, false, `hasDangerousChars allows: ${reason}`);
     // validateFieldForDangerousPatterns DOES reject (text-level pattern detection)
     assert.strictEqual(
-      identityRejects,
+      isIdentityRejects,
       true,
       `validateFieldForDangerousPatterns catches: ${reason}`,
     );
@@ -697,18 +697,18 @@ function testValidationConsistency(): void {
   ];
 
   for (const { value, reason } of bothAccept) {
-    const uiRejects = hasDangerousChars(value);
+    const isUiRejects = hasDangerousChars(value);
     const errors: string[] = [];
     validateFieldForDangerousPatterns(value, "test", errors);
-    const identityRejects = errors.length > 0;
+    const isIdentityRejects = errors.length > 0;
 
     assert.strictEqual(
-      uiRejects,
+      isUiRejects,
       false,
       `hasDangerousChars should accept: ${reason}`,
     );
     assert.strictEqual(
-      identityRejects,
+      isIdentityRejects,
       false,
       `validateFieldForDangerousPatterns should accept: ${reason}`,
     );
@@ -718,7 +718,7 @@ function testValidationConsistency(): void {
   {
     const controlCharName: Identity = {
       id: "test",
-      name: "Test\u0007User",
+      name: "Test\u{7}User",
       email: "test@example.com",
     };
     const result = validateIdentity(controlCharName);
@@ -789,7 +789,7 @@ function testValidateTextFieldForDangerousPatterns(): void {
   // Test 4: Control characters should be rejected via hasDangerousCharsForText
   {
     const errors: string[] = [];
-    validateTextFieldForDangerousPatterns("test\u0007bell", "service", errors);
+    validateTextFieldForDangerousPatterns("test\u{7}bell", "service", errors);
     assert.ok(errors.length > 0, "Control characters should be rejected");
     assert.ok(
       errors.some((e) => e.includes("control characters")),

@@ -22,7 +22,7 @@ let cachedVSCode: typeof vscodeTypes | undefined;
 /**
  * Flag to track if VS Code loading has been attempted
  */
-let loadAttempted = false;
+let isLoadAttempted = false;
 
 /**
  * Get the VS Code API module
@@ -39,11 +39,11 @@ let loadAttempted = false;
  * }
  */
 export function getVSCode(): typeof vscodeTypes | undefined {
-  if (loadAttempted) {
+  if (isLoadAttempted) {
     return cachedVSCode;
   }
 
-  loadAttempted = true;
+  isLoadAttempted = true;
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -112,7 +112,7 @@ export function getExtensions(): typeof vscodeTypes.extensions | undefined {
  */
 export function _resetCache(): void {
   cachedVSCode = undefined;
-  loadAttempted = false;
+  isLoadAttempted = false;
 }
 
 /**
@@ -125,5 +125,5 @@ export function _resetCache(): void {
  */
 export function _setMockVSCode(mockVSCode: typeof vscodeTypes | undefined): void {
   cachedVSCode = mockVSCode;
-  loadAttempted = true;
+  isLoadAttempted = true;
 }

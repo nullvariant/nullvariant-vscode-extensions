@@ -193,8 +193,8 @@ class SecurityLoggerImpl implements ISecurityLogger {
     const config = vscode.workspace.getConfiguration('gitIdSwitcher.logging');
 
     // Get redactAllSensitive setting for maximum privacy mode
-    const redactAllSensitive = config.get<boolean>('redactAllSensitive', false);
-    this.sanitizeOptions = { redactAllSensitive };
+    const isRedactAllSensitive = config.get<boolean>('redactAllSensitive', false);
+    this.sanitizeOptions = { redactAllSensitive: isRedactAllSensitive };
 
     // SECURITY: Ignore workspace setting for filePath
     // Always use globalStorageUri to prevent arbitrary file write attacks

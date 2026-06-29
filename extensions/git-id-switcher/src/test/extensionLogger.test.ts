@@ -182,11 +182,11 @@ function testDispose(): void {
 
   resetLogger();
 
-  let disposeCalled = false;
+  let isDisposeCalled = false;
   const appendedLines: string[] = [];
   const mockOutputChannel = {
     appendLine: (line: string) => { appendedLines.push(line); },
-    dispose: () => { disposeCalled = true; },
+    dispose: () => { isDisposeCalled = true; },
   };
 
   const mockVSCode = {
@@ -202,7 +202,7 @@ function testDispose(): void {
 
   // Dispose should clean up OutputChannel
   extensionLogger.dispose();
-  assert.ok(disposeCalled, 'Should dispose OutputChannel');
+  assert.ok(isDisposeCalled, 'Should dispose OutputChannel');
 
   // After dispose, logging is a permanent no-op (disposed flag prevents re-initialization)
   extensionLogger.info('after dispose');
@@ -220,7 +220,7 @@ function testLazyInitialization(): void {
 
   resetLogger();
 
-  let createCalled = false;
+  let isCreateCalled = false;
   const mockOutputChannel = {
     appendLine: () => {},
     dispose: () => {},
@@ -229,7 +229,7 @@ function testLazyInitialization(): void {
   const mockVSCode = {
     window: {
       createOutputChannel: () => {
-        createCalled = true;
+        isCreateCalled = true;
         return mockOutputChannel;
       },
     },
@@ -237,16 +237,16 @@ function testLazyInitialization(): void {
   _setMockVSCode(mockVSCode as never);
 
   // OutputChannel should not be created yet (lazy)
-  assert.strictEqual(createCalled, false, 'Should not create OutputChannel before first use');
+  assert.strictEqual(isCreateCalled, false, 'Should not create OutputChannel before first use');
 
   // First log call should trigger creation
   extensionLogger.info('first message');
-  assert.ok(createCalled, 'Should create OutputChannel on first use');
+  assert.ok(isCreateCalled, 'Should create OutputChannel on first use');
 
   // Second call should not create again
-  createCalled = false;
+  isCreateCalled = false;
   extensionLogger.info('second message');
-  assert.strictEqual(createCalled, false, 'Should not create OutputChannel again');
+  assert.strictEqual(isCreateCalled, false, 'Should not create OutputChannel again');
 
   resetLogger();
   console.log('✅ extensionLogger lazy initialization passed!');

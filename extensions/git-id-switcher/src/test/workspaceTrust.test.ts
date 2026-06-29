@@ -95,9 +95,9 @@ function testIsWorkspaceTrustedTrue(): void {
   const mockVSCode = createMockVSCode({ isTrusted: true });
   _setMockVSCode(mockVSCode as never);
 
-  const result = isWorkspaceTrusted();
+  const isResult = isWorkspaceTrusted();
 
-  assert.strictEqual(result, true, 'Should return true for trusted workspace');
+  assert.strictEqual(isResult, true, 'Should return true for trusted workspace');
 
   _resetCache();
   console.log('✅ isWorkspaceTrusted when trusted passed!');
@@ -112,9 +112,9 @@ function testIsWorkspaceTrustedFalse(): void {
   const mockVSCode = createMockVSCode({ isTrusted: false });
   _setMockVSCode(mockVSCode as never);
 
-  const result = isWorkspaceTrusted();
+  const isResult = isWorkspaceTrusted();
 
-  assert.strictEqual(result, false, 'Should return false for untrusted workspace');
+  assert.strictEqual(isResult, false, 'Should return false for untrusted workspace');
 
   _resetCache();
   console.log('✅ isWorkspaceTrusted when untrusted passed!');
@@ -126,7 +126,7 @@ function testIsWorkspaceTrustedFalse(): void {
 function testShowUntrustedWorkspaceWarning(): void {
   console.log('Testing showUntrustedWorkspaceWarning...');
 
-  let warningShown = false;
+  let isWarningShown = false;
   let warningMessage = '';
 
   const mockVSCode = {
@@ -136,7 +136,7 @@ function testShowUntrustedWorkspaceWarning(): void {
     },
     window: {
       showWarningMessage: (message: string) => {
-        warningShown = true;
+        isWarningShown = true;
         warningMessage = message;
         return Promise.resolve(undefined);
       },
@@ -149,7 +149,7 @@ function testShowUntrustedWorkspaceWarning(): void {
 
   showUntrustedWorkspaceWarning();
 
-  assert.strictEqual(warningShown, true, 'Warning message should be shown');
+  assert.strictEqual(isWarningShown, true, 'Warning message should be shown');
   assert.ok(
     warningMessage.includes('disabled') || warningMessage.includes('untrusted'),
     'Warning message should mention disabled or untrusted'
@@ -170,14 +170,14 @@ function testInitializeWorkspaceTrustTrusted(): void {
   _setMockVSCode(mockVSCode as never);
 
   const mockContext = createMockContext();
-  let callbackCalled = false;
+  let isCallbackCalled = false;
 
-  const result = initializeWorkspaceTrust(mockContext, async () => {
-    callbackCalled = true;
+  const isResult = initializeWorkspaceTrust(mockContext, async () => {
+    isCallbackCalled = true;
   });
 
-  assert.strictEqual(result, true, 'Should return true for trusted workspace');
-  assert.strictEqual(callbackCalled, false, 'Callback should not be called immediately for trusted workspace');
+  assert.strictEqual(isResult, true, 'Should return true for trusted workspace');
+  assert.strictEqual(isCallbackCalled, false, 'Callback should not be called immediately for trusted workspace');
 
   _resetCache();
   _resetForTesting();
@@ -191,13 +191,13 @@ function testInitializeWorkspaceTrustUntrusted(): void {
   console.log('Testing initializeWorkspaceTrust with untrusted workspace...');
 
   _resetForTesting();
-  let eventHandlerRegistered = false;
+  let isEventHandlerRegistered = false;
 
   const mockVSCode = {
     workspace: {
       isTrusted: false,
       onDidGrantWorkspaceTrust: () => {
-        eventHandlerRegistered = true;
+        isEventHandlerRegistered = true;
         return { dispose: () => {} };
       },
     },
@@ -211,15 +211,15 @@ function testInitializeWorkspaceTrustUntrusted(): void {
   _setMockVSCode(mockVSCode as never);
 
   const mockContext = createMockContext();
-  let callbackCalled = false;
+  let isCallbackCalled = false;
 
-  const result = initializeWorkspaceTrust(mockContext, async () => {
-    callbackCalled = true;
+  const isResult = initializeWorkspaceTrust(mockContext, async () => {
+    isCallbackCalled = true;
   });
 
-  assert.strictEqual(result, false, 'Should return false for untrusted workspace');
-  assert.strictEqual(callbackCalled, false, 'Callback should not be called for untrusted workspace');
-  assert.strictEqual(eventHandlerRegistered, true, 'Trust granted event handler should be registered');
+  assert.strictEqual(isResult, false, 'Should return false for untrusted workspace');
+  assert.strictEqual(isCallbackCalled, false, 'Callback should not be called for untrusted workspace');
+  assert.strictEqual(isEventHandlerRegistered, true, 'Trust granted event handler should be registered');
 
   _resetCache();
   _resetForTesting();
@@ -253,20 +253,20 @@ async function testInitializeWorkspaceTrustCallback(): Promise<void> {
   _setMockVSCode(mockVSCode as never);
 
   const mockContext = createMockContext();
-  let callbackCalled = false;
+  let isCallbackCalled = false;
 
   initializeWorkspaceTrust(mockContext, async () => {
-    callbackCalled = true;
+    isCallbackCalled = true;
   });
 
-  assert.strictEqual(callbackCalled, false, 'Callback should not be called initially');
+  assert.strictEqual(isCallbackCalled, false, 'Callback should not be called initially');
 
   // Simulate trust being granted
   if (trustGrantedHandler) {
     await trustGrantedHandler();
   }
 
-  assert.strictEqual(callbackCalled, true, 'Callback should be called when trust is granted');
+  assert.strictEqual(isCallbackCalled, true, 'Callback should be called when trust is granted');
 
   _resetCache();
   _resetForTesting();
@@ -327,9 +327,9 @@ function testRequireWorkspaceTrustTrusted(): void {
   const mockVSCode = createMockVSCode({ isTrusted: true });
   _setMockVSCode(mockVSCode as never);
 
-  const result = requireWorkspaceTrust();
+  const isResult = requireWorkspaceTrust();
 
-  assert.strictEqual(result, true, 'Should return true for trusted workspace');
+  assert.strictEqual(isResult, true, 'Should return true for trusted workspace');
 
   _resetCache();
   console.log('✅ requireWorkspaceTrust with trusted workspace passed!');
@@ -341,7 +341,7 @@ function testRequireWorkspaceTrustTrusted(): void {
 function testRequireWorkspaceTrustUntrusted(): void {
   console.log('Testing requireWorkspaceTrust with untrusted workspace...');
 
-  let warningShown = false;
+  let isWarningShown = false;
 
   const mockVSCode = {
     workspace: {
@@ -349,7 +349,7 @@ function testRequireWorkspaceTrustUntrusted(): void {
     },
     window: {
       showWarningMessage: () => {
-        warningShown = true;
+        isWarningShown = true;
         return Promise.resolve(undefined);
       },
     },
@@ -359,10 +359,10 @@ function testRequireWorkspaceTrustUntrusted(): void {
   };
   _setMockVSCode(mockVSCode as never);
 
-  const result = requireWorkspaceTrust();
+  const isResult = requireWorkspaceTrust();
 
-  assert.strictEqual(result, false, 'Should return false for untrusted workspace');
-  assert.strictEqual(warningShown, true, 'Warning should be shown for untrusted workspace');
+  assert.strictEqual(isResult, false, 'Should return false for untrusted workspace');
+  assert.strictEqual(isWarningShown, true, 'Warning should be shown for untrusted workspace');
 
   _resetCache();
   console.log('✅ requireWorkspaceTrust with untrusted workspace passed!');
@@ -527,9 +527,9 @@ function testIsWorkspaceTrustedNoVSCode(): void {
   // Reset cache to ensure VS Code API is not available
   _resetCache();
 
-  const result = isWorkspaceTrusted();
+  const isResult = isWorkspaceTrusted();
 
-  assert.strictEqual(result, false, 'Should return false when VS Code API is unavailable');
+  assert.strictEqual(isResult, false, 'Should return false when VS Code API is unavailable');
 
   console.log('✅ isWorkspaceTrusted without VS Code API passed!');
 }
@@ -589,9 +589,9 @@ function testRequireWorkspaceTrustNoL10n(): void {
   };
   _setMockVSCode(mockVSCode as never);
 
-  const result = requireWorkspaceTrust();
+  const isResult = requireWorkspaceTrust();
 
-  assert.strictEqual(result, false, 'Should return false for untrusted workspace');
+  assert.strictEqual(isResult, false, 'Should return false for untrusted workspace');
   assert.ok(
     warningMessage.includes('requires a trusted workspace'),
     'Should show fallback message when l10n is unavailable'
@@ -627,14 +627,14 @@ function testInitializeWorkspaceTrustNoWorkspace(): void {
   _resetCache();
 
   const mockContext = createMockContext();
-  let callbackCalled = false;
+  let isCallbackCalled = false;
 
-  const result = initializeWorkspaceTrust(mockContext, async () => {
-    callbackCalled = true;
+  const isResult = initializeWorkspaceTrust(mockContext, async () => {
+    isCallbackCalled = true;
   });
 
-  assert.strictEqual(result, false, 'Should return false when VS Code API is unavailable');
-  assert.strictEqual(callbackCalled, false, 'Callback should not be called');
+  assert.strictEqual(isResult, false, 'Should return false when VS Code API is unavailable');
+  assert.strictEqual(isCallbackCalled, false, 'Callback should not be called');
 
   _resetForTesting();
   console.log('✅ initializeWorkspaceTrust without workspace API passed!');

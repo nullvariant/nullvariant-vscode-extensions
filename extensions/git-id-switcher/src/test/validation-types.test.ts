@@ -128,16 +128,16 @@ function testToFieldError(): void {
 
   // Should reject field names with NUL byte
   {
-    const result = toFieldError('field\u0000name: value');
+    const result = toFieldError('field\u{0}name: value');
     assert.strictEqual(result.field, 'unknown');
-    assert.strictEqual(result.message, 'field\u0000name: value');
+    assert.strictEqual(result.message, 'field\u{0}name: value');
   }
 
   // Should reject field names with control characters
   {
-    const result = toFieldError('field\u0001: value');
+    const result = toFieldError('field\u{1}: value');
     assert.strictEqual(result.field, 'unknown');
-    assert.strictEqual(result.message, 'field\u0001: value');
+    assert.strictEqual(result.message, 'field\u{1}: value');
   }
 
   // Should reject field names with newline

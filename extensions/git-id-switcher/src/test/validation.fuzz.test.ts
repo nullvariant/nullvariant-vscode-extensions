@@ -180,8 +180,8 @@ function testIsPathSafeNeverThrows(): void {
 
   fc.assert(
     fc.property(fc.string(), (path) => {
-      const result = isShellSafePath(path);
-      assert.strictEqual(typeof result, 'boolean');
+      const isResult = isShellSafePath(path);
+      assert.strictEqual(typeof isResult, 'boolean');
     }),
     { numRuns: 1000, verbose: false }
   );
@@ -202,8 +202,8 @@ function testPathTraversalDetection(): void {
         const pathFragment = pathChars.join('');
         // If path contains "..", it should be unsafe
         if (pathFragment.includes('..')) {
-          const result = isShellSafePath(pathFragment);
-          assert.strictEqual(result, false,
+          const isResult = isShellSafePath(pathFragment);
+          assert.strictEqual(isResult, false,
             `Should reject path with traversal: "${pathFragment}"`);
         }
       }
@@ -222,11 +222,11 @@ function testPathShellMetacharacters(): void {
 
   fc.assert(
     fc.property(maliciousStringArbitrary, (maliciousPath) => {
-      const result = isShellSafePath(maliciousPath);
+      const isResult = isShellSafePath(maliciousPath);
       // Most malicious strings should be rejected
       // (some may be false positives, but that's acceptable for security)
       if (/[`$(){}|&<>\n\r\0]/.test(maliciousPath)) {
-        assert.strictEqual(result, false,
+        assert.strictEqual(isResult, false,
           `Should reject path with dangerous chars: "${maliciousPath}"`);
       }
     }),
@@ -412,18 +412,18 @@ function testBidiCharacterDetection(): void {
 
   // All Bidi-related characters that must be detected
   const bidiChars = [
-    '\u202A', // LRE
-    '\u202B', // RLE
-    '\u202C', // PDF
-    '\u202D', // LRO
-    '\u202E', // RLO
-    '\u2066', // LRI
-    '\u2067', // RLI
-    '\u2068', // FSI
-    '\u2069', // PDI
-    '\u180E', // Mongolian Vowel Separator
-    '\u2028', // Line Separator
-    '\u2029', // Paragraph Separator
+    '\u{202A}', // LRE
+    '\u{202B}', // RLE
+    '\u{202C}', // PDF
+    '\u{202D}', // LRO
+    '\u{202E}', // RLO
+    '\u{2066}', // LRI
+    '\u{2067}', // RLI
+    '\u{2068}', // FSI
+    '\u{2069}', // PDI
+    '\u{180E}', // Mongolian Vowel Separator
+    '\u{2028}', // Line Separator
+    '\u{2029}', // Paragraph Separator
   ];
 
   fc.assert(
@@ -455,8 +455,8 @@ function testBidiInStringContexts(): void {
   console.log('  Fuzzing: Bidi characters should be detected in string contexts...');
 
   const bidiChars = [
-    '\u202A', '\u202B', '\u202C', '\u202D', '\u202E',
-    '\u2066', '\u2067', '\u2068', '\u2069',
+    '\u{202A}', '\u{202B}', '\u{202C}', '\u{202D}', '\u{202E}',
+    '\u{2066}', '\u{2067}', '\u{2068}', '\u{2069}',
   ];
 
   fc.assert(
