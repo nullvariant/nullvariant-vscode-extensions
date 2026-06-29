@@ -122,6 +122,12 @@ function stripBranchSuffix(str: string): string {
 }
 /* c8 ignore stop */
 
+function getWorkspaceValidationFailureReason(workspaceValidation: {
+  reason?: string;
+}): string {
+  return workspaceValidation.reason ?? "Invalid workspace path";
+}
+
 /**
  * Parse and validate a single submodule entry from git status output.
  * Uses pure string operations to prevent ReDoS vulnerabilities.
@@ -270,7 +276,7 @@ export async function listSubmodules(
   if (!workspaceValidation.valid || !workspaceValidation.normalizedPath) {
     securityLogger.logValidationFailure(
       "submoduleWorkspace",
-      workspaceValidation.reason ?? "Invalid workspace path",
+      getWorkspaceValidationFailureReason(workspaceValidation),
     );
     return [];
   }
@@ -534,5 +540,7 @@ export function getMaxSubmoduleDepth(): number {
  * Test-only exports for private validation helpers.
  */
 export const __testExports = {
+  getWorkspaceValidationFailureReason,
   isValidCommitHash,
+  stripBranchSuffix,
 };

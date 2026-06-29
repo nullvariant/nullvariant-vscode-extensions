@@ -431,6 +431,55 @@ function testCommitHashValidation(): void {
 }
 
 /**
+ * Test branch suffix parsing branch coverage.
+ */
+function testBranchSuffixParsing(): void {
+  console.log('Testing branch suffix parsing...');
+
+  const { stripBranchSuffix } = __testExports;
+
+  assert.strictEqual(
+    stripBranchSuffix('vendor/lib'),
+    'vendor/lib',
+    'Path without branch suffix should remain unchanged'
+  );
+  assert.strictEqual(
+    stripBranchSuffix('vendor/lib main)'),
+    'vendor/lib main)',
+    'Malformed suffix without opening parenthesis should remain unchanged'
+  );
+  assert.strictEqual(
+    stripBranchSuffix('vendor/lib (main)'),
+    'vendor/lib',
+    'Valid branch suffix should be stripped'
+  );
+
+  console.log('  Branch suffix parsing tests passed');
+}
+
+/**
+ * Test workspace validation failure reason fallback branch coverage.
+ */
+function testWorkspaceValidationFailureReason(): void {
+  console.log('Testing workspace validation failure reason...');
+
+  const { getWorkspaceValidationFailureReason } = __testExports;
+
+  assert.strictEqual(
+    getWorkspaceValidationFailureReason({ reason: 'Workspace path is empty' }),
+    'Workspace path is empty',
+    'Provided workspace validation reason should be used'
+  );
+  assert.strictEqual(
+    getWorkspaceValidationFailureReason({}),
+    'Invalid workspace path',
+    'Fallback reason should be used when validation has no reason'
+  );
+
+  console.log('  Workspace validation failure reason tests passed');
+}
+
+/**
  * Test regex pattern strictness (40-char SHA-1)
  *
  * Tests the SUBMODULE_STATUS_REGEX pattern used in submodule.ts
@@ -1168,6 +1217,8 @@ export async function runSubmoduleTests(): Promise<void> {
     testMaxSubmoduleDepth();
     testWorkspaceBoundary();
     testCommitHashValidation();
+    testBranchSuffixParsing();
+    testWorkspaceValidationFailureReason();
     testRegexPatternStrictness();
     testInvalidWorkspacePaths();
 
