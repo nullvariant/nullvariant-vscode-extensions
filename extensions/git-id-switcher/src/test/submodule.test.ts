@@ -22,6 +22,7 @@ import {
   setIdentityForSubmodules,
   isSubmoduleSupportEnabled,
   getSubmoduleDepth,
+  __testExports,
 } from '../core/submodule';
 import { _resetCache, _setMockVSCode } from '../core/vscodeLoader';
 
@@ -400,6 +401,33 @@ function testWorkspaceBoundary(): void {
   }
 
   console.log('  Workspace boundary enforcement passed');
+}
+
+/**
+ * Test commit hash validation branch coverage.
+ */
+function testCommitHashValidation(): void {
+  console.log('Testing commit hash validation...');
+
+  const { isValidCommitHash } = __testExports;
+
+  assert.strictEqual(
+    isValidCommitHash('0123456789abcdef0123456789abcdef01234567'),
+    true,
+    '40-character lowercase hex hash should be valid'
+  );
+  assert.strictEqual(
+    isValidCommitHash('a'.repeat(39)),
+    false,
+    'Short hash should be invalid'
+  );
+  assert.strictEqual(
+    isValidCommitHash('g'.repeat(40)),
+    false,
+    'Non-hex hash should be invalid'
+  );
+
+  console.log('  Commit hash validation tests passed');
 }
 
 /**
@@ -1139,6 +1167,7 @@ export async function runSubmoduleTests(): Promise<void> {
     testPermissionErrorHandling();
     testMaxSubmoduleDepth();
     testWorkspaceBoundary();
+    testCommitHashValidation();
     testRegexPatternStrictness();
     testInvalidWorkspacePaths();
 

@@ -529,3 +529,10 @@ export function getSubmoduleDepth(): number {
 export function getMaxSubmoduleDepth(): number {
   return MAX_SUBMODULE_DEPTH;
 }
+
+/**
+ * Test-only exports for private validation helpers.
+ */
+export const __testExports = {
+  isValidCommitHash,
+};
