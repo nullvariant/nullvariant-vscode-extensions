@@ -100,7 +100,6 @@ This section documents all secrets used in CI/CD workflows.
 | FOSSA_API_KEY         | FOSSA license/vulnerability scanning   | (API access only)            | As needed | Medium          |
 | CLOUDFLARE_API_TOKEN  | Cloudflare Pages/R2 deployment         | deploy-docs.yml, publish.yml | Annual    | High            |
 | CLOUDFLARE_ACCOUNT_ID | Cloudflare account identifier (public) | deploy-docs.yml, publish.yml | Never     | Low (public ID) |
-| SLACK_WEBHOOK         | Bot monitoring alerts                  | bot-monitoring.yml           | As needed | Medium          |
 
 ### GitHub App Secrets (6 bots × 2 secrets each)
 
@@ -147,7 +146,6 @@ Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `produc
 | SONAR_TOKEN          | SonarCloud   | [SonarCloud Security](https://sonarcloud.io/account/security)                  | No expiration |
 | FOSSA_API_KEY        | FOSSA        | [FOSSA Settings](https://app.fossa.com/account/settings/integrations)          | No expiration |
 | GitHub App Keys      | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
-| SLACK_WEBHOOK        | Slack        | [Slack Apps](https://api.slack.com/apps)                                       | No expiration |
 
 **Token Details**:
 
