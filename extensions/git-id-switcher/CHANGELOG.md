@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.7] - 2026-10-15
+
+### Fixed
+
+- **commit-msg hook chain** ([#600](https://github.com/nullvariant/nullvariant-vscode-extensions/pull/600)): The husky `commit-msg` hook now stops the commit when the parent repository's hook is missing, instead of letting it through without the signature block, and runs the parent hook with `bash`. The weekly VEX update bot commits with `HUSKY=0` and signs off for the DCO check
+
+### Changed
+
+- **Contributor documentation**: `CONTRIBUTING.md` and the root `README.md` describe the husky git hooks instead of the removed `.githooks` setup, and tell contributors working outside the parent repository to commit with `HUSKY=0` and regenerate derived documentation themselves
+
 ## [0.19.6] - 2026-05-13
 
 ### Fixed
@@ -1828,7 +1838,7 @@ This release includes comprehensive security hardening across multiple areas.
 - `gitIdentitySwitcher.autoSwitchSshKey`: Auto SSH key switching
 - `gitIdentitySwitcher.showNotifications`: Show switch notifications
 
-[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.17...HEAD
+[Unreleased]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.19.7...HEAD
 [0.16.17]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.16...git-id-switcher-v0.16.17
 [0.16.16]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.15...git-id-switcher-v0.16.16
 [0.16.15]: https://github.com/nullvariant/nullvariant-vscode-extensions/compare/git-id-switcher-v0.16.14...git-id-switcher-v0.16.15
