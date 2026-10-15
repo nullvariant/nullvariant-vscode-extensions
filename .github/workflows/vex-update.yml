@@ -162,7 +162,10 @@ jobs:
 
           git checkout -b "$BRANCH"
           git add extensions/git-id-switcher/.vex/vex.json
-          git commit -m "$(cat <<'COMMITEOF'
+          # CI has no parent repository, and .husky/commit-msg fails closed without
+          # the parent hook, so disable husky for this bot commit only. The bot
+          # signs off for the DCO check.
+          HUSKY=0 git commit --signoff -m "$(cat <<'COMMITEOF'
           chore: update VEX document with latest CVE assessments
 
           Automated weekly VEX update from Trivy scan results.
