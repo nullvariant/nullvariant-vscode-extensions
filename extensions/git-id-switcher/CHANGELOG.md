@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Contributor documentation**: `CONTRIBUTING.md` and the root `README.md` describe the husky git hooks instead of the removed `.githooks` setup, and tell contributors working outside the parent repository to commit with `HUSKY=0` and regenerate derived documentation themselves
 
+### Security
+
+- **Development dependency update** ([#601](https://github.com/nullvariant/nullvariant-vscode-extensions/pull/601)): Updated `@vscode/vsce` to 4.0.0, which no longer pulls in `braces` (GHSA-vfj7-8cjw-p6xm, no patched version), and raised the `serialize-javascript` override to `^7.1.2` (GHSA-gfhx-hw2g-v5hg). Both are development dependencies only; the packaged extension contains the same files
+
 ## [0.19.6] - 2026-05-13
 
 ### Fixed
