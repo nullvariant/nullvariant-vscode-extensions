@@ -1,9 +1,17 @@
 #!/usr/bin/env sh
-# Chain to parent's commit-msg hook for signature insertion
-# This ensures commits are signed even when husky manages hooks
+# Chain to the parent repository's commit-msg hook, which inserts the signature
+# block and enforces the sign-off line. Fail closed: if the parent hook is
+# missing, the commit would be recorded without them, so stop it instead.
+# In CI, the VEX update bot commits with HUSKY=0; the other bot workflows do not
+# install husky, so they never reach this script.
 
 PARENT_HOOK="$(git rev-parse --show-toplevel)/../../../scripts/hooks/commit-msg"
 
-if [ -f "$PARENT_HOOK" ]; then
-  sh "$PARENT_HOOK" "$@"
+if [ ! -f "$PARENT_HOOK" ]; then
+  echo "Parent commit-msg hook not found: $PARENT_HOOK" >&2
+  echo "Commit from the submodule checkout inside the parent repository so the signature block is inserted and the sign-off line is checked." >&2
+  exit 1
 fi
+
+# The parent hook is a bash script; run it with bash, not the sh that husky uses.
+exec bash "$PARENT_HOOK" "$@"

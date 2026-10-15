@@ -49,7 +49,7 @@ By signing off, you certify the [Developer Certificate of Origin v1.1](https://d
 2. Clone your fork
 3. Create a feature branch: `git checkout -b feature/my-feature`
 4. Make your changes
-5. Commit with `--signoff`: `git commit --signoff -m "feat: description"`
+5. Commit with `--signoff`: `HUSKY=0 git commit --signoff -m "feat: description"` (see [Git hooks](#git-hooks))
 6. Push to your fork
 7. Open a Pull Request
 8. Wait for CI checks to pass (including DCO), then a maintainer will merge
@@ -61,10 +61,7 @@ By signing off, you certify the [Developer Certificate of Origin v1.1](https://d
 git clone https://github.com/your-username/nullvariant-vscode-extensions.git
 cd nullvariant-vscode-extensions
 
-# Set up git hooks (recommended)
-git config core.hooksPath .githooks
-
-# Install dependencies
+# Install dependencies (this also installs the husky git hooks)
 npm install
 
 # Work on an extension
@@ -72,6 +69,12 @@ cd extensions/git-id-switcher
 npm install
 npm run watch
 ```
+
+### Git hooks
+
+`npm install` sets up the git hooks with husky. The `commit-msg` hook chains to the maintainer's parent repository, which inserts the maintainer's signature block, and it stops the commit when that repository is not present. In your clone, commit with `HUSKY=0` so the hooks are skipped; the DCO check on your pull request still verifies your sign-off.
+
+`HUSKY=0` also skips the `pre-commit` hook, which regenerates derived documentation. If you changed Markdown or LICENSE files, run `cd extensions/git-id-switcher && npm run generate:readme && node scripts/update-doc-hashes.mjs` and stage the results before committing.
 
 ## Code Style
 

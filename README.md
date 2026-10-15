@@ -147,13 +147,7 @@ npm run test:e2e
 
 ### Git Hooks Setup
 
-This repository uses custom git hooks for release safety. After cloning, run:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-This enables the pre-push hook that prevents pushing version bumps without release tags.
+`npm install` sets up the git hooks with husky (`.husky/`): `pre-commit` formats staged Markdown and regenerates derived documentation files, `commit-msg` chains to the maintainer's parent repository, and `pre-push` blocks direct pushes to `main`. Contributors working outside the parent repository commit with `HUSKY=0` (see [CONTRIBUTING.md](CONTRIBUTING.md#git-hooks)).
 
 ## Repository Structure
 
@@ -164,7 +158,9 @@ nullvariant-vscode-extensions/
 ├── .github/workflows/
 │   ├── ci.yml
 │   └── publish.yml
-├── .githooks/
+├── .husky/
+│   ├── commit-msg
+│   ├── pre-commit
 │   └── pre-push
 ├── LICENSE
 └── README.md

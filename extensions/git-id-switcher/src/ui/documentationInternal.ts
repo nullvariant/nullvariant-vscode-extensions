@@ -32,7 +32,7 @@ import { isHrefAllowed } from './htmlTemplates/linkIntercept';
 export const DOCUMENT_HASHES: Record<string, string> = {
   'AGENTS.md': 'c4918e12fd7900bfc41e708992ebc4b7326600ce9327e8020a986fe4dd807f8d',
   'CODE_OF_CONDUCT.md': 'a0e9cb2e004663cdedef4e1adc0e429417ccfc479e367cbc17b869f62ae759d2',
-  'CONTRIBUTING.md': 'ed4d1f391ffe04e3031dfc9f16fd8fd5dcd54ba23af3b3202c07adac5ba23da7',
+  'CONTRIBUTING.md': 'a11879b44f0357effe35c11c510a04d2794d0d944080e10e7e1d2800af8b7594',
   'extensions/git-id-switcher/CHANGELOG.md': 'a3f912342c9ce3685deb38861bed54204d3dc7e533450a9dccde40fcf0f700b8',
   'extensions/git-id-switcher/docs/ARCHITECTURE.md': 'd5d879d988054d208739497962a0f937f2f21bdaab51776c4e8363cba99d634c',
   'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
@@ -69,7 +69,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/README.md': '1af546f7162c7447c3decfc36a9c78486cc8d649ea0bb2789912c482ac4ccc4f',
   'GOVERNANCE.md': '806cf32ec9fe9fd964a782927f8eaa7696d408c42d31f554eebd6755bd911c71',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
-  'README.md': 'd90d96a773889c52a2342d343201df2200fa49f214128a457fd84e60bd35454b',
+  'README.md': 'a8b3c3487cb40d15255aea864ef49b2ba69ed76e1edb52bbf59309069ddf1cd9',
   'SECURITY.md': '179887e0a77212e3042fc7cb309c3a190dfcd0838b315d7fc2a403b9c94eb320',
 };
 
