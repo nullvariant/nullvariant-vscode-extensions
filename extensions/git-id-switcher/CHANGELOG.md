@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **commit-msg hook chain** ([#600](https://github.com/nullvariant/nullvariant-vscode-extensions/pull/600)): The husky `commit-msg` hook now stops the commit when the parent repository's hook is missing, instead of letting it through without the signature block, and runs the parent hook with `bash`. The weekly VEX update bot commits with `HUSKY=0` and signs off for the DCO check
+- **Identity cache source**: The validated identity cache is reused only for the VS Code API object it was read from. A configuration-change handler finishing late could otherwise fill the cache from another object; this made one end-to-end test fail intermittently. There is no change for users, since the extension uses a single VS Code API object
 
 ### Changed
 

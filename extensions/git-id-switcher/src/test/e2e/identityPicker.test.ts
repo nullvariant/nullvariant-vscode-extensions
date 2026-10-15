@@ -26,7 +26,11 @@
 import * as assert from 'node:assert';
 import { showIdentityQuickPick, showManageIdentitiesQuickPick } from '../../ui/identityPicker';
 import { _setMockVSCode, _resetCache } from '../../core/vscodeLoader';
-import { invalidateIdentityCache, type Identity } from '../../identity/identity';
+import {
+  getIdentitiesWithValidation,
+  invalidateIdentityCache,
+  type Identity,
+} from '../../identity/identity';
 
 /**
  * Test identity fixtures
@@ -236,6 +240,22 @@ describe('showIdentityQuickPick E2E Test Suite', function () {
         warnings[0].includes('No identities configured'),
         'Warning should mention no identities'
       );
+    });
+
+    it('should not reuse identities cached from another VS Code API object', async () => {
+      // A configuration-change handler that finishes late can fill the cache from
+      // the real VS Code API after beforeEach invalidated it. Reproduce that by
+      // filling the cache from one mock and then swapping in another.
+      _setMockVSCode(createMockVSCode({ identities: [TEST_IDENTITIES.work] }) as never);
+      assert.strictEqual(getIdentitiesWithValidation().length, 1);
+
+      const mockVSCode = createMockVSCode({ identities: [] });
+      _setMockVSCode(mockVSCode as never);
+
+      const result = await showIdentityQuickPick();
+
+      assert.strictEqual(result, undefined, 'Should return undefined');
+      assert.strictEqual(mockVSCode._getShowWarningMessageCalls().length, 1, 'Should show warning');
     });
   });
 

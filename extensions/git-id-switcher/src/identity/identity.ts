@@ -49,6 +49,20 @@ let hasShownValidationError = false;
 let identityCache: Identity[] | null = null;
 
 /**
+ * The VS Code API object the cache was read from.
+ *
+ * In production there is only one, so this never changes. Tests swap in mock
+ * objects, and a configuration-change handler that finishes late can fill the
+ * cache from a different object; the cache is only reused for the same object.
+ */
+let identityCacheSource: unknown;
+
+function storeIdentityCache(identities: Identity[], source: unknown): void {
+  identityCache = identities;
+  identityCacheSource = source;
+}
+
+/**
  * Show one-time validation error notification to user.
  *
  * Extracted from getIdentitiesWithValidation() to reduce cognitive complexity.
@@ -379,12 +393,13 @@ export function getIdentities(): Identity[] {
  * @returns Array of valid identities (invalid ones are filtered out)
  */
 export function getIdentitiesWithValidation(): Identity[] {
-  // Return cached result if available (shallow copy to prevent callers from mutating cache)
-  if (identityCache !== null) {
+  const vs = getVSCode();
+  // Return cached result if it was read from the same VS Code API object
+  // (shallow copy to prevent callers from mutating cache)
+  if (identityCache !== null && identityCacheSource === vs) {
     return [...identityCache];
   }
 
-  const vs = getVSCode();
   if (!vs) {
     return [];
   }
@@ -405,7 +420,7 @@ export function getIdentitiesWithValidation(): Identity[] {
 
   // Early return for empty array (valid state, cache to avoid repeated config reads)
   if (rawIdentities.length === 0) {
-    identityCache = [];
+    storeIdentityCache([], vs);
     return [];
   }
 
@@ -418,7 +433,7 @@ export function getIdentitiesWithValidation(): Identity[] {
       rawIdentities.length,
     );
     // Cache and return empty array to fail securely (avoids repeated security log spam)
-    identityCache = [];
+    storeIdentityCache([], vs);
     return [];
   }
 
@@ -468,7 +483,7 @@ export function getIdentitiesWithValidation(): Identity[] {
     showValidationErrorNotification(invalidIndices.length);
   }
 
-  identityCache = validIdentities;
+  storeIdentityCache(validIdentities, vs);
   return [...validIdentities];
 }
 
@@ -481,6 +496,7 @@ export function getIdentitiesWithValidation(): Identity[] {
  */
 export function invalidateIdentityCache(): void {
   identityCache = null;
+  identityCacheSource = undefined;
   hasShownValidationError = false;
 }
 
