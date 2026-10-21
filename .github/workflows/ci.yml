@@ -174,9 +174,11 @@ jobs:
           if [ "$HEAD_DEPS" != "0" ]; then
             echo "has_prod_deps=true" >> "$GITHUB_OUTPUT"
             NEW_DEPS=$(git show "${HEAD_REF}:extensions/git-id-switcher/package.json" | jq -r '.dependencies | keys[]')
-            echo "prod_deps<<DEPSEOF" >> "$GITHUB_OUTPUT"
+            # SECURITY: the names come from the PR, so the delimiter must not be guessable
+            DELIMITER="DEPSEOF_$(openssl rand -hex 16)"
+            echo "prod_deps<<${DELIMITER}" >> "$GITHUB_OUTPUT"
             echo "$NEW_DEPS" >> "$GITHUB_OUTPUT"
-            echo "DEPSEOF" >> "$GITHUB_OUTPUT"
+            echo "${DELIMITER}" >> "$GITHUB_OUTPUT"
             echo "::error::Production dependencies detected. VEX must be manually reviewed."
           else
             echo "has_prod_deps=false" >> "$GITHUB_OUTPUT"
@@ -215,6 +217,8 @@ jobs:
         if: steps.check.outputs.has_prod_deps == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # SECURITY: dependency names come from the PR, so pass them through the environment
+          DEPS: ${{ steps.check.outputs.prod_deps }}
         run: |
           # Prevent duplicate comments on force-pushed PRs
           EXISTING=$(gh pr view "${{ github.event.pull_request.number }}" --json comments \
@@ -223,7 +227,6 @@ jobs:
           if [ -n "$EXISTING" ]; then
             echo "VEX assessment comment already exists. Skipping."
           else
-            DEPS="${{ steps.check.outputs.prod_deps }}"
             gh pr comment "${{ github.event.pull_request.number }}" --body "$(cat <<COMMENTEOF
           ### ⚠️ VEX Assessment: Manual Review Required
 
