@@ -32,91 +32,90 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      # SECURITY: Validate every version once, before any registry call.
+      # An empty list must never reach a CLI: without versions, `ovsx unpublish`
+      # deletes the whole extension.
+      - name: Validate versions
+        env:
+          # SECURITY: Pass user input via environment variable to prevent injection
+          VERSIONS: ${{ inputs.versions }}
+        run: |
+          count=0
+          for version in $VERSIONS; do
+            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+              echo "::error::Invalid version format: $version"
+              exit 1
+            fi
+            count=$((count + 1))
+          done
+          if [ "$count" -eq 0 ]; then
+            echo "::error::No versions given"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
 
-      # Install at root level for npm workspaces
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Unpublish from VS Code Marketplace
-        if: ${{ vars.PUBLISH_TO_MARKETPLACE == 'true' }}
-        working-directory: extensions/git-id-switcher
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-          DRY_RUN: ${{ inputs.dry_run }}
-          # SECURITY: Pass user input via environment variable to prevent injection
-          VERSIONS: ${{ inputs.versions }}
-        run: |
-          # SECURITY: Validate version format (semver: major.minor.patch)
-          for version in $VERSIONS; do
-            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
-              echo "::error::Invalid version format: $version"
-              exit 1
-            fi
-            echo "Processing version: $version"
-            if [ "$DRY_RUN" = "true" ]; then
-              echo "  [DRY RUN] Would unpublish nullvariant.git-id-switcher@$version from VS Code Marketplace"
-            else
-              echo "  Unpublishing nullvariant.git-id-switcher@$version from VS Code Marketplace..."
-              npx vsce unpublish "nullvariant.git-id-switcher@$version" -p "$VSCE_PAT" -f || echo "  Failed to unpublish $version (may not exist)"
-            fi
-          done
+      # SECURITY: the CLI comes from the lockfile, and no dependency install
+      # scripts run in a job that holds the registry token
+      - name: Install registry CLI
+        run: npm ci --ignore-scripts
 
       - name: Unpublish from Open VSX
         if: ${{ vars.PUBLISH_TO_OPENVSX == 'true' }}
-        working-directory: extensions/git-id-switcher
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
           DRY_RUN: ${{ inputs.dry_run }}
-          # SECURITY: Pass user input via environment variable to prevent injection
           VERSIONS: ${{ inputs.versions }}
         run: |
-          # SECURITY: Validate version format (semver: major.minor.patch)
-          for version in $VERSIONS; do
-            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
-              echo "::error::Invalid version format: $version"
-              exit 1
-            fi
-            echo "Processing version: $version"
-            if [ "$DRY_RUN" = "true" ]; then
-              echo "  [DRY RUN] Would unpublish nullvariant.git-id-switcher $version from Open VSX"
-            else
-              echo "  Unpublishing nullvariant.git-id-switcher $version from Open VSX..."
-              # Open VSX uses REST API for deletion
-              curl -X DELETE \
-                -H "Authorization: Bearer $OVSX_PAT" \
-                "https://open-vsx.org/api/-/namespace/nullvariant/extension/git-id-switcher/version/$version" \
-                || echo "  Failed to unpublish $version (may not exist)"
-            fi
-          done
+          # Word splitting is intended: one argument per validated version
+          # shellcheck disable=SC2086
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[DRY RUN] Would unpublish nullvariant.git-id-switcher versions: $VERSIONS from Open VSX"
+          else
+            npx --no-install ovsx unpublish nullvariant.git-id-switcher --versions $VERSIONS -f -p "$OVSX_PAT"
+          fi
+
+      # vsce has no per-version unpublish: `vsce unpublish` deletes every
+      # published version of the extension, so this workflow does not call it.
+      - name: Unpublish from VS Code Marketplace
+        if: ${{ vars.PUBLISH_TO_MARKETPLACE == 'true' }}
+        env:
+          VERSIONS: ${{ inputs.versions }}
+        run: |
+          # Not a failure: the Open VSX step above may already have removed these
+          # versions, and re-running the job must not request that removal again
+          echo "::warning::Removing single versions from the VS Code Marketplace is not automated. Remove $VERSIONS from the Marketplace publisher management page."
+          echo "**VS Code Marketplace:** remove $VERSIONS by hand (not automated)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Summary
+        if: always()
         env:
           # SECURITY: Pass user input via environment variable to prevent injection
           DRY_RUN: ${{ inputs.dry_run }}
           VERSIONS: ${{ inputs.versions }}
         run: |
-          echo "## Unpublish Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "$DRY_RUN" = "true" ]; then
-            echo "**Mode:** Dry Run (no actual deletions)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Mode:** Live Run" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Versions processed:**" >> $GITHUB_STEP_SUMMARY
-          # SECURITY: Validate version format before displaying
-          for version in $VERSIONS; do
-            if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
-              echo "- $version" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Unpublish Summary"
+            echo ""
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "**Mode:** Dry Run (no actual deletions)"
             else
-              echo "- ~$version~ (skipped: invalid format)" >> $GITHUB_STEP_SUMMARY
-              echo "::warning::Skipped invalid version in summary: $version"
+              echo "**Mode:** Live Run"
             fi
-          done
+            echo ""
+            echo "**Versions requested:**"
+            # SECURITY: Validate version format before displaying
+            for version in $VERSIONS; do
+              if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+                echo "- $version"
+              else
+                echo "- ~$version~ (skipped: invalid format)"
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
