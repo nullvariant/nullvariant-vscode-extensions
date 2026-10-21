@@ -730,6 +730,28 @@ function testGetSubmoduleDepthClamping(): void {
     }
   }
 
+  // Test with non-integer values (should fall back to the default 1, not disable the limit)
+  for (const configured of ['3', NaN, 2.5, Infinity]) {
+    const mockVSCode = {
+      workspace: {
+        getConfiguration: () => ({
+          get: <T>() => configured as unknown as T,
+        }),
+      },
+      l10n: undefined,
+      window: undefined,
+      extensions: undefined,
+    };
+
+    try {
+      _setMockVSCode(mockVSCode as never);
+      const result = getSubmoduleDepth();
+      assert.strictEqual(result, 1, `Non-integer depth ${String(configured)} should fall back to 1`);
+    } finally {
+      _resetCache();
+    }
+  }
+
   console.log('✅ getSubmoduleDepth clamping tests passed!');
 }
 

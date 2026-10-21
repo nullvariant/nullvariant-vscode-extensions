@@ -457,7 +457,8 @@ export async function setIdentityForSubmodules(
         );
 
         if (isGpgResult) {
-          await setSubmoduleGitConfig(
+          // A signing key without commit.gpgsign is not a configured submodule
+          isGpgResult = await setSubmoduleGitConfig(
             submodule.absolutePath,
             "commit.gpgsign",
             "true",
@@ -508,11 +509,13 @@ export function getSubmoduleDepth(): number {
   const config = workspace.getConfiguration("gitIdSwitcher");
   const configuredDepth = config.get<number>("submoduleDepth", 1);
 
+  // SECURITY: The type parameter is not checked at runtime. A non-integer value
+  // would make the clamp below NaN and disable the depth limit, so fall back to
+  // the default instead.
+  const depth = Number.isSafeInteger(configuredDepth) ? configuredDepth : 1;
+
   // SECURITY: Clamp to valid range [0, MAX_SUBMODULE_DEPTH]
-  const clampedDepth = Math.min(
-    Math.max(0, configuredDepth),
-    MAX_SUBMODULE_DEPTH,
-  );
+  const clampedDepth = Math.min(Math.max(0, depth), MAX_SUBMODULE_DEPTH);
 
   /* c8 ignore start - Depth clamping validation logging (edge case) */
   // Log if configured value was outside valid range

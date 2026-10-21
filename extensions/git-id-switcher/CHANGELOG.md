@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.8] - 2026-10-21
+
+### Security
+
+- **Submodule depth setting**: `submoduleDepth` is now checked to be an integer before it is applied, and other values fall back to the default of 1
+
+### Fixed
+
+- **Submodule signing result**: When an identity has a GPG key, a submodule whose `commit.gpgsign` could not be set is now counted as failed instead of configured
+
 ## [0.19.7] - 2026-10-15
 
 ### Fixed
