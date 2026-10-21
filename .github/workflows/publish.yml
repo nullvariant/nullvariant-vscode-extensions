@@ -8,10 +8,12 @@ on:
 permissions: {}
 
 # The build job runs before the production approval and holds no publishing
-# credentials. Each publish job waits for the approval, checks that it ships the
-# exact VSIX the build job recorded, and holds only its own destination's
-# credential. A publish job that fails can be re-run on its own ("Re-run failed
-# jobs") with the same VSIX, without publishing to the other destinations again.
+# credentials. Each publish job waits for the approval and holds only its own
+# destination's credential; the jobs that ship the VSIX first check it against
+# the SHA-256 the build job recorded. A failed publish job can be re-run on its
+# own (`gh run rerun --job <job-id>`) with the same build artifact, without
+# publishing to the other destinations again. Every job keeps the egress
+# allowlist that the single-job workflow used.
 jobs:
   build:
     runs-on: ubuntu-latest
