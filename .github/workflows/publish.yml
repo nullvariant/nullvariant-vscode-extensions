@@ -45,6 +45,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
+      - name: Get version from tag
+        id: version
+        # SECURITY: the tag name is interpolated into later steps, so accept only a plain
+        # version that matches the packaged extension
+        run: |
+          version="${GITHUB_REF#refs/tags/git-id-switcher-v}"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag version is not MAJOR.MINOR.PATCH"
+            exit 1
+          fi
+          package_version=$(jq -r '.version' extensions/git-id-switcher/package.json)
+          if [ "$version" != "$package_version" ]; then
+            echo "::error::Tag version does not match package.json"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
@@ -64,22 +81,6 @@ jobs:
         run: npm run package
         working-directory: extensions/git-id-switcher
 
-      - name: Get version from tag
-        id: version
-        # SECURITY: the tag name is interpolated into later steps, so accept only a plain
-        # version that matches the packaged extension
-        run: |
-          version="${GITHUB_REF#refs/tags/git-id-switcher-v}"
-          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Tag version is not MAJOR.MINOR.PATCH"
-            exit 1
-          fi
-          package_version=$(jq -r '.version' extensions/git-id-switcher/package.json)
-          if [ "$version" != "$package_version" ]; then
-            echo "::error::Tag version does not match package.json"
-            exit 1
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       # Supply Chain Security: Trivy VSIX scan (post-package, pre-publish)
       # Scans the packaged VSIX for known CVEs before any publishing step
