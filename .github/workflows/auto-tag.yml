@@ -14,17 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     # Prevent forks from creating tags
     if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
-    permissions:
-      contents: write
+    # The tagging App's key lives in an environment that only main can use
+    environment: ${{ matrix.extension.environment }}
+    permissions: {}
 
     strategy:
       # Stop all jobs if one fails (consistent state)
       fail-fast: true
       matrix:
         # Monorepo support: add new extensions here
-        # Format: { dir: "extension-dir", prefix: "tag-prefix-v" }
+        # Format: { dir: "extension-dir", prefix: "tag-prefix-v", environment: "env-name" }
+        # Each extension gets its own tagging App and environment, so one App's key
+        # can only create its own extension's release tags (tag rulesets enforce this)
         extension:
-          - { dir: "git-id-switcher", prefix: "git-id-switcher-v" }
+          - { dir: "git-id-switcher", prefix: "git-id-switcher-v", environment: "release-tagging" }
 
     steps:
       - name: Harden Runner
@@ -32,13 +35,21 @@ jobs:
         with:
           egress-policy: audit
 
+      # A GitHub App token (not GITHUB_TOKEN) so the tag push triggers the publish workflow.
+      # GITHUB_TOKEN pushes don't trigger other workflows (prevents infinite loops)
+      - name: Get tagging App token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ secrets.RELEASE_TAGGER_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_TAGGER_PRIVATE_KEY }}
+          permission-contents: write
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
-          # Use PAT to allow tag push to trigger publish workflow
-          # GITHUB_TOKEN pushes don't trigger other workflows (prevents infinite loops)
-          token: ${{ secrets.RELEASE_PAT }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Check if package.json changed
         id: changed
@@ -85,8 +96,13 @@ jobs:
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           if git rev-parse "$TAG" >/dev/null 2>&1; then
+            # A release tag that points elsewhere means someone created it out of band
+            if [ "$(git rev-parse "$TAG^{commit}")" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::Tag $TAG already exists but does not point to this commit"
+              exit 1
+            fi
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "ℹ️ Tag $TAG already exists, skipping"
+            echo "ℹ️ Tag $TAG already exists on this commit, skipping"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
             echo "🏷️ Tag $TAG does not exist, will create"
@@ -96,8 +112,8 @@ jobs:
         if: steps.changed.outputs.changed == 'true' && steps.check.outputs.exists == 'false'
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "git-id-switcher-release-tagger[bot]"
+          git config user.email "345663429+git-id-switcher-release-tagger[bot]@users.noreply.github.com"
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
           echo "✅ Created and pushed tag: $TAG"
