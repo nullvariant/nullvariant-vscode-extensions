@@ -377,11 +377,6 @@ jobs:
         with:
           node-version: '24'
 
-      # SECURITY: the publishing CLI comes from the lockfile, and no dependency
-      # install scripts run in a job that holds the publishing token
-      - name: Install publishing CLI
-        run: npm ci --ignore-scripts
-
       - name: Get verified VSIX
         id: vsix
         uses: ./.github/actions/verified-vsix
@@ -394,7 +389,9 @@ jobs:
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
           VSIX: ${{ steps.vsix.outputs.vsix }}
-        run: npx --no-install ovsx publish "$VSIX" -p "$OVSX_PAT"
+        # ovsx is not a project dependency (EPL-2.0 would add a license finding),
+        # so pin the exact version the releases use
+        run: npx --yes ovsx@1.3.0 publish "$VSIX" -p "$OVSX_PAT"
 
   docs:
     needs: build

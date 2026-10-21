@@ -61,11 +61,6 @@ jobs:
         with:
           node-version: '24'
 
-      # SECURITY: the CLI comes from the lockfile, and no dependency install
-      # scripts run in a job that holds the registry token
-      - name: Install registry CLI
-        run: npm ci --ignore-scripts
-
       - name: Unpublish from Open VSX
         if: ${{ vars.PUBLISH_TO_OPENVSX == 'true' }}
         env:
@@ -78,7 +73,8 @@ jobs:
           if [ "$DRY_RUN" = "true" ]; then
             echo "[DRY RUN] Would unpublish nullvariant.git-id-switcher versions: $VERSIONS from Open VSX"
           else
-            npx --no-install ovsx unpublish nullvariant.git-id-switcher --versions $VERSIONS -f -p "$OVSX_PAT"
+            # ovsx is not a project dependency; pin the exact version publish.yml uses
+            npx --yes ovsx@1.3.0 unpublish nullvariant.git-id-switcher --versions $VERSIONS -f -p "$OVSX_PAT"
           fi
 
       # vsce has no per-version unpublish: `vsce unpublish` deletes every
