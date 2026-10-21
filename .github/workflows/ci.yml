@@ -215,6 +215,8 @@ jobs:
         if: steps.check.outputs.has_prod_deps == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # SECURITY: dependency names come from the PR, so pass them through the environment
+          DEPS: ${{ steps.check.outputs.prod_deps }}
         run: |
           # Prevent duplicate comments on force-pushed PRs
           EXISTING=$(gh pr view "${{ github.event.pull_request.number }}" --json comments \
@@ -223,7 +225,6 @@ jobs:
           if [ -n "$EXISTING" ]; then
             echo "VEX assessment comment already exists. Skipping."
           else
-            DEPS="${{ steps.check.outputs.prod_deps }}"
             gh pr comment "${{ github.event.pull_request.number }}" --body "$(cat <<COMMENTEOF
           ### ⚠️ VEX Assessment: Manual Review Required
 

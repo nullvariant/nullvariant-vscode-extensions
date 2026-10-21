@@ -66,7 +66,20 @@ jobs:
 
       - name: Get version from tag
         id: version
-        run: echo "version=${GITHUB_REF#refs/tags/git-id-switcher-v}" >> $GITHUB_OUTPUT
+        # SECURITY: the tag name is interpolated into later steps, so accept only a plain
+        # version that matches the packaged extension
+        run: |
+          version="${GITHUB_REF#refs/tags/git-id-switcher-v}"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag version is not MAJOR.MINOR.PATCH"
+            exit 1
+          fi
+          package_version=$(jq -r '.version' extensions/git-id-switcher/package.json)
+          if [ "$version" != "$package_version" ]; then
+            echo "::error::Tag version does not match package.json"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       # Supply Chain Security: Trivy VSIX scan (post-package, pre-publish)
       # Scans the packaged VSIX for known CVEs before any publishing step

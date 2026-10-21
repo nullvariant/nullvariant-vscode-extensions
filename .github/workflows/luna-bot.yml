@@ -85,8 +85,9 @@ jobs:
             while IFS= read -r dep; do
               [ -z "$dep" ] && continue
               if ! echo "$BASE_DEPS" | grep -qxF "$dep"; then
-                VERSION=$(echo "$HEAD_RAW" | jq -r "(.dependencies // {})[\"${dep}\"] // (.devDependencies // {})[\"${dep}\"] // \"unknown\"")
-                NEW_PKGS="${NEW_PKGS}\n| \`${dep}\` | \`${VERSION}\` |"
+                # SECURITY: dependency names come from the PR, so pass them to jq as data
+                VERSION=$(echo "$HEAD_RAW" | jq -r --arg dep "$dep" '(.dependencies // {})[$dep] // (.devDependencies // {})[$dep] // "unknown"')
+                NEW_PKGS="${NEW_PKGS}\n| \`${dep//\`/}\` | \`${VERSION//\`/}\` |"
                 FOUND_NEW=true
               fi
             done <<< "$HEAD_DEPS"
