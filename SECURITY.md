@@ -10,8 +10,8 @@ This security policy applies to the **nullvariant-vscode-extensions** monorepo, 
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.x.x   | :white_check_mark: |
-| < 1.0   | :x:                |
+| 0.19.x  | :white_check_mark: |
+| < 0.19  | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -38,13 +38,13 @@ If you find a VS Code extension with a similar name to **Git ID Switcher** from 
 
 ### How to Verify Authenticity
 
-| Check            | Expected Value                                                                      |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| Publisher        | `nullvariant`                                                                       |
-| Extension ID     | `nullvariant.git-id-switcher`                                                       |
-| Repository URL   | `https://github.com/nullvariant/nullvariant-vscode-extensions`                      |
-| VSIX signature   | Verifiable via `cosign verify-blob` (see [README](README.md#supply-chain-security)) |
-| Build provenance | Verifiable via `gh attestation verify` (SLSA Level 3)                               |
+| Check            | Expected Value                                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| Publisher        | `nullvariant`                                                                                               |
+| Extension ID     | `nullvariant.git-id-switcher`                                                                               |
+| Repository URL   | `https://github.com/nullvariant/nullvariant-vscode-extensions`                                              |
+| VSIX signature   | Verifiable via `cosign verify-blob` (see [README](README.md#supply-chain-security))                         |
+| Build provenance | Verifiable via `gh attestation verify` (SLSA v1.0 Build Level 3, see [Build Provenance](#build-provenance)) |
 
 ## Security Measures
 
@@ -93,8 +93,29 @@ This section documents all secrets used in CI/CD workflows. Publishing and deplo
 
 1. A pull request that bumps the version in `extensions/git-id-switcher/package.json` is merged to `main`.
 2. `auto-tag.yml` gets a one-hour installation token from the `git-id-switcher-release-tagger` GitHub App and pushes the tag `git-id-switcher-v<version>`.
-3. `publish.yml` runs its `build` job without any publishing credential. The job checks the version and that the tag commit is on `main`, builds the VSIX, scans the extension directory with Trivy, signs and attests the VSIX, and records its SHA-256.
-4. The publish jobs (`github-release`, `marketplace`, `open-vsx`, `docs`) wait for the repository owner's approval of the `production` environment. The `marketplace` and `open-vsx` jobs run only when the repository variables `PUBLISH_TO_MARKETPLACE` and `PUBLISH_TO_OPENVSX` are `true`. All four jobs use the same environment, but each publishing step passes only its own destination's credential, and the jobs that ship the VSIX check it against the recorded SHA-256.
+3. `publish.yml` calls the reusable workflow `build-vsix.yml`, which holds no publishing credential. Its `build` job checks the version and that the tag commit is on `main`, builds the VSIX, scans the extension directory with Trivy, generates the SBOM, and records the VSIX's SHA-256, without an OIDC token. Its `sign` job runs no code from the repository: it checks the VSIX against the recorded SHA-256, then signs it with Cosign and attests the SBOM and the build provenance.
+4. The publish jobs (`github-release`, `marketplace`, `open-vsx`, `docs`) wait for the repository owner's approval of the `production` environment. The `marketplace` and `open-vsx` jobs run only when the repository variables `PUBLISH_TO_MARKETPLACE` and `PUBLISH_TO_OPENVSX` are `true`. All four jobs use the same environment, but each publishing step passes only its own destination's credential, and the jobs that ship the VSIX check it against the recorded SHA-256 and verify its build provenance before publishing.
+
+### Build Provenance
+
+Starting with version 0.19.9, each release VSIX carries build provenance that meets SLSA v1.0 Build Level 3 with [GitHub artifact attestations](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/increase-security-rating):
+
+- The provenance is signed by the reusable workflow `.github/workflows/build-vsix.yml`, not by `publish.yml`, which calls it. The signature names `build-vsix.yml` as the signer, and the caller cannot add steps to it.
+- `build-vsix.yml` builds and attests the VSIX in separate jobs. The build job has no OIDC permission. The signing job does not check out the repository or run its build or dependency scripts, and signs only the VSIX whose SHA-256 the build job recorded.
+- The provenance is generated on GitHub-hosted runners and signed through Sigstore with the GitHub Actions OIDC token; no signing key is stored in the repository or its secrets.
+- Before publishing, the `github-release`, `marketplace` and `open-vsx` jobs verify the provenance: it must be signed by `build-vsix.yml`, for the release tag and its commit, on a GitHub-hosted runner. A release whose provenance does not match is not published.
+
+To verify a release yourself (the example checks the tag; the publish jobs also check the commit):
+
+```bash
+gh attestation verify git-id-switcher-<version>.vsix \
+  --repo nullvariant/nullvariant-vscode-extensions \
+  --signer-workflow nullvariant/nullvariant-vscode-extensions/.github/workflows/build-vsix.yml \
+  --source-ref refs/tags/git-id-switcher-v<version> \
+  --deny-self-hosted-runners
+```
+
+Releases 0.10.35 through 0.19.8 were attested by `publish.yml`. To verify one of them, use `--signer-workflow nullvariant/nullvariant-vscode-extensions/.github/workflows/publish.yml` instead.
 
 ### Repository Secrets
 

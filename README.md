@@ -3,7 +3,7 @@
 [![CI](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml)
 [![Security](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml/badge.svg)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/security.yml)
 [![Platform](https://img.shields.io/badge/%20-Win%20%7C%20Mac%20%7C%20Linux-blue?labelColor=555&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yMSAySDNjLTEuMSAwLTIgLjktMiAydjEyYzAgMS4xLjkgMiAyIDJoN3YySDh2Mmg4di0yaC0ydi0yaDdjMS4xIDAgMi0uOSAyLTJWNGMwLTEuMS0uOS0yLTItMnptMCAxNEgzVjRoMTh2MTJ6Ii8+PC9zdmc+)](https://github.com/nullvariant/nullvariant-vscode-extensions/actions/workflows/ci.yml)
-[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev/)
+[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](SECURITY.md#build-provenance)
 [![Sigstore](https://img.shields.io/badge/Sigstore-Cosign_Signed-blue?logo=sigstore)](https://github.com/nullvariant/nullvariant-vscode-extensions#supply-chain-security)
 [![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-brightgreen)](https://github.com/nullvariant/nullvariant-vscode-extensions#supply-chain-security)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nullvariant/nullvariant-vscode-extensions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/nullvariant/nullvariant-vscode-extensions)
@@ -184,7 +184,7 @@ Every release includes cryptographic verification artifacts:
 | Artifact              | Description                                                  |
 | --------------------- | ------------------------------------------------------------ |
 | `*.vsix`              | The extension package                                        |
-| `*.vsix.intoto.jsonl` | SLSA Level 3 build provenance                                |
+| `*.vsix.intoto.jsonl` | Build provenance (SLSA v1.0 Build Level 3 from 0.19.9)       |
 | `*.vsix.bundle`       | Cosign keyless signature (Sigstore)                          |
 | `sbom-cyclonedx.json` | CycloneDX SBOM (attested when the attestation step succeeds) |
 
@@ -202,15 +202,23 @@ cosign verify-blob git-id-switcher-<version>.vsix \
 
 ```bash
 gh attestation verify git-id-switcher-<version>.vsix \
-  --repo nullvariant/nullvariant-vscode-extensions
+  --repo nullvariant/nullvariant-vscode-extensions \
+  --signer-workflow nullvariant/nullvariant-vscode-extensions/.github/workflows/build-vsix.yml \
+  --source-ref refs/tags/git-id-switcher-v<version> \
+  --deny-self-hosted-runners
 ```
+
+For releases starting with 0.19.9, the provenance is signed by the reusable build workflow, and the release is published only after this check passes. See [SECURITY.md](SECURITY.md#build-provenance) for how this meets SLSA v1.0 Build Level 3. Releases 0.10.35 through 0.19.8 were attested by `publish.yml`; use `--signer-workflow nullvariant/nullvariant-vscode-extensions/.github/workflows/publish.yml` for them.
 
 ### Verify SBOM attestation (GitHub CLI)
 
 ```bash
 gh attestation verify git-id-switcher-<version>.vsix \
   --repo nullvariant/nullvariant-vscode-extensions \
-  --predicate-type https://cyclonedx.org/bom
+  --predicate-type https://cyclonedx.org/bom \
+  --signer-workflow nullvariant/nullvariant-vscode-extensions/.github/workflows/build-vsix.yml \
+  --source-ref refs/tags/git-id-switcher-v<version> \
+  --deny-self-hosted-runners
 ```
 
 ## Extension Fingerprint
