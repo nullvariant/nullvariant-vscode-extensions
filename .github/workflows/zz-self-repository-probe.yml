@@ -1,0 +1,32 @@
+name: Self-repository probe (temporary, removed before merge)
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  # The build job stops at the tag check on a pull request; this only shows that
+  # GitHub resolves the reusable workflow through `$/`
+  reusable:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    uses: $/.github/workflows/build-vsix.yml
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
+  # The action fails at the artifact download; this only shows that GitHub
+  # resolves the composite action through `$/` without a checkout
+  action:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Get verified VSIX
+        uses: $/.github/actions/verified-vsix
+        with:
+          version: 0.0.0
+          sha256: '0000000000000000000000000000000000000000000000000000000000000000'
+          artifact-id: '1'
