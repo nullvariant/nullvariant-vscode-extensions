@@ -22,13 +22,14 @@ VS Code extensions monorepo. Primary extension: **Git ID Switcher** — manages 
 
 ## Release Process
 
-Extensions are automatically published to VS Code Marketplace and Open VSX when a release tag is pushed.
+Extensions are published to VS Code Marketplace and Open VSX (each enabled by a repository variable) when a pull request that bumps the version is merged to `main`. A dedicated GitHub App then pushes the release tag, and the publish workflow waits for the maintainer's approval before publishing.
 
 AI agents should NOT:
 
-- Push release tags
+- Push release tags (only the release tagging App can create them)
 - Modify version numbers in package.json without explicit instruction
-- Run `vsce publish` or similar commands
+- Run `vsce publish`, `ovsx publish`, or similar commands
+- Re-run release workflows or approve deployments
 
 Release tags follow the format: `git-id-switcher-v1.0.0`
 

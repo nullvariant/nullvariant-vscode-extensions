@@ -69,7 +69,7 @@ This repository contains VS Code extensions with the following security measures
 - **License & Vulnerability Scanning**: [FOSSA](https://app.fossa.com/) runs license compliance, dependency quality, and security analysis on every commit (GitHub App integration)
 - **Secret Detection**: [Gitleaks](https://github.com/gitleaks/gitleaks) scans for hardcoded secrets in both CI (`security.yml`) and pre-commit hooks (`.pre-commit-config.yaml`)
 - **Runtime Security Monitoring**: [StepSecurity Harden-Runner](https://github.com/step-security/harden-runner) monitors all workflow runs for suspicious network egress, file access, and process execution
-- **Branch Protection**: Main branch requires PR approval (1 reviewer minimum). All PRs are automatically approved by nullvariant-justice[bot] after CI passes (solo-developer workflow for [OpenSSF Scorecard](https://securityscorecards.dev/) compliance). Dependency bot PRs receive additional safety review before approval. Enforced by [Allstar](https://github.com/ossf/allstar/)
+- **Branch Protection**: Main branch requires PR approval (1 reviewer minimum), the `build` checks on Ubuntu, Windows, and macOS, and signed commits. nullvariant-justice[bot] approves pull requests from branches of this repository after CI passes (solo-developer workflow for [OpenSSF Scorecard](https://securityscorecards.dev/) compliance); pull requests from forks are not auto-approved. Dependency bot pull requests are approved after a safety review of the update, which may happen before CI finishes. Approval alone does not merge anything: the required checks still have to pass. Enforced by [Allstar](https://github.com/ossf/allstar/)
 
 ## Security Testing
 
@@ -87,19 +87,37 @@ This includes tests for:
 
 ## Secrets Management
 
-This section documents all secrets used in CI/CD workflows.
+This section documents all secrets used in CI/CD workflows. Publishing and deployment credentials live in environment secrets, so only the branches or tags each environment allows can read them.
+
+### Release Flow
+
+1. A pull request that bumps the version in `extensions/git-id-switcher/package.json` is merged to `main`.
+2. `auto-tag.yml` gets a one-hour installation token from the `git-id-switcher-release-tagger` GitHub App and pushes the tag `git-id-switcher-v<version>`.
+3. `publish.yml` runs its `build` job without any publishing credential. The job checks the version and that the tag commit is on `main`, builds the VSIX, scans the extension directory with Trivy, signs and attests the VSIX, and records its SHA-256.
+4. The publish jobs (`github-release`, `marketplace`, `open-vsx`, `docs`) wait for the repository owner's approval of the `production` environment. The `marketplace` and `open-vsx` jobs run only when the repository variables `PUBLISH_TO_MARKETPLACE` and `PUBLISH_TO_OPENVSX` are `true`. All four jobs use the same environment, but each publishing step passes only its own destination's credential, and the jobs that ship the VSIX check it against the recorded SHA-256.
 
 ### Repository Secrets
 
-| Name                  | Purpose                                | Used In                      | Rotation  | Sensitivity     |
-| --------------------- | -------------------------------------- | ---------------------------- | --------- | --------------- |
-| RELEASE_PAT           | Tag push to trigger publish workflow   | auto-tag.yml                 | 90 days   | High            |
-| VSCE_PAT              | VS Code Marketplace publishing         | publish.yml, unpublish.yml   | Annual    | High            |
-| OVSX_PAT              | Open VSX publishing                    | publish.yml, unpublish.yml   | Annual    | High            |
-| SONAR_TOKEN           | SonarCloud code analysis               | sonarcloud.yml               | As needed | Medium          |
-| FOSSA_API_KEY         | FOSSA license/vulnerability scanning   | (API access only)            | As needed | Medium          |
-| CLOUDFLARE_API_TOKEN  | Cloudflare Pages/R2 deployment         | deploy-docs.yml, publish.yml | Annual    | High            |
-| CLOUDFLARE_ACCOUNT_ID | Cloudflare account identifier (public) | deploy-docs.yml, publish.yml | Never     | Low (public ID) |
+| Name        | Purpose                  | Used In        | Rotation  | Sensitivity |
+| ----------- | ------------------------ | -------------- | --------- | ----------- |
+| SONAR_TOKEN | SonarCloud code analysis | sonarcloud.yml | As needed | Medium      |
+
+### Environment Secrets
+
+| Environment       | Name                       | Purpose                                               | Used In                                 | Rotation | Sensitivity     |
+| ----------------- | -------------------------- | ----------------------------------------------------- | --------------------------------------- | -------- | --------------- |
+| `release-tagging` | RELEASE_TAGGER_CLIENT_ID   | Client ID of the `git-id-switcher-release-tagger` App | auto-tag.yml                            | Never    | Low (public ID) |
+| `release-tagging` | RELEASE_TAGGER_PRIVATE_KEY | Private key of the release tagging App                | auto-tag.yml                            | Annual   | High            |
+| `production`      | VSCE_PAT                   | VS Code Marketplace publishing                        | publish.yml (`marketplace`)             | Annual   | High            |
+| `production`      | OVSX_PAT                   | Open VSX publishing and version removal (unpublish)   | publish.yml (`open-vsx`), unpublish.yml | Annual   | High            |
+| `production`      | CLOUDFLARE_API_TOKEN       | R2 documentation deployment                           | publish.yml (`docs`)                    | Annual   | High            |
+| `production`      | CLOUDFLARE_ACCOUNT_ID      | Cloudflare account identifier (public)                | publish.yml (`docs`)                    | Never    | Low (public ID) |
+| `docs-deploy`     | CLOUDFLARE_API_TOKEN       | R2 documentation deployment                           | deploy-docs.yml                         | Annual   | High            |
+| `docs-deploy`     | CLOUDFLARE_ACCOUNT_ID      | Cloudflare account identifier (public)                | deploy-docs.yml                         | Never    | Low (public ID) |
+
+The two Cloudflare secrets hold the same values in both environments.
+
+`unpublish.yml` is started by hand, defaults to a dry run, and waits for the `production` approval, so it can only run on a release tag. It removes the requested versions from Open VSX when `PUBLISH_TO_OPENVSX` is `true`; versions on VS Code Marketplace are removed by hand, because `vsce unpublish` can only remove the whole extension.
 
 ### GitHub App Secrets (6 bots × 2 secrets each)
 
@@ -115,42 +133,49 @@ This section documents all secrets used in CI/CD workflows.
 **Security Notes for GitHub Apps**:
 
 - Private Keys do not expire, but annual rotation is recommended
-- APP_IDs are public identifiers (low sensitivity)
+- APP_IDs and Client IDs are public identifiers (low sensitivity)
 - Private Keys are high sensitivity - treat as passwords
-- Each bot has minimal permissions scoped to its specific function
+- The six bots have Contents and Pull requests (read and write) and no Workflows, Actions, or Administration permission. They use these to open pull requests from their own branches and to comment on, or in Justice's case approve, pull requests. None of them can bypass the `main` branch rules
+- The release tagging App has Contents (read and write) only, is installed on this repository only, and has no webhook
 
 ### Environment Protection
 
-Marketplace publishing secrets (VSCE_PAT, OVSX_PAT) are protected by the `production` environment, which requires:
+| Environment       | Who can deploy                     | Approval                          |
+| ----------------- | ---------------------------------- | --------------------------------- |
+| `production`      | Tags matching `git-id-switcher-v*` | Repository owner (required)       |
+| `release-tagging` | The `main` branch                  | None (runs on every version bump) |
+| `docs-deploy`     | The `main` branch                  | None                              |
 
-- Tag push matching `git-id-switcher-v*` pattern
-- Repository owner approval (optional)
+Administrators cannot bypass the `production` environment's protection rules.
 
-**Note**: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID remain as repository secrets (not environment secrets) because they are also used by deploy-docs.yml, which triggers on main branch push.
+### Release Tag Protection
+
+- **Creation**: Only the `git-id-switcher-release-tagger` App can create `git-id-switcher-v*` tags (ruleset `release-tags-create`). Tags pushed by anyone else, including administrators, are rejected.
+- **Update and deletion**: Nobody can move or delete an existing `git-id-switcher-v*` tag (ruleset `release-tags-protect`).
+- **Immutable releases**: Published GitHub Releases cannot have their assets changed.
 
 ### Rotation Procedure
 
-1. **Generate new token** from the provider (Azure DevOps, Open VSX, Cloudflare)
-2. **Update GitHub secret** in repository settings
+1. **Generate a new credential** from the provider (Azure DevOps, Open VSX, Cloudflare, or the GitHub App's Key pairs)
+2. **Update the GitHub secret** in the environment (or repository) the secret belongs to
 3. **Verify workflow execution** by triggering a test run
-4. **Revoke old token** from the provider
+4. **Revoke the old credential** from the provider
 
 ### Provider Links
 
-| Secret               | Provider     | Management URL                                                                 | Expiration    |
-| -------------------- | ------------ | ------------------------------------------------------------------------------ | ------------- |
-| RELEASE_PAT          | GitHub       | [GitHub Fine-grained PAT](https://github.com/settings/tokens?type=beta)        | 2026-07-15    |
-| VSCE_PAT             | Azure DevOps | [Azure DevOps Tokens](https://dev.azure.com/nullvariant/_usersSettings/tokens) | 2027-01-08    |
-| OVSX_PAT             | Open VSX     | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens)                   | No expiration |
-| CLOUDFLARE_API_TOKEN | Cloudflare   | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)        | No expiration |
-| SONAR_TOKEN          | SonarCloud   | [SonarCloud Security](https://sonarcloud.io/account/security)                  | No expiration |
-| FOSSA_API_KEY        | FOSSA        | [FOSSA Settings](https://app.fossa.com/account/settings/integrations)          | No expiration |
-| GitHub App Keys      | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
+| Secret                     | Provider     | Management URL                                                                 | Expiration    |
+| -------------------------- | ------------ | ------------------------------------------------------------------------------ | ------------- |
+| RELEASE_TAGGER_PRIVATE_KEY | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
+| VSCE_PAT                   | Azure DevOps | [Azure DevOps Tokens](https://dev.azure.com/nullvariant/_usersSettings/tokens) | 2027-01-08    |
+| OVSX_PAT                   | Open VSX     | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens)                   | No expiration |
+| CLOUDFLARE_API_TOKEN       | Cloudflare   | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)        | No expiration |
+| SONAR_TOKEN                | SonarCloud   | [SonarCloud Security](https://sonarcloud.io/account/security)                  | No expiration |
+| GitHub App Keys            | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
 
 **Token Details**:
 
-- **CLOUDFLARE_API_TOKEN**: Named `nullvariant-vscode-extensions-github-actions-deploy`, permissions: Workers R2 Storage:Edit
-- **RELEASE_PAT**: Named `RELEASE_PAT`. Fine-grained PAT scoped to this repository only. Repository permissions: Contents (Write). Used by auto-tag.yml to push release tags that trigger the publish workflow (built-in GITHUB_TOKEN pushes do not re-trigger workflows, so a PAT is required)
+- **CLOUDFLARE_API_TOKEN**: Named `nullvariant-vscode-extensions-github-actions-deploy`, permissions: Workers R2 Storage:Edit, limited to a single account
+- **RELEASE_TAGGER_PRIVATE_KEY**: Private key of the `git-id-switcher-release-tagger` GitHub App. `auto-tag.yml` exchanges it for a one-hour installation token to push release tags that trigger the publish workflow (built-in GITHUB_TOKEN pushes do not re-trigger workflows)
 
 ## See Also
 
