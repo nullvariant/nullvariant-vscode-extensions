@@ -4,10 +4,10 @@
 
 ## Today's Wisdom
 
-Moving to my new home in docs/...
+...zzz...
 
 ---
 
-*Last yawned: 2026-01-07 12:58:18 UTC*
+*Last yawned: 2026-10-22 06:21:40 UTC*
 
 > 働きたくないでござる
