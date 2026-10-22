@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.9] - 2026-10-22
+
+### Security
+
+- **Release build**: The VSIX is built and signed in a reusable workflow, in two jobs. The job that runs the build has no signing token, and the job that signs runs no repository code
+- **Provenance check before publishing**: Each release is published only after its build provenance has been verified: it must be signed by the release build workflow, for the release tag and its commit, on a GitHub-hosted runner
+- **Publishing jobs**: Each destination (GitHub Release, VS Code Marketplace, Open VSX, documentation) is published by its own job after the maintainer's approval, and the jobs that ship the VSIX check it against the SHA-256 recorded by the build
+
 ## [0.19.8] - 2026-10-21
 
 ### Security
