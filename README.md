@@ -156,6 +156,7 @@ nullvariant-vscode-extensions/
 ├── extensions/
 │   └── git-id-switcher/
 ├── .github/workflows/
+│   ├── build-vsix.yml
 │   ├── ci.yml
 │   └── publish.yml
 ├── .husky/

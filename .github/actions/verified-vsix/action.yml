@@ -1,7 +1,8 @@
 name: Verified VSIX
 description: >
-  Download the release assets built by the build job and check that the VSIX
-  is the exact file the build job recorded before the production approval.
+  Download the release assets built by the build job, check that the VSIX is
+  the exact file the build job recorded before the production approval, and
+  verify that its build provenance was signed by build-vsix.yml for this tag.
 
 inputs:
   version:
@@ -44,3 +45,24 @@ runs:
           exit 1
         fi
         echo "vsix=$vsix" >> "$GITHUB_OUTPUT"
+
+    # SECURITY: the provenance bundle shipped with the release must have been
+    # signed by the reusable build workflow, for this tag and this commit, on a
+    # GitHub-hosted runner. Nothing is published unless it matches the VSIX.
+    - name: Verify build provenance
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VSIX: ${{ steps.verify.outputs.vsix }}
+        REPOSITORY: ${{ github.repository }}
+        SOURCE_REF: ${{ github.ref }}
+        SOURCE_DIGEST: ${{ github.sha }}
+      run: |
+        gh attestation verify "$VSIX" \
+          --repo "$REPOSITORY" \
+          --bundle "${VSIX}.intoto.jsonl" \
+          --signer-workflow "${REPOSITORY}/.github/workflows/build-vsix.yml" \
+          --source-ref "$SOURCE_REF" \
+          --source-digest "$SOURCE_DIGEST" \
+          --cert-oidc-issuer https://token.actions.githubusercontent.com \
+          --deny-self-hosted-runners
