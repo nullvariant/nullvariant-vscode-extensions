@@ -170,30 +170,22 @@ nullvariant-vscode-extensions/
 
 > **Note**: The `main` branch is protected. All changes must go through a Pull Request.
 
-Extensions are automatically published when a release tag is pushed:
+Releases start from a version bump; release tags are never pushed by hand:
 
-1. Ensure all changes are merged to `main` via Pull Request
-2. Create and push a release tag from the latest `main`:
-
-```bash
-git checkout main
-git pull origin main
-git tag git-id-switcher-v1.0.0
-git push origin git-id-switcher-v1.0.0
-```
-
-The [publish workflow](.github/workflows/publish.yml) will automatically build and publish the extension to VS Code Marketplace and Open VSX.
+1. Open a Pull Request that bumps the version in `extensions/git-id-switcher/package.json` and adds a `CHANGELOG.md` entry, and merge it to `main`
+2. [`auto-tag.yml`](.github/workflows/auto-tag.yml) pushes the tag `git-id-switcher-v<version>` with the release tagging GitHub App. Only this App can create release tags
+3. The [publish workflow](.github/workflows/publish.yml) builds and signs the extension, then waits for the maintainer's approval of the `production` environment before publishing to VS Code Marketplace and Open VSX (each registry is enabled by the repository variables `PUBLISH_TO_MARKETPLACE` and `PUBLISH_TO_OPENVSX`)
 
 ## Supply Chain Security
 
 Every release includes cryptographic verification artifacts:
 
-| Artifact              | Description                         |
-| --------------------- | ----------------------------------- |
-| `*.vsix`              | The extension package               |
-| `*.vsix.intoto.jsonl` | SLSA Level 3 build provenance       |
-| `*.vsix.bundle`       | Cosign keyless signature (Sigstore) |
-| `sbom-cyclonedx.json` | CycloneDX SBOM with attestation     |
+| Artifact              | Description                                                  |
+| --------------------- | ------------------------------------------------------------ |
+| `*.vsix`              | The extension package                                        |
+| `*.vsix.intoto.jsonl` | SLSA Level 3 build provenance                                |
+| `*.vsix.bundle`       | Cosign keyless signature (Sigstore)                          |
+| `sbom-cyclonedx.json` | CycloneDX SBOM (attested when the attestation step succeeds) |
 
 ### Verify VSIX signature (Cosign)
 
