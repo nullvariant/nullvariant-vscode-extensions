@@ -21,7 +21,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           # SECURITY: Use SHA (immutable) instead of branch ref (user-controlled)
           # to prevent potential injection attacks via malicious branch names.
@@ -42,10 +42,10 @@ jobs:
           git checkout -B "$HEAD_REF"
 
       - name: Setup Restyled
-        uses: restyled-io/actions/setup@bce8886781a3a4e9510a248d37a87e64ba143465 # v4.4.27
+        uses: restyled-io/actions/setup@ab22a0751549a3e4fe782295458b303a55f04f76 # v4.4.32
 
       - name: Run Restyled
-        uses: restyled-io/actions/run@bce8886781a3a4e9510a248d37a87e64ba143465 # v4.4.27
+        uses: restyled-io/actions/run@ab22a0751549a3e4fe782295458b303a55f04f76 # v4.4.32
         with:
           fail-on-differences: false
           suggestions: true
