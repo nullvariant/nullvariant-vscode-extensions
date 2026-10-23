@@ -39,6 +39,10 @@ updates:
     # (Cursor, Windsurf, etc.) that lag behind VS Code stable.
     ignore:
       - dependency-name: "@types/vscode"
+      # @types/node follows the Node.js version that VS Code runs extensions on,
+      # not the latest Node.js major
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     # Group minor and patch updates together
     groups:
       dev-dependencies:

@@ -8,6 +8,12 @@
     {
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": false
+    },
+    {
+      "description": "@types/node follows the Node.js version that VS Code runs extensions on, not the latest Node.js major",
+      "matchPackageNames": ["@types/node"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ],
   "ignoreDeps": ["@types/vscode", "diff"]
