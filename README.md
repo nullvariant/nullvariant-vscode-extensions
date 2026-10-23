@@ -24,6 +24,7 @@
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=coverage)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=nullvariant_nullvariant-vscode-extensions&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=nullvariant_nullvariant-vscode-extensions)
+[![Maintainability](https://qlty.sh/gh/nullvariant/projects/nullvariant-vscode-extensions/maintainability.svg)](https://qlty.sh/gh/nullvariant/projects/nullvariant-vscode-extensions)
 
 VS Code extensions by [Null;Variant](https://github.com/nullvariant).
 

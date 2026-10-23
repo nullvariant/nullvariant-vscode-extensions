@@ -69,7 +69,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/README.md': '1c344a5030bb54bb712f246389c2fd1613d621d9053818bba2a8d367bcd070d2',
   'GOVERNANCE.md': '806cf32ec9fe9fd964a782927f8eaa7696d408c42d31f554eebd6755bd911c71',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
-  'README.md': '2d347888ede5e950127f380cbe1b15836465e3ddbe9af25f94e0ef91446ed1a0',
+  'README.md': 'ce9fa024481bac5200906a032e49e91c7805f0ac1a97709e9da58a49dbbdbef3',
   'SECURITY.md': 'c97bdb5d7b9cd4fe247f463a50910419af147bda7d826dea945b9ba262a4f077',
 };
 
