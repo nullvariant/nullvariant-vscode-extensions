@@ -33,10 +33,10 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'AGENTS.md': 'c0291560e5a6701d62da86301dd264b422a99bc21c11ba005f333bb8d5978cdc',
   'CODE_OF_CONDUCT.md': 'a0e9cb2e004663cdedef4e1adc0e429417ccfc479e367cbc17b869f62ae759d2',
   'CONTRIBUTING.md': 'a11879b44f0357effe35c11c510a04d2794d0d944080e10e7e1d2800af8b7594',
-  'extensions/git-id-switcher/CHANGELOG.md': '429ef597d3f373fc6979506fe8cbc56b289418b54ee161ed135971540af89c2b',
+  'extensions/git-id-switcher/CHANGELOG.md': '9fbb96e11b2c21762c28c7255b7192810093aa372d02cf3cbacc70d81c88a744',
   'extensions/git-id-switcher/docs/ARCHITECTURE.md': 'd5d879d988054d208739497962a0f937f2f21bdaab51776c4e8363cba99d634c',
   'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
-  'extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md': '2f6420b7c87e5ffbab52c4f31a8e0af1a1ada15daff233cc73585dacdef05a63',
+  'extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md': 'a80efebdc4249bf96d416932368a9206622ce0ab56a706a0db1d4ccc33c9d410',
   'extensions/git-id-switcher/docs/i18n/ain/README.md': '1d01dca6762324252eb3e3827fe125625c834d3207b2b5d0e45888944463d60c',
   'extensions/git-id-switcher/docs/i18n/bg/README.md': '4365b6f0f13932a63df76954e0cd74229d180426e611ce704430498375e9d90d',
   'extensions/git-id-switcher/docs/i18n/cs/README.md': '372a702da28ae4b1643d2bc1d49cbaef61eac85fde0349574c2e9c80919877ed',
@@ -69,7 +69,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/README.md': '1c344a5030bb54bb712f246389c2fd1613d621d9053818bba2a8d367bcd070d2',
   'GOVERNANCE.md': '806cf32ec9fe9fd964a782927f8eaa7696d408c42d31f554eebd6755bd911c71',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
-  'README.md': 'f483ab30b7ac791b1d024986a8f02ce8f7e9620a47c72ac6f09538263aac171f',
+  'README.md': '2d347888ede5e950127f380cbe1b15836465e3ddbe9af25f94e0ef91446ed1a0',
   'SECURITY.md': 'c97bdb5d7b9cd4fe247f463a50910419af147bda7d826dea945b9ba262a4f077',
 };
 

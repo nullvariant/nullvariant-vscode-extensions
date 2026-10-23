@@ -144,14 +144,17 @@ Documentation is not crafted for readers.
 The maintaining _is_ the practice.
 
 The gardener does not tend alone.
-Each day, two apprentices take up the rake:
-Claude and Codex.
-
-[![Apprentice: Claude](https://img.shields.io/badge/🧹_Apprentice-Claude-D97757?logo=claude&logoColor=white)](https://www.anthropic.com/claude-code) [![Apprentice: Codex](https://img.shields.io/badge/🧹_Apprentice-Codex-000000)](https://developers.openai.com/codex)
+An apprentice is not a name, but a way of tending:
+whoever returns each day to take up the rake under the gardener's eye.
 
 They do not choose where the stones go.
 They rake, they weed, and they report what they found.
 Nothing is set in the garden without the gardener's nod.
+
+Who holds the rake changes with the seasons.
+These are the apprentices tending the garden now:
+
+[![Apprentice: Claude](https://img.shields.io/badge/🧹_Apprentice-Claude-D97757?logo=claude&logoColor=white)](https://www.anthropic.com/claude-code) [![Apprentice: Codex](https://img.shields.io/badge/🧹_Apprentice-Codex-000000)](https://developers.openai.com/codex)
 
 The apprentices learn the garden by tending it.
 The gardener learns the garden by teaching it.
