@@ -35,9 +35,10 @@ jobs:
         with:
           persist-credentials: false
 
-      # SECURITY: Validate every version once, before any registry call.
-      # An empty list must never reach the registry: a delete request without
-      # versions removes the whole extension.
+      # SECURITY: Validate every version once, before any registry call, so a
+      # malformed or empty list stops here instead of at the registry. Open VSX
+      # deletes the whole extension only when asked for all versions, which this
+      # workflow never does, and refuses a version it does not have.
       - name: Validate versions
         env:
           # SECURITY: Pass user input via environment variable to prevent injection
@@ -96,8 +97,8 @@ jobs:
         run: |
           # Not a failure: the Open VSX step above may already have removed these
           # versions, and re-running the job must not request that removal again
-          echo "::warning::Removing single versions from the VS Code Marketplace is not automated. Remove $VERSIONS from the Marketplace publisher management page."
-          echo "**VS Code Marketplace:** remove $VERSIONS by hand (not automated)" >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::Removing single versions from the VS Code Marketplace is not automated. Remove $VERSIONS on the Manage tab of the extension's page in the Marketplace publisher management. The latest version cannot be removed there, so publish a fixed version first."
+          echo "**VS Code Marketplace:** remove $VERSIONS by hand on the extension's Manage tab (not automated; the latest version cannot be removed)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Summary
         if: always()
