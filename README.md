@@ -14,6 +14,7 @@
 [![GitGuardian](https://img.shields.io/badge/GitGuardian-monitored-7042F5?logo=gitguardian)](https://www.gitguardian.com/)
 [![Gitleaks](https://img.shields.io/badge/Gitleaks-enabled-blue?logo=git&logoColor=white)](https://github.com/gitleaks/gitleaks)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/nullvariant/nullvariant-vscode-extensions/main.svg)](https://results.pre-commit.ci/latest/github/nullvariant/nullvariant-vscode-extensions/main)
+[![All Contributors](https://img.shields.io/github/all-contributors/nullvariant/nullvariant-vscode-extensions?color=ee8449)](#contributors)
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot)](https://renovatebot.com)
 [![FOSSA License](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_shield&issueType=license)
 [![FOSSA Security](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2Fnullvariant%2Fnullvariant-vscode-extensions?ref=badge_shield&issueType=security)
@@ -243,6 +244,46 @@ If you find an extension with a similar name from a different publisher, please 
 - [CONTRIBUTING.md](CONTRIBUTING.md) — How to contribute
 - [SECURITY.md](SECURITY.md) — Security policy and vulnerability reporting
 - [AGENTS.md](AGENTS.md) — Constraints for AI-assisted contributions
+
+## Contributors
+
+The people, apprentices, and bots who tend this garden ([emoji key](https://allcontributors.org/emoji-key/)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.29%"><a href="https://nullvariant.com/"><img src="https://avatars.githubusercontent.com/u/205900024?v=4&s=64" width="64px;" alt="Null;Variant"/><br /><sub><b>Null;Variant</b></sub></a><br /><a href="#code-nullvariant" title="Code">💻</a> <a href="#doc-nullvariant" title="Documentation">📖</a> <a href="#maintenance-nullvariant" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/claude"><img src="https://avatars.githubusercontent.com/u/81847?v=4&s=64" width="64px;" alt="🧹 Claude"/><br /><sub><b>🧹 Claude</b></sub></a><br /><a href="#code-claude" title="Code">💻</a> <a href="#doc-claude" title="Documentation">📖</a> <a href="#maintenance-claude" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/codex"><img src="https://avatars.githubusercontent.com/u/267193182?v=4&s=64" width="64px;" alt="🧹 Codex"/><br /><sub><b>🧹 Codex</b></sub></a><br /><a href="#security-codex" title="Security">🛡️</a> <a href="#review-codex" title="Reviewed Pull Requests">👀</a> <a href="#code-codex" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/ona-agent"><img src="https://avatars.githubusercontent.com/u/218130473?v=4&s=64" width="64px;" alt="Ona"/><br /><sub><b>Ona</b></sub></a><br /><a href="#code-ona-agent" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/nullvariant-justice"><img src="https://avatars.githubusercontent.com/in/2610732?v=4&s=64" width="64px;" alt="👮 Justice"/><br /><sub><b>👮 Justice</b></sub></a><br /><a href="#review-nullvariant-justice[bot]" title="Reviewed Pull Requests">👀</a> <a href="#security-nullvariant-justice[bot]" title="Security">🛡️</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/nullvariant-luna"><img src="https://avatars.githubusercontent.com/in/2610752?v=4&s=64" width="64px;" alt="👧 Luna"/><br /><sub><b>👧 Luna</b></sub></a><br /><a href="#research-nullvariant-luna[bot]" title="Research">🔬</a> <a href="#review-nullvariant-luna[bot]" title="Reviewed Pull Requests">👀</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/nullvariant-slow"><img src="https://avatars.githubusercontent.com/in/2610174?v=4&s=64" width="64px;" alt="🦥 Slow"/><br /><sub><b>🦥 Slow</b></sub></a><br /><a href="#review-nullvariant-slow[bot]" title="Reviewed Pull Requests">👀</a> <a href="#maintenance-nullvariant-slow[bot]" title="Maintenance">🚧</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/nullvariant-blaze"><img src="https://avatars.githubusercontent.com/in/2610768?v=4&s=64" width="64px;" alt="🐗 Blaze"/><br /><sub><b>🐗 Blaze</b></sub></a><br /><a href="#review-nullvariant-blaze[bot]" title="Reviewed Pull Requests">👀</a> <a href="#infra-nullvariant-blaze[bot]" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/nullvariant-ciel"><img src="https://avatars.githubusercontent.com/in/2610776?v=4&s=64" width="64px;" alt="🕊️ Ciel"/><br /><sub><b>🕊️ Ciel</b></sub></a><br /><a href="#review-nullvariant-ciel[bot]" title="Reviewed Pull Requests">👀</a> <a href="#projectManagement-nullvariant-ciel[bot]" title="Project Management">📆</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/nullvariant-mimi"><img src="https://avatars.githubusercontent.com/in/2610795?v=4&s=64" width="64px;" alt="🐰 Mimi"/><br /><sub><b>🐰 Mimi</b></sub></a><br /><a href="#review-nullvariant-mimi[bot]" title="Reviewed Pull Requests">👀</a> <a href="#test-nullvariant-mimi[bot]" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/dependabot"><img src="https://avatars.githubusercontent.com/in/29110?v=4&s=64" width="64px;" alt="Dependabot"/><br /><sub><b>Dependabot</b></sub></a><br /><a href="#maintenance-dependabot[bot]" title="Maintenance">🚧</a> <a href="#security-dependabot[bot]" title="Security">🛡️</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/renovate"><img src="https://avatars.githubusercontent.com/in/2740?v=4&s=64" width="64px;" alt="Renovate"/><br /><sub><b>Renovate</b></sub></a><br /><a href="#maintenance-renovate[bot]" title="Maintenance">🚧</a> <a href="#security-renovate[bot]" title="Security">🛡️</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/pre-commit-ci"><img src="https://avatars.githubusercontent.com/in/68672?v=4&s=64" width="64px;" alt="pre-commit.ci"/><br /><sub><b>pre-commit.ci</b></sub></a><br /><a href="#maintenance-pre-commit-ci[bot]" title="Maintenance">🚧</a> <a href="#security-pre-commit-ci[bot]" title="Security">🛡️</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/mend-bolt-for-github"><img src="https://avatars.githubusercontent.com/in/16809?v=4&s=64" width="64px;" alt="Mend Bolt"/><br /><sub><b>Mend Bolt</b></sub></a><br /><a href="#security-mend-bolt-for-github[bot]" title="Security">🛡️</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/imgbot"><img src="https://avatars.githubusercontent.com/in/4706?v=4&s=64" width="64px;" alt="ImgBot"/><br /><sub><b>ImgBot</b></sub></a><br /><a href="#maintenance-imgbot[bot]" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/allcontributors"><img src="https://avatars.githubusercontent.com/in/23186?v=4&s=64" width="64px;" alt="AllContributors"/><br /><sub><b>AllContributors</b></sub></a><br /><a href="#doc-allcontributors[bot]" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/apps/github-actions"><img src="https://avatars.githubusercontent.com/in/15368?v=4&s=64" width="64px;" alt="GitHub Actions"/><br /><sub><b>GitHub Actions</b></sub></a><br /><a href="#infra-github-actions[bot]" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## License
 
