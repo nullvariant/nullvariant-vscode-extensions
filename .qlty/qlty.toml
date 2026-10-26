@@ -68,7 +68,9 @@ set.ignored = true
 # valuesEqual: equality guards (same, different type, null, oversized, error).
 [[triage]]
 match.rules = ["qlty:return-statements"]
-match.file_patterns = ["extensions/git-id-switcher/src/core/configChangeDetector.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/core/configChangeDetector.ts",
+]
 set.ignored = true
 
 # parseSubmoduleEntry: rejects malformed git output field by field; most of
@@ -82,27 +84,35 @@ set.ignored = true
 # over the identity limit, each rejected before the per-identity loop.
 [[triage]]
 match.rules = ["qlty:return-statements"]
-match.file_patterns = ["extensions/git-id-switcher/src/identity/identityConfig.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/identity/identityConfig.ts",
+]
 set.ignored = true
 
 # validateSingleArgument / isCommandAllowed: the allowlist decides each
 # argument in a fixed security order; every step can end the decision.
 [[triage]]
 match.rules = ["qlty:return-statements"]
-match.file_patterns = ["extensions/git-id-switcher/src/security/commandAllowlist.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/commandAllowlist.ts",
+]
 set.ignored = true
 
 # normalizeAndValidatePath: checks before and after normalization, including
 # defense-in-depth checks that must not be removed.
 [[triage]]
 match.rules = ["qlty:return-statements"]
-match.file_patterns = ["extensions/git-id-switcher/src/security/pathNormalizer.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/pathNormalizer.ts",
+]
 set.ignored = true
 
 # sanitizePath: redaction steps in order; the first match decides the output.
 [[triage]]
 match.rules = ["qlty:return-statements"]
-match.file_patterns = ["extensions/git-id-switcher/src/security/pathSanitizer.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/pathSanitizer.ts",
+]
 set.ignored = true
 
 # validateSubmodulePath: steps that each delegate to a dedicated check.
@@ -114,14 +124,18 @@ set.ignored = true
 # isSecureLogPath: log path checks, including defense-in-depth checks.
 [[triage]]
 match.rules = ["qlty:return-statements"]
-match.file_patterns = ["extensions/git-id-switcher/src/security/secureLogPath.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/secureLogPath.ts",
+]
 set.ignored = true
 
 # sanitizeStringValue / sanitizeValue: choose the redaction by the kind or
 # type of value; each branch returns its own form.
 [[triage]]
 match.rules = ["qlty:return-statements"]
-match.file_patterns = ["extensions/git-id-switcher/src/security/sensitiveDataDetector.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/sensitiveDataDetector.ts",
+]
 set.ignored = true
 
 # validateKeyFileBeforeAddToAgent: runs the key file checks in order and
@@ -142,13 +156,17 @@ set.ignored = true
 # fetchDocumentByPath: each failed check returns null (fail closed).
 [[triage]]
 match.rules = ["qlty:return-statements"]
-match.file_patterns = ["extensions/git-id-switcher/src/ui/documentationPublic.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/ui/documentationPublic.ts",
+]
 set.ignored = true
 
 # validateFieldInput: a switch over the identity fields, one branch each.
 [[triage]]
 match.rules = ["qlty:return-statements"]
-match.file_patterns = ["extensions/git-id-switcher/src/ui/identityFormValidation.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/ui/identityFormValidation.ts",
+]
 set.ignored = true
 
 # isValidEmail: format guards, each rejecting one kind of malformed address.
@@ -174,31 +192,41 @@ set.ignored = true
 # Schema validation of the identity settings.
 [[triage]]
 match.rules = ["qlty:file-complexity"]
-match.file_patterns = ["extensions/git-id-switcher/src/identity/configSchema.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/identity/configSchema.ts",
+]
 set.ignored = true
 
 # Reading and writing the identities in the settings.
 [[triage]]
 match.rules = ["qlty:file-complexity"]
-match.file_patterns = ["extensions/git-id-switcher/src/identity/identityConfig.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/identity/identityConfig.ts",
+]
 set.ignored = true
 
 # Writing logs to files with rotation.
 [[triage]]
 match.rules = ["qlty:file-complexity"]
-match.file_patterns = ["extensions/git-id-switcher/src/logging/fileLogWriter.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/logging/fileLogWriter.ts",
+]
 set.ignored = true
 
 # Resolving the absolute paths of the allowed commands.
 [[triage]]
 match.rules = ["qlty:file-complexity"]
-match.file_patterns = ["extensions/git-id-switcher/src/security/binaryResolver.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/binaryResolver.ts",
+]
 set.ignored = true
 
 # Recording security events.
 [[triage]]
 match.rules = ["qlty:file-complexity"]
-match.file_patterns = ["extensions/git-id-switcher/src/security/securityLogger.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/securityLogger.ts",
+]
 set.ignored = true
 
 # --- Complex boolean expression ---------------------------------------------
@@ -208,5 +236,7 @@ set.ignored = true
 # point: a non-path validated as a path is safe, a missed path is not.
 [[triage]]
 match.rules = ["qlty:boolean-logic"]
-match.file_patterns = ["extensions/git-id-switcher/src/security/pathValidator.ts"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/pathValidator.ts",
+]
 set.ignored = true
