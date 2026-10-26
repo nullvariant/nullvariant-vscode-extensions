@@ -136,14 +136,14 @@ async function testStatErrors(): Promise<void> {
       'Missing file',
     );
 
-    // A path component that is a regular file yields ENOTDIR, which is neither
-    // "not found" nor "access denied".
+    // A path component that is a regular file yields ENOTDIR on POSIX, which is
+    // neither "not found" nor "access denied". Windows reports ENOENT instead.
     const regular = await writeKey(tmpDir, 'regular', KEY_CONTENT);
     await expectResult(
       path.join(regular, 'child'),
       false,
-      'stat_error',
-      'Path below a regular file (ENOTDIR)',
+      IS_WINDOWS ? 'file_not_found' : 'stat_error',
+      'Path below a regular file (ENOTDIR on POSIX, ENOENT on Windows)',
     );
 
     // Non-string input rejects without an errno code
@@ -156,7 +156,7 @@ async function testStatErrors(): Promise<void> {
     try {
       for (const rejection of ['stat rejected with a string', null]) {
         realFs.stat = (async () => {
-          throw rejection;  
+          throw rejection;
         });
         const logged: string[] = [];
         await withPatchedLogger(
@@ -379,7 +379,7 @@ async function testFormatReadFailure(): Promise<void> {
   try {
     const filePath = await writeKey(nonErrorDir, 'open_rejects', KEY_CONTENT);
     realFs.open = (async () => {
-      throw 'open rejected with a string';  
+      throw 'open rejected with a string';
     });
     const logged: Array<{ field: string; reason: string; value?: unknown }> = [];
     await withPatchedLogger(
