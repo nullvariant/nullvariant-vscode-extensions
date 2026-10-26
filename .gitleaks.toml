@@ -4,7 +4,8 @@ useDefault = true
 [allowlist]
 paths = [
   '''(src|out)/test/''',
-  '''(src|out)/ssh/sshAgent\.(ts|js)''',
+  # SSH private key header strings that the key file check recognizes (not keys)
+  '''(src|out)/ssh/keyFileValidator\.(ts|js)''',
   '''\.vscode-test/''',
   '''node_modules/''',
 ]

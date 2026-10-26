@@ -113,10 +113,10 @@ async function validateSshKeyFormat(filePath: string): Promise<boolean> {
     let header: string;
     try {
       header = buffer.subarray(0, bytesRead).toString("utf8").trimStart();
-    } catch {
+    } catch /* c8 ignore start - Defense-in-depth: Buffer#toString("utf8") replaces invalid bytes instead of throwing */ {
       // Fallback to Latin-1 if UTF-8 decoding fails (shouldn't happen for valid SSH keys)
       header = buffer.subarray(0, bytesRead).toString("latin1").trimStart();
-    }
+    } /* c8 ignore stop */
 
     // Check if the file starts with any valid SSH key header
     // Note: PuTTY format headers are ASCII, so UTF-8 decoding works fine
