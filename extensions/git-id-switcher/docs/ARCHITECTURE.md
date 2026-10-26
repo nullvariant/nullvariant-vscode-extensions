@@ -285,17 +285,19 @@ These rules actively prevent dangerous patterns:
 - Audit trail showing exactly which check failed
 - Adding/removing checks doesn't affect others
 
-### SSH Key Validation (`src/ssh/sshAgent.ts`)
+### SSH Key Validation (`src/ssh/sshAgent.ts`, `src/ssh/keyFileValidator.ts`)
 
-Several validation functions exist:
+Several validation functions exist. The path check stays next to the ssh-agent
+calls in `sshAgent.ts`; the checks on the key file itself live together in
+`keyFileValidator.ts`:
 
-| Function                       | Purpose                                             |
-| ------------------------------ | --------------------------------------------------- |
-| `validateKeyPath()`            | Path format and security validation                 |
-| `validateKeyFileType()`        | Must be regular file (not directory/symlink/device) |
-| `validateKeyFileSize()`        | Size limits for DoS protection                      |
-| `validateKeyFilePermissions()` | Unix only - no group/others access                  |
-| `validateKeyFileForSshAdd()`   | Orchestrates all validations + format check         |
+| Function                            | File                  | Purpose                                                                                       |
+| ----------------------------------- | --------------------- | --------------------------------------------------------------------------------------------- |
+| `validateKeyPathOrThrow()`          | `sshAgent.ts`         | Path format and security validation                                                           |
+| `validateKeyFileType()`             | `keyFileValidator.ts` | Resolved target must be a regular file (not directory/device); symlinks are resolved upstream |
+| `validateKeyFileSize()`             | `keyFileValidator.ts` | Size limits for DoS protection                                                                |
+| `validateKeyFilePermissions()`      | `keyFileValidator.ts` | Unix only - no group/others access                                                            |
+| `validateKeyFileBeforeAddToAgent()` | `keyFileValidator.ts` | Orchestrates all validations + format check                                                   |
 
 **Do not merge** these functions. Separation enables:
 
@@ -572,7 +574,7 @@ Some files exceed typical "small file" guidelines:
 | File                        | Rationale                                             |
 | --------------------------- | ----------------------------------------------------- |
 | `security/secureExec.ts`    | Single responsibility with extensive timeout handling |
-| `ssh/sshAgent.ts`           | Complex external process interaction + validation     |
+| `ssh/sshAgent.ts`           | Complex external process interaction                  |
 | `security/pathValidator.ts` | Multiple validators with documentation                |
 
 These files are large because splitting them would:
@@ -581,7 +583,10 @@ These files are large because splitting them would:
 - Make audit more difficult
 - Introduce unnecessary abstraction layers
 
-**Large file size is acceptable when it preserves cohesion.**
+**Large file size is acceptable when it preserves cohesion.** A file is split
+only along a seam where the two halves change for different reasons — for
+example, the key file checks moved from `ssh/sshAgent.ts` to
+`ssh/keyFileValidator.ts` as one unit, so they stay together for audit.
 
 ---
 
@@ -615,7 +620,9 @@ src/
 │   ├── securityLogger.ts          # Structured security audit logging
 │   └── sensitiveDataDetector.ts   # Secret detection in logs
 ├── identity/                      # Identity management
-│   ├── identity.ts                # Identity loading & validation
+│   ├── identity.ts                # Identity type and display helpers
+│   ├── identityConfig.ts          # Reading/writing identities in settings
+│   ├── identityFields.ts          # Editable field definitions for the form
 │   ├── configSchema.ts            # JSON schema validation
 │   └── inputValidator.ts          # Identity input validation
 ├── ui/                            # User interface
@@ -629,7 +636,8 @@ src/
 │   ├── logTypes.ts                # Log type definitions
 │   └── fileLogWriter.ts           # File-based log writer
 ├── ssh/                           # SSH key management
-│   └── sshAgent.ts                # SSH key add/remove/list
+│   ├── sshAgent.ts                # SSH key add/remove/list
+│   └── keyFileValidator.ts        # Key file checks before ssh-add
 ├── services/                      # Business logic
 │   ├── detection.ts               # Identity auto-detection from git
 │   └── switcher.ts                # Identity switching logic

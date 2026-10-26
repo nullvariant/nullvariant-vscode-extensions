@@ -34,7 +34,7 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'CODE_OF_CONDUCT.md': 'a0e9cb2e004663cdedef4e1adc0e429417ccfc479e367cbc17b869f62ae759d2',
   'CONTRIBUTING.md': 'a11879b44f0357effe35c11c510a04d2794d0d944080e10e7e1d2800af8b7594',
   'extensions/git-id-switcher/CHANGELOG.md': '9fbb96e11b2c21762c28c7255b7192810093aa372d02cf3cbacc70d81c88a744',
-  'extensions/git-id-switcher/docs/ARCHITECTURE.md': 'd5d879d988054d208739497962a0f937f2f21bdaab51776c4e8363cba99d634c',
+  'extensions/git-id-switcher/docs/ARCHITECTURE.md': '104e85c444d68b511718e9c77a8441f406ba378787a0fe0f3bc8a98176069e19',
   'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
   'extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md': 'a80efebdc4249bf96d416932368a9206622ce0ab56a706a0db1d4ccc33c9d410',
   'extensions/git-id-switcher/docs/i18n/ain/README.md': '1d01dca6762324252eb3e3827fe125625c834d3207b2b5d0e45888944463d60c',
@@ -325,28 +325,11 @@ export function getDocumentDisplayName(path: string): string {
 // ============================================================================
 
 /**
- * Render Markdown/HTML hybrid content safely
- *
- * SECURITY APPROACH:
- * - CSP with nonce restricts script execution to our link interceptor only
- * - CSP restricts resource loading to allowed origins
- * - We sanitize dangerous patterns as defense-in-depth
- * - HTML tags from README are preserved (they're our own content from R2)
- *
- * The README contains both Markdown and raw HTML (tables, images, etc.)
- * We preserve HTML while converting Markdown-only sections.
- *
- * @param raw - Raw Markdown/HTML content
- * @returns Safe HTML string, branded as `SanitizedHtml` so downstream
- *   consumers (e.g. `buildDocumentHtml`) can enforce the trust boundary at
- *   compile time. The single `as SanitizedHtml` cast at the return site is
- *   the only sanctioned origin of the brand in the codebase.
+ * Step 2: Replace fenced code blocks with placeholders, so later steps do not
+ * transform their contents. Returns the escaped blocks for restoring later.
  */
-export function renderMarkdown(raw: string): SanitizedHtml {
-  // Content is trusted (self-managed CDN with hash verification)
-  let html = raw;
-
-  // Step 2: Extract code blocks to placeholders (prevent internal transformation)
+function extractCodeBlocks(markdown: string): { html: string; codeBlocks: string[] } {
+  let html = markdown;
   // Use split-based approach instead of regex to eliminate ReDoS risk
   const codeBlocks: string[] = [];
   const codeBlockParts = html.split('```');
@@ -370,7 +353,14 @@ export function renderMarkdown(raw: string): SanitizedHtml {
     html = result.join('');
   }
 
-  // Step 3: Extract inline code to placeholders
+  return { html, codeBlocks };
+}
+
+/**
+ * Step 3: Replace inline code with placeholders. Returns the escaped spans.
+ */
+function extractInlineCode(markdown: string): { html: string; inlineCodes: string[] } {
+  let html = markdown;
   // Handle double-backtick inline code first (for content containing single backticks)
   // e.g., `` ` `` renders as a backtick
   const inlineCodes: string[] = [];
@@ -387,7 +377,15 @@ export function renderMarkdown(raw: string): SanitizedHtml {
     return `%%INLINECODE_${index}%%`;
   });
 
-  // Step 4: Markdown tables (BEFORE other transformations that might break pipe characters)
+  return { html, inlineCodes };
+}
+
+/**
+ * Step 4: Render Markdown tables.
+ * Runs before other transformations that might break pipe characters.
+ */
+function renderTables(markdown: string): string {
+  let html = markdown;
   html = html.replaceAll(
     /^\|(.+)\|\r?\n\|[-:\s|]+\|\r?\n((?:\|.+\|\r?\n?)+)/gm,
     (_match, headerRow: string, bodyRows: string) => {
@@ -406,6 +404,15 @@ export function renderMarkdown(raw: string): SanitizedHtml {
     }
   );
 
+  return html;
+}
+
+/**
+ * Steps 5-12: Render horizontal rules, headings, emphasis, images, links,
+ * blockquotes and lists. The order matters (e.g. images before links).
+ */
+function renderBlockAndInlineSyntax(markdown: string): string {
+  let html = markdown;
   // Step 5: Horizontal rules (--- or ***)
   html = html.replaceAll(/^---+\s*$/gm, '<hr>');
   html = html.replaceAll(/^\*\*\*+\s*$/gm, '<hr>');
@@ -443,6 +450,14 @@ export function renderMarkdown(raw: string): SanitizedHtml {
   // Step 12: Unordered lists
   html = html.replaceAll(/^- (.+)$/gm, '<li>$1</li>');
 
+  return html;
+}
+
+/**
+ * Steps 13-14: Put the escaped inline code and code blocks back.
+ */
+function restorePlaceholders(markdown: string, inlineCodes: string[], codeBlocks: string[]): string {
+  let html = markdown;
   // Step 13: Restore inline code
   html = html.replaceAll(/%%INLINECODE_(\d+)%%/g, (_match, index: string) => {
     return inlineCodes[Number.parseInt(index, 10)];
@@ -453,6 +468,14 @@ export function renderMarkdown(raw: string): SanitizedHtml {
     return codeBlocks[Number.parseInt(index, 10)];
   });
 
+  return html;
+}
+
+/**
+ * Step 15: Wrap text in paragraphs, without wrapping block elements.
+ */
+function wrapParagraphs(markdown: string): string {
+  let html = markdown;
   // Step 15: Convert double newlines to paragraph breaks
   html = html.replaceAll(/\n\n+/g, '</p><p>');
   html = `<p>${html}</p>`;
@@ -464,6 +487,34 @@ export function renderMarkdown(raw: string): SanitizedHtml {
   html = html.replaceAll(new RegExp(String.raw`(</(?:${blockElements})>)\s*</p>`, 'g'), '$1');
   html = html.replaceAll(new RegExp(String.raw`<p>\s*(</(?:${blockElements})>)`, 'g'), '$1');
   html = html.replaceAll(new RegExp(String.raw`(<(?:${blockElements})[^>]*>)\s*</p>`, 'g'), '$1');
+
+  return html;
+}
+
+/**
+ * Render Markdown/HTML hybrid content safely
+ *
+ * SECURITY APPROACH:
+ * - CSP with nonce restricts script execution to our link interceptor only
+ * - CSP restricts resource loading to allowed origins
+ * - We sanitize dangerous patterns as defense-in-depth
+ * - HTML tags from README are preserved (they're our own content from R2)
+ *
+ * The README contains both Markdown and raw HTML (tables, images, etc.)
+ * We preserve HTML while converting Markdown-only sections.
+ *
+ * @param raw - Raw Markdown/HTML content
+ * @returns Safe HTML string, branded as `SanitizedHtml` so downstream
+ *   consumers (e.g. `buildDocumentHtml`) can enforce the trust boundary at
+ *   compile time. The single `as SanitizedHtml` cast at the return site is
+ *   the only sanctioned origin of the brand in the codebase.
+ */
+export function renderMarkdown(raw: string): SanitizedHtml {
+  // Content is trusted (self-managed CDN with hash verification)
+  const { html: withoutCodeBlocks, codeBlocks } = extractCodeBlocks(raw);
+  const { html: withoutCode, inlineCodes } = extractInlineCode(withoutCodeBlocks);
+  const rendered = renderBlockAndInlineSyntax(renderTables(withoutCode));
+  const html = wrapParagraphs(restorePlaceholders(rendered, inlineCodes, codeBlocks));
 
   // Single sanctioned origin of the SanitizedHtml brand. All other callers
   // MUST go through this function; do not introduce additional casts.

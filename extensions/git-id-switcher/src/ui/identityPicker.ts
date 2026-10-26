@@ -316,6 +316,113 @@ export async function showSyncResolutionQuickPick(): Promise<SyncResolutionResul
 }
 
 /**
+ * Action triggered by an inline button on an identity item.
+ */
+type IdentityItemAction = 'moveUp' | 'moveDown' | 'edit' | 'delete';
+
+/**
+ * Inline buttons shown on each identity item, in display order,
+ * with the action each one triggers.
+ */
+function createIdentityItemButtons(
+  vs: typeof vscodeTypes
+): ReadonlyArray<{ button: vscodeTypes.QuickInputButton; action: IdentityItemAction }> {
+  return [
+    {
+      button: { iconPath: new vs.ThemeIcon('arrow-up'), tooltip: vs.l10n.t('Move up') },
+      action: 'moveUp',
+    },
+    {
+      button: { iconPath: new vs.ThemeIcon('arrow-down'), tooltip: vs.l10n.t('Move down') },
+      action: 'moveDown',
+    },
+    {
+      button: { iconPath: new vs.ThemeIcon('pencil'), tooltip: vs.l10n.t('Edit') },
+      action: 'edit',
+    },
+    {
+      button: { iconPath: new vs.ThemeIcon('trash'), tooltip: vs.l10n.t('Delete') },
+      action: 'delete',
+    },
+  ];
+}
+
+/**
+ * Build the manage-identities items: one per identity (or a placeholder),
+ * then a separator and the "New Identity" option.
+ */
+function createManageIdentityItems(
+  vs: typeof vscodeTypes,
+  identities: Identity[],
+  buttons: vscodeTypes.QuickInputButton[]
+): ManageIdentityQuickPickItem[] {
+  const items: ManageIdentityQuickPickItem[] =
+    identities.length === 0
+      ? [{ label: vs.l10n.t('(No identities)'), _isPlaceholder: true }]
+      : identities.map((identity, index) => ({
+          label: getIdentityLabel(identity),
+          detail: getIdentityDetail(identity),
+          identity,
+          index,
+          buttons,
+        }));
+
+  items.push(
+    {
+      label: '',
+      kind: vs.QuickPickItemKind.Separator,
+    },
+    {
+      label: vs.l10n.t('New Identity'),
+      iconPath: new vs.ThemeIcon('add'),
+      _isAddOption: true,
+    }
+  );
+  return items;
+}
+
+/**
+ * Result for a title bar button: Back goes back, the add button adds.
+ */
+function resultForTitleButton(
+  button: vscodeTypes.QuickInputButton,
+  backButton: vscodeTypes.QuickInputButton,
+  addButton: vscodeTypes.QuickInputButton
+): ManageIdentitiesResult | undefined {
+  if (button === backButton) {
+    return { action: 'back' };
+  }
+  return button === addButton ? { action: 'add' } : undefined;
+}
+
+/**
+ * Result for an inline button on an identity item, or undefined if the item
+ * is not an identity or the button is unknown.
+ */
+function resultForItemButton(
+  item: ManageIdentityQuickPickItem,
+  button: vscodeTypes.QuickInputButton,
+  itemButtons: ReadonlyArray<{ button: vscodeTypes.QuickInputButton; action: IdentityItemAction }>
+): ManageIdentitiesResult | undefined {
+  const { identity, index } = item;
+  if (!identity || index === undefined) {
+    return undefined;
+  }
+  const matched = itemButtons.find(entry => entry.button === button);
+  return matched ? { action: matched.action, identity, index } : undefined;
+}
+
+/**
+ * Result for accepting a selection: only the add option resolves.
+ * Identity items and the placeholder keep the picker open.
+ */
+function resultForAccept(
+  selected: ManageIdentityQuickPickItem | undefined
+): ManageIdentitiesResult | undefined {
+  return selected?._isAddOption ? { action: 'add' } : undefined;
+}
+
+/**
  * Show manage identities quick pick
  *
  * Displays a list of identities with inline move up/down, edit, and delete buttons.
@@ -334,69 +441,15 @@ export async function showManageIdentitiesQuickPick(
     return undefined;
   }
 
-  // Build items
-  const items: ManageIdentityQuickPickItem[] = [];
-
-  // Move up button (arrow-up icon)
-  const moveUpButton: vscodeTypes.QuickInputButton = {
-    iconPath: new vs.ThemeIcon('arrow-up'),
-    tooltip: vs.l10n.t('Move up'),
-  };
-
-  // Move down button (arrow-down icon)
-  const moveDownButton: vscodeTypes.QuickInputButton = {
-    iconPath: new vs.ThemeIcon('arrow-down'),
-    tooltip: vs.l10n.t('Move down'),
-  };
-
-  // Edit button (pencil icon)
-  const editButton: vscodeTypes.QuickInputButton = {
-    iconPath: new vs.ThemeIcon('pencil'),
-    tooltip: vs.l10n.t('Edit'),
-  };
-
-  // Delete button (trash icon)
-  const deleteButton: vscodeTypes.QuickInputButton = {
-    iconPath: new vs.ThemeIcon('trash'),
-    tooltip: vs.l10n.t('Delete'),
-  };
-
-  // Add button for title bar
+  const itemButtons = createIdentityItemButtons(vs);
   const addButton: vscodeTypes.QuickInputButton = {
     iconPath: new vs.ThemeIcon('add'),
     tooltip: vs.l10n.t('New Identity'),
   };
-
-  if (identities.length === 0) {
-    // Show placeholder when no identities
-    items.push({
-      label: vs.l10n.t('(No identities)'),
-      _isPlaceholder: true,
-    });
-  } else {
-    // Add identity items with inline buttons
-    for (const [index, identity] of identities.entries()) {
-      items.push({
-        label: getIdentityLabel(identity),
-        detail: getIdentityDetail(identity),
-        identity,
-        index,
-        buttons: [moveUpButton, moveDownButton, editButton, deleteButton],
-      });
-    }
-  }
-
-  // Add separator and "New Identity" option
-  items.push(
-    {
-      label: '',
-      kind: vs.QuickPickItemKind.Separator,
-    },
-    {
-      label: vs.l10n.t('New Identity'),
-      iconPath: new vs.ThemeIcon('add'),
-      _isAddOption: true,
-    }
+  const items = createManageIdentityItems(
+    vs,
+    identities,
+    itemButtons.map(({ button }) => button)
   );
 
   const quickPick = vs.window.createQuickPick<ManageIdentityQuickPickItem>();
@@ -417,70 +470,31 @@ export async function showManageIdentitiesQuickPick(
 
   return new Promise<ManageIdentitiesResult | undefined>(resolve => {
     let isResolved = false;
-
-    // Handle title bar buttons (back and add)
-    quickPick.onDidTriggerButton(button => {
-      if (button === vs.QuickInputButtons.Back) {
-        isResolved = true;
-        quickPick.hide();
-        resolve({ action: 'back' });
-      } else if (button === addButton) {
-        isResolved = true;
-        quickPick.hide();
-        resolve({ action: 'add' });
-      }
-    });
-
-    // Handle inline item buttons (move up/down, edit, delete)
-    quickPick.onDidTriggerItemButton(e => {
-      const item = e.item;
-      if (!item.identity || item.index === undefined) {
-        return;
-      }
-
+    const finish = (result: ManageIdentitiesResult): void => {
       isResolved = true;
       quickPick.hide();
+      resolve(result);
+    };
 
-      switch (e.button) {
-      case moveUpButton: {
-        resolve({ action: 'moveUp', identity: item.identity, index: item.index });
+    const finishIfChosen = (result: ManageIdentitiesResult | undefined): void => {
+      if (result) {
+        finish(result);
+      }
+    };
 
-      break;
-      }
-      case moveDownButton: {
-        resolve({ action: 'moveDown', identity: item.identity, index: item.index });
-
-      break;
-      }
-      case editButton: {
-        resolve({ action: 'edit', identity: item.identity, index: item.index });
-
-      break;
-      }
-      case deleteButton: {
-        resolve({ action: 'delete', identity: item.identity, index: item.index });
-
-      break;
-      }
-      // No default
-      }
+    // Title bar buttons (Back and Add)
+    quickPick.onDidTriggerButton(button => {
+      finishIfChosen(resultForTitleButton(button, vs.QuickInputButtons.Back, addButton));
     });
 
-    // Handle selection (only for add option)
+    // Inline buttons on identity items
+    quickPick.onDidTriggerItemButton(e => {
+      finishIfChosen(resultForItemButton(e.item, e.button, itemButtons));
+    });
+
+    // Selection (only the add option resolves; other items stay in the picker)
     quickPick.onDidAccept(() => {
-      const selected = quickPick.selectedItems[0];
-
-      // Ignore identity items and placeholder
-      if (!selected || selected.identity || selected._isPlaceholder) {
-        return; // Don't resolve/hide, stay in picker
-      }
-
-      // Handle add option
-      if (selected._isAddOption) {
-        isResolved = true;
-        quickPick.hide();
-        resolve({ action: 'add' });
-      }
+      finishIfChosen(resultForAccept(quickPick.selectedItems[0]));
     });
 
     // Handle hide (Esc or close button)

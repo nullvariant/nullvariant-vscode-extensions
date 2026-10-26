@@ -6,7 +6,8 @@
     "node_modules/**",
     "out/core/errors.js",
     "out/core/gitConfig.js",
-    "out/identity/identity.js"
+    "out/identity/identity.js",
+    "out/identity/identityConfig.js"
   ],
   "reporter": ["lcov", "text"],
   "check-coverage": true,
