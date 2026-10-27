@@ -20,7 +20,7 @@ export {
 } from './csp';
 export { getBaseStyles } from './baseStyles';
 export { buildHtmlShell } from './shell';
-export { buildDocumentHtml } from './document';
+export { buildDocumentHtml, type DocumentView } from './document';
 export {
   ALLOWED_HREF_SCHEMES,
   buildLinkInterceptScript,

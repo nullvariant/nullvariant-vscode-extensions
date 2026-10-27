@@ -83,11 +83,9 @@ function detectUnsafeCharsInFlag(flag: string): CombinedFlagResult | null {
  * @internal
  */
 function hasPathLikePattern(flagChars: string): boolean {
+  // Any "/" covers absolute ("/"), relative ("./") and parent ("../") paths
   return (
-    flagChars.startsWith("/") ||
     flagChars.startsWith("~") ||
-    flagChars.startsWith("./") ||
-    flagChars.startsWith("../") ||
     flagChars.includes("/") ||
     flagChars.includes("\\")
   );
@@ -190,15 +188,51 @@ export function validateCombinedFlags(
   command: string,
   allowedArgs: readonly string[],
 ): CombinedFlagResult {
+  const normalization = normalizeFlagSafely(flag);
+  if (!normalization.ok) {
+    return normalization.rejection;
+  }
+  const { normalizedFlag } = normalization;
+
+  // Non-flag or long option - let caller handle
+  if (!normalizedFlag.startsWith("-") || normalizedFlag.startsWith("--")) {
+    return { valid: true };
+  }
+
+  // Length limit for DoS protection
+  if (normalizedFlag.length > MAX_FLAG_LENGTH) {
+    return { valid: false, reason: "Flag exceeds maximum length" };
+  }
+
+  // Extract flag characters (remove leading dash)
+  return validateShortFlagChars(normalizedFlag.slice(1), command, allowedArgs);
+}
+
+/**
+ * Result of {@link normalizeFlagSafely}: the normalized flag, or why it was rejected.
+ * @internal
+ */
+type FlagNormalization =
+  | { ok: true; normalizedFlag: string }
+  | { ok: false; rejection: CombinedFlagResult };
+
+/**
+ * Reject unsafe characters, then return the NFC-normalized flag.
+ *
+ * Unsafe characters are checked both before and after normalization, so a
+ * flag cannot pass by normalizing into an unsafe form.
+ * @internal
+ */
+function normalizeFlagSafely(flag: string): FlagNormalization {
   // Basic validation
   if (!flag || flag.length === 0) {
-    return { valid: false, reason: "Flag is empty" };
+    return { ok: false, rejection: { valid: false, reason: "Flag is empty" } };
   }
 
   // CRITICAL: Security character checks (whitespace, null bytes, control chars, invisible unicode)
   const securityCheck = detectUnsafeCharsInFlag(flag);
   if (securityCheck) {
-    return securityCheck;
+    return { ok: false, rejection: securityCheck };
   }
 
   // CRITICAL: Normalize Unicode to NFC for consistent comparison
@@ -209,28 +243,23 @@ export function validateCombinedFlags(
   const normalizedSecurityCheck = detectUnsafeCharsInFlag(normalizedFlag);
   if (normalizedSecurityCheck) {
     return {
-      valid: false,
-      reason: normalizedSecurityCheck.reason + " (after normalization)",
+      ok: false,
+      rejection: {
+        valid: false,
+        reason: normalizedSecurityCheck.reason + " (after normalization)",
+      },
     };
   }
   /* c8 ignore stop */
 
-  // Non-flag or long option - let caller handle
-  if (!normalizedFlag.startsWith("-")) {
-    return { valid: true };
-  }
-  if (normalizedFlag.startsWith("--")) {
-    return { valid: true };
-  }
+  return { ok: true, normalizedFlag };
+}
 
-  // Length limit for DoS protection
-  if (normalizedFlag.length > MAX_FLAG_LENGTH) {
-    return { valid: false, reason: "Flag exceeds maximum length" };
-  }
-
-  // Extract flag characters (remove leading dash)
-  const flagChars = normalizedFlag.slice(1);
-
+/**
+ * Detect malformed short-flag characters (empty, path-like, or non-letters).
+ * @internal
+ */
+function detectMalformedFlagChars(flagChars: string): CombinedFlagResult | null {
   if (flagChars.length === 0) {
     return { valid: false, reason: "Flag contains only dash" };
   }
@@ -253,13 +282,28 @@ export function validateCombinedFlags(
     };
   }
 
+  return null;
+}
+
+/**
+ * Validate the characters of a short flag (after the leading dash).
+ * @internal
+ */
+function validateShortFlagChars(
+  flagChars: string,
+  command: string,
+  allowedArgs: readonly string[],
+): CombinedFlagResult {
+  const malformed = detectMalformedFlagChars(flagChars);
+  if (malformed) {
+    return malformed;
+  }
+
   // Single character flag - check directly against allowlist
   if (flagChars.length === 1) {
-    const singleFlag = `-${flagChars}`;
-    if (allowedArgs.includes(singleFlag)) {
-      return { valid: true };
-    }
-    return { valid: false, reason: "Flag is not in allowlist" };
+    return allowedArgs.includes(`-${flagChars}`)
+      ? { valid: true }
+      : { valid: false, reason: "Flag is not in allowlist" };
   }
 
   // Combined flag validation (2+ characters)
@@ -267,12 +311,9 @@ export function validateCombinedFlags(
     return { valid: false, reason: "Combined flag has too many characters" };
   }
 
-  // Check for duplicate characters
-  const duplicateCheck = validateCombinedFlagChars(flagChars);
-  if (duplicateCheck) {
-    return duplicateCheck;
-  }
-
-  // Check against allowlist patterns and individual flags
-  return validateCombinedFlagAgainstAllowlist(flagChars, command, allowedArgs);
+  // Check for duplicate characters, then against allowlist patterns and individual flags
+  return (
+    validateCombinedFlagChars(flagChars) ??
+    validateCombinedFlagAgainstAllowlist(flagChars, command, allowedArgs)
+  );
 }

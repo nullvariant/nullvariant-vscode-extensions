@@ -37,6 +37,33 @@ export interface ValidationResult {
 }
 
 /**
+ * Push the first matching dangerous-pattern error for a field.
+ *
+ * The strict and relaxed validators differ only in which pattern list and
+ * which character check they use, so both delegate here. At most one error
+ * is pushed per field: the first matching pattern, otherwise the character
+ * check.
+ */
+function pushFirstDangerousPatternError(
+  value: string | undefined,
+  fieldName: string,
+  errors: string[],
+  patterns: ReadonlyArray<{ pattern: RegExp; description: string }>,
+  hasDangerous: (text: string) => boolean,
+): void {
+  if (!value) {
+    return;
+  }
+
+  const matched = patterns.find(({ pattern }) => pattern.test(value));
+  if (matched) {
+    errors.push(`${fieldName} contains ${matched.description}`);
+  } else if (hasDangerous(value)) {
+    errors.push(`${fieldName} contains control characters`);
+  }
+}
+
+/**
  * Validate a string field for dangerous command injection patterns (strict).
  *
  * Checks both hasDangerousChars() (SAFE_TEXT_REGEX — catches control characters
@@ -52,20 +79,7 @@ export function validateFieldForDangerousPatterns(
   fieldName: string,
   errors: string[],
 ): void {
-  if (!value) {
-    return;
-  }
-
-  for (const { pattern, description } of DANGEROUS_PATTERNS) {
-    if (pattern.test(value)) {
-      errors.push(`${fieldName} contains ${description}`);
-      return;
-    }
-  }
-
-  if (hasDangerousChars(value)) {
-    errors.push(`${fieldName} contains control characters`);
-  }
+  pushFirstDangerousPatternError(value, fieldName, errors, DANGEROUS_PATTERNS, hasDangerousChars);
 }
 
 /**
@@ -83,20 +97,13 @@ export function validateTextFieldForDangerousPatterns(
   fieldName: string,
   errors: string[],
 ): void {
-  if (!value) {
-    return;
-  }
-
-  for (const { pattern, description } of DANGEROUS_PATTERNS_FOR_TEXT) {
-    if (pattern.test(value)) {
-      errors.push(`${fieldName} contains ${description}`);
-      return;
-    }
-  }
-
-  if (hasDangerousCharsForText(value)) {
-    errors.push(`${fieldName} contains control characters`);
-  }
+  pushFirstDangerousPatternError(
+    value,
+    fieldName,
+    errors,
+    DANGEROUS_PATTERNS_FOR_TEXT,
+    hasDangerousCharsForText,
+  );
 }
 
 /**
