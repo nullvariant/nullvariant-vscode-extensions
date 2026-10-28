@@ -188,16 +188,69 @@ async function updateWebviewContent(
     const renderedContent = renderMarkdown(content);
     panel.webview.html = getDocumentHtml(
       panel.webview,
-      renderedContent,
-      state.currentLocale,
-      state.currentPath,
-      nonce,
-      state.history.length > 0
+      {
+        content: renderedContent,
+        locale: state.currentLocale,
+        currentPath: state.currentPath,
+        canGoBack: state.history.length > 0,
+      },
+      nonce
     );
     return true;
   }
 
   return false;
+}
+
+/**
+ * Show an internal Markdown document in the panel.
+ * If it cannot be fetched, offer to open it on GitHub instead.
+ */
+async function openInternalDocument(
+  panel: vscode.WebviewPanel,
+  state: NavigationState,
+  resolvedPath: string,
+  nonce: string
+): Promise<void> {
+  panel.webview.html = getLoadingHtml(panel.webview, nonce);
+
+  // Try to fetch the document
+  const content = await fetchDocumentByPath(resolvedPath);
+
+  if (content) {
+    // Push current path to history before navigating
+    state.history.push(state.currentPath);
+    state.currentPath = resolvedPath;
+
+    // Update panel title to show current document name
+    panel.title = getDocumentDisplayName(state.currentPath);
+
+    const renderedContent = renderMarkdown(content);
+    panel.webview.html = getDocumentHtml(
+      panel.webview,
+      {
+        content: renderedContent,
+        locale: state.currentLocale,
+        currentPath: state.currentPath,
+        canGoBack: state.history.length > 0,
+      },
+      nonce
+    );
+  } else {
+    // Document not found - offer to open on GitHub
+    const githubUrl = `${GITHUB_BASE_URL}/${resolvedPath}`;
+    const openOnGitHubButton = vscode.l10n.t('Open on GitHub');
+    const choice = await vscode.window.showWarningMessage(
+      vscode.l10n.t('Internal document not found. Open on GitHub?'),
+      openOnGitHubButton,
+      vscode.l10n.t('Cancel')
+    );
+    if (choice === openOnGitHubButton) {
+      vscode.env.openExternal(vscode.Uri.parse(githubUrl));
+    }
+    // Restore current view
+    await updateWebviewContent(panel, state, nonce);
+  }
 }
 
 /**
@@ -214,48 +267,10 @@ async function handleNavigation(
   switch (classification.type) {
     case 'internal-md': {
       if (classification.resolvedPath) {
-        // Show loading
-        panel.webview.html = getLoadingHtml(panel.webview, nonce);
-
-        // Try to fetch the document
-        const content = await fetchDocumentByPath(classification.resolvedPath);
-
-        if (content) {
-          // Push current path to history before navigating
-          state.history.push(state.currentPath);
-          state.currentPath = classification.resolvedPath;
-
-          // Update panel title to show current document name
-          panel.title = getDocumentDisplayName(state.currentPath);
-
-          const renderedContent = renderMarkdown(content);
-          panel.webview.html = getDocumentHtml(
-            panel.webview,
-            renderedContent,
-            state.currentLocale,
-            state.currentPath,
-            nonce,
-            state.history.length > 0
-          );
-        } else {
-          // Document not found - offer to open on GitHub
-          const githubUrl = `${GITHUB_BASE_URL}/${classification.resolvedPath}`;
-          const openOnGitHubButton = vscode.l10n.t('Open on GitHub');
-          const choice = await vscode.window.showWarningMessage(
-            vscode.l10n.t('Internal document not found. Open on GitHub?'),
-            openOnGitHubButton,
-            vscode.l10n.t('Cancel')
-          );
-          if (choice === openOnGitHubButton) {
-            vscode.env.openExternal(vscode.Uri.parse(githubUrl));
-          }
-          // Restore current view
-          await updateWebviewContent(panel, state, nonce);
-        }
+        await openInternalDocument(panel, state, classification.resolvedPath, nonce);
       }
       break;
     }
-
     case 'external': {
       // Open external URLs in browser
       let externalUrl = href;
@@ -378,11 +393,13 @@ export async function showDocumentation(
       const renderedContent = renderMarkdown(result.content);
       panel.webview.html = getDocumentHtml(
         panel.webview,
-        renderedContent,
-        result.locale,
-        result.path,
-        nonce,
-        false
+        {
+          content: renderedContent,
+          locale: result.locale,
+          currentPath: result.path,
+          canGoBack: false,
+        },
+        nonce
       );
     } else {
       panel.webview.html = getErrorHtml(panel.webview, 'network', nonce);
