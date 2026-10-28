@@ -386,9 +386,11 @@ function testSanitizeValueTypes(): void {
       42,
       'number should pass through'
     );
-    assert.strictEqual(
-      sanitizeValue(3.14),
-      3.14,
+    // Pass-through means the very same value comes back, so compare identity
+    // rather than numeric closeness.
+    const float = 2.5;
+    assert.ok(
+      Object.is(sanitizeValue(float), float),
       'float should pass through'
     );
     assert.strictEqual(
