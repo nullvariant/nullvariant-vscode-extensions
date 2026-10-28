@@ -28,6 +28,9 @@ import { runWorkspaceTrustTests } from './workspaceTrust.test';
 import { runSubmoduleTests } from './submodule.test';
 import { runPathSeparatorTests } from './pathSeparator.test';
 import { runDisplayLimitsTests } from './displayLimits.test';
+import { runIdentityFieldsTests } from './identityFields.test';
+import { runIdentityConfigTests } from './identityConfig.test';
+import { runKeyFileValidatorTests } from './keyFileValidator.test';
 import { runSshAgentParsingTests } from './sshAgentParsing.test';
 import { runSyncCheckerTests } from './syncChecker.test';
 import { runErrorTests } from './errors.test';
@@ -114,6 +117,9 @@ async function main(): Promise<void> {
 
     // Run display limits tests
     runDisplayLimitsTests();
+    runIdentityFieldsTests();
+    await runIdentityConfigTests();
+    await runKeyFileValidatorTests();
 
     // Run SSH agent parsing tests (ReDoS-safe split-based parsing)
     await runSshAgentParsingTests();

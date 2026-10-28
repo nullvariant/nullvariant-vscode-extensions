@@ -4,7 +4,7 @@
   <img src="https://assets.nullvariant.com/nullvariant-vscode-extensions/extensions/git-id-switcher/images/karesansui.webp" alt="Digital Karesansui (デジタル枯山水)" width="600">
 </p>
 
-*A design philosophy for Git ID Switcher*
+_A design philosophy for Git ID Switcher_
 
 > **Note**: Karesansui (枯山水) is a Japanese rock garden--sand and stone representing mountains and water.
 > This philosophy is not efficiency-driven minimalism. It invests deeply in what appears simple.
@@ -36,7 +36,7 @@ git config user.email
 
 It could be written in 100 lines.
 
-That's precisely why we can spend everything else on *how* to place it.
+That's precisely why we can spend everything else on _how_ to place it.
 
 ---
 
@@ -68,19 +68,19 @@ Small presences that give the garden its story.
 
 26 language support. Icons. SSH/GPG key association.
 
-The garden could exist without them. But with accents, the garden becomes *someone's* garden.
+The garden could exist without them. But with accents, the garden becomes _someone's_ garden.
 
 ---
 
 ## Stones We Don't Place
 
-The most important decision is what *not* to place.
+The most important decision is what _not_ to place.
 
 GitHub API integration. Token management. Authentication wizards.
 
 They might be convenient. But the moment you place them, it becomes a different garden.
 
-The essence of karesansui lies in *empty space*.
+The essence of karesansui lies in _empty space_.
 
 ---
 
@@ -104,7 +104,7 @@ Western minimalism asks: "What can we remove?"
 Karesansui asks: "What deserves to remain?"
 
 Western minimalism removes to save cost and effort.
-Karesansui invests enormously to *appear* simple.
+Karesansui invests enormously to _appear_ simple.
 
 In a real karesansui, sand patterns require daily raking.
 In this codebase, "invisible quality" requires continuous investment.
@@ -113,12 +113,12 @@ What looks effortless demands the most effort.
 
 "Eliminate waste" misses the point entirely.
 "If it works, it's fine" has no place here.
-In this garden, sand patterns and accents *are* the richness--not waste to be cut.
+In this garden, sand patterns and accents _are_ the richness--not waste to be cut.
 
 The goal is not efficiency or quick results.
 The goal is depth disguised as simplicity.
 
-Karesansui is intentional richness that *appears* minimal.
+Karesansui is intentional richness that _appears_ minimal.
 
 ---
 
@@ -129,7 +129,7 @@ Why tend a garden no one visits?
 Some find stillness in sitting quietly.
 Others find it in the act of doing--focused, unhurried, absorbed.
 
-This is called *samu*: work as meditation.
+This is called _samu_: work as meditation.
 Not work to achieve a result. Work that needs no result.
 
 The gardener does not strain to create perfection.
@@ -141,7 +141,23 @@ This is not futility. This is the point.
 
 Tests are not written to reach a number.
 Documentation is not crafted for readers.
-The maintaining *is* the practice.
+The maintaining _is_ the practice.
+
+The gardener does not tend alone.
+An apprentice is not a name, but a way of tending:
+whoever returns each day to take up the rake under the gardener's eye.
+
+They do not choose where the stones go.
+They rake, they weed, and they report what they found.
+Nothing is set in the garden without the gardener's nod.
+
+Who holds the rake changes with the seasons.
+These are the apprentices tending the garden now:
+
+[![Apprentice: Claude](https://img.shields.io/badge/🧹_Apprentice-Claude-D97757?logo=claude&logoColor=white)](https://www.anthropic.com/claude-code) [![Apprentice: Codex](https://img.shields.io/badge/🧹_Apprentice-Codex-000000)](https://developers.openai.com/codex)
+
+The apprentices learn the garden by tending it.
+The gardener learns the garden by teaching it.
 
 There is no finish line.
 There is no applause to seek.
@@ -184,30 +200,30 @@ If you resonate with this philosophy, feel free to use one of these badges in yo
 
 ### Stone (🪨)
 
-| Preview | Markdown |
-|---------|----------|
+| Preview                                                                                     | Markdown                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-lightgrey)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-lightgrey)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-555)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-555)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-e8dcc8)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-e8dcc8)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-333)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-333)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
+| [![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-555)][doc-url]       | `[![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-555)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`       |
+| [![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-e8dcc8)][doc-url]    | `[![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-e8dcc8)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`    |
+| [![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-333)][doc-url]       | `[![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-333)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`       |
+| [![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)][doc-url]    | `[![Karesansui](https://img.shields.io/badge/🪨_Karesansui-Architecture-4a5568)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`    |
 
 ### Zen (🧘)
 
-| Preview | Markdown |
-|---------|----------|
+| Preview                                                                                     | Markdown                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-lightgrey)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-lightgrey)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-555)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-555)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-e8dcc8)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-e8dcc8)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-333)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-333)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-4a5568)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-4a5568)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
+| [![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-555)][doc-url]       | `[![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-555)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`       |
+| [![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-e8dcc8)][doc-url]    | `[![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-e8dcc8)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`    |
+| [![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-333)][doc-url]       | `[![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-333)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`       |
+| [![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-4a5568)][doc-url]    | `[![Karesansui](https://img.shields.io/badge/🧘_Karesansui-Architecture-4a5568)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`    |
 
 ### Waves (🌊)
 
-| Preview | Markdown |
-|---------|----------|
+| Preview                                                                                     | Markdown                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-lightgrey)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-lightgrey)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-555)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-555)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-e8dcc8)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-e8dcc8)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-333)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-333)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
-| [![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-4a5568)][doc-url] | `[![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-4a5568)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)` |
+| [![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-555)][doc-url]       | `[![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-555)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`       |
+| [![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-e8dcc8)][doc-url]    | `[![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-e8dcc8)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`    |
+| [![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-333)][doc-url]       | `[![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-333)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`       |
+| [![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-4a5568)][doc-url]    | `[![Karesansui](https://img.shields.io/badge/🌊_Karesansui-Architecture-4a5568)](https://github.com/nullvariant/nullvariant-vscode-extensions/blob/main/extensions/git-id-switcher/docs/DESIGN_PHILOSOPHY.md)`    |

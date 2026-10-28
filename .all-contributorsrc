@@ -20,6 +20,163 @@
         "doc",
         "maintenance"
       ]
+    },
+    {
+      "login": "claude",
+      "name": "🧹 Claude",
+      "avatar_url": "https://avatars.githubusercontent.com/u/81847?v=4",
+      "profile": "https://github.com/claude",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "codex",
+      "name": "🧹 Codex",
+      "avatar_url": "https://avatars.githubusercontent.com/u/267193182?v=4",
+      "profile": "https://github.com/codex",
+      "contributions": [
+        "security",
+        "review",
+        "code"
+      ]
+    },
+    {
+      "login": "ona-agent",
+      "name": "Ona",
+      "avatar_url": "https://avatars.githubusercontent.com/u/218130473?v=4",
+      "profile": "https://github.com/ona-agent",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "nullvariant-justice[bot]",
+      "name": "👮 Justice",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2610732?v=4",
+      "profile": "https://github.com/apps/nullvariant-justice",
+      "contributions": [
+        "review",
+        "security"
+      ]
+    },
+    {
+      "login": "nullvariant-luna[bot]",
+      "name": "👧 Luna",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2610752?v=4",
+      "profile": "https://github.com/apps/nullvariant-luna",
+      "contributions": [
+        "research",
+        "review"
+      ]
+    },
+    {
+      "login": "nullvariant-slow[bot]",
+      "name": "🦥 Slow",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2610174?v=4",
+      "profile": "https://github.com/apps/nullvariant-slow",
+      "contributions": [
+        "review",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "nullvariant-blaze[bot]",
+      "name": "🐗 Blaze",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2610768?v=4",
+      "profile": "https://github.com/apps/nullvariant-blaze",
+      "contributions": [
+        "review",
+        "infra"
+      ]
+    },
+    {
+      "login": "nullvariant-ciel[bot]",
+      "name": "🕊️ Ciel",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2610776?v=4",
+      "profile": "https://github.com/apps/nullvariant-ciel",
+      "contributions": [
+        "review",
+        "projectManagement"
+      ]
+    },
+    {
+      "login": "nullvariant-mimi[bot]",
+      "name": "🐰 Mimi",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2610795?v=4",
+      "profile": "https://github.com/apps/nullvariant-mimi",
+      "contributions": [
+        "review",
+        "test"
+      ]
+    },
+    {
+      "login": "dependabot[bot]",
+      "name": "Dependabot",
+      "avatar_url": "https://avatars.githubusercontent.com/in/29110?v=4",
+      "profile": "https://github.com/apps/dependabot",
+      "contributions": [
+        "maintenance",
+        "security"
+      ]
+    },
+    {
+      "login": "renovate[bot]",
+      "name": "Renovate",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2740?v=4",
+      "profile": "https://github.com/apps/renovate",
+      "contributions": [
+        "maintenance",
+        "security"
+      ]
+    },
+    {
+      "login": "pre-commit-ci[bot]",
+      "name": "pre-commit.ci",
+      "avatar_url": "https://avatars.githubusercontent.com/in/68672?v=4",
+      "profile": "https://github.com/apps/pre-commit-ci",
+      "contributions": [
+        "maintenance",
+        "security"
+      ]
+    },
+    {
+      "login": "mend-bolt-for-github[bot]",
+      "name": "Mend Bolt",
+      "avatar_url": "https://avatars.githubusercontent.com/in/16809?v=4",
+      "profile": "https://github.com/apps/mend-bolt-for-github",
+      "contributions": [
+        "security"
+      ]
+    },
+    {
+      "login": "imgbot[bot]",
+      "name": "ImgBot",
+      "avatar_url": "https://avatars.githubusercontent.com/in/4706?v=4",
+      "profile": "https://github.com/apps/imgbot",
+      "contributions": [
+        "maintenance"
+      ]
+    },
+    {
+      "login": "allcontributors[bot]",
+      "name": "AllContributors",
+      "avatar_url": "https://avatars.githubusercontent.com/in/23186?v=4",
+      "profile": "https://github.com/apps/allcontributors",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "github-actions[bot]",
+      "name": "GitHub Actions",
+      "avatar_url": "https://avatars.githubusercontent.com/in/15368?v=4",
+      "profile": "https://github.com/apps/github-actions",
+      "contributions": [
+        "infra"
+      ]
     }
   ],
   "contributorsPerLine": 7,
