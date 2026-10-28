@@ -15,8 +15,8 @@ import * as vscode from 'vscode';
 import * as crypto from 'node:crypto';
 
 import {
+  type DocumentView,
   type ErrorType,
-  type SanitizedHtml,
   buildCspString,
   buildDocumentHtml,
   buildLoadingHtml,
@@ -61,23 +61,17 @@ export function buildCsp(webview: vscode.Webview, nonce: string): string {
  * Generate the document HTML with content
  *
  * @param webview - Webview instance
- * @param content - Rendered HTML content
- * @param locale - Current locale
- * @param currentPath - Current document path (for relative link resolution)
+ * @param view - Content and navigation state to show
  * @param nonce - CSP nonce for inline styles and scripts
- * @param canGoBack - Whether back navigation is available
  * @returns Complete HTML document
  */
 export function getDocumentHtml(
   webview: vscode.Webview,
-  content: SanitizedHtml,
-  locale: string,
-  currentPath: string,
-  nonce: string,
-  canGoBack: boolean
+  view: DocumentView,
+  nonce: string
 ): string {
   return renderWithFallback('document', () =>
-    buildDocumentHtml(webview.cspSource, content, locale, currentPath, nonce, canGoBack)
+    buildDocumentHtml(webview.cspSource, view, nonce)
   );
 }
 

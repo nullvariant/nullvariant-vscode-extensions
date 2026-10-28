@@ -1,0 +1,242 @@
+# Qlty configuration.
+#
+# Only the smell findings that are intentional are configured here; every other
+# setting keeps Qlty's defaults. Each [[triage]] block names the finding it
+# covers and why it stays. A triage block matches a rule in a whole file, so a
+# new finding of the same rule in the same file is also hidden: when a file
+# below changes a lot, remove its block and look at the findings again.
+#
+# See docs/ARCHITECTURE.md ("Intentional Patterns") for the patterns referred
+# to below: guard clauses that reject input early, defense-in-depth checks,
+# and one validator per file under security/.
+
+config_version = "0"
+
+# Same scope as `qlty init`: skip generated and vendored files, and treat tests
+# as tests (smells are reported for source files only).
+exclude_patterns = [
+  "*_min.*",
+  "*-min.*",
+  "*.min.*",
+  "**/*.d.ts",
+  "**/.yarn/**",
+  "**/bower_components/**",
+  "**/build/**",
+  "**/cache/**",
+  "**/config/**",
+  "**/db/**",
+  "**/deps/**",
+  "**/dist/**",
+  "**/extern/**",
+  "**/external/**",
+  "**/generated/**",
+  "**/Godeps/**",
+  "**/gradlew/**",
+  "**/mvnw/**",
+  "**/node_modules/**",
+  "**/protos/**",
+  "**/seed/**",
+  "**/target/**",
+  "**/testdata/**",
+  "**/vendor/**",
+  "**/assets/**",
+]
+
+test_patterns = [
+  "**/test/**",
+  "**/spec/**",
+  "**/*.test.*",
+  "**/*.spec.*",
+  "**/*_test.*",
+  "**/*_spec.*",
+  "**/test_*.*",
+  "**/spec_*.*",
+]
+
+[smells]
+mode = "comment"
+
+# --- Many return statements: guard clauses that reject input early ----------
+
+# handleDeleteIdentity: returns for "no VS Code", "untrusted workspace",
+# "cancelled" and "confirmation declined". Flat and read top to bottom.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = ["extensions/git-id-switcher/src/commands/handlers.ts"]
+set.ignored = true
+
+# valuesEqual: equality guards (same, different type, null, oversized, error).
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/core/configChangeDetector.ts",
+]
+set.ignored = true
+
+# parseSubmoduleEntry: rejects malformed git output field by field; most of
+# the checks are defense-in-depth and must not be removed.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = ["extensions/git-id-switcher/src/core/submodule.ts"]
+set.ignored = true
+
+# getIdentitiesWithValidation: cache hit, no VS Code, wrong type, empty, and
+# over the identity limit, each rejected before the per-identity loop.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/identity/identityConfig.ts",
+]
+set.ignored = true
+
+# validateSingleArgument / isCommandAllowed: the allowlist decides each
+# argument in a fixed security order; every step can end the decision.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/commandAllowlist.ts",
+]
+set.ignored = true
+
+# normalizeAndValidatePath: checks before and after normalization, including
+# defense-in-depth checks that must not be removed.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/pathNormalizer.ts",
+]
+set.ignored = true
+
+# sanitizePath: redaction steps in order; the first match decides the output.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/pathSanitizer.ts",
+]
+set.ignored = true
+
+# validateSubmodulePath: steps that each delegate to a dedicated check.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = ["extensions/git-id-switcher/src/security/pathUtils.ts"]
+set.ignored = true
+
+# isSecureLogPath: log path checks, including defense-in-depth checks.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/secureLogPath.ts",
+]
+set.ignored = true
+
+# sanitizeStringValue / sanitizeValue: choose the redaction by the kind or
+# type of value; each branch returns its own form.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/sensitiveDataDetector.ts",
+]
+set.ignored = true
+
+# validateKeyFileBeforeAddToAgent: runs the key file checks in order and
+# stops at the first failure.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = ["extensions/git-id-switcher/src/ssh/keyFileValidator.ts"]
+set.ignored = true
+
+# isBasenameMatch: each comment format is its own check, two of them
+# defense-in-depth. Splitting the comment into tokens instead would stop
+# matching key file names that contain a space.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = ["extensions/git-id-switcher/src/ssh/sshAgent.ts"]
+set.ignored = true
+
+# fetchDocumentByPath: each failed check returns null (fail closed).
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/ui/documentationPublic.ts",
+]
+set.ignored = true
+
+# validateFieldInput: a switch over the identity fields, one branch each.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/ui/identityFormValidation.ts",
+]
+set.ignored = true
+
+# isValidEmail: format guards, each rejecting one kind of malformed address.
+[[triage]]
+match.rules = ["qlty:return-statements"]
+match.file_patterns = ["extensions/git-id-switcher/src/validators/common.ts"]
+set.ignored = true
+
+# --- High total complexity: one responsibility with many functions ----------
+
+# One handler per VS Code command.
+[[triage]]
+match.rules = ["qlty:file-complexity"]
+match.file_patterns = ["extensions/git-id-switcher/src/commands/handlers.ts"]
+set.ignored = true
+
+# Git submodule detection and configuration.
+[[triage]]
+match.rules = ["qlty:file-complexity"]
+match.file_patterns = ["extensions/git-id-switcher/src/core/submodule.ts"]
+set.ignored = true
+
+# Schema validation of the identity settings.
+[[triage]]
+match.rules = ["qlty:file-complexity"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/identity/configSchema.ts",
+]
+set.ignored = true
+
+# Reading and writing the identities in the settings.
+[[triage]]
+match.rules = ["qlty:file-complexity"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/identity/identityConfig.ts",
+]
+set.ignored = true
+
+# Writing logs to files with rotation.
+[[triage]]
+match.rules = ["qlty:file-complexity"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/logging/fileLogWriter.ts",
+]
+set.ignored = true
+
+# Resolving the absolute paths of the allowed commands.
+[[triage]]
+match.rules = ["qlty:file-complexity"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/binaryResolver.ts",
+]
+set.ignored = true
+
+# Recording security events.
+[[triage]]
+match.rules = ["qlty:file-complexity"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/securityLogger.ts",
+]
+set.ignored = true
+
+# --- Complex boolean expression ---------------------------------------------
+
+# isPathArgument: lists every shape that looks like a path, one per line with
+# a comment, so a missing case is easy to see. Being conservative here is the
+# point: a non-path validated as a path is safe, a missed path is not.
+[[triage]]
+match.rules = ["qlty:boolean-logic"]
+match.file_patterns = [
+  "extensions/git-id-switcher/src/security/pathValidator.ts",
+]
+set.ignored = true

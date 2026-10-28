@@ -23,30 +23,41 @@ import { buildHtmlShell } from './shell';
 import { type SanitizedHtml } from './types';
 
 /**
+ * What the document view shows: the content and the navigation state around it.
+ */
+export interface DocumentView {
+  /**
+   * Pre-sanitized HTML content, typed as `SanitizedHtml` so the compiler
+   * forbids passing a raw `string`. The brand can only originate at the
+   * sanitizer boundary (`renderMarkdown`), making the trust boundary
+   * structurally impossible to bypass. `buildDocumentHtml` injects `content`
+   * verbatim; CSP blocks `<script>` execution but does NOT stop `<img
+   * onerror>` or `javascript:` URLs outside the linkInterceptScript path,
+   * which is exactly why we want the type-level guarantee on top of CSP.
+   */
+  readonly content: SanitizedHtml;
+  /** Current locale */
+  readonly locale: string;
+  /** Current document path (for relative link resolution) */
+  readonly currentPath: string;
+  /** Whether back navigation is available */
+  readonly canGoBack: boolean;
+}
+
+/**
  * Generate the document HTML with content
  *
  * @param cspSource - Webview CSP source
- * @param content - Pre-sanitized HTML content, typed as `SanitizedHtml` so
- *   the compiler forbids passing a raw `string`. The brand can only originate
- *   at the sanitizer boundary (`renderMarkdown`), making the trust boundary
- *   structurally impossible to bypass. This function injects `content`
- *   verbatim; CSP blocks `<script>` execution but does NOT stop `<img
- *   onerror>` or `javascript:` URLs outside the linkInterceptScript path,
- *   which is exactly why we want the type-level guarantee on top of CSP.
- * @param locale - Current locale
- * @param currentPath - Current document path (for relative link resolution)
+ * @param view - Content and navigation state to show
  * @param nonce - CSP nonce for inline styles and scripts
- * @param canGoBack - Whether back navigation is available
  * @returns Complete HTML document
  */
 export function buildDocumentHtml(
   cspSource: string,
-  content: SanitizedHtml,
-  locale: string,
-  currentPath: string,
-  nonce: string,
-  canGoBack: boolean
+  view: DocumentView,
+  nonce: string
 ): string {
+  const { content, locale, currentPath, canGoBack } = view;
   const linkInterceptScript = buildLinkInterceptScript();
 
   const extraStyles = `    /* External link indicator.
