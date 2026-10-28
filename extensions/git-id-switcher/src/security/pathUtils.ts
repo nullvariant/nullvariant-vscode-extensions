@@ -235,6 +235,34 @@ function verifySubmoduleSymlinks(
 }
 
 /**
+ * Character checks for workspace paths, applied in order.
+ * The first check that rejects the path decides the reason.
+ */
+const WORKSPACE_PATH_CHARACTER_CHECKS: ReadonlyArray<{
+  isRejected: (workspacePath: string) => boolean;
+  reason: string;
+}> = [
+  {
+    // Potential obfuscation
+    isRejected: (workspacePath) => workspacePath !== workspacePath.trim(),
+    reason: 'Workspace path contains leading or trailing whitespace',
+  },
+  {
+    // Common attack vector
+    isRejected: hasNullByte,
+    reason: 'Workspace path contains null byte',
+  },
+  {
+    isRejected: (workspacePath) => CONTROL_CHAR_REGEX_ALL.test(workspacePath),
+    reason: 'Workspace path contains control characters',
+  },
+  {
+    isRejected: hasInvisibleUnicode,
+    reason: 'Workspace path contains invisible Unicode characters',
+  },
+];
+
+/**
  * Validate a workspace path (platform-native format)
  *
  * Unlike normalizeAndValidatePath, this function accepts Windows paths
@@ -279,39 +307,15 @@ export function validateWorkspacePath(
     };
   }
 
-  // Step 2: Whitespace check (potential obfuscation)
-  if (workspacePath !== workspacePath.trim()) {
+  // Steps 2-5: Character checks, in order (whitespace, null byte, control, invisible Unicode)
+  const rejectedCheck = WORKSPACE_PATH_CHARACTER_CHECKS.find(({ isRejected }) =>
+    isRejected(workspacePath)
+  );
+  if (rejectedCheck) {
     return {
       valid: false,
       originalPath: workspacePath,
-      reason: 'Workspace path contains leading or trailing whitespace',
-    };
-  }
-
-  // Step 3: Null byte check (common attack vector)
-  if (hasNullByte(workspacePath)) {
-    return {
-      valid: false,
-      originalPath: workspacePath,
-      reason: 'Workspace path contains null byte',
-    };
-  }
-
-  // Step 4: Control character check
-  if (CONTROL_CHAR_REGEX_ALL.test(workspacePath)) {
-    return {
-      valid: false,
-      originalPath: workspacePath,
-      reason: 'Workspace path contains control characters',
-    };
-  }
-
-  // Step 5: Invisible Unicode check
-  if (hasInvisibleUnicode(workspacePath)) {
-    return {
-      valid: false,
-      originalPath: workspacePath,
-      reason: 'Workspace path contains invisible Unicode characters',
+      reason: rejectedCheck.reason,
     };
   }
 

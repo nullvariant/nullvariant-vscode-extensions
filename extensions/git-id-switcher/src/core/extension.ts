@@ -11,7 +11,7 @@ import { showDocumentation } from '../ui/documentationPublic';
 import { securityLogger } from '../security/securityLogger';
 import { getUserSafeMessage, isFatalError } from './errors';
 import { initializeWorkspaceTrust } from './workspaceTrust';
-import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetectedIdentity } from '../services/detection';
+import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetectedIdentity, type DetectionResult } from '../services/detection';
 import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotification, handleDeleteIdentity, resolveSyncMismatchCommand } from '../commands/handlers';
 import { checkSync } from './syncChecker';
 import { extensionLogger } from '../logging/extensionLogger';
@@ -127,6 +127,79 @@ function debouncedSyncCheck(): void {
 }
 
 /**
+ * Re-run initialization and the sync check after a workspace event.
+ * Failures are logged, and fatal ones are also shown to the user.
+ *
+ * @param trigger - What caused the re-initialization, for the log message
+ */
+async function reinitialize(context: vscode.ExtensionContext, trigger: string): Promise<void> {
+  try {
+    await initializeState(context);
+    await performSyncCheck();
+  } catch (error) {
+    const safeMessage = getUserSafeMessage(error);
+    extensionLogger.error(`Failed to initialize after ${trigger}: ${safeMessage}`);
+    if (isFatalError(error)) {
+      vscode.window.showErrorMessage(
+        vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
+      );
+    }
+  }
+}
+
+/**
+ * Log what changed in the configuration, then store the new snapshot.
+ * The snapshot is stored even if detecting the changes fails.
+ */
+function recordConfigChanges(): void {
+  try {
+    const newSnapshot = securityLogger.createConfigSnapshot();
+    const changes = securityLogger.detectConfigChanges(newSnapshot);
+    if (changes.length > 0) {
+      securityLogger.logConfigChanges(changes);
+    }
+    securityLogger.storeConfigSnapshot();
+  } catch (error) {
+    extensionLogger.error(`Error handling config change: ${getUserSafeMessage(error)}`);
+    try {
+      securityLogger.storeConfigSnapshot();
+    } catch (snapshotError) {
+      extensionLogger.error(`Error storing config snapshot: ${getUserSafeMessage(snapshotError)}`);
+    }
+  }
+}
+
+/**
+ * Handle a configuration change: log it, drop cached identities, and re-initialize.
+ */
+function handleConfigurationChange(
+  context: vscode.ExtensionContext,
+  e: vscode.ConfigurationChangeEvent,
+): void {
+  if (!e.affectsConfiguration('gitIdSwitcher')) {
+    return;
+  }
+
+  recordConfigChanges();
+  invalidateIdentityCache();
+  void reinitialize(context, 'config change');
+}
+
+/**
+ * Sync check on window focus return (if enabled).
+ */
+function handleWindowStateChange(state: vscode.WindowState): void {
+  if (!state.focused) {
+    return;
+  }
+  const config = vscode.workspace.getConfiguration('gitIdSwitcher');
+  if (!config.get<boolean>('syncCheck.onFocusReturn', true)) {
+    return;
+  }
+  debouncedSyncCheck();
+}
+
+/**
  * Perform initialization that requires workspace trust.
  * SECURITY: Only call after confirming workspace is trusted.
  */
@@ -140,63 +213,12 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
-      initializeState(context)
-        .then(() => performSyncCheck())
-        .catch(error => {
-          const safeMessage = getUserSafeMessage(error);
-          extensionLogger.error(`Failed to initialize after workspace change: ${safeMessage}`);
-          if (isFatalError(error)) {
-            vscode.window.showErrorMessage(
-              vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
-            );
-          }
-        });
+      void reinitialize(context, 'workspace change');
     }),
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
-      if (!e.affectsConfiguration('gitIdSwitcher')) {
-      	return;
-      }
-
-      try {
-        const newSnapshot = securityLogger.createConfigSnapshot();
-        const changes = securityLogger.detectConfigChanges(newSnapshot);
-        if (changes.length > 0) {
-          securityLogger.logConfigChanges(changes);
-        }
-        securityLogger.storeConfigSnapshot();
-      } catch (error) {
-        extensionLogger.error(`Error handling config change: ${getUserSafeMessage(error)}`);
-        try {
-          securityLogger.storeConfigSnapshot();
-        } catch (snapshotError) {
-          extensionLogger.error(`Error storing config snapshot: ${getUserSafeMessage(snapshotError)}`);
-        }
-      }
-
-      invalidateIdentityCache();
-      initializeState(context)
-        .then(() => performSyncCheck())
-        .catch(error => {
-          const safeMessage = getUserSafeMessage(error);
-          extensionLogger.error(`Failed to initialize after config change: ${safeMessage}`);
-          if (isFatalError(error)) {
-            vscode.window.showErrorMessage(
-              vscode.l10n.t('Failed to initialize Git ID Switcher: {0}', safeMessage)
-            );
-          }
-        });
+      handleConfigurationChange(context, e);
     }),
-    // Sync check on window focus return
-    vscode.window.onDidChangeWindowState((state: vscode.WindowState) => {
-      if (!state.focused) {
-        return;
-      }
-      const config = vscode.workspace.getConfiguration('gitIdSwitcher');
-      if (!config.get<boolean>('syncCheck.onFocusReturn', true)) {
-        return;
-      }
-      debouncedSyncCheck();
-    }),
+    vscode.window.onDidChangeWindowState(handleWindowStateChange),
   );
 }
 
@@ -217,6 +239,47 @@ export function deactivate(): void {
   securityLogger.dispose();
   extensionLogger.info('Deactivated');
   extensionLogger.dispose();
+}
+
+/**
+ * Try each identity source in order and apply the first identity found.
+ *
+ * Order: the identity saved in this workspace, then the Git config, then the
+ * SSH agent. A later source runs only if the earlier ones found nothing, and a
+ * cancelled detection stops the search. Only detected identities are saved
+ * back to the workspace (the restored one is already saved).
+ *
+ * The saved identity is restored before the loop on purpose: restoring is
+ * synchronous, so reading and applying it has no await in between where a
+ * newer initialization could cancel this one.
+ */
+async function detectAndApplyIdentity(
+  context: vscode.ExtensionContext,
+  token: vscode.CancellationToken,
+): Promise<void> {
+  const saved = tryRestoreSavedIdentity(context);
+  if (saved.found) {
+    await applyDetectedIdentity(saved.identity, context, false, statusBar, setCurrentIdentity);
+    return;
+  }
+
+  const detectors: ReadonlyArray<(token: vscode.CancellationToken) => Promise<DetectionResult | 'cancelled'>> = [
+    tryDetectFromGit,
+    tryDetectFromSsh,
+  ];
+
+  for (const detect of detectors) {
+    const result = await detect(token);
+    if (result === 'cancelled') {
+      return;
+    }
+    if (result.found) {
+      await applyDetectedIdentity(result.identity, context, true, statusBar, setCurrentIdentity);
+      return;
+    }
+  }
+
+  statusBar.setNoIdentity();
 }
 
 /**
@@ -247,27 +310,7 @@ async function initializeState(context: vscode.ExtensionContext): Promise<void> 
       await context.globalState.update('hasShownWelcome', true);
     }
 
-    const savedResult = tryRestoreSavedIdentity(context);
-    if (savedResult.found) {
-      await applyDetectedIdentity(savedResult.identity, context, false, statusBar, setCurrentIdentity);
-      return;
-    }
-
-    const gitResult = await tryDetectFromGit(token);
-    if (gitResult === 'cancelled') return;
-    if (gitResult.found) {
-      await applyDetectedIdentity(gitResult.identity, context, true, statusBar, setCurrentIdentity);
-      return;
-    }
-
-    const sshResult = await tryDetectFromSsh(token);
-    if (sshResult === 'cancelled') return;
-    if (sshResult.found) {
-      await applyDetectedIdentity(sshResult.identity, context, true, statusBar, setCurrentIdentity);
-      return;
-    }
-
-    statusBar.setNoIdentity();
+    await detectAndApplyIdentity(context, token);
   } catch (error) {
     if (token.isCancellationRequested) {
       extensionLogger.debug('Initialization cancelled (caught in error handler)');

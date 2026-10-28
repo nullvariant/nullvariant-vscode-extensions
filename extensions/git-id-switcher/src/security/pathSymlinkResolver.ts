@@ -19,6 +19,17 @@ export interface SymlinkResolutionResult {
 }
 
 /**
+ * Rejection reasons for the realpath error codes that have a known meaning.
+ * Any other code falls back to a generic reason that names the code.
+ */
+const SYMLINK_ERROR_REASONS: ReadonlyMap<string, string> = new Map([
+  ['ELOOP', 'Symlink loop detected (ELOOP) - possible infinite loop attack'],
+  ['EACCES', 'Permission denied while resolving symlinks (EACCES)'],
+  ['ENAMETOOLONG', 'Path too long while resolving symlinks (ENAMETOOLONG)'],
+  ['ENOTDIR', 'A component of the path is not a directory (ENOTDIR)'],
+]);
+
+/**
  * Resolve symlinks securely with loop detection
  *
  * Uses fs.realpathSync.native() with error handling for:
@@ -59,49 +70,24 @@ export function resolveSymlinksSecurely(inputPath: string): SymlinkResolutionRes
     const nodeError = error as NodeJS.ErrnoException;
     const code = nodeError.code;
 
-    switch (code) {
-      case 'ELOOP': {
-        return {
-          valid: false,
-          reason: 'Symlink loop detected (ELOOP) - possible infinite loop attack',
-        };
-      }
-      case 'ENOENT': {
-        // File doesn't exist - this might be OK depending on use case
-        // SECURITY: inputPath is already normalized by normalizeAndValidatePath()
-        // before this function is called, but we normalize again for defensive programming
-        // This ensures consistency even if the function is called directly
-        // The caller can check requireExists if they need the file to exist
-        return {
-          valid: true,
-          resolvedPath: path.normalize(inputPath), // Already normalized, but safe to normalize again (idempotent)
-        };
-      }
-      case 'EACCES': {
-        return {
-          valid: false,
-          reason: 'Permission denied while resolving symlinks (EACCES)',
-        };
-      }
-      case 'ENAMETOOLONG': {
-        return {
-          valid: false,
-          reason: 'Path too long while resolving symlinks (ENAMETOOLONG)',
-        };
-      }
-      case 'ENOTDIR': {
-        return {
-          valid: false,
-          reason: 'A component of the path is not a directory (ENOTDIR)',
-        };
-      }
-      default: {
-        return {
-          valid: false,
-          reason: `Error resolving symlinks: ${code || nodeError.message}`,
-        };
-      }
+    if (code === 'ENOENT') {
+      // File doesn't exist - this might be OK depending on use case
+      // SECURITY: inputPath is already normalized by normalizeAndValidatePath()
+      // before this function is called, but we normalize again for defensive programming
+      // This ensures consistency even if the function is called directly
+      // The caller can check requireExists if they need the file to exist
+      return {
+        valid: true,
+        resolvedPath: path.normalize(inputPath), // Already normalized, but safe to normalize again (idempotent)
+      };
     }
+
+    return {
+      valid: false,
+      reason:
+        (code === undefined ? undefined : SYMLINK_ERROR_REASONS.get(code)) ??
+        `Error resolving symlinks: ${code || nodeError.message}`,
+    };
   } /* c8 ignore stop */
 }
 

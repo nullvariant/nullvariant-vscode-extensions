@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.11] - 2026-10-23
+
+### Changed
+
+- **Design philosophy**: The Practice in `DESIGN_PHILOSOPHY.md` defines an apprentice by the way of tending, not by name or number: whoever returns each day to take up the rake under the gardener's eye. The badges show the apprentices tending the garden now
+- **Contributors**: The repository README lists the people, apprentices, and bots who tend the garden, with the All Contributors badge
+
+## [0.19.10] - 2026-10-23
+
+### Changed
+
+- **Design philosophy**: The Practice in `DESIGN_PHILOSOPHY.md` introduces Claude and Codex, the two apprentices who tend the garden each day, with their badges. The README shows the same badges next to the Karesansui Architecture badge
+- **SLSA badge**: The SLSA badge in the README links to the Build Provenance section of `SECURITY.md`, which explains how the build provenance meets SLSA v1.0 Build Level 3 and how to verify it
+
 ## [0.19.9] - 2026-10-22
 
 ### Security
