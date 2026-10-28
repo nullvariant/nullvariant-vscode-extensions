@@ -100,10 +100,7 @@ export function severityToLogLevel(severity: 'info' | 'warning' | 'error'): LogL
  */
 export function shouldLog(level: LogLevel, minLevel: LogLevel): boolean {
   // SECURITY level is always logged
-  if (level === LogLevel.SECURITY) {
-    return true;
-  }
-  return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[minLevel];
+  return level === LogLevel.SECURITY || LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[minLevel];
 }
 
 /**
@@ -115,8 +112,5 @@ export function shouldLog(level: LogLevel, minLevel: LogLevel): boolean {
  */
 export function parseLogLevel(levelStr: string, defaultLevel: LogLevel = LogLevel.INFO): LogLevel {
   const upperLevel = levelStr.toUpperCase();
-  if (upperLevel in LogLevel) {
-    return LogLevel[upperLevel as keyof typeof LogLevel];
-  }
-  return defaultLevel;
+  return upperLevel in LogLevel ? LogLevel[upperLevel as keyof typeof LogLevel] : defaultLevel;
 }

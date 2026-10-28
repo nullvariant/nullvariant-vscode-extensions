@@ -76,7 +76,9 @@ export class BinaryResolutionError extends Error {
     this.command = command;
 
     /* c8 ignore start - Error.captureStackTrace availability depends on JS engine */
+    // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- V8-only API, guarded by the availability check
     if (Error.captureStackTrace) {
+      // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- V8-only API, guarded by the availability check
       Error.captureStackTrace(this, BinaryResolutionError);
     }
     /* c8 ignore stop */
@@ -238,11 +240,7 @@ function getVSCodeGitPath(): string | null {
     const config = workspace.getConfiguration('git');
     const gitPath = config.get<string>('path');
 
-    if (!gitPath || typeof gitPath !== 'string' || gitPath.trim().length === 0) {
-      return null;
-    }
-
-    return gitPath.trim();
+    return !gitPath || typeof gitPath !== 'string' || gitPath.trim().length === 0 ? null : gitPath.trim();
   } catch /* c8 ignore start */ {
     return null;
   } /* c8 ignore stop */
@@ -264,7 +262,7 @@ async function verifyGitBinary(absolutePath: string): Promise<boolean> {
       timeout: RESOLUTION_TIMEOUT,
       maxBuffer: 1024,
     });
-    return stdout.trim().startsWith('git version');
+    return stdout.trimStart().startsWith('git version');
   } catch /* c8 ignore start */ {
     return false;
   } /* c8 ignore stop */

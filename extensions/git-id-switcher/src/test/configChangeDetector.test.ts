@@ -1069,10 +1069,7 @@ function testCreateSnapshotIdentitiesLimit(): void {
   const mockWorkspace = {
     getConfiguration: () => ({
       get: <T>(key: string, defaultValue: T): T => {
-        if (key === 'identities') {
-          return largeIdentities as T;
-        }
-        return defaultValue;
+        return key === 'identities' ? (largeIdentities as T) : defaultValue;
       },
     }),
   };

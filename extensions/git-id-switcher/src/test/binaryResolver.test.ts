@@ -115,12 +115,10 @@ function testAllowedCommands(): void {
  * This is platform-agnostic, unlike path.isAbsolute().
  */
 function looksLikeAbsolutePath(p: string, platform: string): boolean {
-  if (platform === 'win32') {
-    // Windows: C:\... or \\server\...
-    return /^[A-Za-z]:[/\\]/.test(p) || p.startsWith('\\\\');
-  }
-  // Unix: starts with /
-  return p.startsWith('/');
+  // Windows: C:\... or \\server\...; Unix: starts with /
+  return platform === 'win32'
+    ? /^[A-Za-z]:[/\\]/.test(p) || p.startsWith('\\\\')
+    : p.startsWith('/');
 }
 
 /**
@@ -868,19 +866,13 @@ async function testGitPathVerificationFallback(): Promise<void> {
 
   const mockConfig = {
     get: (key: string) => {
-      if (key === 'path') {
-        return fakeGitPath;
-      }
-      return undefined;
+      return key === 'path' ? fakeGitPath : undefined;
     },
   };
 
   const mockWorkspace = {
     getConfiguration: (section: string) => {
-      if (section === 'git') {
-        return mockConfig;
-      }
-      return { get: () => undefined };
+      return section === 'git' ? mockConfig : { get: () => undefined };
     },
   };
 
@@ -929,19 +921,13 @@ async function testGitPathRelativePathRejection(): Promise<void> {
 
   const mockConfig = {
     get: (key: string) => {
-      if (key === 'path') {
-        return relativePath;
-      }
-      return undefined;
+      return key === 'path' ? relativePath : undefined;
     },
   };
 
   const mockWorkspace = {
     getConfiguration: (section: string) => {
-      if (section === 'git') {
-        return mockConfig;
-      }
-      return { get: () => undefined };
+      return section === 'git' ? mockConfig : { get: () => undefined };
     },
   };
 
@@ -1005,19 +991,13 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
       // Create mock VS Code with git.path pointing to real git
       const mockConfig = {
         get: (key: string) => {
-          if (key === 'path') {
-            return realGitPath;
-          }
-          return undefined;
+          return key === 'path' ? realGitPath : undefined;
         },
       };
 
       const mockWorkspace = {
         getConfiguration: (section: string) => {
-          if (section === 'git') {
-            return mockConfig;
-          }
-          return { get: () => undefined };
+          return section === 'git' ? mockConfig : { get: () => undefined };
         },
       };
 
@@ -1045,19 +1025,13 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
 
     const mockConfig = {
       get: (key: string) => {
-        if (key === 'path') {
-          return invalidPath;
-        }
-        return undefined;
+        return key === 'path' ? invalidPath : undefined;
       },
     };
 
     const mockWorkspace = {
       getConfiguration: (section: string) => {
-        if (section === 'git') {
-          return mockConfig;
-        }
-        return { get: () => undefined };
+        return section === 'git' ? mockConfig : { get: () => undefined };
       },
     };
 
@@ -1092,19 +1066,13 @@ async function testGetVSCodeGitPathWithMock(): Promise<void> {
   {
     const mockConfig = {
       get: (key: string) => {
-        if (key === 'path') {
-          return '';
-        }
-        return undefined;
+        return key === 'path' ? '' : undefined;
       },
     };
 
     const mockWorkspace = {
       getConfiguration: (section: string) => {
-        if (section === 'git') {
-          return mockConfig;
-        }
-        return { get: () => undefined };
+        return section === 'git' ? mockConfig : { get: () => undefined };
       },
     };
 

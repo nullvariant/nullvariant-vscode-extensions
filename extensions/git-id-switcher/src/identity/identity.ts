@@ -49,10 +49,7 @@ export function getIdentityLabel(identity: Identity): string {
     ? `${identity.name} - ${identity.service}`
     : identity.name;
 
-  if (identity.icon) {
-    return `${identity.icon} ${displayName}`;
-  }
-  return displayName;
+  return identity.icon ? `${identity.icon} ${displayName}` : displayName;
 }
 
 /**
@@ -60,20 +57,14 @@ export function getIdentityLabel(identity: Identity): string {
  * Shows description if available, otherwise email
  */
 export function getIdentityDetail(identity: Identity): string {
-  if (identity.description) {
-    return `${identity.description} (${identity.email})`;
-  }
-  return identity.email;
+  return identity.description ? `${identity.description} (${identity.email})` : identity.email;
 }
 
 /**
  * Format identity as Git author string
  */
 export function formatGitAuthor(identity: Identity): string {
-  if (identity.icon) {
-    return `${identity.icon} ${identity.name} <${identity.email}>`;
-  }
-  return `${identity.name} <${identity.email}>`;
+  return identity.icon ? `${identity.icon} ${identity.name} <${identity.email}>` : `${identity.name} <${identity.email}>`;
 }
 
 export {

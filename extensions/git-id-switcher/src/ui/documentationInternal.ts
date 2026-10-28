@@ -123,12 +123,8 @@ const EXTENSION_CDN_PREFIX = 'extensions/git-id-switcher';
  * @returns Hash key for DOCUMENT_HASHES lookup
  */
 export function getHashKey(path: string, isMonorepoRoot: boolean = false): string {
-  if (isMonorepoRoot) {
-    // Monorepo root files use filename only
-    return path;
-  }
-  // Extension files use CDN path prefix
-  return `${EXTENSION_CDN_PREFIX}/${path}`;
+  // Monorepo root files use filename only; extension files use CDN path prefix
+  return isMonorepoRoot ? path : `${EXTENSION_CDN_PREFIX}/${path}`;
 }
 
 /**
@@ -175,14 +171,12 @@ export function logHashFailure(
   path: string,
   hashResult: { expectedHash: string | undefined; actualHash: string; hashKey: string }
 ): void {
-  if (hashResult.expectedHash === undefined) {
-    console.warn(`[Git ID Switcher] Unknown document path rejected: ${path} (hash key: ${hashResult.hashKey})`);
-  } else {
-    console.warn(
-      `[Git ID Switcher] Hash mismatch for ${path} (hash key: ${hashResult.hashKey}): ` +
+  console.warn(
+    hashResult.expectedHash === undefined
+      ? `[Git ID Switcher] Unknown document path rejected: ${path} (hash key: ${hashResult.hashKey})`
+      : `[Git ID Switcher] Hash mismatch for ${path} (hash key: ${hashResult.hashKey}): ` +
         `expected ${hashResult.expectedHash}, got ${hashResult.actualHash}`
-    );
-  }
+  );
 }
 
 /**
@@ -298,13 +292,8 @@ export function classifyUrl(href: string, currentPath: string): {
   // Relative paths — safe to resolve
   const resolved = resolveRelativePath(currentPath, href);
 
-  // Check if it's a markdown file (internal navigation)
-  if (resolved.endsWith('.md')) {
-    return { type: 'internal-md', resolvedPath: resolved };
-  }
-
-  // Non-markdown files - treat as external (open on GitHub)
-  return { type: 'external' };
+  // Markdown files are internal navigation; non-markdown files are treated as external (open on GitHub)
+  return resolved.endsWith('.md') ? { type: 'internal-md', resolvedPath: resolved } : { type: 'external' };
 }
 
 /**
@@ -547,10 +536,6 @@ export function getDocumentLocaleFromString(vscodeLocale: string): string {
 
   // 3. Try base locale (en-US → en)
   const baseLocale = vscodeLocale.split('-', 1)[0];
-  if (SUPPORTED_LOCALES.includes(baseLocale)) {
-    return baseLocale;
-  }
-
   // 4. Fallback to English
-  return 'en';
+  return SUPPORTED_LOCALES.includes(baseLocale) ? baseLocale : 'en';
 }

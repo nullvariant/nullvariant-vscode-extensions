@@ -51,9 +51,9 @@ const EXTENSION_ID = 'nullvariant.git-id-switcher';
  * This helper reduces nesting depth in async tests.
  */
 function raceWithTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number = 500
+  promise: Promise<T>
 ): Promise<T | undefined> {
+  const timeoutMs = 500;
   const timeoutPromise = new Promise<undefined>((resolve) => {
     setTimeout(() => resolve(undefined), timeoutMs);
   });

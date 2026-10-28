@@ -41,40 +41,29 @@ import { validateKeyFileBeforeAddToAgent } from "./keyFileValidator";
  */
 function isBasenameMatch(comment: string, basename: string): boolean {
   // defense-in-depth: empty basename would false-positive on paths ending with '/'
+  // eslint-disable-next-line unicorn/prefer-ternary -- keep the defense-in-depth guard as an explicit early return
   if (basename.length === 0) {
     return false;
   }
-  // Exact match: comment is just the basename
-  if (comment === basename) {
-    return true;
-  }
-  // Path match: comment ends with /<basename>
-  if (comment.endsWith("/" + basename) || comment.endsWith("\\" + basename)) {
-    return true;
-  }
-  // Space-separated match: comment starts with <basename> followed by space
-  // (ssh-keygen comments like "id_ed25519 user@host")
-  if (comment.startsWith(basename + " ")) {
-    return true;
-  }
-  // Path + space match: comment contains /<basename> followed by space
-  // (full path with additional comment like "/home/user/.ssh/id_ed25519 user@host")
-  if (
+  return (
+    // Exact match: comment is just the basename
+    comment === basename ||
+    // Path match: comment ends with /<basename>
+    comment.endsWith("/" + basename) ||
+    comment.endsWith("\\" + basename) ||
+    // Space-separated match: comment starts with <basename> followed by space
+    // (ssh-keygen comments like "id_ed25519 user@host")
+    comment.startsWith(basename + " ") ||
+    // Path + space match: comment contains /<basename> followed by space
+    // (full path with additional comment like "/home/user/.ssh/id_ed25519 user@host")
     comment.includes("/" + basename + " ") ||
-    comment.includes("\\" + basename + " ")
-  ) {
-    return true;
-  }
-  // Token match: basename appears as a standalone space-delimited token
-  // defense-in-depth: handles fallback case where listSshKeys() uses entire
-  // ssh-add -l line as comment (e.g., "256 SHA256:xxx id_ed25519 (unknown)")
-  if (
+    comment.includes("\\" + basename + " ") ||
+    // Token match: basename appears as a standalone space-delimited token
+    // defense-in-depth: handles fallback case where listSshKeys() uses entire
+    // ssh-add -l line as comment (e.g., "256 SHA256:xxx id_ed25519 (unknown)")
     comment.includes(" " + basename + " ") ||
     comment.endsWith(" " + basename)
-  ) {
-    return true;
-  }
-  return false;
+  );
 }
 
 export interface SshKeyInfo {
@@ -254,15 +243,10 @@ export async function addSshKey(keyPath: string): Promise<void> {
 
   try {
 
-    if (platform === "darwin") {
-      // macOS: Use Keychain integration
-      // SECURITY: Using sshAgentExec with array args prevents injection
-      await sshAgentExec(["--apple-use-keychain", expandedPath]);
-    } else {
-      // Windows, Linux and others
-      // SECURITY: Path is passed as a single array element, not interpolated
-      await sshAgentExec([expandedPath]);
-    }
+    // macOS: Use Keychain integration; Windows, Linux and others: plain add
+    // SECURITY: Using sshAgentExec with array args prevents injection
+    // (the path is passed as a single array element, not interpolated)
+    await sshAgentExec(platform === "darwin" ? ["--apple-use-keychain", expandedPath] : [expandedPath]);
   } catch (error) {
     // SECURITY: Wrap error to hide internal details from users
     throw wrapError(error, vscode.l10n.t("Failed to add SSH key"), {

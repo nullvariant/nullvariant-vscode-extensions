@@ -406,7 +406,7 @@ export async function updateIdentityInConfig(
 
   // Required fields cannot be set to undefined
   const requiredFields: (keyof Identity)[] = ["id", "name", "email"];
-  if (requiredFields.includes(field) && value === undefined) {
+  if (value === undefined && requiredFields.includes(field)) {
     throw new Error(`Cannot set required field to undefined: ${field}`);
   }
 

@@ -289,11 +289,7 @@ export async function handleAddIdentity(): Promise<boolean> {
   // Show the add form (property list style)
   const newIdentity = await showAddIdentityForm();
 
-  if (!newIdentity) {
-    return false;
-  }
-
-  return true;
+  return !!newIdentity;
 }
 
 /**
@@ -313,12 +309,8 @@ export async function handleEditIdentity(
   context: vscode.ExtensionContext
 ): Promise<void> {
   const vs = getVSCode();
-  if (!vs) {
-    return;
-  }
-
-  // SECURITY: Block command execution in untrusted workspaces
-  if (!requireWorkspaceTrust()) {
+  // SECURITY: Block command execution in untrusted workspaces (checked after the VS Code API guard)
+  if (!vs || !requireWorkspaceTrust()) {
     return;
   }
 
@@ -373,12 +365,8 @@ export async function handleDeleteIdentity(
   targetIdentity?: Identity
 ): Promise<boolean> {
   const vs = getVSCode();
-  if (!vs) {
-    return false;
-  }
-
-  // SECURITY: Block command execution in untrusted workspaces
-  if (!requireWorkspaceTrust()) {
+  // SECURITY: Block command execution in untrusted workspaces (checked after the VS Code API guard)
+  if (!vs || !requireWorkspaceTrust()) {
     return false;
   }
 
