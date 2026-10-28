@@ -215,26 +215,13 @@ function testReDoSResistance(): void {
  */
 function isBasenameMatch(comment: string, basename: string): boolean {
   // defense-in-depth: empty basename would false-positive on paths ending with '/'
+  // eslint-disable-next-line unicorn/prefer-ternary -- mirrors the production defense-in-depth early return
   if (basename.length === 0) {
     return false;
   }
-  if (comment === basename) {
-    return true;
-  }
-  if (comment.endsWith('/' + basename) || comment.endsWith('\\' + basename)) {
-    return true;
-  }
-  if (comment.startsWith(basename + ' ')) {
-    return true;
-  }
-  if (comment.includes('/' + basename + ' ') || comment.includes('\\' + basename + ' ')) {
-    return true;
-  }
-  // Token match: basename appears as a standalone space-delimited token
-  if (comment.includes(' ' + basename + ' ') || comment.endsWith(' ' + basename)) {
-    return true;
-  }
-  return false;
+  return (comment === basename) || comment.endsWith('/' + basename) || comment.endsWith('\\' + basename) || comment.startsWith(basename + ' ') || comment.includes('/' + basename + ' ') || comment.includes('\\' + basename + ' ') ||
+    // Token match: basename appears as a standalone space-delimited token
+    comment.includes(' ' + basename + ' ') || comment.endsWith(' ' + basename);
 }
 
 /**

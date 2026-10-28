@@ -53,10 +53,7 @@ export function shouldIncludeIconInGitConfig(): boolean {
  * Icon is only included if includeIconInGitConfig setting is true
  */
 function buildGitUserName(identity: Identity): string {
-  if (identity.icon && shouldIncludeIconInGitConfig()) {
-    return `${identity.icon} ${identity.name}`;
-  }
-  return identity.name;
+  return identity.icon && shouldIncludeIconInGitConfig() ? `${identity.icon} ${identity.name}` : identity.name;
 }
 
 export interface GitConfig {
@@ -274,11 +271,7 @@ export async function detectCurrentIdentity(
 
   const config = await getCurrentGitConfig(token);
 
-  if (token?.isCancellationRequested) {
-    return undefined;
-  }
-
-  if (!config.userEmail) {
+  if (token?.isCancellationRequested || !config.userEmail) {
     return undefined;
   }
 
@@ -313,9 +306,5 @@ export async function isGitRepository(
 
   const result = await execGitInWorkspace(['rev-parse', '--is-inside-work-tree']);
 
-  if (token?.isCancellationRequested) {
-    return false;
-  }
-
-  return result === 'true';
+  return !token?.isCancellationRequested && result === 'true';
 }

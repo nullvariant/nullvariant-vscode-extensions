@@ -84,7 +84,9 @@ export class TimeoutError extends Error {
 
     /* c8 ignore start - Error.captureStackTrace availability depends on JS engine */
     // Maintain proper stack trace
+    // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- V8-only API, guarded by the availability check
     if (Error.captureStackTrace) {
+      // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- V8-only API, guarded by the availability check
       Error.captureStackTrace(this, TimeoutError);
     }
     /* c8 ignore stop */
@@ -116,12 +118,8 @@ const COMMAND_NAME_LIMITS = {
 function isValidCommandName(cmd: string): boolean {
   /* c8 ignore start - Command name validation (edge cases from user config) */
   // Check for null/undefined/empty
-  if (!cmd || typeof cmd !== 'string' || cmd.length === 0) {
-    return false;
-  }
-
-  // DoS protection: limit length
-  if (cmd.length > COMMAND_NAME_LIMITS.MAX_LENGTH) {
+  // DoS protection: also limit length
+  if (!cmd || typeof cmd !== 'string' || cmd.length === 0 || cmd.length > COMMAND_NAME_LIMITS.MAX_LENGTH) {
     return false;
   }
 
@@ -129,13 +127,10 @@ function isValidCommandName(cmd: string): boolean {
   // This prevents injection attacks via command names
   // Valid characters: a-z, A-Z, 0-9, -, _, .
   const validCommandNameRegex = /^[a-zA-Z0-9._-]+$/;
-  if (!validCommandNameRegex.test(cmd)) {
-    return false;
-  }
-
-  // SECURITY: Reject command names that start with special characters
+  // SECURITY: Also reject command names that start with special characters
   // (even though regex should catch this, defensive check)
-  if (cmd.startsWith('.') || cmd.startsWith('-') || cmd.startsWith('_')) {
+  // eslint-disable-next-line unicorn/prefer-boolean-return -- keep the trailing `return true` outside the c8 ignore block
+  if (!validCommandNameRegex.test(cmd) || cmd.startsWith('.') || cmd.startsWith('-') || cmd.startsWith('_')) {
     return false;
   }
   /* c8 ignore stop */
@@ -260,10 +255,12 @@ function getUserConfiguredTimeouts(): Record<string, number> {
       }
 
       const result = validateTimeoutEntry(cmd, timeout);
-      if (result.valid) {
-        sanitized[cmd] = result.timeout;
-        count++;
+      if (!result.valid) {
+        continue;
       }
+
+      sanitized[cmd] = result.timeout;
+      count++;
     }
 
     return sanitized;
@@ -341,12 +338,8 @@ export function getCommandTimeout(
 
   // Check user-configured timeouts from VS Code settings
   const userTimeouts = getUserConfiguredTimeouts();
-  if (command in userTimeouts) {
-    return userTimeouts[command];
-  }
-
   // Fall back to built-in command-specific timeout
-  return COMMAND_TIMEOUTS[command] ?? DEFAULT_TIMEOUT;
+  return command in userTimeouts ? userTimeouts[command] : (COMMAND_TIMEOUTS[command] ?? DEFAULT_TIMEOUT);
 }
 
 /**

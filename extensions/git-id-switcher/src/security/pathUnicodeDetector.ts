@@ -34,20 +34,14 @@ export type Validator = (state: ValidationState) => ValidationState;
  * Creates a validator for control characters with custom error message suffix
  */
 export const createControlCharValidator = (suffix: string = ''): Validator => (state) => {
-  if (CONTROL_CHAR_REGEX_STRICT.test(state.path)) {
-    return { ...state, valid: false, reason: `Path contains control characters${suffix}` };
-  }
-  return state;
+  return CONTROL_CHAR_REGEX_STRICT.test(state.path) ? { ...state, valid: false, reason: `Path contains control characters${suffix}` } : state;
 };
 
 /**
  * Creates a validator for invisible Unicode with custom error message suffix
  */
 export const createInvisibleUnicodeValidator = (suffix: string = ''): Validator => (state) => {
-  if (hasInvisibleUnicode(state.path)) {
-    return { ...state, valid: false, reason: `Path contains invisible Unicode characters${suffix}` };
-  }
-  return state;
+  return hasInvisibleUnicode(state.path) ? { ...state, valid: false, reason: `Path contains invisible Unicode characters${suffix}` } : state;
 };
 
 // ============================================================================

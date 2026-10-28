@@ -146,13 +146,15 @@ function detectObsoleteKeys(config: TranslationConfig): KeyGap[] {
   const extras: KeyGap[] = [];
   for (const lang of SUPPORTED_LANGUAGES) {
     const langFilePath = path.join(extensionRoot, config.getLanguageFile(lang));
-    if (fs.existsSync(langFilePath)) {
-      const extra = findKeyDifference(getKeysFromFile(langFilePath), baseKeys);
-      if (extra.length > 0) {
-        extras.push({ lang, keys: extra });
-        console.log(`  [WARN] ${config.name} ${lang}: ${extra.length} obsolete - ${extra.join(', ')}`);
-      }
+    if (!fs.existsSync(langFilePath)) {
+      continue;
     }
+    const extra = findKeyDifference(getKeysFromFile(langFilePath), baseKeys);
+    if (extra.length === 0) {
+      continue;
+    }
+    extras.push({ lang, keys: extra });
+    console.log(`  [WARN] ${config.name} ${lang}: ${extra.length} obsolete - ${extra.join(', ')}`);
   }
   return extras;
 }

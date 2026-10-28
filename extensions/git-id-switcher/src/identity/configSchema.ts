@@ -274,7 +274,8 @@ function validateProperty(
 ): void {
   // Empty string is treated as "not set" for optional fields.
   // SECURITY: Required fields (id, name, email) are still protected via else-if below.
-  if (value !== undefined && value !== null && value !== "") {
+  const unsetValues: readonly unknown[] = [undefined, null, ""];
+  if (!unsetValues.includes(value)) {
     if (typeof value !== schema.type) {
       errors.push({
         field,
@@ -284,12 +285,12 @@ function validateProperty(
       return;
     }
 
-    if (schema.type === "string" && typeof value === "string") {
+    if (typeof value === "string" && schema.type === "string") {
       validateStringValue(field, value, schema, errors);
     }
 
     /* c8 ignore start: no number fields in current schema - reserved for future */
-    if (schema.type === "number" && typeof value === "number") {
+    if (typeof value === "number" && schema.type === "number") {
       validateNumberValue(field, value, schema, errors);
     }
     /* c8 ignore stop */

@@ -189,17 +189,8 @@ export function hasInvisibleUnicode(s: string): boolean {
  */
 export function isValidEmail(email: string): boolean {
   // Length limit (RFC 5321: 254 chars max for email address)
-  if (email.length > 254 || email.length === 0) {
-    return false;
-  }
-
-  // No whitespace allowed
-  if (/\s/.test(email)) {
-    return false;
-  }
-
-  // No angle brackets allowed
-  if (email.includes('<') || email.includes('>')) {
+  // Also: no whitespace and no angle brackets allowed
+  if (email.length > 254 || email.length === 0 || /\s/.test(email) || email.includes('<') || email.includes('>')) {
     return false;
   }
 
@@ -212,17 +203,8 @@ export function isValidEmail(email: string): boolean {
   const local = email.slice(0, atIndex);
   const domain = email.slice(atIndex + 1);
 
-  // Local part and domain must be non-empty
-  if (local.length === 0 || domain.length === 0) {
-    return false;
-  }
-
-  // Domain must contain at least one dot and not end with dot
-  if (!domain.includes('.') || domain.endsWith('.')) {
-    return false;
-  }
-
-  return true;
+  // Local part and domain must be non-empty; domain must contain at least one dot and not end with dot
+  return local.length > 0 && domain.length > 0 && domain.includes('.') && !domain.endsWith('.');
 }
 
 /**

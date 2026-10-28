@@ -84,15 +84,8 @@ export function toFieldError(error: string): FieldValidationError {
   const message = safeError.slice(colonIndex + 1).trim();
 
   // If field is empty after trim, use 'unknown'
-  if (!field) {
-    return {
-      field: 'unknown',
-      message: safeError,
-    };
-  }
-
-  // defense-in-depth: reject prototype pollution keys and control characters
-  if (DANGEROUS_PROTOTYPE_KEYS.has(field) || CONTROL_CHAR_REGEX_ALL.test(field)) {
+  // defense-in-depth: also reject prototype pollution keys and control characters
+  if (!field || DANGEROUS_PROTOTYPE_KEYS.has(field) || CONTROL_CHAR_REGEX_ALL.test(field)) {
     return {
       field: 'unknown',
       message: safeError,

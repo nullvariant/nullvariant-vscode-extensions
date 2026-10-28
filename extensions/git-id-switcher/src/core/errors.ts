@@ -92,7 +92,9 @@ export class SecurityError extends Error {
     this.internalDetails = options.internalDetails ?? {};
 
     // Capture stack trace but exclude this constructor
+    // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- V8-only API, guarded by the availability check
     if (Error.captureStackTrace) {
+      // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- V8-only API, guarded by the availability check
       Error.captureStackTrace(this, SecurityError);
     }
 
@@ -300,22 +302,15 @@ export function isSecurityError(error: unknown): error is SecurityError {
  * a critical system failure that cannot be recovered from.
  */
 export function isFatalError(error: unknown): boolean {
-  if (isSecurityError(error)) {
-    return error.category === ErrorCategory.SECURITY;
-  }
-  return false;
+  return isSecurityError(error) && error.category === ErrorCategory.SECURITY;
 }
 
 /**
  * Get user-safe message from any error
  */
 export function getUserSafeMessage(error: unknown): string {
-  if (isSecurityError(error)) {
-    return error.getUserMessage();
-  }
-
   // For non-SecurityError, return a generic message
-  return 'An unexpected error occurred';
+  return isSecurityError(error) ? error.getUserMessage() : 'An unexpected error occurred';
 }
 
 /**

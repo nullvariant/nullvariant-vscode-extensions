@@ -140,14 +140,8 @@ export class ConfigChangeDetector {
         const bStr = JSON.stringify(b);
 
         // Large objects: report as changed to guarantee config change detection
-        if (
-          aStr.length > LIMITS.MAX_STRINGIFY_SIZE ||
-          bStr.length > LIMITS.MAX_STRINGIFY_SIZE
-        ) {
-          return false;
-        }
-
-        return aStr === bStr;
+        return !(aStr.length > LIMITS.MAX_STRINGIFY_SIZE ||
+          bStr.length > LIMITS.MAX_STRINGIFY_SIZE) && aStr === bStr;
       } catch {
         // On error (e.g., circular reference), return false
         return false;
@@ -192,15 +186,10 @@ export class ConfigChangeDetector {
    * Get the ID from an identity object
    */
   getIdentityId(identity: unknown): string | null {
-    if (
-      typeof identity === 'object' &&
+    return typeof identity === 'object' &&
       identity !== null &&
       'id' in identity &&
-      typeof (identity as Record<string, unknown>).id === 'string'
-    ) {
-      return (identity as Record<string, unknown>).id as string;
-    }
-    return null;
+      typeof (identity as Record<string, unknown>).id === 'string' ? ((identity as Record<string, unknown>).id as string) : null;
   }
 
   /**

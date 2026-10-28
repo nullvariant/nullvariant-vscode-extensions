@@ -369,12 +369,8 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
  * @returns true if the path appears safe for shell execution
  */
 export function isShellSafePath(path: string): boolean {
-  if (hasPathTraversal(path)) {
-    return false;
-  }
-
-  // Control characters (0x00-0x1F, 0x7F) and shell metacharacters
-  if (hasDangerousChars(path)) {
+  // Control characters (0x00-0x1F, 0x7F) and shell metacharacters are checked alongside traversal
+  if (hasPathTraversal(path) || hasDangerousChars(path)) {
     return false;
   }
 

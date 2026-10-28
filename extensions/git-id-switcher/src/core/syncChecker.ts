@@ -57,11 +57,7 @@ export function stripIcon(gitUserName: string, icon: string | undefined): string
   }
 
   const prefix = `${icon} `;
-  if (gitUserName.startsWith(prefix)) {
-    return gitUserName.slice(prefix.length);
-  }
-
-  return gitUserName;
+  return gitUserName.startsWith(prefix) ? gitUserName.slice(prefix.length) : gitUserName;
 }
 
 /**

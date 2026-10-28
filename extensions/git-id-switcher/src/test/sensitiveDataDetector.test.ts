@@ -387,8 +387,8 @@ function testSanitizeValueTypes(): void {
       'number should pass through'
     );
     assert.strictEqual(
-      sanitizeValue(3.14),
-      3.14,
+      sanitizeValue(2.5),
+      2.5,
       'float should pass through'
     );
     assert.strictEqual(

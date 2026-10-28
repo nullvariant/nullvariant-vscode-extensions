@@ -111,11 +111,7 @@ async function fetchDocumentByPath(path: string): Promise<string | null> {
     const contentLength = response.headers.get('content-length');
     const content = await response.text();
 
-    if (!isContentSizeValid(contentLength, Buffer.byteLength(content, 'utf8'), MAX_CONTENT_SIZE)) {
-      return null;
-    }
-
-    if (content.trim().length === 0) {
+    if (!isContentSizeValid(contentLength, Buffer.byteLength(content, 'utf8'), MAX_CONTENT_SIZE) || (content.trim().length === 0)) {
       return null;
     }
 

@@ -906,19 +906,13 @@ function testGetCommandTimeoutWithMockVSCode(): void {
   {
     const mockConfig = {
       get: <T>(key: string, defaultValue?: T): T => {
-        if (key === 'commandTimeouts') {
-          return { git: 15_000, 'ssh-add': 8000 } as T;
-        }
-        return defaultValue as T;
+        return key === 'commandTimeouts' ? ({ git: 15_000, 'ssh-add': 8000 } as T) : (defaultValue as T);
       },
     };
 
     const mockWorkspace = {
       getConfiguration: (section: string) => {
-        if (section === 'gitIdSwitcher') {
-          return mockConfig;
-        }
-        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+        return section === 'gitIdSwitcher' ? mockConfig : { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
       },
     };
 
@@ -961,10 +955,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
 
     const mockWorkspace = {
       getConfiguration: (section: string) => {
-        if (section === 'gitIdSwitcher') {
-          return mockConfig;
-        }
-        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+        return section === 'gitIdSwitcher' ? mockConfig : { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
       },
     };
 
@@ -1003,10 +994,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
 
     const mockWorkspace = {
       getConfiguration: (section: string) => {
-        if (section === 'gitIdSwitcher') {
-          return mockConfig;
-        }
-        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+        return section === 'gitIdSwitcher' ? mockConfig : { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
       },
     };
 
@@ -1029,19 +1017,13 @@ function testGetCommandTimeoutWithMockVSCode(): void {
   {
     const mockConfig = {
       get: <T>(key: string, defaultValue?: T): T => {
-        if (key === 'commandTimeouts') {
-          return { git: 5500.7 } as T;
-        }
-        return defaultValue as T;
+        return key === 'commandTimeouts' ? ({ git: 5500.7 } as T) : (defaultValue as T);
       },
     };
 
     const mockWorkspace = {
       getConfiguration: (section: string) => {
-        if (section === 'gitIdSwitcher') {
-          return mockConfig;
-        }
-        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+        return section === 'gitIdSwitcher' ? mockConfig : { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
       },
     };
 
@@ -1074,10 +1056,7 @@ function testGetCommandTimeoutWithMockVSCode(): void {
 
     const mockWorkspace = {
       getConfiguration: (section: string) => {
-        if (section === 'gitIdSwitcher') {
-          return mockConfig;
-        }
-        return { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
+        return section === 'gitIdSwitcher' ? mockConfig : { get: <T>(_key: string, defaultValue?: T) => defaultValue as T };
       },
     };
 
