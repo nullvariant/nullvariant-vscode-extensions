@@ -74,30 +74,21 @@ export interface SecurePathResult {
  * Validates that path is not empty or undefined
  */
 const validateNotEmpty: Validator = (state) => {
-  if (!state.path || state.path.length === 0) {
-    return { ...state, valid: false, reason: 'Path cannot be empty or undefined' };
-  }
-  return state;
+  return !state.path || state.path.length === 0 ? { ...state, valid: false, reason: 'Path cannot be empty or undefined' } : state;
 };
 
 /**
  * Validates no leading/trailing whitespace (potential obfuscation)
  */
 const validateNoWhitespace: Validator = (state) => {
-  if (state.path !== state.path.trim()) {
-    return { ...state, valid: false, reason: 'Path contains leading or trailing whitespace' };
-  }
-  return state;
+  return state.path === state.path.trim() ? state : { ...state, valid: false, reason: 'Path contains leading or trailing whitespace' };
 };
 
 /**
  * Validates no null bytes (common attack vector)
  */
 const validateNoNullBytes: Validator = (state) => {
-  if (hasNullByte(state.path)) {
-    return { ...state, valid: false, reason: 'Path contains null byte' };
-  }
-  return state;
+  return hasNullByte(state.path) ? { ...state, valid: false, reason: 'Path contains null byte' } : state;
 };
 
 /**
@@ -217,11 +208,10 @@ const validatePathHasAllowedPrefix: Validator = (state) => {
   ];
 
   const isStartsWithValidPrefix = validPrefixes.some(prefix => {
-    if (prefix === '.') {
-      // Special handling for '.': must be exactly '.' or './'
-      return state.path === '.' || state.path.startsWith('./');
-    }
-    return state.path === prefix || state.path.startsWith(prefix);
+    // Special handling for '.': must be exactly '.' or './'
+    return prefix === '.'
+      ? state.path === '.' || state.path.startsWith('./')
+      : state.path === prefix || state.path.startsWith(prefix);
   });
 
   if (!isStartsWithValidPrefix) {
@@ -333,11 +323,7 @@ export function validatePathSecurity(inputPath: string): SecurePathResult {
 
   // Phase 3: Post-normalization checks
   state = runValidators(state, postNormalizationValidators);
-  if (!state.valid) {
-    return { valid: false, reason: state.reason };
-  }
-
-  return { valid: true };
+  return state.valid ? { valid: true } : { valid: false, reason: state.reason };
 }
 
 /**
@@ -359,16 +345,14 @@ export function isPathArgument(arg: string): boolean {
   // CRITICAL: Check for leading/trailing whitespace (potential obfuscation)
   // If arg has whitespace, it might be a path with obfuscation
   const trimmedArg = arg.trim();
-  if (trimmedArg !== arg) {
-    // Has whitespace - could be obfuscated path, so treat as path for validation
-    // The validation function will reject it, but we need to catch it here
-    return true;
-  }
 
   // Check if it looks like a path (starts with /, ~, ., or contains path separators)
   // We intentionally catch ../ here so it can be validated and rejected
   // CRITICAL: Also check for Windows drive letters (C:, D:, etc.)
   return (
+    // Has whitespace - could be obfuscated path, so treat as path for validation
+    // The validation function will reject it, but we need to catch it here
+    trimmedArg !== arg ||
     arg.startsWith('/') ||
     arg.startsWith('~') ||
     arg.startsWith('./') ||

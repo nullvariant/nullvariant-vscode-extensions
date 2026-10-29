@@ -188,10 +188,7 @@ function getHomeDirectory(): string {
     // Windows: HOMEDRIVE + HOMEPATH (e.g., C: + \Users\username)
     const homeDrive = process.env.HOMEDRIVE || '';
     const homePath = process.env.HOMEPATH || '';
-    if (homeDrive && homePath) {
-      return homeDrive + homePath;
-    }
-    return process.env.USERPROFILE || '';
+    return homeDrive && homePath ? homeDrive + homePath : process.env.USERPROFILE || '';
   }
   return process.env.HOME || '';
 }
@@ -211,6 +208,7 @@ function tryRedactUncPath(normalizedPath: string): string | null {
   // Redact UNC server name: //server/share -> //[REDACTED]/share
   const uncRegex = /^\/\/([^/]+)(\/.*)?$/;
   const uncMatch = uncRegex.exec(normalizedPath);
+  // eslint-disable-next-line unicorn/prefer-ternary -- keep the c8 ignore marker attached to the unreachable fallback
   if (uncMatch) {
     return `//[REDACTED]${uncMatch[2] ?? ''}`;
   }
@@ -263,10 +261,6 @@ export function sanitizePath(inputPath: string): string {
 
   // Replace home directory with ~ for privacy
   const homeReplaced = replaceHomeWithTilde(normalizedPath, getHomeDirectory());
-  if (homeReplaced !== null) {
-    return homeReplaced;
-  }
-
-  // SECURITY: Return normalized path (not original) for consistency
-  return normalizedPath;
+  // SECURITY: Fall back to the normalized path (not original) for consistency
+  return homeReplaced ?? normalizedPath;
 }

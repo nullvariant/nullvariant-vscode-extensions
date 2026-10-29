@@ -288,9 +288,5 @@ export async function showEditProfileFlow(
 
   // Determine identity to edit
   const selectedIdentity = targetIdentity ?? (await selectIdentityToEdit(vs));
-  if (!selectedIdentity) {
-    return false;
-  }
-
-  return executeFieldEditLoop(vs, selectedIdentity);
+  return selectedIdentity ? executeFieldEditLoop(vs, selectedIdentity) : false;
 }

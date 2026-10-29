@@ -108,10 +108,7 @@ function validateNameInput(vs: VSCodeAPI, value: string): string | null {
   // SECURITY: Delegate to identity layer (SSoT for dangerous pattern detection)
   const errors: string[] = [];
   validateFieldForDangerousPatterns(value, "name", errors);
-  if (errors.length > 0) {
-    return vs.l10n.t("Name contains invalid characters");
-  }
-  return null;
+  return errors.length > 0 ? vs.l10n.t("Name contains invalid characters") : null;
 }
 
 /**
@@ -131,10 +128,7 @@ function validateEmailInput(vs: VSCodeAPI, value: string): string | null {
   // Delegate format and length validation to identity layer (SSoT)
   const errors: string[] = [];
   validateEmailField(value, errors);
-  if (errors.length > 0) {
-    return vs.l10n.t("Invalid email format");
-  }
-  return null;
+  return errors.length > 0 ? vs.l10n.t("Invalid email format") : null;
 }
 
 /**
@@ -177,10 +171,7 @@ function validateGpgKeyIdInput(vs: VSCodeAPI, value: string): string | null {
   // Delegate to identity layer (SSoT)
   const errors: string[] = [];
   validateGpgKeyId(value, errors);
-  if (errors.length > 0) {
-    return vs.l10n.t("GPG key ID must be 8-40 hexadecimal characters");
-  }
-  return null;
+  return errors.length > 0 ? vs.l10n.t("GPG key ID must be 8-40 hexadecimal characters") : null;
 }
 
 /**
@@ -198,10 +189,7 @@ function validateSshHostInput(vs: VSCodeAPI, value: string): string | null {
   // Delegate to identity layer (SSoT for format and length validation)
   const errors: string[] = [];
   validateSshHost(value, errors);
-  if (errors.length > 0) {
-    return vs.l10n.t("SSH host must contain only valid hostname characters");
-  }
-  return null;
+  return errors.length > 0 ? vs.l10n.t("SSH host must contain only valid hostname characters") : null;
 }
 
 // ============================================================================
@@ -262,14 +250,11 @@ export function validateFieldInput(
       }
       // Length validation from FIELD_METADATA
       const meta = getFieldMetadata(field);
-      if (meta?.maxLength && value.length > meta.maxLength) {
-        return vs.l10n.t(
+      return meta?.maxLength && value.length > meta.maxLength ? vs.l10n.t(
           "{0} is too long (max {1} characters)",
           field,
           meta.maxLength,
-        );
-      }
-      return null;
+        ) : null;
     }
   }
 }

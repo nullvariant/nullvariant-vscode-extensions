@@ -75,10 +75,7 @@ function createMockVSCode(options: {
       isTrusted: true,
       getConfiguration: () => ({
         get: (key: string) => {
-          if (key === 'identities') {
-            return options.identities ?? [];
-          }
-          return undefined;
+          return key === 'identities' ? options.identities ?? [] : undefined;
         },
       }),
     },
@@ -125,11 +122,12 @@ function createMockVSCode(options: {
           },
           show: () => {
             // Simulate user selection
-            if (options.selectedIdentity === undefined) {
-              setTimeout(() => hideCallback?.(), 0);
-            } else {
-              setTimeout(() => acceptCallback?.(), 0);
-            }
+            setTimeout(
+              options.selectedIdentity === undefined
+                ? () => hideCallback?.()
+                : () => acceptCallback?.(),
+              0
+            );
           },
           hide: () => {},
           dispose: () => {},

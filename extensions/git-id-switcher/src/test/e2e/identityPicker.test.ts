@@ -97,10 +97,7 @@ function createMockVSCode(options: {
       isTrusted: true,
       getConfiguration: () => ({
         get: (key: string) => {
-          if (key === 'identities') {
-            return options.identities ?? [];
-          }
-          return undefined;
+          return key === 'identities' ? options.identities ?? [] : undefined;
         },
       }),
     },
@@ -508,10 +505,7 @@ function createManageMockVSCode(options: {
       isTrusted: true,
       getConfiguration: () => ({
         get: (key: string) => {
-          if (key === 'identities') {
-            return options.identities ?? [];
-          }
-          return undefined;
+          return key === 'identities' ? options.identities ?? [] : undefined;
         },
       }),
     },
@@ -603,7 +597,7 @@ function createManageMockVSCode(options: {
                 // Trigger item button
                 const idx = options.actionIndex ?? 0;
                 const item = capturedItems.find(i => i.index === idx);
-                if (item?.buttons && itemButtonCallback) {
+                if (itemButtonCallback && item?.buttons) {
                   // Find button by icon id
                   const iconMap: Record<string, string> = {
                     edit: 'pencil', delete: 'trash',

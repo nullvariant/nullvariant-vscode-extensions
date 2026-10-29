@@ -125,7 +125,7 @@ function buildAddFormItems(
 
     // Check for ID duplicate (value is guaranteed to be defined when hasValue is true)
     let detail: string | undefined;
-    if (meta.key === 'id' && hasValue && value && existingIds.has(value)) {
+    if (hasValue && value && meta.key === 'id' && existingIds.has(value)) {
       detail = vs.l10n.t('ID already exists');
     }
 
@@ -190,10 +190,7 @@ async function promptAddFormFieldInput(
     prompt: getInputBoxPrompt(vs, isOptional, 'add'),
     field: meta.key,
     validateInput: (value: string) => {
-      if (meta.key === 'id') {
-        return validateIdInput(vs, value, existingIds);
-      }
-      return validateFieldInput(vs, meta.key, value, isOptional);
+      return meta.key === 'id' ? validateIdInput(vs, value, existingIds) : validateFieldInput(vs, meta.key, value, isOptional);
     },
   });
 }
@@ -324,8 +321,5 @@ export async function showAddIdentityForm(): Promise<Identity | undefined> {
   }
 
   const isSaved = await saveNewIdentity(vs, newIdentity);
-  if (isSaved) {
-    return newIdentity;
-  }
-  return undefined;
+  return isSaved ? newIdentity : undefined;
 }

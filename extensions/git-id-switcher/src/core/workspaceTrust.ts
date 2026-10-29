@@ -33,11 +33,8 @@ let hasInitialized = false;
  */
 export function isWorkspaceTrusted(): boolean {
   const workspace = getWorkspace();
-  if (!workspace) {
-    // In test environment without VS Code, default to untrusted for safety
-    return false;
-  }
-  return workspace.isTrusted;
+  // In test environment without VS Code, default to untrusted for safety
+  return workspace?.isTrusted ?? false;
 }
 
 /**

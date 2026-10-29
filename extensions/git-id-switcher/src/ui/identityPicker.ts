@@ -154,11 +154,7 @@ export async function showIdentityQuickPick(
       const selected = quickPick.selectedItems[0];
       isResolved = true;
       quickPick.hide();
-      if (selected?._isManageOption) {
-        resolve('manage');
-      } else {
-        resolve(selected?.identity);
-      }
+      resolve(selected?._isManageOption ? 'manage' : selected?.identity);
     });
 
     quickPick.onDidHide(() => {
