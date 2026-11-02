@@ -52,8 +52,7 @@ export function looksLikeEmail(value: string): boolean {
   if (atIndex <= 0) return false;
   const afterAt = value.slice(atIndex + 1);
   // URL-like patterns after @ (colon for SCP/port, slash for path) are not emails
-  if (afterAt.includes('/') || afterAt.includes(':')) return false;
-  return afterAt.includes('.') && afterAt.length > 1;
+  return !afterAt.includes('/') && !afterAt.includes(':') && afterAt.includes('.') && afterAt.length > 1;
 }
 
 /**
@@ -215,10 +214,7 @@ export function sanitizeValue(value: unknown, options?: SanitizeOptions): unknow
 
   if (typeof value === 'string') {
     // Maximum privacy mode: redact all string values
-    if (options?.redactAllSensitive) {
-      return '[REDACTED:ALL_VALUES]';
-    }
-    return sanitizeStringValue(value);
+    return options?.redactAllSensitive ? '[REDACTED:ALL_VALUES]' : sanitizeStringValue(value);
   }
 
   if (typeof value === 'number' || typeof value === 'boolean') {

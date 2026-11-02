@@ -546,7 +546,7 @@ function testResolveSymlinksOption(): void {
       assert.strictEqual(result.valid, true, 'Should pass without symlink resolution');
       // symlinksResolved should be falsy (false or undefined)
       assert.ok(
-        result.symlinksResolved === undefined || result.symlinksResolved === false,
+        result.symlinksResolved === undefined || !result.symlinksResolved,
         'symlinksResolved should be false or undefined'
       );
     }

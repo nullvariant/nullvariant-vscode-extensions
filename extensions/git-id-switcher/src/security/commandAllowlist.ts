@@ -156,6 +156,7 @@ function resolveSubcommandConfig(
 
   if (subConfig) {
     /* c8 ignore start: no subcommands are currently disabled - reserved for future */
+    // eslint-disable-next-line unicorn/prefer-ternary -- keep the c8 ignore boundary around the reserved branch
     if (!subConfig.allowed) {
       return { allowed: false, reason: `Subcommand '${command} ${subcommand}' is disabled` };
     }
@@ -163,6 +164,7 @@ function resolveSubcommandConfig(
     return { config: subConfig, argsToValidate: args.slice(1) };
   }
 
+  // eslint-disable-next-line unicorn/prefer-ternary -- keep the c8 ignore boundary around the fallback path
   if (command === 'git') {
     return { allowed: false, reason: `Git subcommand '${subcommand}' is not in the allowlist` };
   }
@@ -217,6 +219,7 @@ function validateFlagArgument(
   if (!arg.startsWith('--') && arg.length > 2) {
     const flagResult = validateCombinedFlags(arg, command, allowedArgs);
     /* c8 ignore start: combined patterns also in allowedArgs - matches earlier */
+    // eslint-disable-next-line unicorn/prefer-ternary -- keep the c8 ignore boundary around the unreachable branch
     if (flagResult.valid) {
       return 'allowed';
     }
@@ -297,6 +300,7 @@ function validateSingleArgument(
   if (arg.startsWith('-')) {
     const flagCheck = validateFlagArgument(arg, command, allowedArgs);
     /* c8 ignore start: combined patterns also in allowedArgs - matches earlier */
+    // eslint-disable-next-line unicorn/prefer-ternary -- keep the c8 ignore boundary around the unreachable branch
     if (flagCheck === 'allowed') {
       return 'continue';
     }

@@ -878,17 +878,19 @@ function testIdentitySchemaStructure(): void {
   // Test 5: Fields with patterns should have pre-compiled RegExp
   {
     for (const [field, schema] of Object.entries(IDENTITY_SCHEMA)) {
-      if (schema.pattern) {
-        assert.ok(
-          schema.compiledPattern instanceof RegExp,
-          `${field} should have compiledPattern as RegExp`,
-        );
-        assert.strictEqual(
-          schema.compiledPattern?.source,
-          new RegExp(schema.pattern).source,
-          `${field} compiledPattern should match pattern source`,
-        );
+      if (!schema.pattern) {
+        continue;
       }
+
+      assert.ok(
+        schema.compiledPattern instanceof RegExp,
+        `${field} should have compiledPattern as RegExp`,
+      );
+      assert.strictEqual(
+        schema.compiledPattern?.source,
+        new RegExp(schema.pattern).source,
+        `${field} compiledPattern should match pattern source`,
+      );
     }
   }
 

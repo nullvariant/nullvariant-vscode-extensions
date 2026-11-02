@@ -480,56 +480,45 @@ function testWorkspaceValidationFailureReason(): void {
 }
 
 /**
- * Test regex pattern strictness (40-char SHA-1)
+ * Test parseSubmoduleEntry on well-formed `git submodule status` lines
  *
- * Tests the SUBMODULE_STATUS_REGEX pattern used in submodule.ts
+ * The rejection branches of parseSubmoduleEntry are c8-ignored
+ * defense-in-depth for malformed git output, so only the accepted shapes
+ * are exercised here.
  */
-function testRegexPatternStrictness(): void {
-  console.log('Testing regex pattern strictness...');
+function testParseSubmoduleEntry(): void {
+  console.log('Testing parseSubmoduleEntry...');
 
-  // Copy of the regex from submodule.ts for testing
-  // Control characters are intentionally excluded for security
-  // eslint-disable-next-line no-control-regex
-  const SUBMODULE_STATUS_REGEX = /^([ +-])([a-f0-9]{40})\s+([^\u0000-\u001F\u007F]+?)(?:\s+\([^)]+\))?$/;
+  const { parseSubmoduleEntry } = __testExports;
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'parse-entry-ws-'));
+  const hashA = 'a'.repeat(40);
+  const hashMixed = '0123456789abcdef0123456789abcdef01234567';
 
-  // Valid cases
-  const validCases = [
-    ' ' + 'a'.repeat(40) + ' submodule',
-    ' ' + 'a'.repeat(40) + ' submodule (main)',
-    '+' + 'a'.repeat(40) + ' path/to/submodule',
-    '-' + 'a'.repeat(40) + ' uninitialized-submodule',
-    ' 0123456789abcdef0123456789abcdef01234567 module (feature/branch)',
-  ];
+  try {
+    const cases = [
+      { line: ` ${hashA} submodule`, path: 'submodule', hash: hashA },
+      { line: ` ${hashA} submodule (main)`, path: 'submodule', hash: hashA },
+      { line: `+${hashA} path/to/submodule`, path: 'path/to/submodule', hash: hashA },
+      { line: ` ${hashMixed} module (feature/branch)`, path: 'module', hash: hashMixed },
+    ];
 
-  for (const valid of validCases) {
-    const match = valid.match(SUBMODULE_STATUS_REGEX);
-    assert.ok(match, `Valid case should match: "${valid.slice(0, 50)}..."`);
+    for (const { line, path: expectedPath, hash } of cases) {
+      const entry = parseSubmoduleEntry(line, workspace);
+      assert.ok(entry, `Well-formed line should parse: "${line.slice(0, 50)}..."`);
+      assert.strictEqual(entry.path, expectedPath, 'path should drop the branch suffix');
+      assert.strictEqual(entry.commitHash, hash, 'commit hash should be kept as is');
+      assert.strictEqual(entry.initialized, true, 'space and + mean initialized');
+      assert.strictEqual(
+        entry.absolutePath,
+        path.resolve(workspace, expectedPath),
+        'absolute path should resolve inside the workspace'
+      );
+    }
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
   }
 
-  // Invalid cases
-  const invalidCases = [
-    // Invalid status character
-    'x' + 'a'.repeat(40) + ' submodule',
-    // Short hash (39 chars)
-    ' ' + 'a'.repeat(39) + ' submodule',
-    // Long hash (41 chars)
-    ' ' + 'a'.repeat(41) + ' submodule',
-    // Non-hex hash
-    ' ' + 'g'.repeat(40) + ' submodule',
-    // Uppercase hex (git uses lowercase)
-    ' ' + 'A'.repeat(40) + ' submodule',
-    // Control character in path
-    ' ' + 'a'.repeat(40) + ' sub\nmodule',
-    // Empty path
-    ' ' + 'a'.repeat(40) + ' ',
-  ];
-
-  for (const invalid of invalidCases) {
-    const match = invalid.match(SUBMODULE_STATUS_REGEX);
-    assert.strictEqual(match, null, `Invalid case should not match: "${invalid.slice(0, 50)}..."`);
-  }
-
-  console.log('  Regex pattern strictness tests passed');
+  console.log('  parseSubmoduleEntry tests passed');
 }
 
 /**
@@ -1241,7 +1230,7 @@ export async function runSubmoduleTests(): Promise<void> {
     testCommitHashValidation();
     testBranchSuffixParsing();
     testWorkspaceValidationFailureReason();
-    testRegexPatternStrictness();
+    testParseSubmoduleEntry();
     testInvalidWorkspacePaths();
 
     // VS Code API fallback tests

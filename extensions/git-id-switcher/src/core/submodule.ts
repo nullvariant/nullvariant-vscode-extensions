@@ -366,19 +366,16 @@ export async function listSubmodulesRecursive(
   }
 
   const submodules = await listSubmodules(workspacePath);
-  const allSubmodules: Submodule[] = [...submodules];
 
-  // Recursively get nested submodules
-  for (const submodule of submodules) {
-    const nestedSubmodules = await listSubmodulesRecursive(
-      submodule.absolutePath,
-      effectiveMaxDepth,
-      currentDepth + 1,
-    );
-    allSubmodules.push(...nestedSubmodules);
-  }
+  // Sibling submodules are independent, so their nested lists are fetched concurrently.
+  // Promise.all keeps the results in submodule order.
+  const nestedLists = await Promise.all(
+    submodules.map((submodule) =>
+      listSubmodulesRecursive(submodule.absolutePath, effectiveMaxDepth, currentDepth + 1),
+    ),
+  );
 
-  return allSubmodules;
+  return [...submodules, ...nestedLists.flat()];
 }
 
 /**
@@ -545,5 +542,6 @@ export function getMaxSubmoduleDepth(): number {
 export const __testExports = {
   getWorkspaceValidationFailureReason,
   isValidCommitHash,
+  parseSubmoduleEntry,
   stripBranchSuffix,
 };

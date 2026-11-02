@@ -108,7 +108,11 @@ export default [
 
       // === Unicorn overrides (disable overly opinionated rules) ===
       "unicorn/no-null": "off",
-      "unicorn/prevent-abbreviations": "off",
+      "unicorn/name-replacements": "off",
+      // Taste rules about comment layout; the codebase keeps the common JSDoc
+      // style (asterisk prefixes, one-line /** ... */ summaries)
+      "unicorn/no-asterisk-prefix-in-documentation-comments": "off",
+      "unicorn/single-line-block-comment-style": "off",
       // userName/userEmail/userSigningKey mirror git config keys (user.name/user.email/user.signingkey);
       // "username" connotes a login handle, which these display-name values are not
       "unicorn/consistent-compound-words": [

@@ -619,7 +619,7 @@ function testBodyClassOverrides(): void {
   const styleClose = loadingHtml.indexOf('</style>', styleOpen);
   const loadingStyleBlock = loadingHtml.slice(styleOpen, styleClose);
   assert.ok(
-    !/(^|\n)\s*p\s*\{/.test(loadingStyleBlock),
+    loadingStyleBlock.split('\n').every((line) => !/^p\s*\{/.test(line.trimStart())),
     'Loading style block must not contain a bare `p {` selector'
   );
 
@@ -1331,7 +1331,7 @@ function testIssue00188A11yImprovements(): void {
     'document template must contain exactly one <main> landmark'
   );
   assert.ok(
-    /<main>\s*\n?\s*<p>Content<\/p>\s*<\/main>/.test(docHtmlCanBack),
+    /<main>\s*<p>Content<\/p>\s*<\/main>/.test(docHtmlCanBack),
     'document <main> must directly wrap the sanitized content'
   );
 
@@ -1405,7 +1405,7 @@ function testIssue00188A11yImprovements(): void {
   // SSOT selector (regression guard: if one gets dropped, this fails).
   assert.match(
     docHtmlCanBack,
-    /a:focus-visible\s*,\s*\n?\s*button:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--vscode-focusBorder\)/,
+    /a:focus-visible\s*,\s*button:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--vscode-focusBorder\)/,
     'document template must bind a + button to :focus-visible SSOT rule'
   );
   const errorHtmlNetwork = buildErrorHtml(TEST_CSP_SOURCE, 'network', TEST_NONCE);

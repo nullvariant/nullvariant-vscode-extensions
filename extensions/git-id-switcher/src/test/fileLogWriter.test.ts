@@ -335,6 +335,12 @@ async function testOldFileCleanup(): Promise<void> {
       maxFiles: 2, // Only keep 2 files (1 current + 1 rotated)
     });
 
+    // Files that are not rotated logs of this writer must survive cleanup
+    const unrelatedFiles = ['notes.txt', 'other.log'];
+    for (const name of unrelatedFiles) {
+      fs.writeFileSync(path.join(tempDir, name), 'keep');
+    }
+
     const writer = new FileLogWriter(config);
 
     // Write many logs to trigger multiple rotations
@@ -349,6 +355,9 @@ async function testOldFileCleanup(): Promise<void> {
 
     // Count total log files
     const files = fs.readdirSync(tempDir);
+    for (const name of unrelatedFiles) {
+      assert.ok(files.includes(name), `Cleanup must not delete unrelated file ${name}`);
+    }
     const logFiles = files.filter((f) => f.startsWith('cleanup') && f.endsWith('.log'));
 
     // Should have at most maxFiles (current + rotated)

@@ -76,7 +76,9 @@ export class BinaryResolutionError extends Error {
     this.command = command;
 
     /* c8 ignore start - Error.captureStackTrace availability depends on JS engine */
+    // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- V8-only API, guarded by the availability check
     if (Error.captureStackTrace) {
+      // eslint-disable-next-line unicorn/no-nonstandard-builtin-properties -- V8-only API, guarded by the availability check
       Error.captureStackTrace(this, BinaryResolutionError);
     }
     /* c8 ignore stop */
@@ -238,11 +240,7 @@ function getVSCodeGitPath(): string | null {
     const config = workspace.getConfiguration('git');
     const gitPath = config.get<string>('path');
 
-    if (!gitPath || typeof gitPath !== 'string' || gitPath.trim().length === 0) {
-      return null;
-    }
-
-    return gitPath.trim();
+    return !gitPath || typeof gitPath !== 'string' || gitPath.trim().length === 0 ? null : gitPath.trim();
   } catch /* c8 ignore start */ {
     return null;
   } /* c8 ignore stop */
@@ -264,7 +262,7 @@ async function verifyGitBinary(absolutePath: string): Promise<boolean> {
       timeout: RESOLUTION_TIMEOUT,
       maxBuffer: 1024,
     });
-    return stdout.trim().startsWith('git version');
+    return stdout.trimStart().startsWith('git version');
   } catch /* c8 ignore start */ {
     return false;
   } /* c8 ignore stop */
@@ -424,13 +422,12 @@ export function clearPathCache(): void {
 export async function resolveAllBinaryPaths(): Promise<
   Record<AllowedCommand, string>
 > {
-  const results: Partial<Record<AllowedCommand, string>> = {};
+  // Each command resolves and caches under its own key, so they can be resolved concurrently.
+  const paths = await Promise.all(ALLOWED_COMMANDS.map((command) => getBinaryPath(command)));
 
-  for (const command of ALLOWED_COMMANDS) {
-    results[command] = await getBinaryPath(command);
-  }
-
-  return results as Record<AllowedCommand, string>;
+  return Object.fromEntries(
+    ALLOWED_COMMANDS.map((command, index) => [command, paths[index]]),
+  ) as Record<AllowedCommand, string>;
 }
 
 /**
@@ -448,16 +445,20 @@ export async function checkBinaryAvailability(): Promise<
     { available: boolean; path?: string; error?: string }
   > = {} as Record<AllowedCommand, { available: boolean; path?: string; error?: string }>;
 
-  for (const command of ALLOWED_COMMANDS) {
-    try {
-      const resolvedPath = await getBinaryPath(command);
-      results[command] = { available: true, path: resolvedPath };
-    } catch (error) /* c8 ignore start */ {
-      results[command] = {
-        available: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    } /* c8 ignore stop */
+  // Each command resolves and caches under its own key, so they can be checked concurrently.
+  const settled = await Promise.allSettled(ALLOWED_COMMANDS.map((command) => getBinaryPath(command)));
+  for (const [index, command] of ALLOWED_COMMANDS.entries()) {
+    const outcome = settled[index];
+    if (outcome.status === 'fulfilled') {
+      results[command] = { available: true, path: outcome.value };
+      continue;
+    }
+    /* c8 ignore start */
+    results[command] = {
+      available: false,
+      error: outcome.reason instanceof Error ? outcome.reason.message : 'Unknown error',
+    };
+    /* c8 ignore stop */
   }
 
   return results;

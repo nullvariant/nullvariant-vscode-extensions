@@ -512,6 +512,7 @@ export function isUnderSshDirectory(value: string): boolean {
 
   // Windows paths are case-insensitive, use lowercase comparison
   /* c8 ignore start - Windows-only code path, tested on Windows CI */
+  // eslint-disable-next-line unicorn/prefer-ternary -- keep the c8 ignore boundary around the Windows-only branch
   if (process.platform === 'win32') {
     return normalizedValue.toLowerCase().startsWith(sshDirWithSep.toLowerCase());
   }
