@@ -545,5 +545,6 @@ export function getMaxSubmoduleDepth(): number {
 export const __testExports = {
   getWorkspaceValidationFailureReason,
   isValidCommitHash,
+  parseSubmoduleEntry,
   stripBranchSuffix,
 };
