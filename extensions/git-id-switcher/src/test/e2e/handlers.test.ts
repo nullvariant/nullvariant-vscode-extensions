@@ -63,10 +63,7 @@ function createMockVSCode(options: {
       isTrusted: options.isTrusted ?? true,
       getConfiguration: () => ({
         get: (key: string) => {
-          if (key === 'identities') {
-            return options.identities ?? [];
-          }
-          return undefined;
+          return key === 'identities' ? options.identities ?? [] : undefined;
         },
         update: async (key: string, value: unknown) => {
           if (options.configUpdateError) {
@@ -120,11 +117,12 @@ function createMockVSCode(options: {
           },
           show: () => {
             // Simulate user selection
-            if (options.showQuickPickResult === undefined) {
-              setTimeout(() => callbacks.hide?.(), 0);
-            } else {
-              setTimeout(() => callbacks.accept?.(), 0);
-            }
+            setTimeout(
+              options.showQuickPickResult === undefined
+                ? () => callbacks.hide?.()
+                : () => callbacks.accept?.(),
+              0
+            );
           },
           hide: () => {},
           dispose: () => {},
@@ -191,10 +189,7 @@ function createAddMockVSCode(options: {
       isTrusted: options.isTrusted ?? true,
       getConfiguration: () => ({
         get: (key: string) => {
-          if (key === 'identities') {
-            return options.identities ?? [];
-          }
-          return undefined;
+          return key === 'identities' ? options.identities ?? [] : undefined;
         },
         update: async (key: string, value: unknown) => {
           if (options.configUpdateError) {

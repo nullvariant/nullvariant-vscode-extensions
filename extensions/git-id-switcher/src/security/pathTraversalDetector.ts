@@ -19,10 +19,7 @@ import { Validator } from './pathUnicodeDetector';
  * Validates no path traversal patterns (..)
  */
 export const validateNoTraversal: Validator = (state) => {
-  if (hasPathTraversalStrict(state.path)) {
-    return { ...state, valid: false, reason: 'Path contains traversal pattern (..)' };
-  }
-  return state;
+  return hasPathTraversalStrict(state.path) ? { ...state, valid: false, reason: 'Path contains traversal pattern (..)' } : state;
 };
 
 /**
@@ -30,10 +27,7 @@ export const validateNoTraversal: Validator = (state) => {
  * Note: Double backslashes (\\) are caught by validateNoBackslash
  */
 export const validateNoDoubleSlash: Validator = (state) => {
-  if (/\/\//.test(state.path)) {
-    return { ...state, valid: false, reason: 'Path contains double slashes' };
-  }
-  return state;
+  return /\/\//.test(state.path) ? { ...state, valid: false, reason: 'Path contains double slashes' } : state;
 };
 
 /**

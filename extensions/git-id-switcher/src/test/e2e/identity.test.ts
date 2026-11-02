@@ -71,7 +71,7 @@ function createConfigChangePromise(
 
   const promise = new Promise<boolean>((resolve) => {
     disposable = vscode.workspace.onDidChangeConfiguration((e) => {
-      if (!(!isResolved && e.affectsConfiguration(configKey))) {
+      if (isResolved || !e.affectsConfiguration(configKey)) {
       	return;
       }
 
@@ -506,14 +506,16 @@ describe('Identity E2E Test Suite', function () {
       // Verify expected timeout properties exist and are numbers
       const expectedKeys = ['default', 'gitConfig', 'sshAdd', 'sshKeygen'];
       for (const key of expectedKeys) {
-        if (key in commandTimeouts) {
-          assert.strictEqual(
-            typeof commandTimeouts[key],
-            'number',
-            `commandTimeouts.${key} should be a number`
-          );
-          assert.ok(commandTimeouts[key] > 0, `commandTimeouts.${key} should be positive`);
+        if (!(key in commandTimeouts)) {
+          continue;
         }
+
+        assert.strictEqual(
+          typeof commandTimeouts[key],
+          'number',
+          `commandTimeouts.${key} should be a number`
+        );
+        assert.ok(commandTimeouts[key] > 0, `commandTimeouts.${key} should be positive`);
       }
     });
 

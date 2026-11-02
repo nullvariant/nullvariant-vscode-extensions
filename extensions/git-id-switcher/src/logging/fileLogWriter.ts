@@ -292,15 +292,17 @@ export class FileLogWriter implements ILogWriter {
       // Find rotated files (exclude current log file)
       const rotatedFiles: Array<{ path: string; mtime: number }> = [];
       for (const f of files) {
-        if (f.startsWith(baseName) && f.endsWith(ext) && f !== currentFileName) {
-          const filePath = path.join(dir, f);
-          try {
-            const stats = fs.statSync(filePath);
-            rotatedFiles.push({ path: filePath, mtime: stats.mtime.getTime() });
-          } catch /* c8 ignore start */ {
-            // File may have been deleted, skip it
-          } /* c8 ignore stop */
+        if (f === currentFileName || !(f.startsWith(baseName) && f.endsWith(ext))) {
+          continue;
         }
+
+        const filePath = path.join(dir, f);
+        try {
+          const stats = fs.statSync(filePath);
+          rotatedFiles.push({ path: filePath, mtime: stats.mtime.getTime() });
+        } catch /* c8 ignore start */ {
+          // File may have been deleted, skip it
+        } /* c8 ignore stop */
       }
 
       // Sort by mtime descending (newest first)

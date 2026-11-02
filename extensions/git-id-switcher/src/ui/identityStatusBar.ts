@@ -63,11 +63,7 @@ export class IdentityStatusBar implements vscode.Disposable {
   setSyncState(result: SyncCheckResult): void {
     this.currentSyncState = result;
 
-    if (!this.currentIdentity) {
-      return;
-    }
-
-    if (result.state === 'unknown') {
+    if (!this.currentIdentity || (result.state === 'unknown')) {
       return;
     }
 

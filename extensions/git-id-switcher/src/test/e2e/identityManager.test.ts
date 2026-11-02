@@ -160,10 +160,7 @@ function createMockVSCode(options: {
       isTrusted: true,
       getConfiguration: () => ({
         get: (key: string) => {
-          if (key === "identities") {
-            return options.identities ?? [];
-          }
-          return undefined;
+          return key === "identities" ? options.identities ?? [] : undefined;
         },
         update: async (key: string, value: unknown) => {
           if (options.configUpdateError) {
@@ -194,9 +191,9 @@ function createMockVSCode(options: {
         // Find matching item
         return items.find((item: unknown) => {
           if (
-            "identity" in result &&
             typeof item === "object" &&
             item !== null &&
+            "identity" in result &&
             "identity" in item
           ) {
             return (
@@ -205,9 +202,9 @@ function createMockVSCode(options: {
             );
           }
           if (
-            "field" in result &&
             typeof item === "object" &&
             item !== null &&
+            "field" in result &&
             "field" in item
           ) {
             return (item as { field: keyof Identity }).field === result.field;
@@ -351,14 +348,11 @@ function createMockVSCode(options: {
         title?: string;
       }) => {
         // Capture dialog options for testing
-        if (options.onShowOpenDialog && dialogOptions) {
+        if (dialogOptions && options.onShowOpenDialog) {
           options.onShowOpenDialog(dialogOptions);
         }
         const result = options.showOpenDialogResult;
-        if (result) {
-          return [{ fsPath: result }];
-        }
-        return undefined;
+        return result ? [{ fsPath: result }] : undefined;
       },
       createQuickPick: <T>() => {
         // Note: quickPickSelectionIndex is shared across all QuickPick instances (defined at mock level)
@@ -438,9 +432,9 @@ function createMockVSCode(options: {
                 const matchedItem = _items.find((item: unknown) => {
                   if (typeof selection === "object" && selection !== null) {
                     if (
-                      "field" in selection &&
                       typeof item === "object" &&
                       item !== null &&
+                      "field" in selection &&
                       "field" in item
                     ) {
                       return (
@@ -449,9 +443,9 @@ function createMockVSCode(options: {
                       );
                     }
                     if (
-                      "_isSaveButton" in selection &&
                       typeof item === "object" &&
                       item !== null &&
+                      "_isSaveButton" in selection &&
                       "_isSaveButton" in item
                     ) {
                       return (
@@ -1170,13 +1164,14 @@ describe("identityManager E2E Test Suite", function () {
               "field" in i &&
               (i as { field: string }).field === field,
           );
-          if (item) {
-            const label = (item as { label: string }).label;
-            assert.ok(
-              !label.endsWith("*"),
-              `Optional field '${field}' should NOT have * mark, got: ${label}`,
-            );
+          if (!item) {
+            continue;
           }
+          const label = (item as { label: string }).label;
+          assert.ok(
+            !label.endsWith("*"),
+            `Optional field '${field}' should NOT have * mark, got: ${label}`,
+          );
         }
       });
 
@@ -1769,8 +1764,7 @@ describe("identityManager E2E Test Suite", function () {
         );
         const itemsAfterSave = capturedItemsHistory[1];
         const idItem = itemsAfterSave.find((i: unknown) => {
-          if (typeof i !== "object" || i === null) return false;
-          return (i as { field?: string | null }).field === "id";
+          return typeof i === "object" && i !== null && (i as { field?: string | null }).field === "id";
         });
         assert.ok(idItem, "Should find ID field item after save");
         const description = (idItem as { description?: string }).description;
@@ -1922,8 +1916,7 @@ describe("identityManager E2E Test Suite", function () {
         );
         const itemsAfterSave = capturedItemsHistory[1];
         const nameItem = itemsAfterSave.find((i: unknown) => {
-          if (typeof i !== "object" || i === null) return false;
-          return (i as { field?: string }).field === "name";
+          return typeof i === "object" && i !== null && (i as { field?: string }).field === "name";
         });
         assert.ok(nameItem, "Should find name field item after save");
         const description = (nameItem as { description?: string }).description;

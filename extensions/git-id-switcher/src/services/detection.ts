@@ -31,10 +31,7 @@ export function tryRestoreSavedIdentity(context: vscode.ExtensionContext): Detec
     return { found: false };
   }
   const savedIdentity = getIdentityById(savedIdentityId);
-  if (savedIdentity) {
-    return { found: true, identity: savedIdentity };
-  }
-  return { found: false };
+  return savedIdentity ? { found: true, identity: savedIdentity } : { found: false };
 }
 
 /**
@@ -58,10 +55,7 @@ export async function tryDetectFromGit(token: vscode.CancellationToken): Promise
     return 'cancelled';
   }
 
-  if (detectedIdentity) {
-    return { found: true, identity: detectedIdentity };
-  }
-  return { found: false };
+  return detectedIdentity ? { found: true, identity: detectedIdentity } : { found: false };
 }
 
 /**
@@ -76,10 +70,7 @@ export async function tryDetectFromSsh(token: vscode.CancellationToken): Promise
     return 'cancelled';
   }
 
-  if (sshIdentity) {
-    return { found: true, identity: sshIdentity };
-  }
-  return { found: false };
+  return sshIdentity ? { found: true, identity: sshIdentity } : { found: false };
 }
 
 /**

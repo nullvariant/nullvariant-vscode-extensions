@@ -172,11 +172,7 @@ function resolveAndValidateSymlinks(
 
   // Re-validate after symlink resolution
   const symlinkCheck = validateNormalizedPathSecurity(resolvedPath, inputPath);
-  if (!symlinkCheck.valid) {
-    return { invalidResult: { valid: false, originalPath: inputPath, reason: `Post-symlink check failed: ${symlinkCheck.reason}` } };
-  }
-
-  return { resolvedPath };
+  return symlinkCheck.valid ? { resolvedPath } : { invalidResult: { valid: false, originalPath: inputPath, reason: `Post-symlink check failed: ${symlinkCheck.reason}` } };
 }
 /* c8 ignore stop */
 
