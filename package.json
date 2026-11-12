@@ -8,10 +8,10 @@
   "packageManager": "pnpm@11.1.2",
   "scripts": {
     "prepare": "husky || true",
-    "lint:all": "npm run lint --workspaces --if-present",
-    "test:all": "npm run test --workspaces --if-present",
-    "compile:all": "npm run compile --workspaces --if-present",
-    "watch:all": "npm run watch --workspaces --if-present"
+    "lint:all": "pnpm -r --if-present run lint",
+    "test:all": "pnpm -r --if-present run test",
+    "compile:all": "pnpm -r --if-present run compile",
+    "watch:all": "pnpm -r --if-present run watch"
   },
   "devDependencies": {
     "husky": "^9.1.7",
