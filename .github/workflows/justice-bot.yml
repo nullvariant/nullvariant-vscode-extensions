@@ -10,7 +10,7 @@ on:
     types: [opened, synchronize]
     paths:
       - '**/package.json'
-      - '**/package-lock.json'
+      - '**/pnpm-lock.yaml'
   workflow_run:
     workflows: ['CI']
     types: [completed]

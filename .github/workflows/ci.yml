@@ -33,27 +33,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      # Install at root level for npm workspaces
+      # Install at root level for the pnpm workspace
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
         working-directory: extensions/git-id-switcher
 
       - name: Compile
-        run: npm run compile
+        run: pnpm run compile
         working-directory: extensions/git-id-switcher
 
       - name: Run tests with coverage
-        run: npm run test:coverage
+        run: pnpm run test:coverage
         working-directory: extensions/git-id-switcher
 
       - name: Upload coverage to Codecov
@@ -63,7 +66,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Package
-        run: npm run package
+        run: pnpm run package
         working-directory: extensions/git-id-switcher
 
       - name: Verify VSIX created
@@ -115,25 +118,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      # Install at root level for npm workspaces
+      # Install at root level for the pnpm workspace
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run E2E tests (Linux)
         if: runner.os == 'Linux'
-        run: xvfb-run -a npm run test:e2e
+        run: xvfb-run -a pnpm run test:e2e
         working-directory: extensions/git-id-switcher
 
       - name: Run E2E tests (Windows/macOS)
         if: runner.os != 'Linux'
-        run: npm run test:e2e
+        run: pnpm run test:e2e
         working-directory: extensions/git-id-switcher
 
   vex-dependency-review:

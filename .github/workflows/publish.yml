@@ -116,6 +116,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -126,7 +129,7 @@ jobs:
       # SECURITY: the publishing CLI comes from the lockfile, and no dependency
       # install scripts run in a job that holds the publishing token
       - name: Install publishing CLI
-        run: npm ci --ignore-scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Get verified VSIX
         id: vsix
@@ -140,7 +143,9 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
           VSIX: ${{ steps.vsix.outputs.vsix }}
-        run: npx --no-install vsce publish --packagePath "$VSIX" -p "$VSCE_PAT"
+        # The vsce binary belongs to the extension package, so pnpm runs it from there; the
+        # VSIX path is relative to the repository root, so it is made absolute first
+        run: pnpm --filter git-id-switcher exec vsce publish --packagePath "${GITHUB_WORKSPACE}/${VSIX}" -p "$VSCE_PAT"
 
   open-vsx:
     needs: build
@@ -243,6 +248,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
       - name: Deploy documentation to R2
         run: |
           R2_BASE="kura/nullvariant.com/nullvariant-vscode-extensions"
@@ -252,7 +260,7 @@ jobs:
           for lang_dir in ${EXT_PATH}/docs/i18n/*/; do
             lang=$(basename "$lang_dir")
             echo "Deploying ${lang}/README.md..."
-            npx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/docs/i18n/${lang}/README.md" \
+            pnpm dlx wrangler@4.54.0 r2 object put "${R2_BASE}/${EXT_PATH}/docs/i18n/${lang}/README.md" \
               --file "${lang_dir}README.md" \
               --content-type "text/markdown; charset=utf-8" \
               --remote
