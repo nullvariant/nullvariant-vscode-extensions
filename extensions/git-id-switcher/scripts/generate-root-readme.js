@@ -28,7 +28,7 @@ const OUTPUT_PATH = path.join(__dirname, "..", "README.md");
 
 const AUTO_GENERATED_HEADER = `<!-- 🚨 AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY 🚨
      Source: docs/i18n/en/README.md
-     Run: npm run generate:readme -->
+     Run: pnpm run generate:readme -->
 
 `;
 

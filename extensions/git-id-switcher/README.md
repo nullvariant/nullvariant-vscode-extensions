@@ -1,6 +1,6 @@
 <!-- 🚨 AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY 🚨
      Source: docs/i18n/en/README.md
-     Run: npm run generate:readme -->
+     Run: pnpm run generate:readme -->
 
 # Git ID Switcher
 

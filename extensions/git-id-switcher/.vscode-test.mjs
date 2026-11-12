@@ -5,11 +5,11 @@
  * This configuration file is used by @vscode/test-cli to run E2E tests.
  *
  * Running tests:
- *   npm run test:e2e
+ *   pnpm run test:e2e
  *
  * CI Environment:
  *   On Linux CI (GitHub Actions), use xvfb-run for headless execution:
- *   xvfb-run -a npm run test:e2e
+ *   xvfb-run -a pnpm run test:e2e
  *
  * @see https://code.visualstudio.com/api/working-with-extensions/testing-extension
  */

@@ -30,9 +30,9 @@ import { isHrefAllowed } from './htmlTemplates/linkIntercept';
  * Unknown paths or hash mismatches result in content rejection.
  */
 export const DOCUMENT_HASHES: Record<string, string> = {
-  'AGENTS.md': 'c0291560e5a6701d62da86301dd264b422a99bc21c11ba005f333bb8d5978cdc',
+  'AGENTS.md': 'e1157a3cbfb56f36fe413cac44bdda54b82439b51c1e39d6dc3ecc9843369d94',
   'CODE_OF_CONDUCT.md': 'a0e9cb2e004663cdedef4e1adc0e429417ccfc479e367cbc17b869f62ae759d2',
-  'CONTRIBUTING.md': 'a11879b44f0357effe35c11c510a04d2794d0d944080e10e7e1d2800af8b7594',
+  'CONTRIBUTING.md': '52efe18df39f6a8798a35607781e4c10c4e26f7ba7b9a7d87b060c58a232424e',
   'extensions/git-id-switcher/CHANGELOG.md': '9fbb96e11b2c21762c28c7255b7192810093aa372d02cf3cbacc70d81c88a744',
   'extensions/git-id-switcher/docs/ARCHITECTURE.md': '104e85c444d68b511718e9c77a8441f406ba378787a0fe0f3bc8a98176069e19',
   'extensions/git-id-switcher/docs/CONTRIBUTING.md': '7d6ad2bc4d8c838790754cb9df848cb65f9fdce7e1a13e5c965b83a3d5b6378c',
@@ -66,11 +66,11 @@ export const DOCUMENT_HASHES: Record<string, string> = {
   'extensions/git-id-switcher/docs/LANGUAGES.md': 'da50222843094479fd826837038dd62d619ecbc87d67f0b2c299973587abe8e9',
   'extensions/git-id-switcher/docs/THREAT_MODEL.md': '8a12db941888ad95e73e29ffead5258507b2a599ce0a8737bed77521db26089a',
   'extensions/git-id-switcher/LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
-  'extensions/git-id-switcher/README.md': '1c344a5030bb54bb712f246389c2fd1613d621d9053818bba2a8d367bcd070d2',
+  'extensions/git-id-switcher/README.md': '0560e29633ffa77678809176ebaff1d0ca17ec063067da5f8de5d6544eba357c',
   'GOVERNANCE.md': '806cf32ec9fe9fd964a782927f8eaa7696d408c42d31f554eebd6755bd911c71',
   'LICENSE': 'e2383295422577622666fa2ff00e5f03abd8f2772d74cca5d5443020ab23d03d',
-  'README.md': 'ce9fa024481bac5200906a032e49e91c7805f0ac1a97709e9da58a49dbbdbef3',
-  'SECURITY.md': 'c97bdb5d7b9cd4fe247f463a50910419af147bda7d826dea945b9ba262a4f077',
+  'README.md': 'b669cfc9c0f45728ac1ba1095976e93cc680690c91558d565c0a7cf53e62b771',
+  'SECURITY.md': '5cabb6ada1296d6fa54041855c086af37d431a92ae579ad6ac14e8df03a9c975',
 };
 
 /** Supported locales for documentation */

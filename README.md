@@ -65,19 +65,19 @@ git clone https://github.com/nullvariant/nullvariant-vscode-extensions.git
 cd nullvariant-vscode-extensions
 
 # 2. Install dependencies (from repository root)
-npm install
+pnpm install
 
 # 3. Compile
-npm run compile:all
+pnpm run compile:all
 
 # 4. Run tests
-npm run test:all
+pnpm run test:all
 
 # 5. Start watch mode for development
-npm run watch:all
+pnpm run watch:all
 ```
 
-For linting: `npm run lint:all`
+For linting: `pnpm run lint:all`
 
 ## Extension Initialization Flow
 
@@ -102,7 +102,7 @@ flowchart TD
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 22.13+ (required by pnpm 11)
 
 ### Working on an extension
 
@@ -110,16 +110,16 @@ flowchart TD
 cd extensions/git-id-switcher
 
 # Install dependencies
-npm install
+pnpm install
 
 # Compile
-npm run compile
+pnpm run compile
 
 # Watch mode
-npm run watch
+pnpm run watch
 
 # Package as VSIX
-npm run package
+pnpm run package
 ```
 
 ### Testing locally
@@ -134,7 +134,7 @@ npm run package
 
 ```bash
 cd extensions/git-id-switcher
-npm run test
+pnpm run test
 ```
 
 #### E2E Tests
@@ -143,14 +143,14 @@ E2E tests run in an actual VS Code environment using `@vscode/test-electron`:
 
 ```bash
 cd extensions/git-id-switcher
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 > **Note**: On first run, VS Code will be downloaded automatically (~100MB). Subsequent runs use the cached version.
 
 ### Git Hooks Setup
 
-`npm install` sets up the git hooks with husky (`.husky/`): `pre-commit` formats staged Markdown and regenerates derived documentation files, `commit-msg` chains to the maintainer's parent repository, and `pre-push` blocks direct pushes to `main`. Contributors working outside the parent repository commit with `HUSKY=0` (see [CONTRIBUTING.md](CONTRIBUTING.md#git-hooks)).
+`pnpm install` sets up the git hooks with husky (`.husky/`): `pre-commit` formats staged Markdown and regenerates derived documentation files, `commit-msg` chains to the maintainer's parent repository, and `pre-push` blocks direct pushes to `main`. Contributors working outside the parent repository commit with `HUSKY=0` (see [CONTRIBUTING.md](CONTRIBUTING.md#git-hooks)).
 
 ## Repository Structure
 
