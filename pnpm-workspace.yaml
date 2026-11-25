@@ -3,6 +3,12 @@ packages:
 # Wait 7 days (10080 minutes) before taking a freshly published version, so a hijacked or
 # withdrawn release is not pulled in.
 minimumReleaseAge: 10080
+# Dependency build scripts (postinstall and the like) run the dependency author's code with the
+# permissions of whoever installs. Every dependency that has one is denied, and an unreviewed
+# one stops the install instead of being skipped silently.
+allowBuilds:
+  '@vscode/vsce-sign': false
+strictDepBuilds: true
 overrides:
   '@azure/identity>@azure/msal-node': ^7.1.0
   brace-expansion@1: ^1.1.13
