@@ -8,6 +8,8 @@ src/**
 *.vsix
 .gitignore
 tsconfig.json
+tsconfig.tsbuildinfo
+.eslintcache
 .eslintrc*
 .prettierrc*
 node_modules/**

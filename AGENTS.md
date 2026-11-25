@@ -2,7 +2,7 @@
 
 ## Overview
 
-VS Code extensions monorepo. Primary extension: **Git ID Switcher** — manages multiple Git identities with SSH key association, GPG signing, and submodule support. TypeScript, npm workspaces, multilingual (26 languages).
+VS Code extensions monorepo. Primary extension: **Git ID Switcher** — manages multiple Git identities with SSH key association, GPG signing, and submodule support. TypeScript, pnpm workspaces, multilingual (26 languages).
 
 ## Key Constraints
 
@@ -37,7 +37,7 @@ Release tags follow the format: `git-id-switcher-v1.0.0`
 
 ### Requirements
 
-- Node.js 20+
+- Node.js 22.13+ (required by pnpm 11)
 
 ### Running Tests
 
@@ -45,13 +45,13 @@ Release tags follow the format: `git-id-switcher-v1.0.0`
 cd extensions/git-id-switcher
 
 # Unit tests (fast, no VS Code required)
-npm run test
+pnpm run test
 
 # E2E tests (requires VS Code download on first run)
-npm run test:e2e
+pnpm run test:e2e
 
 # All tests
-npm run test && npm run test:e2e
+pnpm run test && pnpm run test:e2e
 ```
 
 ### Test Strategy

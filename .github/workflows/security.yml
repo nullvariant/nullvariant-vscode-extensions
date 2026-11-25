@@ -37,30 +37,25 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      # Install at root level for npm workspaces
+      # Install at root level for the pnpm workspace
       - name: Install dependencies
         working-directory: .
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      # 2-tier dev audit: high → CI fail, moderate → warn only
-      # Prevents Dependabot PRs from being blocked by moderate-level advisories
-      # while ensuring high/critical vulnerabilities are never missed
-      - name: Run npm audit (dev, high+critical = fail)
-        run: npm audit --audit-level=high
-
-      - name: Run npm audit (dev, moderate = warn only)
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
-
-      - name: Run npm audit (production only)
-        run: npm audit --omit=dev --audit-level=high
+      # pnpm audit fails on any known vulnerability, whatever its severity, and fails
+      # when the audit itself cannot complete
+      - name: Run pnpm audit
+        run: pnpm audit
 
   lint-security:
     name: Security Linting
@@ -82,20 +77,23 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      # Install at root level for npm workspaces
+      # Install at root level for the pnpm workspace
       - name: Install dependencies
         working-directory: .
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run ESLint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Check for dangerous patterns
         run: |
@@ -133,23 +131,26 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      # Install at root level for npm workspaces
+      # Install at root level for the pnpm workspace
       - name: Install dependencies
         working-directory: .
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Compile TypeScript
-        run: npm run compile
+        run: pnpm run compile
 
       - name: Run security tests (includes fuzzing)
-        run: npm run test:security
+        run: pnpm run test:security
 
   codeql-analysis:
     name: CodeQL Analysis

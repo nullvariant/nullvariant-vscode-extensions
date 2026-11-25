@@ -62,19 +62,19 @@ git clone https://github.com/your-username/nullvariant-vscode-extensions.git
 cd nullvariant-vscode-extensions
 
 # Install dependencies (this also installs the husky git hooks)
-npm install
+pnpm install
 
 # Work on an extension
 cd extensions/git-id-switcher
-npm install
-npm run watch
+pnpm install
+pnpm run watch
 ```
 
 ### Git hooks
 
-`npm install` sets up the git hooks with husky. The `commit-msg` hook chains to the maintainer's parent repository, which inserts the maintainer's signature block, and it stops the commit when that repository is not present. In your clone, commit with `HUSKY=0` so the hooks are skipped; the DCO check on your pull request still verifies your sign-off.
+`pnpm install` sets up the git hooks with husky. The `commit-msg` hook chains to the maintainer's parent repository, which inserts the maintainer's signature block, and it stops the commit when that repository is not present. In your clone, commit with `HUSKY=0` so the hooks are skipped; the DCO check on your pull request still verifies your sign-off.
 
-`HUSKY=0` also skips the `pre-commit` hook, which regenerates derived documentation. If you changed Markdown or LICENSE files, run `cd extensions/git-id-switcher && npm run generate:readme && node scripts/update-doc-hashes.mjs` and stage the results before committing.
+`HUSKY=0` also skips the `pre-commit` hook, which regenerates derived documentation. If you changed Markdown or LICENSE files, run `cd extensions/git-id-switcher && pnpm run generate:readme && node scripts/update-doc-hashes.mjs` and stage the results before committing.
 
 ## Code Style
 
@@ -95,7 +95,7 @@ npm run watch
 
 ```bash
 cd extensions/git-id-switcher
-npm run test
+pnpm run test
 ```
 
 ### E2E Tests
@@ -104,14 +104,14 @@ E2E (End-to-End) tests run in an actual VS Code environment using `@vscode/test-
 
 #### Requirements
 
-- Node.js 20+
+- Node.js 22.13+ (required by pnpm 11)
 - On first run, VS Code will be downloaded automatically (~100MB)
 
 #### Running E2E Tests
 
 ```bash
 cd extensions/git-id-switcher
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 #### Adding E2E Tests

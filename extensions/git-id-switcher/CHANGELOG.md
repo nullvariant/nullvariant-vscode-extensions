@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.12] - 2026-11-25
+
+### Changed
+
+- **Package manager**: Development, CI, and the publish jobs use pnpm instead of npm ([#657](https://github.com/nullvariant/nullvariant-vscode-extensions/pull/657)). Every dependency resolves to the same version as before. `README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `SECURITY.md`, and `THREAT_MODEL.md` name the pnpm commands
+- **VSIX contents**: `tsconfig.tsbuildinfo` and `.eslintcache` are no longer packaged. Neither is used at run time
+
+### Security
+
+- **Dependency build scripts**: No dependency build script (such as `postinstall`) runs at install. A dependency whose build script has not been reviewed stops the install
+- **Release age**: A newly published dependency version is not taken until seven days after its release
+- **Dependency audit**: The CI audit fails on a known vulnerability of any severity; it used to fail from `high`
+- **Development dependency updates**: Overrode `glob` and `minimatch` to their fixed major versions ([#645](https://github.com/nullvariant/nullvariant-vscode-extensions/pull/645)), bumped transitive `qs` to 6.17.0 ([#640](https://github.com/nullvariant/nullvariant-vscode-extensions/pull/640)), and resolved two high-severity advisories ([#634](https://github.com/nullvariant/nullvariant-vscode-extensions/pull/634)). All are development dependencies; the extension has no runtime dependencies
+
 ## [0.19.11] - 2026-10-23
 
 ### Changed

@@ -63,7 +63,7 @@ This repository contains VS Code extensions with the following security measures
 - **Dependency Pinning**: GitHub Actions are pinned to commit SHAs
 - **Automated Security Scanning**: CodeQL analysis runs on every push
 - **Static Code Analysis**: [SonarCloud](https://sonarcloud.io/project/overview?id=nullvariant_nullvariant-vscode-extensions) runs on every push and PR (CI-based analysis)
-- **Daily Vulnerability Scans**: `npm audit` runs daily via scheduled workflow
+- **Daily Vulnerability Scans**: `pnpm audit` runs daily via scheduled workflow
 - **Fork Protection**: Sensitive workflows skip on fork repositories
 - **SAST (Snyk Code)**: [Snyk](https://snyk.io/) runs static analysis; test fixtures are excluded via `.snyk` policy
 - **License & Vulnerability Scanning**: [FOSSA](https://app.fossa.com/) runs license compliance, dependency quality, and security analysis on every commit (GitHub App integration)
@@ -76,7 +76,7 @@ This repository contains VS Code extensions with the following security measures
 Security-focused tests are included in the test suite:
 
 ```bash
-npm run test:security
+pnpm run test:security
 ```
 
 This includes tests for:

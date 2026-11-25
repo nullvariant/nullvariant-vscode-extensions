@@ -12,9 +12,9 @@
 
 ### General
 
-- [ ] Tests pass (`npm test`)
-- [ ] Linter passes (`npm run lint`)
-- [ ] Coverage not decreased (`npm run test:coverage`)
+- [ ] Tests pass (`pnpm test`)
+- [ ] Linter passes (`pnpm run lint`)
+- [ ] Coverage not decreased (`pnpm run test:coverage`)
 
 ### Naming Conventions (if adding/renaming functions)
 

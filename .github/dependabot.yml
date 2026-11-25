@@ -21,7 +21,8 @@ updates:
           - "minor"
           - "patch"
 
-  # npm dependencies (workspaces monorepo - must use root for lockfile sync)
+  # JavaScript dependencies (the "npm" ecosystem also reads pnpm workspaces; the pnpm
+  # workspace must be updated from its root so that pnpm-lock.yaml stays in sync)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:

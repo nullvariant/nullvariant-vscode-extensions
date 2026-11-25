@@ -32,3 +32,34 @@ allow-dependencies-licenses:
   - 'pkg:githubactions/restyled-io/actions/run'
   - 'pkg:githubactions/restyled-io/actions/setup'
   - 'pkg:githubactions/SonarSource/sonarqube-scan-action'
+
+# Development-only npm packages whose licenses are not in allow-licenses.
+# The extension has no runtime dependencies and the VSIX is packaged with
+# --no-dependencies, so none of these is distributed. They are named one by
+# one so that anything new with such a license still fails the check.
+  # Lint rules (LGPL-3.0-only). Run during development and CI only.
+  - 'pkg:npm/eslint-plugin-sonarjs'
+  - 'pkg:npm/@sonarsource/analyzer-commons-configurations'
+  # Used by @vscode/vsce to package the extension (Artistic-2.0).
+  - 'pkg:npm/binaryextensions'
+  - 'pkg:npm/editions'
+  - 'pkg:npm/istextorbinary'
+  - 'pkg:npm/textextensions'
+  - 'pkg:npm/version-range'
+  # Signing tool of @vscode/vsce and its per-platform binaries (Microsoft license).
+  - 'pkg:npm/@vscode/vsce-sign'
+  - 'pkg:npm/@vscode/vsce-sign-alpine-arm64'
+  - 'pkg:npm/@vscode/vsce-sign-alpine-x64'
+  - 'pkg:npm/@vscode/vsce-sign-darwin-arm64'
+  - 'pkg:npm/@vscode/vsce-sign-darwin-x64'
+  - 'pkg:npm/@vscode/vsce-sign-linux-arm'
+  - 'pkg:npm/@vscode/vsce-sign-linux-arm64'
+  - 'pkg:npm/@vscode/vsce-sign-linux-x64'
+  - 'pkg:npm/@vscode/vsce-sign-win32-arm64'
+  - 'pkg:npm/@vscode/vsce-sign-win32-x64'
+  # Reported as a combination of licenses; the parts are permissive
+  # (MIT, BSD, Zlib, ISC, Apache-2.0, CC0-1.0, Unicode).
+  - 'pkg:npm/pako'
+  - 'pkg:npm/typed-rest-client'
+  - 'pkg:npm/uri-js'
+  - 'pkg:npm/xmlbuilder'
