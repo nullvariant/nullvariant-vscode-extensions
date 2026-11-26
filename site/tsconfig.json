@@ -1,0 +1,18 @@
+{
+  // Type-checks the JavaScript sources through their JSDoc annotations; emits nothing.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2023",
+    "lib": ["es2023"],
+    "types": ["node"]
+  },
+  "include": ["*.mjs"]
+}

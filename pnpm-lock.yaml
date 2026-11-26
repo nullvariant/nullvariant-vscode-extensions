@@ -89,6 +89,21 @@ importers:
         specifier: ^10.13.0
         version: 10.13.0
 
+  site:
+    devDependencies:
+      '@nullvariant/eslint-config':
+        specifier: workspace:*
+        version: link:../packages/eslint-config
+      '@types/node':
+        specifier: ^25.9.9
+        version: 25.9.9
+      eslint:
+        specifier: ^10.13.0
+        version: 10.13.0
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+
 packages:
 
   '@azure/abort-controller@2.2.0':

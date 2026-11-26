@@ -1,0 +1,11 @@
+# Response headers for every page (Cloudflare Workers static assets).
+# The site has no scripts, forms, frames, or third-party resources, so the
+# policy allows only this site's own stylesheet and images.
+/*
+  Content-Security-Policy: default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin

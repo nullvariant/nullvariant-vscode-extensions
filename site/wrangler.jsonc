@@ -1,0 +1,15 @@
+// Cloudflare Worker for https://variant.fit: static assets only, no server code.
+// The Worker name follows the custom domain (dots become hyphens).
+{
+  "name": "variant-fit",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  // Serve only on the custom domain; no workers.dev or preview URLs.
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "variant.fit", "custom_domain": true }]
+}

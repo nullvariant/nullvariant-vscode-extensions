@@ -1,0 +1,165 @@
+/* Colors follow the Karesansui badges in docs/DESIGN_PHILOSOPHY.md: sand and stone. */
+:root {
+  color-scheme: light dark;
+  --sand: #e8dcc8;
+  --stone: #4a5568;
+  --ink: #2d2a26;
+  --paper: #faf7f2;
+  --line: #d9cdb8;
+  --link: #3b4a63;
+  --font-body: 'Helvetica Neue', Helvetica, 'Segoe UI', Arial, sans-serif;
+  --font-code: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e8dcc8;
+    --paper: #1f2228;
+    --line: #3a3f4a;
+    --link: #c9d4e8;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.7;
+}
+
+a {
+  color: var(--link);
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--font-code);
+  font-size: 0.9em;
+}
+
+.site-header,
+main,
+.site-footer {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.site-header {
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.site-header a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+main {
+  padding-top: 1rem;
+  padding-bottom: 3rem;
+}
+
+h1,
+h2 {
+  line-height: 1.3;
+}
+
+h2 {
+  margin-top: 2.5rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.25rem;
+}
+
+pre {
+  overflow-x: auto;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+kbd {
+  padding: 0 0.3em;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+
+.extensions {
+  list-style: none;
+  padding: 0;
+}
+
+.extension-link {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.extension-link:hover,
+.extension-link:focus-visible {
+  border-color: var(--stone);
+}
+
+.extension-heading {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.extension-heading > div {
+  flex: 1 1 20rem;
+}
+
+.lead {
+  font-size: 1.1em;
+}
+
+.meta {
+  color: var(--stone);
+}
+
+@media (prefers-color-scheme: dark) {
+  .meta {
+    color: var(--sand);
+  }
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.site-footer {
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.9em;
+}

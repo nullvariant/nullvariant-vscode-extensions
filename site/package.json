@@ -1,0 +1,22 @@
+{
+  "name": "variant-fit-site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The site at https://variant.fit, built from the extension manifests in this monorepo",
+  "author": "Null;Variant",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test",
+    "test:coverage": "node --eval \"fs.mkdirSync('coverage', { recursive: true })\" && node --test --experimental-test-coverage --test-coverage-include=build.mjs --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info"
+  },
+  "devDependencies": {
+    "@nullvariant/eslint-config": "workspace:*",
+    "@types/node": "^25.9.9",
+    "eslint": "^10.13.0",
+    "typescript": "^6.0.0"
+  }
+}
