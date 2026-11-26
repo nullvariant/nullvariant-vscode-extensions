@@ -135,8 +135,10 @@ Releases 0.10.35 through 0.19.8 were attested by `publish.yml`. To verify one of
 | `production`      | CLOUDFLARE_ACCOUNT_ID      | Cloudflare account identifier (public)                | publish.yml (`docs`)                    | Never    | Low (public ID) |
 | `docs-deploy`     | CLOUDFLARE_API_TOKEN       | R2 documentation deployment                           | deploy-docs.yml                         | Annual   | High            |
 | `docs-deploy`     | CLOUDFLARE_ACCOUNT_ID      | Cloudflare account identifier (public)                | deploy-docs.yml                         | Never    | Low (public ID) |
+| `site-deploy`     | CLOUDFLARE_API_TOKEN       | variant.fit site deployment (Cloudflare Workers)      | deploy-site.yml                         | Annual   | High            |
+| `site-deploy`     | CLOUDFLARE_ACCOUNT_ID      | Cloudflare account identifier (public)                | deploy-site.yml                         | Never    | Low (public ID) |
 
-The two Cloudflare secrets hold the same values in both environments.
+The two Cloudflare secrets hold the same values in `production` and `docs-deploy`. The `site-deploy` token is a separate token with Workers permissions only.
 
 `unpublish.yml` is started by hand, defaults to a dry run, and waits for the `production` approval, so it can only run on a release tag. It removes the requested versions from Open VSX when `PUBLISH_TO_OPENVSX` is `true`; versions on VS Code Marketplace are removed by hand, because `vsce unpublish` can only remove the whole extension.
 
@@ -166,6 +168,7 @@ The two Cloudflare secrets hold the same values in both environments.
 | `production`      | Tags matching `git-id-switcher-v*` | Repository owner (required)       |
 | `release-tagging` | The `main` branch                  | None (runs on every version bump) |
 | `docs-deploy`     | The `main` branch                  | None                              |
+| `site-deploy`     | The `main` branch                  | None                              |
 
 Administrators cannot bypass the `production` environment's protection rules.
 
@@ -184,18 +187,20 @@ Administrators cannot bypass the `production` environment's protection rules.
 
 ### Provider Links
 
-| Secret                     | Provider     | Management URL                                                                 | Expiration    |
-| -------------------------- | ------------ | ------------------------------------------------------------------------------ | ------------- |
-| RELEASE_TAGGER_PRIVATE_KEY | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
-| VSCE_PAT                   | Azure DevOps | [Azure DevOps Tokens](https://dev.azure.com/nullvariant/_usersSettings/tokens) | 2027-01-08    |
-| OVSX_PAT                   | Open VSX     | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens)                   | No expiration |
-| CLOUDFLARE_API_TOKEN       | Cloudflare   | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)        | No expiration |
-| SONAR_TOKEN                | SonarCloud   | [SonarCloud Security](https://sonarcloud.io/account/security)                  | No expiration |
-| GitHub App Keys            | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
+| Secret                      | Provider     | Management URL                                                                 | Expiration    |
+| --------------------------- | ------------ | ------------------------------------------------------------------------------ | ------------- |
+| RELEASE_TAGGER_PRIVATE_KEY  | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
+| VSCE_PAT                    | Azure DevOps | [Azure DevOps Tokens](https://dev.azure.com/nullvariant/_usersSettings/tokens) | 2027-01-08    |
+| OVSX_PAT                    | Open VSX     | [Open VSX Tokens](https://open-vsx.org/user-settings/tokens)                   | No expiration |
+| CLOUDFLARE_API_TOKEN        | Cloudflare   | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)        | No expiration |
+| CLOUDFLARE_API_TOKEN (site) | Cloudflare   | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)        | 2027-11-26    |
+| SONAR_TOKEN                 | SonarCloud   | [SonarCloud Security](https://sonarcloud.io/account/security)                  | No expiration |
+| GitHub App Keys             | GitHub       | [GitHub Apps](https://github.com/settings/apps)                                | No expiration |
 
 **Token Details**:
 
 - **CLOUDFLARE_API_TOKEN**: Named `nullvariant-vscode-extensions-github-actions-deploy`, permissions: Workers R2 Storage:Edit, limited to a single account
+- **CLOUDFLARE_API_TOKEN (site)**: Named `variant-fit deploy (GitHub Actions)`, created from the "Edit Cloudflare Workers" template: Workers Routes Write on the `variant.fit` zone only, and the template's account-level Workers permissions (Workers Scripts Write and others) on a single account. Expires after one year
 - **RELEASE_TAGGER_PRIVATE_KEY**: Private key of the `git-id-switcher-release-tagger` GitHub App. `auto-tag.yml` exchanges it for a one-hour installation token to push release tags that trigger the publish workflow (built-in GITHUB_TOKEN pushes do not re-trigger workflows)
 
 ## See Also

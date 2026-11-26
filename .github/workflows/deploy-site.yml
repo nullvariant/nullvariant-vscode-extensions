@@ -1,0 +1,66 @@
+name: Deploy Site
+
+# Builds site/ and deploys it to https://variant.fit (Cloudflare Worker "variant-fit").
+# The pages are generated from each extension's manifest, so a change to a manifest,
+# its English strings, or its icon redeploys the site as well.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'site/**'
+      - 'extensions/*/package.json'
+      - 'extensions/*/package.nls.json'
+      - 'extensions/*/images/icon.png'
+  workflow_dispatch:  # Manual trigger
+
+permissions: {}
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # SECURITY: the Cloudflare token lives in an environment that only main can use,
+    # so a manual run from another branch cannot deploy that branch's site
+    environment:
+      name: site-deploy
+      url: https://variant.fit
+    permissions:
+      contents: read
+    # Prevent forks from deploying (no Cloudflare secrets)
+    if: github.repository == 'nullvariant/nullvariant-vscode-extensions'
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+
+      # The builder uses only the Node.js standard library, so the workspace's dependencies
+      # are not installed here. The only third-party code in the job that holds the deploy
+      # token is wrangler, pinned to an exact version below.
+      - name: Build
+        run: node site/build.mjs
+
+      - name: Deploy to Cloudflare Workers
+        run: pnpm dlx wrangler@4.54.0 deploy --config site/wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
