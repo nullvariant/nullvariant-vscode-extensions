@@ -16,7 +16,6 @@ import {
   build,
   escapeHtml,
   localize,
-  main,
   readExtension,
   readExtensions,
   renderExtension,
@@ -254,7 +253,7 @@ describe("rendering", () => {
     id: "p.x",
     publisher: "p",
     name: "x",
-    displayName: "<script>alert(1)</script>",
+    displayName: `<img src=x onerror="alert('x')">`,
     description: "d",
     version: "1.0.0",
     license: "",
@@ -266,8 +265,8 @@ describe("rendering", () => {
 
   it("escapes manifest values in the extension page", () => {
     const html = renderExtension(extension);
-    assert.ok(!html.includes("<script>"));
-    assert.ok(html.includes("&lt;script&gt;alert(1)&lt;/script&gt;"));
+    assert.ok(!html.includes("<img src=x"));
+    assert.ok(html.includes("<h1>&lt;img src=x onerror=&quot;alert(&#39;x&#39;)&quot;&gt;</h1>"));
   });
 
   it("leaves the license out of the extension page when there is none", () => {
@@ -344,31 +343,7 @@ describe("build", () => {
 });
 
 describe("main", () => {
-  /** @type {string} */
-  let root = "";
-
-  before(async () => {
-    root = await makeTemporaryDirectory("variant-fit-main-");
-    const base = await writeExtension(path.join(root, "extensions"), "sample", FULL_MANIFEST, FULL_NLS);
-    await writeFile(path.join(base, "icon.png"), "icon");
-  });
-
-  after(async () => {
-    await rm(root, { recursive: true, force: true });
-  });
-
-  it("builds into the directories given on the command line", async () => {
-    const outDir = path.join(root, "out");
-    await main(["--repository-root", root, "--out", outDir]);
-    const index = await readFile(path.join(outDir, "index.html"), "utf8");
-    assert.ok(index.includes("Sample"));
-  });
-
-  it("rejects an unknown option", async () => {
-    await assert.rejects(main(["--unknown"]), { code: "ERR_PARSE_ARGS_UNKNOWN_OPTION" });
-  });
-
-  it("builds the real site from the repository when run as a script with no options", async () => {
+  it("builds the real site from the repository when run as a script", async () => {
     const { stdout } = await runFile(process.execPath, [path.join(SITE_DIR, "build.mjs")]);
     assert.match(stdout, /^Built \d+ extension page\(s\)\n$/);
     const page = await readFile(path.join(SITE_DIR, "dist", "git-id-switcher", "index.html"), "utf8");

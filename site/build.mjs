@@ -13,7 +13,6 @@ import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promi
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { parseArgs } from "node:util";
 
 const SITE_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPOSITORY_URL = "https://github.com/nullvariant/nullvariant-vscode-extensions";
@@ -207,12 +206,11 @@ export async function readExtensions(extensionsDir) {
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .toSorted((a, b) => a.localeCompare(b));
-  const extensions = [];
-  for (const directory of directories) {
-    if (await isExtension(path.join(extensionsDir, directory))) {
-      extensions.push(await readExtension(extensionsDir, directory));
-    }
-  }
+  const published = await Promise.all(directories.map((directory) => isExtension(path.join(extensionsDir, directory))));
+  const extensionDirectories = directories.filter((_, index) => published[index]);
+  const extensions = await Promise.all(
+    extensionDirectories.map((directory) => readExtension(extensionsDir, directory)),
+  );
   if (extensions.length === 0) {
     throw new Error(`No extensions found under ${extensionsDir}`);
   }
@@ -405,39 +403,41 @@ export async function build({ repositoryRoot = path.join(SITE_DIR, ".."), outDir
   await rm(out, { recursive: true, force: true });
   await mkdir(out, { recursive: true });
   const staticFiles = await readdir(path.join(SITE_DIR, "static"));
-  for (const file of staticFiles) {
-    await copyFile(path.join(SITE_DIR, "static", file), path.join(out, file));
-  }
-  await writeFile(path.join(out, "index.html"), renderIndex(extensions));
-  await writeFile(path.join(out, "404.html"), renderNotFound());
-  for (const extension of extensions) {
-    const pageDir = path.join(out, extension.name);
-    await mkdir(pageDir, { recursive: true });
-    await writeFile(path.join(pageDir, "index.html"), renderExtension(extension));
-    if (extension.iconPath) {
-      await copyFile(extension.iconPath, path.join(pageDir, "icon.png"));
-    }
-  }
+  await Promise.all([
+    ...staticFiles.map((file) => copyFile(path.join(SITE_DIR, "static", file), path.join(out, file))),
+    writeFile(path.join(out, "index.html"), renderIndex(extensions)),
+    writeFile(path.join(out, "404.html"), renderNotFound()),
+    ...extensions.map((extension) => writeExtensionPage(out, extension)),
+  ]);
   return extensions;
 }
 
 /**
- * Command-line entry: node build.mjs [--repository-root DIR] [--out DIR]
- * @param {string[]} argv
+ * Writes one extension's page directory: index.html and, if it has one, its icon.
+ * @param {string} out
+ * @param {Extension} extension
  * @returns {Promise<void>}
  */
-export async function main(argv) {
-  const { values } = parseArgs({
-    args: argv,
-    options: {
-      "repository-root": { type: "string" },
-      out: { type: "string" },
-    },
-  });
-  const extensions = await build({ repositoryRoot: values["repository-root"], outDir: values.out });
+async function writeExtensionPage(out, extension) {
+  const pageDir = path.join(out, extension.name);
+  await mkdir(pageDir, { recursive: true });
+  await Promise.all([
+    writeFile(path.join(pageDir, "index.html"), renderExtension(extension)),
+    extension.iconPath ? copyFile(extension.iconPath, path.join(pageDir, "icon.png")) : undefined,
+  ]);
+}
+
+/**
+ * Command-line entry: builds the site from this repository into site/dist.
+ * It takes no arguments, so no path from outside reaches the build (which
+ * empties its output directory first).
+ * @returns {Promise<void>}
+ */
+export async function main() {
+  const extensions = await build();
   process.stdout.write(`Built ${extensions.length} extension page(s)\n`);
 }
 
 if (import.meta.main) {
-  await main(process.argv.slice(2));
+  await main();
 }

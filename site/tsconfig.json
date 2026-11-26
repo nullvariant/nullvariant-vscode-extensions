@@ -1,5 +1,4 @@
 {
-  // Type-checks the JavaScript sources through their JSDoc annotations; emits nothing.
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
