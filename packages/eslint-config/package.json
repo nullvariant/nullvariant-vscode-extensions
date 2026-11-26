@@ -1,0 +1,26 @@
+{
+  "name": "@nullvariant/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ESLint rules shared by the extensions and the site in this monorepo",
+  "author": "Null;Variant",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint-plugin-sonarjs": "^4.2.2",
+    "eslint-plugin-unicorn": "^79.0.0"
+  },
+  "peerDependencies": {
+    "eslint": "^10.13.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.13.0"
+  }
+}

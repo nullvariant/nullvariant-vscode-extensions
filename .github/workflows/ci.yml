@@ -63,6 +63,7 @@ jobs:
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           directory: extensions/git-id-switcher/coverage
+          flags: extension
           fail_ci_if_error: false
 
       - name: Package
@@ -94,6 +95,72 @@ jobs:
           fi
 
           echo "package.json URLs verified"
+
+  # The variant.fit site (site/) and the shared ESLint rules (packages/eslint-config/).
+  # The site's tests fail below 100% line, branch, and function coverage.
+  site:
+    name: Site (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Configure Git line endings
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+
+      - name: Harden Runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      # Install at root level for the pnpm workspace
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint shared ESLint rules
+        run: pnpm run lint
+        working-directory: packages/eslint-config
+
+      - name: Lint
+        run: pnpm run lint
+        working-directory: site
+
+      - name: Type-check
+        run: pnpm run typecheck
+        working-directory: site
+
+      - name: Run tests with coverage
+        run: pnpm run test:coverage
+        working-directory: site
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          directory: site/coverage
+          flags: site
+          fail_ci_if_error: false
+
+      - name: Build
+        run: pnpm run build
+        working-directory: site
 
   e2e:
     name: E2E Tests (${{ matrix.os }})

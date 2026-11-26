@@ -12,12 +12,24 @@ coverage:
         target: 90%
 
 # Fix path mapping for monorepo structure
-# With sourceMap enabled, lcov.info contains paths like "src/commandAllowlist.ts"
+# Each package writes lcov.info with paths relative to its own directory:
+# the extension's "src/commandAllowlist.ts" (via source maps) and the site's "build.mjs".
 # These need to be mapped to full repository paths
 fixes:
   - "src/::extensions/git-id-switcher/src/"
+  - "build.mjs::site/build.mjs"
+
+# Coverage per package, uploaded with the matching flag in ci.yml
+flags:
+  extension:
+    paths:
+      - extensions/git-id-switcher/src/
+  site:
+    paths:
+      - site/
 
 # Ignore test files from coverage
 ignore:
   - "**/*.test.ts"
+  - "**/*.test.mjs"
   - "**/test/**"
