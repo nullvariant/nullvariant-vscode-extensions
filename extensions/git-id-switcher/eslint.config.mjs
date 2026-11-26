@@ -1,14 +1,11 @@
 // @ts-check
-import eslint from "@eslint/js";
-import sonarjs from "eslint-plugin-sonarjs";
-import unicorn from "eslint-plugin-unicorn";
+import { createConfig } from "@nullvariant/eslint-config";
 import tseslint from "typescript-eslint";
 
+// Rules shared with the rest of the monorepo come from @nullvariant/eslint-config.
+// This file adds what belongs to TypeScript and to a VS Code extension.
 export default [
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  /** @type {any} */ (sonarjs.configs?.recommended ?? {}),
-  unicorn.configs["recommended"],
+  ...createConfig({ languagePresets: tseslint.configs.recommended }),
   {
     languageOptions: {
       parserOptions: {
@@ -17,44 +14,26 @@ export default [
       },
     },
     rules: {
-      // === Security (existing) ===
-      "no-eval": "error",
-      "no-implied-eval": "error",
-      "no-new-func": "error",
-
-      // === B1-B7: Basic quality (ts-linter-ruleset-standard) ===
-      "no-var": "error", // B1
-      "prefer-const": "error", // B2
-      // B3/B4: @typescript-eslint/no-unused-vars (below)
-      eqeqeq: "error", // B5
-      // B6: no-debugger already in eslint.configs.recommended
-      "no-console": ["warn", { allow: ["warn", "error"] }], // B7
-
-      // === Guardrail #7: Cognitive Complexity ===
-      "sonarjs/cognitive-complexity": ["error", 15],
-
-      // === Guardrail #9: Bit ops / legacy API ===
-      "no-bitwise": "error",
-      "unicorn/prefer-number-properties": "error",
-
-      // === Guardrail #12: Modern API ===
+      // === TypeScript ===
       "@typescript-eslint/prefer-optional-chain": "error",
-      "unicorn/prefer-node-protocol": "error",
-      "unicorn/prefer-regexp-test": "error",
-      "unicorn/prefer-string-starts-ends-with": "error",
-
-      // === Guardrail #14: Promise quality ===
-      "prefer-promise-reject-errors": "error",
       "@typescript-eslint/no-floating-promises": "error",
-
-      // === Guardrail #16: SonarQube patterns ===
-      "no-duplicate-imports": "error",
-      "unicorn/prefer-string-replace-all": "error",
-      "unicorn/prefer-set-has": "error",
-      "unicorn/numeric-separators-style": "error",
       "@typescript-eslint/no-unnecessary-type-assertion": "error",
+      "@typescript-eslint/no-unsafe-call": "warn",
+      "@typescript-eslint/no-unsafe-assignment": "warn",
+      "@typescript-eslint/no-unsafe-member-access": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/explicit-function-return-type": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_|^error$",
+        },
+      ],
+      "unicorn/no-useless-undefined": "off", // TypeScript requires explicit undefined arguments (resolve(undefined), update(key, undefined))
 
-      // === INFO-16: Dangerous child_process imports ===
+      // === Dangerous child_process imports ===
       "no-restricted-imports": [
         "error",
         {
@@ -75,15 +54,7 @@ export default [
         },
       ],
 
-      // === Project-specific security rules ===
-      "no-magic-numbers": [
-        "error",
-        {
-          ignore: [0, 1, -1, 2, 10, 100, 1000],
-          ignoreArrayIndexes: true,
-          ignoreDefaultValues: true,
-        },
-      ],
+      // === Pattern constants live in one place ===
       "no-restricted-syntax": [
         "error",
         {
@@ -92,49 +63,27 @@ export default [
             "Import pattern constants from core/constants.ts or validators/common.ts instead of inline regex",
         },
       ],
-      "@typescript-eslint/no-unsafe-call": "warn",
-      "@typescript-eslint/no-unsafe-assignment": "warn",
-      "@typescript-eslint/no-unsafe-member-access": "warn",
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/explicit-function-return-type": "warn",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_|^error$",
-        },
-      ],
 
-      // === Unicorn overrides (disable overly opinionated rules) ===
-      "unicorn/no-null": "off",
-      "unicorn/name-replacements": "off",
-      // Taste rules about comment layout; the codebase keeps the common JSDoc
-      // style (asterisk prefixes, one-line /** ... */ summaries)
-      "unicorn/no-asterisk-prefix-in-documentation-comments": "off",
-      "unicorn/single-line-block-comment-style": "off",
       // userName/userEmail/userSigningKey mirror git config keys (user.name/user.email/user.signingkey);
       // "username" connotes a login handle, which these display-name values are not
       "unicorn/consistent-compound-words": [
         "error",
         { replacements: { userName: false } },
       ],
+
+      // === VS Code extension patterns (CommonJS, extension host lifecycle) ===
       "unicorn/filename-case": "off",
       "unicorn/no-process-exit": "off",
       "unicorn/prefer-module": "off",
       "unicorn/prefer-top-level-await": "off",
-      "unicorn/no-abusive-eslint-disable": "off",
-      "unicorn/import-style": "off",
-      "unicorn/no-useless-undefined": "off", // TypeScript requires explicit undefined arguments (resolve(undefined), update(key, undefined))
       "unicorn/no-useless-error-capture-stack-trace": "off", // V8-specific Error.captureStackTrace is guarded by if-check for non-V8 engines
-
-      // ADR-00240 Phase 1: disable v67 rules that conflict with VS Code extension patterns.
       "unicorn/no-top-level-assignment-in-function": "off",
       "unicorn/no-top-level-side-effects": "off",
       "unicorn/no-non-function-verb-prefix": "off",
       "unicorn/no-error-property-assignment": "off",
 
-      // ADR-00240 Phase 1: keep remaining v67 findings visible while unblocking CI.
+      // Rules added in eslint-plugin-unicorn v67 that existing code does not meet yet.
+      // They stay visible as warnings while the code is brought up to them.
       "unicorn/prefer-await": "warn",
       "unicorn/max-nested-calls": "warn",
       "unicorn/consistent-boolean-name": "warn",
@@ -155,9 +104,6 @@ export default [
       "unicorn/prefer-minimal-ternary": "warn",
       "unicorn/prefer-uint8array-base64": "warn",
       "unicorn/prefer-private-class-fields": "warn",
-    },
-    linterOptions: {
-      reportUnusedDisableDirectives: "warn",
     },
   },
   {
@@ -211,8 +157,8 @@ export default [
       "no-magic-numbers": "off",
     },
   },
-  // Temporary: existing files with patterns/magic numbers to be refactored
-  // Remove files from this list after refactoring (Issue-00071)
+  // Temporary: existing files with patterns/magic numbers to be refactored.
+  // Remove a file from this list once it no longer needs the exception.
   {
     files: [
       "**/core/errors.ts",

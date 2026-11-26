@@ -1,5 +1,6 @@
 packages:
   - extensions/*
+  - packages/eslint-config
 # Wait 7 days (10080 minutes) before taking a freshly published version, so a hijacked or
 # withdrawn release is not pulled in.
 minimumReleaseAge: 10080
