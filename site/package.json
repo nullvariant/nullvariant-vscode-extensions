@@ -16,7 +16,7 @@
   "devDependencies": {
     "@nullvariant/eslint-config": "workspace:*",
     "@types/node": "^25.9.9",
-    "eslint": "^10.13.0",
+    "eslint": "^10.15.0",
     "typescript": "^6.0.0"
   }
 }
