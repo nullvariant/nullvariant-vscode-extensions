@@ -83,7 +83,7 @@ function testValidateIdentity(): void {
       id: "nullvariant",
       icon: "🎭",
       name: "Null;Variant",
-      email: "dev@nullvariant.com",
+      email: "dev@example.com",
     };
     const result = validateIdentity(semicolonName);
     assert.strictEqual(

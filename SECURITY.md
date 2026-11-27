@@ -22,7 +22,7 @@ If you discover a security vulnerability, please report it by:
    - We will respond within 48 hours
 
 2. **Email**
-   - `security@nullvariant.com`
+   - `security@variant.fit`
    - Use PGP encryption if possible (key available on request)
 
 **Please do NOT open a public issue for security vulnerabilities.**
@@ -31,7 +31,7 @@ If you discover a security vulnerability, please report it by:
 
 If you find a VS Code extension with a similar name to **Git ID Switcher** from a different publisher, it may be a typosquat attempt. Please report it:
 
-1. **Report to us** via [GitHub Security Advisory](https://github.com/nullvariant/nullvariant-vscode-extensions/security/advisories/new) or email `security@nullvariant.com`
+1. **Report to us** via [GitHub Security Advisory](https://github.com/nullvariant/nullvariant-vscode-extensions/security/advisories/new) or email `security@variant.fit`
 2. **Report to the marketplace**:
    - VS Code Marketplace: Use the "Report" button on the extension page, or email `vscext@microsoft.com`
    - Open VSX: File an issue at [open-vsx/publish-extensions](https://github.com/open-vsx/publish-extensions/issues)

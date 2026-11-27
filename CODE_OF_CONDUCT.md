@@ -42,7 +42,7 @@ What the world considers right may not be welcome here.
 
 ## Contact
 
-For questions or concerns: <contact@nullvariant.com>
+For questions or concerns: <contact@variant.fit>
 
 ---
 
