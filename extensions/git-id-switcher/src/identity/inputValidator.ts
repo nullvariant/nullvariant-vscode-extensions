@@ -357,4 +357,3 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
     errors,
   };
 }
-

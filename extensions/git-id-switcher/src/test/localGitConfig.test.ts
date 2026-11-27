@@ -123,14 +123,20 @@ async function testExactOutputWithRealGit(): Promise<void> {
   console.log('  Testing the root and values keep trailing spaces (real git)...');
   const dir = makeTempDir('exact-output-');
   try {
+    // Windows drops trailing spaces from directory names, so there the values
+    // are read from the plain repository and the spaced root is not checked
+    const isWindows = process.platform === 'win32';
     const plain = path.join(dir, 'repo');
-    const spaced = path.join(dir, 'repo ');
-    for (const repository of [plain, spaced]) {
+    const spaced = isWindows ? plain : path.join(dir, 'repo ');
+    const repositories = new Set([plain, spaced]);
+    for (const repository of repositories) {
       fs.mkdirSync(repository);
       git(repository, ['init', '-q']);
     }
-    const root = await gitExec(['rev-parse', '--show-toplevel'], spaced);
-    assert.deepStrictEqual(root, { success: true, stdout: spaced, stderr: '' });
+    if (!isWindows) {
+      const root = await gitExec(['rev-parse', '--show-toplevel'], spaced);
+      assert.deepStrictEqual(root, { success: true, stdout: spaced, stderr: '' });
+    }
 
     // A value the user wrote with trailing spaces (the extension itself never
     // writes one: the allowlist rejects it) reads back exactly, so it is
@@ -144,7 +150,7 @@ async function testExactOutputWithRealGit(): Promise<void> {
       assert.deepStrictEqual(await port.get('user.signingkey'), { kind: 'value', value }, JSON.stringify(value));
     }
     // A directory whose name ends with a carriage return is its own root
-    if (process.platform !== 'win32') {
+    if (!isWindows) {
       const carriage = path.join(dir, 'repo\r');
       fs.mkdirSync(carriage);
       git(carriage, ['init', '-q']);
@@ -153,7 +159,9 @@ async function testExactOutputWithRealGit(): Promise<void> {
     assert.strictEqual(await port.set('user.name', 'Name  '), false, 'not written by the extension');
     assert.strictEqual(await port.set('user.name', 'Name'), true);
     assert.strictEqual(readLocal(spaced, 'user.name'), 'Name');
-    assert.strictEqual(readLocal(plain, 'user.name'), undefined, 'the other repository is untouched');
+    if (!isWindows) {
+      assert.strictEqual(readLocal(plain, 'user.name'), undefined, 'the other repository is untouched');
+    }
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
