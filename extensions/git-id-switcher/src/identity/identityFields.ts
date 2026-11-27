@@ -19,14 +19,11 @@ import {
   isValidEmail,
   isValidSshHost,
   isValidGpgKeyId,
-  hasPathTraversal,
   hasDangerousChars,
-  hasDangerousCharsForPath,
   hasDangerousCharsForText,
-  isWindowsAbsolutePath,
 } from "../validators/common";
-import { isUnderSshDirectory } from "../security/pathUtils";
-import type { Identity } from "./identity";
+import { validateKeyPathFormat } from "./inputValidator";
+import type { Identity, KeyPathField } from "./identity";
 
 /**
  * Metadata for identity fields used in edit UI
@@ -70,7 +67,7 @@ export interface FieldMetadata {
  * Fields that can be edited in the identity management UI
  *
  * Includes core fields (id, name, email) and optional fields
- * (service, icon, description, sshKeyPath, sshHost, gpgKeyId).
+ * (service, icon, description, sshKeyPath, sshHost, gpgKeyId, sshSigningKeyPath).
  */
 export const EDITABLE_FIELDS: ReadonlyArray<keyof Identity> = [
   "id",
@@ -82,45 +79,25 @@ export const EDITABLE_FIELDS: ReadonlyArray<keyof Identity> = [
   "sshKeyPath",
   "sshHost",
   "gpgKeyId",
+  "sshSigningKeyPath",
 ];
 
 /**
- * Validate SSH key path format
+ * Field validator for a key path field.
  *
- * Defense-in-depth validation (lightest to heaviest):
- * - Layer 0: isWindowsAbsolutePath() - Windows drive letter rejection
- * - Layer 1: hasDangerousCharsForPath() - dangerous character detection
- * - Layer 2: hasPathTraversal() - path traversal detection
- * - Layer 3: isUnderSshDirectory() - SSH directory restriction
+ * Uses the same format check as the runtime validation (inputValidator), so a
+ * path is accepted or rejected the same way whether it comes from the form or
+ * from the settings file.
  *
- * Note: Windows path detection also exists in inputValidator.ts validateSshKeyPathFormat().
- * This function is called from FIELD_METADATA validators (UI-layer) independently.
- *
- * @param value - The SSH key path to validate
- * @returns Error message if invalid, undefined if valid
+ * @param field - The key path field
+ * @returns Validator returning the first error message, or undefined if valid
  */
-function validateSshKeyPathForField(value: string): string | undefined {
-  // Layer 0: Windows drive letter paths — guide users to cross-platform format
-  if (isWindowsAbsolutePath(value)) {
-    return "sshKeyPath: use ~/.ssh/ format instead of drive letter paths (e.g., ~/.ssh/id_ed25519)";
-  }
-
-  // Layer 1: Dangerous characters (fastest check)
-  if (hasDangerousCharsForPath(value)) {
-    return "sshKeyPath contains dangerous characters";
-  }
-
-  // Layer 2: Path traversal
-  if (hasPathTraversal(value)) {
-    return "sshKeyPath: path traversal (..) is not allowed";
-  }
-
-  // Layer 3: Must be under ~/.ssh/ directory
-  if (!isUnderSshDirectory(value)) {
-    return "sshKeyPath must be under ~/.ssh/ directory";
-  }
-
-  return undefined;
+function createKeyPathValidator(field: KeyPathField): (value: string) => string | undefined {
+  return (value: string) => {
+    const errors: string[] = [];
+    validateKeyPathFormat(value, field, errors);
+    return errors[0];
+  };
 }
 
 /**
@@ -210,12 +187,12 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
   },
   {
     key: "sshKeyPath",
-    labelKey: "SSH Key Path",
+    labelKey: "SSH Authentication Key Path",
     required: false,
     editable: true,
     inputType: "file",
     icon: "key",
-    validator: validateSshKeyPathForField,
+    validator: createKeyPathValidator("sshKeyPath"),
   },
   {
     key: "sshHost",
@@ -242,6 +219,15 @@ export const FIELD_METADATA: ReadonlyArray<FieldMetadata> = [
       isValidGpgKeyId(value)
         ? undefined
         : "GPG key ID must be 8-40 hexadecimal characters",
+  },
+  {
+    key: "sshSigningKeyPath",
+    labelKey: "SSH Signing Key Path",
+    required: false,
+    editable: true,
+    inputType: "file",
+    icon: "workspace-trusted",
+    validator: createKeyPathValidator("sshSigningKeyPath"),
   },
 ];
 

@@ -4,6 +4,11 @@
  * Handles adding/removing SSH keys from ssh-agent.
  * Cross-platform support for macOS, Linux, and Windows.
  *
+ * Only the authentication key (sshKeyPath) is handled here. The signing key
+ * (sshSigningKeyPath) is used by git directly and never added to the agent;
+ * when it is another identity's authentication key, a switch to the identity
+ * that signs with it does not remove it.
+ *
  * SECURITY: Uses execFile() via secureExec to prevent command injection.
  * @see https://owasp.org/www-community/attacks/Command_Injection
  */
@@ -13,12 +18,8 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 import { Identity, getIdentitiesWithValidation } from "../identity/identity";
 import { sshAgentExec, sshKeygenExec } from "../security/secureExec";
-import { isShellSafePath } from "../identity/inputValidator";
-import { isWindowsAbsolutePath } from "../validators/common";
-import {
-  normalizeAndValidatePath,
-  validateSshKeyPath,
-} from "../security/pathUtils";
+import { validateKeyPathFormat } from "../identity/inputValidator";
+import { validateSshKeyPath } from "../security/pathUtils";
 import { createSecurityViolationError, wrapError } from "../core/errors";
 import { validateKeyFileBeforeAddToAgent } from "./keyFileValidator";
 
@@ -73,36 +74,37 @@ export interface SshKeyInfo {
 }
 
 /**
- * Expand and validate SSH key path securely
+ * Check a configured authentication key path and expand it (tilde,
+ * normalization, symlinks).
  *
- * Uses pathUtils for:
- * - Tilde expansion (~/ to home directory)
- * - Path normalization
- * - Symlink resolution
- * - Security validation
+ * Two checks: the format of a key path setting (validateKeyPathFormat, the
+ * same check as the settings and the identity form), then the path checks
+ * before the path is used (pathUtils.validateSshKeyPath). An absolute path,
+ * `~/`, and on Windows a drive path (`C:\`) are accepted.
  *
- * @param keyPath - The SSH key path to expand
- * @returns Normalized absolute path
- * @throws Error if path is invalid or insecure
+ * @remarks
+ * **Naming convention**: Named with `OrThrow` suffix because this function
+ * throws an exception on validation failure rather than returning a result object.
+ *
+ * @throws SecurityViolationError if the path is not accepted
  */
-function expandPath(keyPath: string): string {
-  // defense-in-depth: expandPath retains its own validation as a second layer
-  if (isWindowsAbsolutePath(keyPath)) {
-    throw createSecurityViolationError(
-      vscode.l10n.t(
-        "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)",
-      ),
-      { field: "sshKeyPath", context: { reason: "Windows drive letter path" } },
-    );
+function expandKeyPathOrThrow(keyPath: string): string {
+  const formatErrors: string[] = [];
+  validateKeyPathFormat(keyPath, "sshKeyPath", formatErrors);
+  if (formatErrors.length > 0) {
+    // SECURITY: Don't include the actual path in error message to prevent information leakage
+    throw createSecurityViolationError(vscode.l10n.t("Invalid SSH key path"), {
+      field: "sshKeyPath",
+      context: { check: "format", errorCount: formatErrors.length },
+    });
   }
 
   const result = validateSshKeyPath(keyPath, {
     resolveSymlinks: true,
     requireExists: false, // Don't require existence for all operations
   });
-
   if (!result.valid) {
-    // SECURITY: Don't expose the actual path or detailed reason to users
+    // SECURITY: Only log the reason internally, don't expose the path or the reason to users
     throw createSecurityViolationError(vscode.l10n.t("Invalid SSH key path"), {
       field: "sshKeyPath",
       context: { reason: result.reason },
@@ -110,45 +112,6 @@ function expandPath(keyPath: string): string {
   }
 
   return result.normalizedPath!;
-}
-
-/**
- * Validate SSH key path for security, throwing on failure.
- *
- * @remarks
- * **Naming convention**: Named with `OrThrow` suffix because this function
- * throws an exception on validation failure rather than returning a result object.
- *
- * @throws SecurityViolationError if path is potentially dangerous
- */
-function validateKeyPathOrThrow(keyPath: string): void {
-  if (isWindowsAbsolutePath(keyPath)) {
-    throw createSecurityViolationError(
-      vscode.l10n.t(
-        "Invalid SSH key path: use ~/.ssh/ format (e.g., ~/.ssh/id_ed25519)",
-      ),
-      { field: "sshKeyPath", context: { reason: "Windows drive letter path" } },
-    );
-  }
-
-  // Use both legacy validation and new secure validation
-  if (!isShellSafePath(keyPath)) {
-    // SECURITY: Don't include the actual path in error message to prevent information leakage
-    throw createSecurityViolationError(vscode.l10n.t("Invalid SSH key path"), {
-      field: "sshKeyPath",
-      context: { check: "legacy" },
-    });
-  }
-
-  // Additional validation using pathUtils
-  const result = normalizeAndValidatePath(keyPath);
-  if (!result.valid) {
-    // SECURITY: Only log the reason internally, don't expose to users
-    throw createSecurityViolationError(vscode.l10n.t("Invalid SSH key path"), {
-      field: "sshKeyPath",
-      context: { reason: result.reason },
-    });
-  }
 }
 
 /**
@@ -222,9 +185,7 @@ export async function listSshKeys(
  */
 export async function addSshKey(keyPath: string): Promise<void> {
   // SECURITY: Validate path format before use
-  validateKeyPathOrThrow(keyPath);
-
-  const expandedPath = expandPath(keyPath);
+  const expandedPath = expandKeyPathOrThrow(keyPath);
 
   // SECURITY: Validate file before passing to ssh-add
   const fileValidation = await validateKeyFileBeforeAddToAgent(expandedPath);
@@ -263,9 +224,7 @@ export async function addSshKey(keyPath: string): Promise<void> {
  */
 export async function removeSshKey(keyPath: string): Promise<void> {
   // SECURITY: Validate path before use
-  validateKeyPathOrThrow(keyPath);
-
-  const expandedPath = expandPath(keyPath);
+  const expandedPath = expandKeyPathOrThrow(keyPath);
 
   try {
     // SECURITY: Using sshAgentExec with array args
@@ -276,14 +235,40 @@ export async function removeSshKey(keyPath: string): Promise<void> {
 }
 
 /**
+ * The expanded private key path of an identity's SSH signing key (without
+ * `.pub`), or undefined when it has none or the path is not accepted.
+ */
+function getSigningPrivateKeyPath(identity: Identity): string | undefined {
+  const signingKeyPath = identity.sshSigningKeyPath?.replace(/\.pub$/, "");
+  try {
+    return signingKeyPath ? expandKeyPathOrThrow(signingKeyPath) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Whether an authentication key path names the given expanded key path */
+function isSameKey(sshKeyPath: string, expandedKeyPath: string | undefined): boolean {
+  try {
+    return expandedKeyPath !== undefined && expandKeyPathOrThrow(sshKeyPath) === expandedKeyPath;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Remove all identity keys from agent
  *
  * This removes all keys for configured identities, leaving other keys intact
+ *
+ * @param keptKeyPath - An expanded key path that is not removed (the signing
+ *   key of the identity switched to, when it is another identity's
+ *   authentication key: git signs with it from ssh-agent)
  */
-export async function removeAllIdentityKeys(): Promise<void> {
+export async function removeAllIdentityKeys(keptKeyPath?: string): Promise<void> {
   const identities = getIdentitiesWithValidation();
   const removePromises = identities
-    .filter((identity) => identity.sshKeyPath)
+    .filter((identity) => identity.sshKeyPath && !isSameKey(identity.sshKeyPath, keptKeyPath))
     .map((identity) =>
       removeSshKey(identity.sshKeyPath!).catch(() => {
         // Ignore individual errors
@@ -296,7 +281,8 @@ export async function removeAllIdentityKeys(): Promise<void> {
 /**
  * Switch to a specific identity's SSH key
  *
- * Removes all identity keys and adds only the selected one
+ * Removes all identity keys and adds only the selected one. The key the
+ * selected identity signs with (sshSigningKeyPath) is not removed.
  */
 export async function switchToIdentitySshKey(
   identity: Identity,
@@ -306,8 +292,8 @@ export async function switchToIdentitySshKey(
     return;
   }
 
-  // First, remove all identity keys
-  await removeAllIdentityKeys();
+  // First, remove all identity keys but the signing key of this identity
+  await removeAllIdentityKeys(getSigningPrivateKeyPath(identity));
 
   // Then add the selected identity's key
   await addSshKey(identity.sshKeyPath);
@@ -323,9 +309,7 @@ export async function switchToIdentitySshKey(
  */
 export async function checkKeyLoadedInAgent(keyPath: string): Promise<boolean> {
   // SECURITY: Validate path
-  validateKeyPathOrThrow(keyPath);
-
-  const expandedPath = expandPath(keyPath);
+  const expandedPath = expandKeyPathOrThrow(keyPath);
   const keys = await listSshKeys();
 
   // Check if any loaded key's comment matches the key path basename
@@ -366,7 +350,7 @@ export async function detectCurrentIdentityFromSsh(
       continue;
     }
 
-    const keyPathBasename = path.basename(expandPath(identity.sshKeyPath));
+    const keyPathBasename = path.basename(expandKeyPathOrThrow(identity.sshKeyPath));
     // defense-in-depth: exact/word-boundary matching (see isBasenameMatch)
     const isLoaded = keys.some((key) =>
       isBasenameMatch(key.comment, keyPathBasename),
@@ -388,9 +372,7 @@ export async function getKeyFingerprint(
   keyPath: string,
 ): Promise<string | undefined> {
   // SECURITY: Validate path before use
-  validateKeyPathOrThrow(keyPath);
-
-  const expandedPath = expandPath(keyPath);
+  const expandedPath = expandKeyPathOrThrow(keyPath);
 
   try {
     // SECURITY: Using sshKeygenExec with array args
@@ -407,8 +389,7 @@ export async function getKeyFingerprint(
  * Check if SSH key file exists
  */
 export async function keyFileExists(keyPath: string): Promise<boolean> {
-  validateKeyPathOrThrow(keyPath);
-  const expandedPath = expandPath(keyPath);
+  const expandedPath = expandKeyPathOrThrow(keyPath);
 
   try {
     await fs.access(expandedPath);

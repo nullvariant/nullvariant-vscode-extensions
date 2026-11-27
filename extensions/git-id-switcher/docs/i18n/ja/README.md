@@ -49,7 +49,7 @@ Gitプロフィール切り替えツールは数多く存在しますが、**Git
 - **同期チェック**: プロフィールとgit configの不一致をリアルタイム検出し、ステータスバーで警告
 - **サブモジュール対応**: Gitサブモジュールにも自動的にプロフィールを伝播
 - **SSH鍵管理**: ssh-agentのSSH鍵を自動的に切り替え
-- **GPG署名対応**: コミット署名用のGPG鍵を設定（オプション）
+- **コミット署名対応**: GPG鍵またはSSH鍵でコミットに署名（オプション）
 - **リッチなツールチップ**: 説明やSSHホストを含む詳細なプロフィール情報
 - **クロスプラットフォーム**: macOS、Linux、Windowsで動作
 - **多言語対応**: 17言語をサポート
@@ -235,6 +235,38 @@ Host gitlab-oss
 
 ---
 
+## SSH鍵によるコミット署名
+
+GitはGPG鍵の代わりにSSH鍵でコミットに署名できます。**ユーザー設定**（`settings.json`）のプロフィールに`sshSigningKeyPath`を設定します:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "高橋カオル",
+      "email": "kaoru.takahashi@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath`には秘密鍵を指定します。秘密鍵がssh-agentにある場合は公開鍵（`.pub`）も指定できます
+- 1つのプロフィールに`gpgKeyId`と`sshSigningKeyPath`を同時には設定できません
+- 署名用の鍵（`gpgKeyId`、`sshSigningKeyPath`）は、ユーザー設定の、`id`・`name`・`email`が同じプロフィールからのみ読み込まれます。ワークスペースの`.vscode/settings.json`にある値は使われず、プロフィールの画面もユーザー設定にだけ保存します
+- 鍵のパスは `~/.ssh/` の外でもよく、絶対パスか `~/` で始まるパスで指定します。Windows では `C:\Users\...` のようなドライブのパスも指定できます。git に鍵を使わせる前に、拡張機能はその鍵で短いテスト用の文に、git がコミットに署名するのと同じ形で署名させます（`ssh-keygen -Y sign`）。askpass のプログラムは起動せず、30 秒で打ち切ります。署名できないとき、または別の鍵が署名したとき（秘密鍵の隣に古い `.pub` ファイルが残っているときなど）は、切り替えを止めます。この確認は、鍵のファイルか隣の `.pub` ファイルが変わったときだけやり直すので、ハードウェアの鍵がタッチを求めるのもそのときだけです。パスフレーズのある秘密鍵はこの方法で確かめられないため、`sshSigningKeyPath` にその公開鍵のファイル（`.pub`）を指定し、鍵を ssh-agent に追加してください
+- Unix では、署名の鍵のファイルと隣の `.pub` ファイルに、認証の鍵と同じく鍵の権限が要ります。秘密鍵はグループ・他人がアクセスできず、公開鍵はグループ・他人が書き込めず、どちらも実行権限が無いこと。そうでなければ切り替えを止めます
+- 切り替え時、拡張機能は`git config --local`で`gpg.format`・`user.signingkey`・`commit.gpgsign`を書き込みます。署名鍵のないプロフィールに切り替えると、3つが拡張機能の書いた値のままなら、3つとも以前の値に戻します。どれか1つでも手で変えていれば、3つとも触れません
+- 署名用の鍵はssh-agentに追加されません。`autoSwitchSshKey`が切り替えるのは認証用の鍵（`sshKeyPath`）だけです。ほかのプロファイルの鍵を外すときも、切り替え先のプロファイルが署名に使う鍵は外しません
+- SSHの鍵での署名にはGit 2.34以降が必要です。それより古いGitでは、Gitの設定を変えずに切り替えを止めます
+
+コミットが検証済み（Verified）と表示されるよう、公開鍵をGitHubに**署名鍵**（Signing Key）として登録してください（認証用の鍵とは別に登録します）。
+
+---
+
 ## プロフィール管理
 
 ステータスバーをクリック → 一覧下部の「プロフィール管理」で管理画面を開きます。
@@ -261,17 +293,20 @@ Host gitlab-oss
 
 ### プロフィールのプロパティ
 
-| プロパティ    | 必須 | 説明                                                             |
-| ------------- | ---- | ---------------------------------------------------------------- |
-| `id`          | ✅   | 一意の識別子（例：`"personal"`, `"work"`）                       |
-| `name`        | ✅   | Git user.name - コミットに表示                                   |
-| `email`       | ✅   | Git user.email - コミットに表示                                  |
-| `icon`        |      | ステータスバーに表示される絵文字（例：`"🏠"`）。単一の絵文字のみ |
-| `service`     |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI表示に使用           |
-| `description` |      | ピッカーとツールチップに表示される短い説明                       |
-| `sshKeyPath`  |      | SSHプライベートキーへのパス（例：`"~/.ssh/id_ed25519_work"`）    |
-| `sshHost`     |      | SSH configのHostエイリアス（例：`"github-work"`）                |
-| `gpgKeyId`    |      | コミット署名用のGPG鍵ID                                          |
+| プロパティ          | 必須 | 説明                                                                                             |
+| ------------------- | ---- | ------------------------------------------------------------------------------------------------ |
+| `id`                | ✅   | 一意の識別子（例：`"personal"`, `"work"`）                                                       |
+| `name`              | ✅   | Git user.name - コミットに表示                                                                   |
+| `email`             | ✅   | Git user.email - コミットに表示                                                                  |
+| `icon`              |      | ステータスバーに表示される絵文字（例：`"🏠"`）。単一の絵文字のみ                                 |
+| `service`           |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI表示に使用                                           |
+| `description`       |      | ピッカーとツールチップに表示される短い説明                                                       |
+| `sshKeyPath`        |      | 認証用のSSHプライベートキーへのパス（例：`"~/.ssh/id_ed25519_work"`）                            |
+| `sshHost`           |      | SSH configのHostエイリアス（例：`"github-work"`）                                                |
+| `gpgKeyId`          |      | コミット署名用のGPG鍵ID。`sshSigningKeyPath`と同時には設定不可                                   |
+| `sshSigningKeyPath` |      | コミット署名用のSSH鍵へのパス（例：`"~/.ssh/id_ed25519_signing"`）。`gpgKeyId`と同時には設定不可 |
+
+署名用の鍵（`gpgKeyId`、`sshSigningKeyPath`）は、ユーザー設定からのみ読み込まれます。
 
 #### 表示に関する制限
 
@@ -284,7 +319,7 @@ Host gitlab-oss
 | ------------------------------------------ | ------------ | --------------------------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | サンプル参照 | プロフィール設定のリスト                                                                            |
 | `gitIdSwitcher.defaultIdentity`            | サンプル参照 | 使用するデフォルトプロフィールのID                                                                  |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | プロフィール変更時にSSH鍵を自動切り替え                                                             |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | プロフィール変更時に、認証用のSSH鍵（`sshKeyPath`）をssh-agentで自動切り替え                        |
 | `gitIdSwitcher.showNotifications`          | `true`       | プロフィール切り替え時に通知を表示                                                                  |
 | `gitIdSwitcher.applyToSubmodules`          | `true`       | Gitサブモジュールにプロフィールを伝播                                                               |
 | `gitIdSwitcher.submoduleDepth`             | `1`          | ネストされたサブモジュール設定の最大深度（1-5）                                                     |
@@ -345,13 +380,13 @@ Gitの設定には3つのレイヤーがあり、下位の設定を上位が上�
 
 1. **Git Config**（常時）: `git config --local user.name`と`user.email`を設定
 2. **SSH鍵**（`sshKeyPath`設定時）: 他の鍵をssh-agentから削除し、選択した鍵を追加
-3. **GPG鍵**（`gpgKeyId`設定時）: `git config --local user.signingkey`を設定し、署名を有効化
+3. **コミット署名**（`gpgKeyId`または`sshSigningKeyPath`設定時）: `git config --local`で`gpg.format`（`openpgp`または`ssh`）・`user.signingkey`・`commit.gpgsign`（`true`）を設定。署名鍵のないプロフィールに切り替えたときは[SSH鍵によるコミット署名](#ssh鍵によるコミット署名)を参照
 4. **サブモジュール**（有効時）: すべてのサブモジュールに設定を伝播（デフォルト：深度1）
 5. **同期チェック**: 適用したプロフィールとgit configが一致しているか自動検証
 
 ### 同期チェック
 
-選択中のプロフィールと実際の `git config --local` の値（`user.name`, `user.email`, `user.signingkey`）を比較し、不一致があればステータスバーに警告を表示します。
+選択中のプロフィールと実際のGit設定の値（`user.name`, `user.email`、署名するプロフィールでは`gpg.format`, `user.signingkey`, `commit.gpgsign`）を比較し、不一致があればステータスバーに警告を表示します。署名鍵のないプロフィールでは、拡張機能が書いて元に戻していない署名の値も不一致として扱います。
 
 **チェックのタイミング:**
 

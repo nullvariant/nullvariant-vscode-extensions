@@ -105,6 +105,28 @@ export function getExtensions(): typeof vscodeTypes.extensions | undefined {
 }
 
 /**
+ * Localize a message with VS Code's l10n API.
+ *
+ * Falls back to the message itself (with `{0}`-style placeholders filled in)
+ * when the VS Code API is not available, so modules that run in unit tests
+ * still produce readable messages.
+ *
+ * @param message - The English message (the l10n key)
+ * @param args - Values for the `{0}`, `{1}`, ... placeholders
+ */
+export function localize(message: string, ...args: Array<string | number>): string {
+  const translated = getVSCode()?.l10n?.t(message, ...args);
+  if (translated !== undefined) {
+    return translated;
+  }
+  let text = message;
+  for (const [index, arg] of args.entries()) {
+    text = text.split(`{${index}}`).join(String(arg));
+  }
+  return text;
+}
+
+/**
  * Reset the cached VS Code module
  *
  * Used for testing purposes to clear the cache between tests.

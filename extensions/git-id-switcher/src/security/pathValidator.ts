@@ -299,7 +299,7 @@ function runValidators(state: ValidationState, validators: Validator[]): Validat
  * **Terminology**:
  * - `valid`: Format/structure is correct (e.g., `isEmailFormatValid()`)
  * - `secure`: Resistant to security attacks (e.g., `validatePathSecurity()`)
- * - `safe`: Safe for a specific context (e.g., `isShellSafePath()`)
+ * - `safe`: Safe for a specific context (e.g., `validatePathSafety()`)
  *
  * @param inputPath - The path string to validate
  * @returns SecurePathResult indicating if path is secure

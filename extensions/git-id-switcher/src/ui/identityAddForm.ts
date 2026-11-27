@@ -11,7 +11,7 @@ import type { QuickPick } from 'vscode';
 import { getVSCode } from '../core/vscodeLoader';
 import {
   type Identity,
-  getIdentitiesWithValidation,
+  getUserScopeIdentities,
   FIELD_METADATA,
 } from '../identity/identity';
 import { MAX_IDENTITIES } from '../core/constants';
@@ -27,6 +27,7 @@ import {
 import {
   validateIdInput,
   validateFieldInput,
+  getOtherSigningValue,
 } from './identityFormValidation';
 
 // ============================================================================
@@ -92,6 +93,7 @@ function buildIdentityFromState(state: AddFormState): Identity {
   if (state.sshKeyPath?.trim()) identity.sshKeyPath = state.sshKeyPath;
   if (state.sshHost?.trim()) identity.sshHost = state.sshHost;
   if (state.gpgKeyId?.trim()) identity.gpgKeyId = state.gpgKeyId;
+  if (state.sshSigningKeyPath?.trim()) identity.sshSigningKeyPath = state.sshSigningKeyPath;
 
   return identity;
 }
@@ -179,7 +181,8 @@ async function promptAddFormFieldInput(
   vs: VSCodeAPI,
   meta: typeof FIELD_METADATA[number],
   currentValue: string,
-  existingIds: Set<string>
+  existingIds: Set<string>,
+  otherSigningValue: string | undefined
 ): Promise<QuickInputResult<string>> {
   const isOptional = !meta.required;
 
@@ -190,7 +193,9 @@ async function promptAddFormFieldInput(
     prompt: getInputBoxPrompt(vs, isOptional, 'add'),
     field: meta.key,
     validateInput: (value: string) => {
-      return meta.key === 'id' ? validateIdInput(vs, value, existingIds) : validateFieldInput(vs, meta.key, value, isOptional);
+      return meta.key === 'id'
+        ? validateIdInput(vs, value, existingIds)
+        : validateFieldInput(vs, meta.key, value, isOptional, undefined, otherSigningValue);
     },
   });
 }
@@ -216,7 +221,13 @@ async function handleAddFormFieldEdit(
 
   quickPick.hide();
   const currentValue = state[fieldKey] ?? '';
-  const result = await promptAddFormFieldInput(vs, meta, currentValue, existingIds);
+  const result = await promptAddFormFieldInput(
+    vs,
+    meta,
+    currentValue,
+    existingIds,
+    getOtherSigningValue(state, fieldKey)
+  );
 
   // 'back' or undefined: return to form without changes
   // string (but not 'back'): update state with new value
@@ -304,8 +315,9 @@ export async function showAddIdentityForm(): Promise<Identity | undefined> {
     return undefined;
   }
 
-  // SECURITY: Check maximum limit before starting (DoS protection)
-  const identities = getIdentitiesWithValidation();
+  // SECURITY: Check maximum limit before starting (DoS protection). The new
+  // identity is added to the user's settings, so their IDs are the ones taken.
+  const identities = getUserScopeIdentities();
   if (identities.length >= MAX_IDENTITIES) {
     vs.window.showWarningMessage(
       vs.l10n.t('Maximum number of identities reached ({0})', MAX_IDENTITIES)

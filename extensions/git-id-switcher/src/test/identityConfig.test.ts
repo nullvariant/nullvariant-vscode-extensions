@@ -6,7 +6,7 @@
  * _setMockVSCode() and never need the extension host.
  *
  * Covered:
- * - Readers: getIdentities, getIdentitiesWithValidation (cache, guards,
+ * - Readers: getUserScopeIdentities, getIdentitiesWithValidation (cache, guards,
  *   filtering, one-time notification), getIdentityById, getDefaultIdentity
  * - Cache control: invalidateIdentityCache
  * - Writers: deleteIdentityFromConfig, addIdentityToConfig,
@@ -18,7 +18,8 @@ import {
   addIdentityToConfig,
   deleteIdentityFromConfig,
   getDefaultIdentity,
-  getIdentities,
+  getUserScopeIdentities,
+  getManagedIdentities,
   getIdentitiesWithValidation,
   getIdentityById,
   invalidateIdentityCache,
@@ -43,6 +44,15 @@ interface HarnessOptions {
   readonly warning?: WarningBehavior;
   /** When set, config.update() rejects with this error */
   readonly updateError?: Error;
+  /**
+   * Values in the user's settings (config.inspect().globalValue). When unset,
+   * the user's settings are `settings` (nothing comes from a workspace).
+   */
+  readonly userSettings?: Record<string, unknown>;
+  /** Default values (config.inspect().defaultValue) */
+  readonly defaultSettings?: Record<string, unknown>;
+  /** When set, the configuration object has no inspect() method */
+  readonly isInspectUnavailable?: boolean;
 }
 
 interface UpdateCall {
@@ -87,7 +97,15 @@ function createHarness(options: HarnessOptions = {}): Harness {
     workspace: {
       getConfiguration: (section: string) => {
         sections.push(section);
+        const userSettings = options.userSettings ?? settings;
         return {
+          ...(!options.isInspectUnavailable && {
+            inspect: (key: string) => ({
+              key,
+              globalValue: userSettings[key],
+              defaultValue: options.defaultSettings?.[key],
+            }),
+          }),
           get: <T>(key: string, defaultValue?: T): T | undefined =>
             settings[key] === undefined ? defaultValue : (settings[key] as T),
           update: async (key: string, value: unknown, target: unknown): Promise<void> => {
@@ -202,47 +220,47 @@ const PERSONAL: Identity = {
 const OSS: Identity = { id: 'oss', name: 'OSS User', email: 'oss@example.com' };
 
 // ---------------------------------------------------------------------------
-// getIdentities
+// getUserScopeIdentities
 // ---------------------------------------------------------------------------
 
-async function testGetIdentitiesWithoutVSCode(): Promise<void> {
-  console.log('Testing getIdentities() without VS Code API...');
+async function testGetUserScopeIdentitiesWithoutVSCode(): Promise<void> {
+  console.log('Testing getUserScopeIdentities() without VS Code API...');
   await withoutVSCode(() => {
-    assert.deepStrictEqual(getIdentities(), []);
+    assert.deepStrictEqual(getUserScopeIdentities(), []);
   });
-  console.log('✅ getIdentities() without VS Code API passed!');
+  console.log('✅ getUserScopeIdentities() without VS Code API passed!');
 }
 
-async function testGetIdentitiesReturnsRawConfig(): Promise<void> {
-  console.log('Testing getIdentities() returns raw configuration without validation...');
+async function testGetUserScopeIdentitiesReturnsRawConfig(): Promise<void> {
+  console.log('Testing getUserScopeIdentities() returns raw configuration without validation...');
   const raw = [WORK, { id: 'bad id', name: '', email: 'nope' }];
   await withHarness({ settings: { identities: raw } }, (harness) => {
-    assert.deepStrictEqual(getIdentities(), raw, 'Invalid entries must not be filtered');
+    assert.deepStrictEqual(getUserScopeIdentities(), raw, 'Invalid entries must not be filtered');
     assert.deepStrictEqual(harness.sections, ['gitIdSwitcher']);
     assert.deepStrictEqual(harness.validationFailures, [], 'No validation should run');
   });
-  console.log('✅ getIdentities() returns raw configuration passed!');
+  console.log('✅ getUserScopeIdentities() returns raw configuration passed!');
 }
 
-async function testGetIdentitiesDefaultsToEmpty(): Promise<void> {
-  console.log('Testing getIdentities() with unset configuration...');
+async function testGetUserScopeIdentitiesDefaultsToEmpty(): Promise<void> {
+  console.log('Testing getUserScopeIdentities() with unset configuration...');
   await withHarness({}, () => {
-    assert.deepStrictEqual(getIdentities(), []);
+    assert.deepStrictEqual(getUserScopeIdentities(), []);
   });
-  console.log('✅ getIdentities() with unset configuration passed!');
+  console.log('✅ getUserScopeIdentities() with unset configuration passed!');
 }
 
-async function testGetIdentitiesBypassesCache(): Promise<void> {
-  console.log('Testing getIdentities() bypasses the validated cache...');
+async function testGetUserScopeIdentitiesBypassesCache(): Promise<void> {
+  console.log('Testing getUserScopeIdentities() bypasses the validated cache...');
   const settings: Record<string, unknown> = { identities: [WORK] };
   await withHarness({ settings }, (harness) => {
     assert.deepStrictEqual(getIdentitiesWithValidation(), [WORK]);
     settings.identities = [WORK, OSS];
-    assert.deepStrictEqual(getIdentities(), [WORK, OSS], 'Raw read must see the latest config');
+    assert.deepStrictEqual(getUserScopeIdentities(), [WORK, OSS], 'Raw read must see the latest config');
     assert.deepStrictEqual(getIdentitiesWithValidation(), [WORK], 'Cache is still used');
     assert.deepStrictEqual(harness.sections, ['gitIdSwitcher', 'gitIdSwitcher']);
   });
-  console.log('✅ getIdentities() bypasses cache passed!');
+  console.log('✅ getUserScopeIdentities() bypasses cache passed!');
 }
 
 // ---------------------------------------------------------------------------
@@ -903,6 +921,55 @@ async function testMoveIdentityErrors(): Promise<void> {
   console.log('✅ moveIdentityInConfig() error paths passed!');
 }
 
+async function testWritersUseUserSettingsOnly(): Promise<void> {
+  console.log('Testing writers start from the user settings only...');
+  // A workspace defines an identity (with a signing key) that the user's
+  // settings do not have: no write moves it into the user's settings
+  const workspaceOnly: Identity = { id: 'repo', name: 'Repo', email: 'repo@example.com', sshSigningKeyPath: '~/.ssh/other' };
+  const options = {
+    settings: { identities: [workspaceOnly, WORK, PERSONAL] },
+    userSettings: { identities: [WORK, PERSONAL] },
+  };
+  await withHarness(options, async (harness) => {
+    assert.strictEqual(await moveIdentityInConfig('personal', 'up'), true);
+    await deleteIdentityFromConfig('work');
+    await addIdentityToConfig(OSS);
+    await updateIdentityInConfig('work', 'name', 'Changed');
+    assert.deepStrictEqual(harness.updates.map((update) => update.value), [
+      [PERSONAL, WORK],
+      [PERSONAL],
+      [WORK, PERSONAL, OSS],
+      [{ ...WORK, name: 'Changed' }, PERSONAL],
+    ]);
+    for (const update of harness.updates) {
+      assert.strictEqual(update.target, GLOBAL_TARGET);
+      assert.ok(!JSON.stringify(update.value).includes('other'), 'the workspace signing key is not written');
+    }
+    // The workspace-only identity cannot be changed from here
+    await assertRejectsWith(moveIdentityInConfig('repo', 'down'), 'Identity not found: repo');
+    await assertRejectsWith(deleteIdentityFromConfig('repo'), 'Identity not found: repo');
+    await assertRejectsWith(updateIdentityInConfig('repo', 'name', 'X'), 'Identity not found: repo');
+    assert.deepStrictEqual(getUserScopeIdentities(), [WORK, PERSONAL]);
+  });
+
+  // No user value: the default identities are the starting point
+  await withHarness(
+    { settings: { identities: [workspaceOnly] }, userSettings: {}, defaultSettings: { identities: [WORK] } },
+    async (harness) => {
+      await addIdentityToConfig(OSS);
+      assert.deepStrictEqual(harness.updates[0].value, [WORK, OSS]);
+    },
+  );
+
+  // Without inspect(), nothing is known to be the user's: nothing to start from
+  await withHarness({ settings: { identities: [WORK] }, isInspectUnavailable: true }, async (harness) => {
+    assert.deepStrictEqual(getUserScopeIdentities(), []);
+    await addIdentityToConfig(OSS);
+    assert.deepStrictEqual(harness.updates[0].value, [OSS]);
+  });
+  console.log('✅ Writers start from the user settings only passed!');
+}
+
 async function testWritersDoNotMutateConfigArray(): Promise<void> {
   console.log('Testing writers do not mutate the configuration array in place...');
   const original = [WORK, PERSONAL, OSS];
@@ -921,14 +988,172 @@ async function testWritersDoNotMutateConfigArray(): Promise<void> {
 // Runner
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Signing keys come from the user's settings only
+// ---------------------------------------------------------------------------
+
+async function testSigningKeysFromUserScopeOnly(): Promise<void> {
+  console.log('Testing signing keys are read from user settings only...');
+  const SSH_KEY = '~/.ssh/id_sign';
+
+  // A workspace value that differs from the user's: the user's value is used
+  await withHarness(
+    {
+      settings: { identities: [{ ...WORK, gpgKeyId: 'EEEE5555EEEE5555' }, { ...OSS, sshSigningKeyPath: '~/.ssh/other' }, PERSONAL] },
+      userSettings: { identities: [{ ...WORK, gpgKeyId: 'ABCD1234ABCD1234' }, OSS, { ...PERSONAL, sshSigningKeyPath: SSH_KEY }] },
+    },
+    (harness) => {
+      assert.deepStrictEqual(getIdentitiesWithValidation(), [
+        { ...WORK, gpgKeyId: 'ABCD1234ABCD1234' },
+        OSS,
+        { ...PERSONAL, sshSigningKeyPath: SSH_KEY },
+      ]);
+      assert.deepStrictEqual(
+        harness.validationFailures.map((failure) => failure.field),
+        ['identities.work.gpgKeyId', 'identities.oss.sshSigningKeyPath'],
+      );
+    },
+  );
+
+  // Same values: nothing logged; no user identity with that id: dropped
+  await withHarness(
+    {
+      settings: { identities: [{ ...WORK, gpgKeyId: 'ABCD1234' }, { ...OSS, gpgKeyId: 'ABCD1234' }] },
+      userSettings: { identities: [null, 'x', { ...WORK, gpgKeyId: 'ABCD1234', sshSigningKeyPath: '' }] },
+    },
+    (harness) => {
+      // The user's values are taken as they are ('' included: not set)
+      assert.deepStrictEqual(getIdentitiesWithValidation(), [{ ...WORK, gpgKeyId: 'ABCD1234', sshSigningKeyPath: '' }, OSS]);
+      assert.deepStrictEqual(harness.validationFailures.map((failure) => failure.field), ['identities.oss.gpgKeyId']);
+    },
+  );
+
+  // Signing keys in the user's settings that conflict (both set) or are
+  // invalid stop the identity: it is skipped, never applied without signing
+  // A value of another type (a number, false) is not taken for "not set"
+  // either: the identity is skipped, so earlier signing config is not removed
+  for (const userSigning of [
+    { gpgKeyId: 'ABCD1234', sshSigningKeyPath: SSH_KEY },
+    { gpgKeyId: 'not-hex' },
+    { gpgKeyId: 12_345_678 },
+    { sshSigningKeyPath: false },
+  ]) {
+    await withHarness(
+      {
+        settings: { identities: [WORK, OSS] },
+        userSettings: { identities: [{ ...WORK, ...userSigning }, OSS] },
+      },
+      (harness) => {
+        assert.deepStrictEqual(getIdentitiesWithValidation(), [OSS], JSON.stringify(userSigning));
+        assert.ok(
+          harness.validationFailures.some((failure) => failure.field.startsWith('identities[0].')),
+          'the skipped identity is logged',
+        );
+      },
+    );
+  }
+
+  // An invalid signing value in the workspace's settings does not drop an
+  // identity: it is never used, the user's value is
+  await withHarness(
+    {
+      settings: { identities: [{ ...WORK, gpgKeyId: 'not-hex', sshSigningKeyPath: 'relative/key' }] },
+      userSettings: { identities: [{ ...WORK, gpgKeyId: 'ABCD1234' }] },
+    },
+    () => {
+      assert.deepStrictEqual(getIdentitiesWithValidation(), [{ ...WORK, gpgKeyId: 'ABCD1234' }]);
+    },
+  );
+  // A signing value only in the workspace's settings, of any type, is not
+  // kept in the identity (it starts without signing fields)
+  for (const workspaceValue of [false, 0, '', 'ABCD1234']) {
+    await withHarness(
+      {
+        settings: { identities: [{ ...WORK, gpgKeyId: workspaceValue }] },
+        userSettings: { identities: [WORK] },
+      },
+      () => {
+        assert.deepStrictEqual(getIdentitiesWithValidation(), [WORK], JSON.stringify(workspaceValue));
+      },
+    );
+  }
+
+  // The same id with another name or email: the user's signing keys are not used
+  for (const changed of [{ name: 'Someone Else' }, { email: 'someone@example.com' }]) {
+    await withHarness(
+      {
+        settings: { identities: [{ ...WORK, ...changed }] },
+        userSettings: { identities: [{ ...WORK, gpgKeyId: 'ABCD1234' }] },
+      },
+      (harness) => {
+        assert.deepStrictEqual(getIdentitiesWithValidation(), [{ ...WORK, ...changed }]);
+        assert.deepStrictEqual(harness.validationFailures, [
+          {
+            field: 'identities.work',
+            reason: 'The name or email differs from the identity in user settings; its signing keys were not used',
+            value: undefined,
+          },
+        ]);
+      },
+    );
+  }
+
+  // No user settings (not an array), or no inspect(): signing keys are dropped
+  for (const options of [
+    { settings: { identities: [{ ...WORK, gpgKeyId: 'ABCD1234' }] }, userSettings: { identities: 'x' } },
+    { settings: { identities: [{ ...WORK, gpgKeyId: 'ABCD1234' }] }, isInspectUnavailable: true },
+  ]) {
+    await withHarness(options, () => {
+      assert.deepStrictEqual(getIdentitiesWithValidation(), [WORK]);
+    });
+  }
+  console.log('✅ Signing keys from user settings only passed!');
+}
+
+async function testManagedIdentities(): Promise<void> {
+  console.log('Testing getManagedIdentities() reads the user settings only...');
+  // The workspace's identities replace the user's in the merged value; the
+  // screens show and change the user's (validated, without duplicate IDs)
+  await withHarness(
+    {
+      settings: { identities: [{ ...WORK, name: 'Workspace Name' }, OSS] },
+      userSettings: { identities: [WORK, { id: 'bad id', name: 'x', email: 'x' }, { ...WORK, name: 'Duplicate' }, PERSONAL] },
+    },
+    () => {
+      assert.deepStrictEqual(getManagedIdentities(), [WORK, PERSONAL]);
+    },
+  );
+  // The screens list a duplicated ID once, so a change to it cannot be made
+  // to the entry the user confirmed: delete, edit and move are refused, and
+  // nothing is written. An entry that is not an object does not count.
+  await withHarness(
+    { userSettings: { identities: [{ ...WORK, name: 'Hidden' }, 'x', WORK, PERSONAL] } },
+    async (harness) => {
+      const refused = 'Identity ID is not unique in the settings, so it is not changed: work';
+      await assertRejectsWith(deleteIdentityFromConfig('work'), refused);
+      await assertRejectsWith(updateIdentityInConfig('work', 'name', 'New'), refused);
+      await assertRejectsWith(moveIdentityInConfig('work', 'down'), refused);
+      assert.deepStrictEqual(harness.updates, []);
+      // The other identities are still changed (only that entry is removed)
+      await deleteIdentityFromConfig('personal');
+      assert.deepStrictEqual((harness.updates as UpdateCall[]).at(-1)?.value, [{ ...WORK, name: 'Hidden' }, 'x', WORK]);
+    },
+  );
+  // No user identities: the default value, never the workspace's
+  await withHarness({ settings: { identities: [OSS] }, userSettings: {}, defaultSettings: { identities: [PERSONAL] } }, () => {
+    assert.deepStrictEqual(getManagedIdentities(), [PERSONAL]);
+  });
+  console.log('✅ getManagedIdentities() passed!');
+}
+
 export async function runIdentityConfigTests(): Promise<void> {
   console.log('\n=== Identity Config Tests ===\n');
 
   try {
-    await testGetIdentitiesWithoutVSCode();
-    await testGetIdentitiesReturnsRawConfig();
-    await testGetIdentitiesDefaultsToEmpty();
-    await testGetIdentitiesBypassesCache();
+    await testGetUserScopeIdentitiesWithoutVSCode();
+    await testGetUserScopeIdentitiesReturnsRawConfig();
+    await testGetUserScopeIdentitiesDefaultsToEmpty();
+    await testGetUserScopeIdentitiesBypassesCache();
     await testValidationWithoutVSCode();
     await testValidationReturnsValidIdentitiesAndCaches();
     await testValidationCacheIsPerApiObject();
@@ -954,6 +1179,9 @@ export async function runIdentityConfigTests(): Promise<void> {
     await testMoveIdentityBoundaries();
     await testMoveIdentityErrors();
     await testWritersDoNotMutateConfigArray();
+    await testWritersUseUserSettingsOnly();
+    await testSigningKeysFromUserScopeOnly();
+    await testManagedIdentities();
 
     console.log('\n✅ All identity config tests passed!\n');
   } finally {

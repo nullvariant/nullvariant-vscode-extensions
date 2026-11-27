@@ -53,7 +53,7 @@ WILE MANY GIT PROFILE SWITCHERZ EXIST, **GIT ID SWITCHER** SOLVEZ TEH HARD PROBL
 - **SYNC CHEK**: REEL-TIEM DETECSHUN OF MISMATCHZ BETWEEN PROFILE AN GIT CONFIG, WIF STATUS BAR WARNIN. O NOEZ!
 - **SUBMODULE SUPPORT**: AUTOMAGICALLY PROPAGATE UR PROFILE 2 GIT SUBMODULEZ
 - **SSH KEY MANAGEMINT**: AUTOMAGICALLY SWITCH UR SSH KEYZ IN SSH-AGENT
-- **GPG SININ SUPPORT**: CONFIGURE UR GPG KEY 4 COMMIT SININ (OPSHUNUL)
+- **COMMIT SININ SUPPORT**: SIGN UR COMMITZ WIF GPG KEY OR SSH KEY (OPSHUNUL)
 - **RICH TOOLTIPZ**: DETAILD PROFILE INFO WIF DESCRIPSHUN AN SSH HOST
 - **CROSS-PLATFORM**: WERKZ ON MACOS, LINUX, AN WINDOWZ - ALL TEH BOXEZ!
 - **LOCALIZD**: SUPPORTZ 17 LANGUAGEZ!
@@ -238,6 +238,38 @@ NOTE: TEH 4TH PROFILE (`client-b`) UZEZ SHORT NAEM, AN TEH 5TH (`oss`) UZEZ DEV 
 
 ---
 
+## COMMIT SININ WIF AN SSH KEY
+
+GIT CAN SIGN COMMITZ WIF AN SSH KEY INSTED OF A GPG KEY. SET `sshSigningKeyPath` ON TEH PROFILE IN UR **USR SETTINGZ** (`settings.json`):
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Ceiling Cat",
+      "email": "ceiling.cat@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` IZ TEH PRIVAT KEY, OR TEH PUBLIK KEY (`.pub`) IF TEH PRIVAT KEY IZ IN SSH-AGENT
+- `gpgKeyId` AN `sshSigningKeyPath` NO CAN HAZ BOTH ON 1 PROFILE
+- SININ KEYZ (`gpgKeyId`, `sshSigningKeyPath`) R READ FROM USR SETTINGZ ONLY, FROM TEH PROFILE WIF SAEM `id`, `name` AN `email`. VALUEZ IN A WERKSPACE'S `.vscode/settings.json` R NOT USED, AN TEH PROFILE SCREENZ SAVEZ 2 USR SETTINGZ ONLY
+- KEY PATHZ CAN BE OUTSIDE `~/.ssh/`, AS AN ABSOLUT PATH OR A PATH STARTIN WIF `~/`. ON WINDOZ, A DRIVE PATH LIEK `C:\Users\...` IZ OK 2. B4 GIT GETZ TO USE TEH KEY, TEH EXTENSHUN MAEKS IT SIGN A SHORT TEST TEXT TEH WAI GIT SIGNZ A COMMIT (`ssh-keygen -Y sign`), WITHOUT STARTIN AN ASKPASS PROGRAM AN WIF A 30 SECOND TIEM LIMIT. IF IT CANT SIGN, OR ANOTHR KEY SIGNZ (LIEK A STALE `.pub` FILE NEXT 2 TEH PRIVIT KEY), TEH SWITCH STOPZ. TEH CHEK RUNZ AGAIN ONLY WEN TEH KEY FILE OR TEH `.pub` FILE NEXT 2 IT CHANGEZ, SO A HARDWARE KEY ASKZ 4 A TOUCH ONLY DEN. A PRIVIT KEY WIF A PASSFRAZE CANT BE CHEKKD DIS WAI: SET `sshSigningKeyPath` 2 ITZ PUBLIK KEY FILE (`.pub`) AN ADD TEH KEY 2 SSH-AGENT
+- ON UNIX, TEH SIGNIN KEY FILE AN TEH `.pub` FILE NEXT 2 IT MUST HAS TEH PERMISHUNZ OF A KEY, SAEM AS TEH AUTH KEY: NO GROUP OR OTHERZ CAN TUCH TEH PRIVIT KEY, NO GROUP OR OTHERZ CAN WRITE TEH PUBLIK KEY, AN NONE OF DEM CAN B EXECUTABL. OTHERWIZE TEH SWITCH STOPZ.
+- WEN U SWITCH, TEH EXTENSHUN WRITEZ `gpg.format`, `user.signingkey`, AN `commit.gpgsign` WIF `git config --local`. SWITCHIN 2 A PROFILE WIFOUT SININ KEY PUTZ DEZ 3 BAK 2 THEIR EARLIER VALUEZ, BUT ONLY IF ALL 3 STILL HOLD WUT TEH EXTENSHUN WROTE; IF U CHANGED ANY OF DEM BY PAW, ALL 3 R LEFT ALONE
+- TEH SININ KEY IZ NOT ADDED 2 SSH-AGENT: `autoSwitchSshKey` SWITCHEZ TEH AUTHENTIKASHUN KEY (`sshKeyPath`) ONLY. WEN IT REMOOVZ TEH OTHR IDENTITIEZ KEYZ, IT KEEPZ TEH KEY TEH CHOSEN IDENTITY SINZ WIF
+- SININ WIF AN SSH KEY NEEDZ GIT 2.34 OR LATR. WIF AN OLDR GIT, TEH SWITCH STOPZ AN DOESNT CHANGE GIT CONFIG
+
+REGISTR TEH PUBLIK KEY ON GITHUB AS A **SININ KEY** (SEPRATELY FROM TEH AUTHENTIKASHUN KEY) SO UR COMMITZ SHOW AS VERIFIED. VERY TRUSTWORTHY!
+
+---
+
 ## PROFILE MANAGEMINT
 
 CLIK TEH STATUS BAR → AT TEH BOTTOM OF TEH LIST, CLIK "PROFILE MANAGEMINT" 2 OPEN TEH MANAGEMINT SCREEN.
@@ -264,17 +296,20 @@ U CAN ALSO DELEET PROFILEZ FROM COMMAND PALETTE: `Git ID Switcher: Delete Identi
 
 ### PROFILE PROPERTIEZ
 
-| PROPRTY       | REQIRED | DESCRIPSHUN                                                    |
-| ------------- | ------- | -------------------------------------------------------------- |
-| `id`          | ✅      | UNIQ IDENTIFYR (E.G., `"personal"`, `"work-main"`)             |
-| `name`        | ✅      | GIT `user.name` — SHOWZ IN COMMITS                             |
-| `email`       | ✅      | GIT `user.email` — SHOWZ IN COMMITS                            |
-| `icon`        |         | EMOJI 4 STATUS BAR (E.G., `"🐱"`). SINGUL EMOJI ONLY!          |
-| `service`     |         | SERVIS NAEM (E.G., `"GitHub"`, `"GitLab"`). UZED IN UI DISPLAY |
-| `description` |         | SHORT DESCRIPSHUN 4 PIKR AN TOOLTIP                            |
-| `sshKeyPath`  |         | PATH 2 SSH PRIVAT KEY (E.G., `"~/.ssh/id_ed25519_work"`)       |
-| `sshHost`     |         | SSH CONFIG HOST ALIAS (E.G., `"github-work"`)                  |
-| `gpgKeyId`    |         | GPG KEY ID 4 COMMIT SININ                                      |
+| PROPRTY             | REQIRED | DESCRIPSHUN                                                                                    |
+| ------------------- | ------- | ---------------------------------------------------------------------------------------------- |
+| `id`                | ✅      | UNIQ IDENTIFYR (E.G., `"personal"`, `"work-main"`)                                             |
+| `name`              | ✅      | GIT `user.name` — SHOWZ IN COMMITS                                                             |
+| `email`             | ✅      | GIT `user.email` — SHOWZ IN COMMITS                                                            |
+| `icon`              |         | EMOJI 4 STATUS BAR (E.G., `"🐱"`). SINGUL EMOJI ONLY!                                          |
+| `service`           |         | SERVIS NAEM (E.G., `"GitHub"`, `"GitLab"`). UZED IN UI DISPLAY                                 |
+| `description`       |         | SHORT DESCRIPSHUN 4 PIKR AN TOOLTIP                                                            |
+| `sshKeyPath`        |         | PATH 2 SSH PRIVAT KEY 4 AUTHENTIKASHUN (E.G., `"~/.ssh/id_ed25519_work"`)                      |
+| `sshHost`           |         | SSH CONFIG HOST ALIAS (E.G., `"github-work"`)                                                  |
+| `gpgKeyId`          |         | GPG KEY ID 4 COMMIT SININ. NO CAN HAZ WIF `sshSigningKeyPath`                                  |
+| `sshSigningKeyPath` |         | PATH 2 SSH KEY 4 COMMIT SININ (E.G., `"~/.ssh/id_ed25519_signing"`). NO CAN HAZ WIF `gpgKeyId` |
+
+SININ KEYZ (`gpgKeyId`, `sshSigningKeyPath`) R READ FROM USR SETTINGZ ONLY.
 
 #### DISPLAY LIMITASHUNZ
 
@@ -283,24 +318,24 @@ U CAN ALSO DELEET PROFILEZ FROM COMMAND PALETTE: `Git ID Switcher: Delete Identi
 
 ### GLOBAL SETTINGZ
 
-| SETTIN                                     | DEFALT     | DESCRIPSHUN                                                                                 |
-| ------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | C SAMPLEZ  | LIST OF PROFILEZ                                                                            |
-| `gitIdSwitcher.defaultIdentity`            | C SAMPLEZ  | DEFALT PROFILE ID                                                                           |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | AUTOMAGICALLY SWITCH SSH KEYZ WEN CHANGIN PROFILEZ                                          |
-| `gitIdSwitcher.showNotifications`          | `true`     | SHOW NOTIFICASHUN WEN SWITCHIN PROFILEZ                                                     |
-| `gitIdSwitcher.applyToSubmodules`          | `true`     | PROPAGATE PROFILE 2 GIT SUBMODULEZ                                                          |
-| `gitIdSwitcher.submoduleDepth`             | `1`        | MAX DEPTH 4 NESTED SUBMODULEZ (1-5)                                                         |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | INCLUD EMOJI IN GIT CONFIG `user.name`                                                      |
-| `gitIdSwitcher.syncCheck.enabled`          | `true`     | CHEK WHETHR SELECTD PROFILE MATCHZ ACTUAL GIT CONFIG                                        |
-| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | RUN SYNC CHEK WEN EDITR WINDO REGAINZ FOCUS                                                 |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`    | SAVE AUDIT LOGZ 2 FILE (RECORDZ PROFILE SWITCHEZ, SSH KEY OPERASHUNZ, ETC.)                 |
-| `gitIdSwitcher.logging.filePath`           | `""`       | LOG FILE PATH (E.G., `~/.git-id-switcher/security.log`). EMPTY = DEFALT PATH                |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | MAX FILE SIEZ B4 ROTASHUN (BYTEZ, 1MB-100MB)                                                |
-| `gitIdSwitcher.logging.maxFiles`           | `5`        | NUMBR OF ROTATD LOG FILEZ 2 KEEP (1-20)                                                     |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | WEN ENABLD, ALL VALUEZ R MASKD IN LOGZ (MAXIMUMZ PRIVACYZ MODE)                             |
-| `gitIdSwitcher.logging.level`              | `"INFO"`   | LOG VERBOSITEE (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). RECORDZ SELECTD LEVL AN ABUV |
-| `gitIdSwitcher.commandTimeouts`            | `{}`       | CUSTOM TIEMOUTZ PER COMMAND (MS, 1S-5MIN). E.G., `{"git": 15000, "ssh-add": 10000}`         |
+| SETTIN                                     | DEFALT     | DESCRIPSHUN                                                                                      |
+| ------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------ |
+| `gitIdSwitcher.identities`                 | C SAMPLEZ  | LIST OF PROFILEZ                                                                                 |
+| `gitIdSwitcher.defaultIdentity`            | C SAMPLEZ  | DEFALT PROFILE ID                                                                                |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | AUTOMAGICALLY SWITCH TEH SSH AUTHENTIKASHUN KEY (`sshKeyPath`) IN SSH-AGENT WEN CHANGIN PROFILEZ |
+| `gitIdSwitcher.showNotifications`          | `true`     | SHOW NOTIFICASHUN WEN SWITCHIN PROFILEZ                                                          |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | PROPAGATE PROFILE 2 GIT SUBMODULEZ                                                               |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | MAX DEPTH 4 NESTED SUBMODULEZ (1-5)                                                              |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | INCLUD EMOJI IN GIT CONFIG `user.name`                                                           |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`     | CHEK WHETHR SELECTD PROFILE MATCHZ ACTUAL GIT CONFIG                                             |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | RUN SYNC CHEK WEN EDITR WINDO REGAINZ FOCUS                                                      |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | SAVE AUDIT LOGZ 2 FILE (RECORDZ PROFILE SWITCHEZ, SSH KEY OPERASHUNZ, ETC.)                      |
+| `gitIdSwitcher.logging.filePath`           | `""`       | LOG FILE PATH (E.G., `~/.git-id-switcher/security.log`). EMPTY = DEFALT PATH                     |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | MAX FILE SIEZ B4 ROTASHUN (BYTEZ, 1MB-100MB)                                                     |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | NUMBR OF ROTATD LOG FILEZ 2 KEEP (1-20)                                                          |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | WEN ENABLD, ALL VALUEZ R MASKD IN LOGZ (MAXIMUMZ PRIVACYZ MODE)                                  |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | LOG VERBOSITEE (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). RECORDZ SELECTD LEVL AN ABUV      |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | CUSTOM TIEMOUTZ PER COMMAND (MS, 1S-5MIN). E.G., `{"git": 15000, "ssh-add": 10000}`              |
 
 #### `includeIconInGitConfig` SETTIN
 
@@ -348,13 +383,13 @@ WEN U SWITCH PROFILEZ, TEH EXTENSHUN DOEZ DEEZ THINGZ (IN ORDR):
 
 1. **GIT CONFIG** (ALWAYZ): SETZ `git config --local user.name` AN `user.email`
 2. **SSH KEY** (WEN `sshKeyPath` IZ SET): REMOVEZ OTHR KEYZ FROM SSH-AGENT, ADDZ SELECTD KEY
-3. **GPG KEY** (WEN `gpgKeyId` IZ SET): SETZ `git config --local user.signingkey` AN ENABLZ SININ
+3. **COMMIT SININ** (WEN `gpgKeyId` OR `sshSigningKeyPath` IZ SET): SETZ `gpg.format` (`openpgp` OR `ssh`), `user.signingkey`, AN `commit.gpgsign` 2 `true` WIF `git config --local`. SWITCHIN 2 A PROFILE WIFOUT SININ KEY: SEE [COMMIT SININ WIF AN SSH KEY](#commit-sinin-wif-an-ssh-key)
 4. **SUBMODULEZ** (WEN ENABLD): PROPAGATEZ SETTINGZ 2 ALL SUBMODULEZ (DEFALT: DEPTH 1)
 5. **SYNC CHEK**: VERIFYZ DAT TEH APPLYD PROFILE MATCHZ TEH ACTUAL GIT CONFIG
 
 ### SYNC CHEK
 
-COMPAREZ UR SELECTD PROFILE AGAINST TEH ACTUAL `git config --local` VALUEZ (`user.name`, `user.email`, `user.signingkey`) AN SHOWZ A STATUS BAR WARNIN WEN A MISMATCH IZ DETECTD. NOT COOL!
+COMPAREZ UR SELECTD PROFILE AGAINST TEH ACTUAL GIT CONFIG VALUEZ (`user.name`, `user.email`, AN 4 A SININ PROFILE `gpg.format`, `user.signingkey`, `commit.gpgsign`) AN SHOWZ A STATUS BAR WARNIN WEN A MISMATCH IZ DETECTD. 4 A PROFILE WIFOUT SININ KEY, SININ VALUEZ TEH EXTENSHUN WROTE AN DID NOT PUT BAK ALSO COUNT AS MISMATCH. NOT COOL!
 
 **WEN CHEKZ RUN:**
 

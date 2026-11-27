@@ -10,12 +10,16 @@
  */
 
 import { getWorkspace } from "./vscodeLoader";
-import { gitExec, gitExecRaw } from "../security/secureExec";
+import { gitExecRaw } from "../security/secureExec";
 import {
   validateSubmodulePath,
   validateWorkspacePath,
 } from "../security/pathUtils";
 import { securityLogger } from "../security/securityLogger";
+import { createLocalGitConfigPort, type LocalGitConfigPort } from "./localGitConfig";
+import { applyIdentityToRepository, type ApplyResult } from "./repositoryConfigWriter";
+import type { SigningRecordStore } from "./signingRecordStore";
+import type { SigningSpec } from "./signingPlan";
 
 /**
  * Maximum allowed submodule recursion depth to prevent DoS attacks.
@@ -37,9 +41,25 @@ export interface Submodule {
 
 /**
  * Valid status characters for git submodule status output.
- * ' ' = initialized, '-' = uninitialized, '+' = modified
+ * ' ' = initialized, '-' = uninitialized, '+' = modified. git also prints 'U'
+ * (merge conflicts); such a line is not read, and counts as a submodule missed.
+ *
+ * @see https://git-scm.com/docs/git-submodule#Documentation/git-submodule.txt-status--cached--recursive--ltpathgt82308203
  */
 const VALID_STATUS_CHARS = new Set([" ", "-", "+"]);
+
+/**
+ * One line of `git submodule status`: a submodule, one that is not
+ * initialized (left out on purpose: it has no git config of its own), or a
+ * line that could not be read (a submodule missed).
+ */
+type ParsedSubmoduleEntry =
+  | { readonly kind: "submodule"; readonly submodule: Submodule }
+  | { readonly kind: "uninitialized" }
+  | { readonly kind: "unreadable" };
+
+const UNINITIALIZED: ParsedSubmoduleEntry = { kind: "uninitialized" };
+const UNREADABLE: ParsedSubmoduleEntry = { kind: "unreadable" };
 
 /**
  * Valid characters for SHA-1 commit hash (lowercase hex only).
@@ -133,7 +153,8 @@ function getWorkspaceValidationFailureReason(workspaceValidation: {
  * Uses pure string operations to prevent ReDoS vulnerabilities.
  *
  * Format: "<status><commit> <path> (<branch>)" or "<status><commit> <path>"
- * - status: single character (' ' = initialized, '-' = uninitialized, '+' = modified)
+ * - status: single character (' ' = initialized, '-' = uninitialized, '+' = modified;
+ *   any other, such as 'U' for merge conflicts, is not read)
  * - commit: 40-character hex SHA-1 hash
  * - path: submodule path (no control characters)
  * - branch: optional branch name in parentheses
@@ -143,31 +164,29 @@ function getWorkspaceValidationFailureReason(workspaceValidation: {
 function parseSubmoduleEntry(
   line: string,
   workspacePath: string,
-): Submodule | null {
+): ParsedSubmoduleEntry {
   // Minimum valid line: status(1) + hash(40) + space(1) + path(1) = 43 chars
+  /* c8 ignore start - Short lines from git output (empty lines are skipped before) */
   if (line.length < 43) {
-    /* c8 ignore start - Short/empty lines from git output */
-    if (line.trim()) {
-      securityLogger.logValidationFailure(
-        "submoduleStatusLine",
-        "Line too short for valid submodule status",
-      );
-    }
-    return null;
-    /* c8 ignore stop */
+    securityLogger.logValidationFailure(
+      "submoduleStatusLine",
+      "Line too short for valid submodule status",
+    );
+    return UNREADABLE;
   }
+  /* c8 ignore stop */
 
-  // Extract status character (position 0)
+  // Extract status character (position 0). Another character, such as the
+  // 'U' git prints for a submodule with merge conflicts, is not read: the
+  // submodule is reported as missed, never skipped quietly
   const status = line.at(0)!;
-  /* c8 ignore start - Invalid status from malformed git output */
   if (!VALID_STATUS_CHARS.has(status)) {
     securityLogger.logValidationFailure(
       "submoduleStatus",
-      "Invalid status character",
+      "Status character that is not read",
     );
-    return null;
+    return UNREADABLE;
   }
-  /* c8 ignore stop */
   const isInitialized = status !== "-";
 
   // Extract commit hash (positions 1-40)
@@ -178,21 +197,22 @@ function parseSubmoduleEntry(
       "submoduleCommitHash",
       "Invalid commit hash format",
     );
-    return null;
+    return UNREADABLE;
   }
   /* c8 ignore stop */
 
-  // Find first whitespace after commit hash
-  let pathStart = 41;
-  while (
-    pathStart < line.length &&
-    (line[pathStart] === " " || line[pathStart] === "\t")
-  ) {
-    pathStart++;
+  // git prints one space after the hash; only that one is removed, so a
+  // path that starts with a space keeps it
+  if (line[41] !== " ") {
+    securityLogger.logValidationFailure(
+      "submoduleStatusLine",
+      "No space after the commit hash",
+    );
+    return UNREADABLE;
   }
 
   // Extract remainder and strip branch suffix
-  const remainder = line.slice(pathStart);
+  const remainder = line.slice(42);
   const submodulePath = stripBranchSuffix(remainder);
 
   // Validate path is not empty
@@ -202,7 +222,7 @@ function parseSubmoduleEntry(
       "submodulePath",
       "Empty submodule path",
     );
-    return null;
+    return UNREADABLE;
   }
   /* c8 ignore stop */
 
@@ -213,7 +233,7 @@ function parseSubmoduleEntry(
       "submodulePath",
       "Path contains control characters",
     );
-    return null;
+    return UNREADABLE;
   }
   /* c8 ignore stop */
 
@@ -225,14 +245,14 @@ function parseSubmoduleEntry(
       `Invalid commit hash length: ${commitHash.length} (expected 40)`,
       commitHash,
     );
-    return null;
+    return UNREADABLE;
   }
   /* c8 ignore stop */
 
   // Skip uninitialized submodules
   /* c8 ignore start - Uninitialized submodule edge case (requires mock git output with '-' prefix) */
   if (!isInitialized) {
-    return null;
+    return UNINITIALIZED;
   }
   /* c8 ignore stop */
 
@@ -245,27 +265,30 @@ function parseSubmoduleEntry(
       pathResult.reason ?? "Unknown validation failure",
       submodulePath,
     );
-    return null;
+    return UNREADABLE;
   }
   /* c8 ignore stop */
 
   return {
-    path: submodulePath,
-    absolutePath: pathResult.normalizedPath,
-    commitHash,
-    initialized: isInitialized,
+    kind: "submodule",
+    submodule: {
+      path: submodulePath,
+      absolutePath: pathResult.normalizedPath,
+      commitHash,
+      initialized: isInitialized,
+    },
   };
 }
 
 /**
- * List all submodules in the workspace
- *
- * Uses `git submodule status` to get submodule information.
- * Only returns initialized submodules with validated paths.
+ * The submodules of a repository, or undefined when they could not be
+ * listed (an invalid path, or `git submodule status` failed): a failed
+ * listing is never taken as "no submodules". The listing is not complete
+ * when a line of it could not be read (see ParsedSubmoduleEntry).
  */
-export async function listSubmodules(
+async function readSubmodules(
   workspacePath: string,
-): Promise<Submodule[]> {
+): Promise<SubmoduleCollection | undefined> {
   // SECURITY: Validate workspace path before use
   // Use validateWorkspacePath instead of normalizeAndValidatePath because
   // VS Code provides workspace paths in platform-native format (Windows: C:\...)
@@ -278,7 +301,7 @@ export async function listSubmodules(
       "submoduleWorkspace",
       getWorkspaceValidationFailureReason(workspaceValidation),
     );
-    return [];
+    return undefined;
   }
 
   const validatedWorkspacePath = workspaceValidation.normalizedPath;
@@ -298,43 +321,51 @@ export async function listSubmodules(
         `Failed to list submodules: ${errorCode}`,
       );
     }
-    return [];
+    return undefined;
   }
   /* c8 ignore stop */
 
-  const stdout = result.stdout;
-  if (!stdout.trim()) {
-    return [];
-  }
-
-  const lines = stdout.split("\n");
   const submodules: Submodule[] = [];
+  let isComplete = true;
 
-  for (const line of lines) {
-    const submodule = parseSubmoduleEntry(line, validatedWorkspacePath);
-    if (submodule) {
-      submodules.push(submodule);
+  for (const line of result.stdout.split("\n")) {
+    if (line.trim() === "") {
+      continue;
+    }
+    const entry = parseSubmoduleEntry(line, validatedWorkspacePath);
+    if (entry.kind === "submodule") {
+      submodules.push(entry.submodule);
+    } else if (entry.kind === "unreadable") {
+      isComplete = false;
     }
   }
 
-  return submodules;
+  return { submodules, isComplete };
+}
+
+/** Submodules found, and whether every listing succeeded */
+export interface SubmoduleCollection {
+  readonly submodules: Submodule[];
+  /** False when the repository or a submodule could not be listed */
+  readonly isComplete: boolean;
 }
 
 /**
- * List submodules recursively up to a specified depth
+ * List the initialized submodules (`git submodule status`, paths validated)
+ * recursively up to a depth, and tell whether a listing failed on the way.
  *
  * SECURITY: Enforces maximum depth limit to prevent DoS attacks
  * through deeply nested submodules.
  *
- * @param workspacePath - Path to the workspace root
+ * @param workspacePath - Path to the repository root
  * @param maxDepth - Maximum recursion depth (clamped to MAX_SUBMODULE_DEPTH)
  * @param currentDepth - Current recursion depth (internal use)
  */
-export async function listSubmodulesRecursive(
+export async function collectSubmodules(
   workspacePath: string,
   maxDepth: number = 1,
   currentDepth: number = 0,
-): Promise<Submodule[]> {
+): Promise<SubmoduleCollection> {
   // SECURITY: Enforce maximum depth limit to prevent DoS
   // Clamp maxDepth to valid range [0, MAX_SUBMODULE_DEPTH]
   const effectiveMaxDepth = Math.min(
@@ -362,118 +393,104 @@ export async function listSubmodulesRecursive(
   /* c8 ignore stop */
 
   if (currentDepth >= effectiveMaxDepth) {
-    return [];
+    return { submodules: [], isComplete: true };
   }
 
-  const submodules = await listSubmodules(workspacePath);
+  const listed = await readSubmodules(workspacePath);
+  if (listed === undefined) {
+    return { submodules: [], isComplete: false };
+  }
+  const { submodules } = listed;
 
   // Sibling submodules are independent, so their nested lists are fetched concurrently.
   // Promise.all keeps the results in submodule order.
-  const nestedLists = await Promise.all(
+  const nested = await Promise.all(
     submodules.map((submodule) =>
-      listSubmodulesRecursive(submodule.absolutePath, effectiveMaxDepth, currentDepth + 1),
+      collectSubmodules(submodule.absolutePath, effectiveMaxDepth, currentDepth + 1),
     ),
   );
 
-  return [...submodules, ...nestedLists.flat()];
+  return {
+    submodules: [...submodules, ...nested.flatMap((collection) => collection.submodules)],
+    isComplete: listed.isComplete && nested.every((collection) => collection.isComplete),
+  };
 }
 
-/**
- * Set Git config for a submodule
- *
- * SECURITY: Uses gitExec with array args to prevent command injection
- *
- * @param submodulePath - Absolute path to the submodule
- * @param key - Git config key (e.g., 'user.name')
- * @param value - Git config value
- */
-export async function setSubmoduleGitConfig(
-  submodulePath: string,
-  key: string,
-  value: string,
-): Promise<boolean> {
-  // SECURITY: Using gitExec with array args prevents command injection
-  // The key and value are passed as separate array elements, not interpolated
-  const result = await gitExec(
-    ["config", "--local", key, value],
-    submodulePath,
-  );
+type SubmoduleApplyResult = ApplyResult | { readonly result: "error" };
 
-  if (!result.success) {
-    // Log failure through security logger (sanitizes path)
-    // Note: gitExec already logs the error, but we add context about the submodule operation
-    securityLogger.logValidationFailure(
-      `submoduleGitConfig.${key}`,
-      "Failed to set git config in submodule",
-      submodulePath,
-    );
-    return false;
-  }
-
-  return true;
-}
-
-/**
- * Set identity config for all submodules
- *
- * Sets user.name, user.email, and optionally GPG signing key.
- * Returns the number of successfully configured submodules.
- */
-export async function setIdentityForSubmodules(
-  submodules: Submodule[],
+/** Apply to one submodule; an exception (e.g. from the record store) is a failure */
+async function applyToSubmodule(
+  submodule: Submodule,
   userName: string,
   userEmail: string,
-  gpgKeyId?: string,
+  next: SigningSpec | undefined,
+  store: SigningRecordStore,
+  createPort: (repositoryPath: string) => LocalGitConfigPort,
+): Promise<SubmoduleApplyResult> {
+  try {
+    return await applyIdentityToRepository(
+      createPort(submodule.absolutePath),
+      store,
+      submodule.absolutePath,
+      userName,
+      userEmail,
+      next,
+    );
+  } catch {
+    return { result: "error" };
+  }
+}
+
+function describeFailure(result: Exclude<SubmoduleApplyResult, { result: "ok" }>): string {
+  switch (result.result) {
+    case "error": {
+      return "unexpected error";
+    }
+    case "failed": {
+      return `write failed, rolled back: ${result.isRolledBack}`;
+    }
+    default: {
+      return `${result.reason}, nothing changed`;
+    }
+  }
+}
+
+/**
+ * Apply an identity to each submodule
+ *
+ * Submodules are applied one at a time: they share the record store, and a
+ * failure is rolled back within that submodule only. A failed submodule
+ * (including one whose record store threw) is counted and the others are
+ * still applied.
+ *
+ * @param createPort - Creates the git config port of a submodule (a fake in tests)
+ * @sideeffect Writes `--local` git config in each submodule and the record store
+ */
+export async function setIdentityForSubmodules(
+  submodules: readonly Submodule[],
+  userName: string,
+  userEmail: string,
+  next: SigningSpec | undefined,
+  store: SigningRecordStore,
+  createPort: (repositoryPath: string) => LocalGitConfigPort = createLocalGitConfigPort,
 ): Promise<{ success: number; failed: number }> {
   let success = 0;
   let failed = 0;
 
-  const promises = submodules.map(async (submodule) => {
-    try {
-      // Set user.name
-      const isNameResult = await setSubmoduleGitConfig(
-        submodule.absolutePath,
-        "user.name",
-        userName,
-      );
-
-      // Set user.email
-      const isEmailResult = await setSubmoduleGitConfig(
-        submodule.absolutePath,
-        "user.email",
-        userEmail,
-      );
-
-      // Set GPG key if provided
-      let isGpgResult = true;
-      if (gpgKeyId) {
-        isGpgResult = await setSubmoduleGitConfig(
-          submodule.absolutePath,
-          "user.signingkey",
-          gpgKeyId,
-        );
-
-        if (isGpgResult) {
-          // A signing key without commit.gpgsign is not a configured submodule
-          isGpgResult = await setSubmoduleGitConfig(
-            submodule.absolutePath,
-            "commit.gpgsign",
-            "true",
-          );
-        }
-      }
-
-      if (isNameResult && isEmailResult && isGpgResult) {
-        success++;
-      } else {
-        failed++;
-      }
-    } catch /* c8 ignore start */ {
+  for (const submodule of submodules) {
+    const result = await applyToSubmodule(submodule, userName, userEmail, next, store, createPort);
+    if (result.result === "ok") {
+      success++;
+    } else {
       failed++;
-    } /* c8 ignore stop */
-  });
-
-  await Promise.all(promises);
+      // Log through the security logger (sanitizes the path)
+      securityLogger.logValidationFailure(
+        `submoduleGitConfig.${("key" in result ? result.key : undefined) ?? "signingRecords"}`,
+        `Failed to apply identity to submodule (${describeFailure(result)})`,
+        submodule.absolutePath,
+      );
+    }
+  }
 
   return { success, failed };
 }

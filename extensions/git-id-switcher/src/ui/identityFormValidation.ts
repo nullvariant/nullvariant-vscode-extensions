@@ -11,19 +11,20 @@
 import type { VSCodeAPI } from "./identityFormUtils";
 import {
   type Identity,
-  getIdentities,
+  type KeyPathField,
+  SIGNING_FIELDS,
+  getUserScopeIdentities,
   getFieldMetadata,
 } from "../identity/identity";
 import { MAX_ID_LENGTH, MAX_NAME_LENGTH } from "../core/constants";
 import { isValidIdentityId } from "../validators/common";
 import {
-  validateSshKeyPathFormat,
+  validateKeyPathFormat,
   validateFieldForDangerousPatterns,
   validateEmailField,
   validateGpgKeyId,
   validateSshHost,
 } from "../identity/inputValidator";
-import { isUnderSshDirectory } from "../security/pathUtils";
 
 // ============================================================================
 // Constants
@@ -37,6 +38,7 @@ export const OPTIONAL_FIELDS: ReadonlySet<keyof Identity> = new Set([
   "sshKeyPath",
   "sshHost",
   "gpgKeyId",
+  "sshSigningKeyPath",
 ]);
 
 // ============================================================================
@@ -132,28 +134,22 @@ function validateEmailInput(vs: VSCodeAPI, value: string): string | null {
 }
 
 /**
- * Validate SSH key path input.
+ * Validate a key path input (sshKeyPath, sshSigningKeyPath).
  *
- * SECURITY: Reuses validateSshKeyPathFormat from inputValidator.ts
- * Defense-in-depth: identity.ts also validates on save.
+ * SECURITY: Reuses validateKeyPathFormat from inputValidator.ts, the same
+ * level as the settings and the runtime check (`/`, `~/` or a Windows drive
+ * path, no traversal, no dangerous characters). Defense-in-depth:
+ * identity.ts also validates on save.
  *
- * @param vs - VS Code API
+ * @param field - The key path field
  * @param value - Input value
  * @returns Error message or null if valid
  */
-function validateSshKeyPathInput(vs: VSCodeAPI, value: string): string | null {
+function validateKeyPathInput(field: KeyPathField, value: string): string | null {
   if (!value) return null; // Optional field
   const errors: string[] = [];
-  // validateSshKeyPathFormat checks format: Windows paths, prefix (/ or ~), traversal, dangerous chars
-  validateSshKeyPathFormat(value, errors);
-  if (errors.length > 0) {
-    return errors[0];
-  }
-  // isUnderSshDirectory adds path-destination constraint (must be under ~/.ssh/)
-  if (!isUnderSshDirectory(value)) {
-    return vs.l10n.t("SSH key path must be under ~/.ssh/ directory");
-  }
-  return null;
+  validateKeyPathFormat(value, field, errors);
+  return errors[0] ?? null;
 }
 
 /**
@@ -192,6 +188,31 @@ function validateSshHostInput(vs: VSCodeAPI, value: string): string | null {
   return errors.length > 0 ? vs.l10n.t("SSH host must contain only valid hostname characters") : null;
 }
 
+/** Whether a field is one of the signing fields (an identity sets at most one) */
+function isSigningField(field: keyof Identity): boolean {
+  return (SIGNING_FIELDS as readonly string[]).includes(field);
+}
+
+/**
+ * The value of another signing field that is set (an identity can set only
+ * one of the signing fields).
+ *
+ * @param values - Identity field values
+ * @param field - The field being edited
+ * @returns The value of the other signing field, or undefined for a field that
+ *   is not a signing field or when no other signing field is set
+ */
+export function getOtherSigningValue(
+  values: Partial<Record<keyof Identity, string>>,
+  field: keyof Identity
+): string | undefined {
+  return isSigningField(field)
+    ? SIGNING_FIELDS.filter((signingField) => signingField !== field)
+        .map((signingField) => values[signingField])
+        .find((value) => value?.trim())
+    : undefined;
+}
+
 // ============================================================================
 // Field Validation Dispatcher
 // ============================================================================
@@ -204,6 +225,8 @@ function validateSshHostInput(vs: VSCodeAPI, value: string): string | null {
  * @param value - Input value
  * @param isOptional - Whether the field is optional
  * @param currentIdentityId - Current identity ID (for self-exclusion in duplicate check when editing 'id')
+ * @param otherSigningValue - For gpgKeyId / sshSigningKeyPath: the value of the
+ *   other signing field in the same identity (only one of them can be set)
  * @returns Error message or null if valid
  */
 export function validateFieldInput(
@@ -212,15 +235,20 @@ export function validateFieldInput(
   value: string,
   isOptional: boolean,
   currentIdentityId?: string,
+  otherSigningValue?: string,
 ): string | null {
   // Optional fields can be empty
   if (isOptional && value.trim() === "") {
     return null;
   }
 
+  if (isSigningField(field) && otherSigningValue?.trim()) {
+    return vs.l10n.t("GPG key ID and SSH signing key path cannot both be set. Clear the other one first.");
+  }
+
   switch (field) {
     case "id": {
-      const identities = getIdentities();
+      const identities = getUserScopeIdentities();
       const existingIds = new Set(
         identities.filter((i) => i.id !== currentIdentityId).map((i) => i.id),
       );
@@ -232,8 +260,9 @@ export function validateFieldInput(
     case "email": {
       return validateEmailInput(vs, value);
     }
-    case "sshKeyPath": {
-      return validateSshKeyPathInput(vs, value);
+    case "sshKeyPath":
+    case "sshSigningKeyPath": {
+      return validateKeyPathInput(field, value);
     }
     case "gpgKeyId": {
       return validateGpgKeyIdInput(vs, value);

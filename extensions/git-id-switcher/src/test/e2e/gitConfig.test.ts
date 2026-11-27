@@ -429,10 +429,10 @@ describe('Git Config E2E Test Suite', function () {
       const config = await getCurrentGitConfig(tokenSource.token);
       const duration = Date.now() - startTime;
 
-      // Should return empty config immediately
-      assert.strictEqual(config.userName, undefined, 'userName should be undefined');
-      assert.strictEqual(config.userEmail, undefined, 'userEmail should be undefined');
-      assert.strictEqual(config.userSigningKey, undefined, 'userSigningKey should be undefined');
+      // Should return immediately with nothing read (never "not set")
+      assert.deepStrictEqual(config['user.name'], { kind: 'error' }, 'user.name should be unread');
+      assert.deepStrictEqual(config['user.email'], { kind: 'error' }, 'user.email should be unread');
+      assert.deepStrictEqual(config['user.signingkey'], { kind: 'error' }, 'user.signingkey should be unread');
 
       // Should complete very quickly (within 100ms)
       assert.ok(duration < 100, `Should return immediately for cancelled token, took ${duration}ms`);
@@ -452,10 +452,10 @@ describe('Git Config E2E Test Suite', function () {
 
       const config = await configPromise;
 
-      // Should return empty config when cancelled
-      assert.strictEqual(config.userName, undefined, 'userName should be undefined after cancellation');
-      assert.strictEqual(config.userEmail, undefined, 'userEmail should be undefined after cancellation');
-      assert.strictEqual(config.userSigningKey, undefined, 'userSigningKey should be undefined after cancellation');
+      // Nothing was read when cancelled (never "not set")
+      assert.deepStrictEqual(config['user.name'], { kind: 'error' }, 'user.name should be unread after cancellation');
+      assert.deepStrictEqual(config['user.email'], { kind: 'error' }, 'user.email should be unread after cancellation');
+      assert.deepStrictEqual(config['user.signingkey'], { kind: 'error' }, 'user.signingkey should be unread after cancellation');
 
       tokenSource.dispose();
     });
@@ -468,9 +468,9 @@ describe('Git Config E2E Test Suite', function () {
 
       // Should return a valid config object (values may be undefined in CI without git config)
       assert.ok(typeof config === 'object', 'Should return a config object');
-      assert.ok('userName' in config, 'Config should have userName property');
-      assert.ok('userEmail' in config, 'Config should have userEmail property');
-      assert.ok('userSigningKey' in config, 'Config should have userSigningKey property');
+      assert.ok('user.name' in config, 'Config should have user.name');
+      assert.ok('user.email' in config, 'Config should have user.email');
+      assert.ok('user.signingkey' in config, 'Config should have user.signingkey');
 
       tokenSource.dispose();
     });
@@ -481,8 +481,8 @@ describe('Git Config E2E Test Suite', function () {
 
       // Should return a valid config object (values may be undefined in CI without git config)
       assert.ok(typeof config === 'object', 'Should return a config object');
-      assert.ok('userName' in config, 'Config should have userName property');
-      assert.ok('userEmail' in config, 'Config should have userEmail property');
+      assert.ok('user.name' in config, 'Config should have user.name');
+      assert.ok('user.email' in config, 'Config should have user.email');
     });
   });
 });

@@ -69,7 +69,7 @@
 - **Sync Check**: E ʻike koke i ka ʻokoʻa ma waena o ka ID a me ka git config, me ka hoʻomaopopo ma ka pahu status
 - **Kākoʻo Submodule**: E hoʻopili ʻia ka ID i nā Git submodule
 - **Hoʻoponopono Kī SSH**: E hoʻololi ʻia nā kī SSH ma ka ssh-agent
-- **Kākoʻo GPG**: E hoʻonohonoho i ke kī GPG no ke kākau inoa commit (koho)
+- **Kākoʻo Kākau Inoa Commit**: E kākau inoa i nā commit me ke kī GPG a i ʻole ke kī SSH (koho)
 - **Nā Tooltip Nui**: Nā ʻike kikoʻī e pili ana i ka ID me ka wehewehe a me ka SSH host
 - **Nā Kahua Āpau**: Hana ma macOS, Linux, a me Windows
 - **Nā ʻŌlelo He Nui**: Kākoʻo i 17 ʻōlelo
@@ -255,6 +255,38 @@ Palapala: Ka 4 ID (`client-b`) hoʻohana i ka inoa pōkole, a ka 5 (`oss`) hoʻo
 
 ---
 
+## Kākau Inoa Commit me ke Kī SSH
+
+Hiki iā Git ke kākau inoa i nā commit me ke kī SSH ma kahi o ke kī GPG. E hoʻonohonoho i ka `sshSigningKeyPath` ma ka ID i loko o kāu **hoʻonohonoho mea hoʻohana** (`settings.json`):
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Kai Kalani",
+      "email": "kai.kalani@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- ʻO `sshSigningKeyPath` ke kī pilikino, a i ʻole ke kī ākea (`.pub`) inā aia ke kī pilikino i ka ssh-agent
+- ʻAʻole hiki ke hoʻonohonoho i `gpgKeyId` a me `sshSigningKeyPath` i ka ID hoʻokahi
+- Heluhelu ʻia nā kī kākau inoa (`gpgKeyId`, `sshSigningKeyPath`) mai nā hoʻonohonoho mea hoʻohana wale nō, mai ka ID me ka `id`, `name`, a me `email` like. ʻAʻole hoʻohana ʻia nā waiwai ma ka `.vscode/settings.json` o kahi hana, a mālama nā pale ID i nā hoʻonohonoho mea hoʻohana wale nō
+- Hiki i nā ala kī ke noho ma waho o `~/.ssh/`, he ala piha a i ʻole he ala e hoʻomaka ana me `~/`. Ma Windows, ʻae ʻia nō hoʻi ke ala me ka drive e like me `C:\Users\...`. Ma mua o ka hoʻohana ʻana o git i ke kī, hoʻokau ka extension i ke kī e kākau inoa i kekahi kikokikona hoʻāʻo pōkole e like me ka kākau inoa ʻana o git i ka commit (`ssh-keygen -Y sign`), me ka hoʻomaka ʻole i ka polokalamu askpass, a me ka palena manawa he 30 kekona. Inā ʻaʻole hiki ke kākau inoa, a i ʻole kākau inoa kekahi kī ʻē aʻe (no ka laʻana, he faila `.pub` kahiko ma ka ʻaoʻao o ke kī pilikino), hoʻōki ʻia ka hoʻololi ʻana. Hana hou ʻia ka nānā ʻana i ka wā wale nō e loli ai ka faila kī a i ʻole ka faila `.pub` ma kona ʻaoʻao, no laila noi ke kī lako i ka hoʻopā i ia wā wale nō. ʻAʻole hiki ke nānā ʻia pēlā ke kī pilikino me ka huaʻōlelo hūnā: e hoʻonoho i `sshSigningKeyPath` i kona faila kī ākea (`.pub`) a e hoʻohui i ke kī i ka ssh-agent
+- Ma Unix, pono i ka faila kī kākau inoa a me ka faila `.pub` ma kona ʻaoʻao nā ʻae o ke kī, e like me ke kī hōʻoiaʻiʻo: ʻaʻole hiki i ka hui a me nā mea ʻē aʻe ke komo i ke kī pilikino, ʻaʻole hiki iā lākou ke kākau i ke kī ākea, a ʻaʻole hiki ke hoʻoholo i kekahi o lāua. Inā ʻaʻole, kū ka hoʻololi
+- Ma ka hoʻololi, kākau ka extension i `gpg.format`, `user.signingkey`, a me `commit.gpgsign` me `git config --local`. Ke hoʻololi i kekahi ID me ka ʻole o ke kī kākau inoa, hoʻihoʻi ʻia ua mau mea ʻekolu i ko lākou mau waiwai mua, inā aia nō i nā mea ʻekolu ka mea i kākau ʻia e ka extension; inā ua hoʻololi lima ʻoe i kekahi, ʻaʻole hoʻopā ʻia nā mea ʻekolu
+- ʻAʻole hoʻohui ʻia ke kī kākau inoa i ka ssh-agent: hoʻololi ka `autoSwitchSshKey` i ke kī hōʻoia (`sshKeyPath`) wale nō. I ka wehe ʻana i nā kī o nā ʻike ʻē aʻe, mālama ʻia ke kī e kākau inoa ai ka ʻike i koho ʻia
+- Pono ʻo Git 2.34 a i ʻole hou aʻe no ke kākau inoa me ke kī SSH. Me kahi Git kahiko, kū ka hoʻololi me ka hoʻololi ʻole i ka hoʻonohonoho Git
+
+E hoʻopaʻa inoa i ke kī ākea ma GitHub ma ke ʻano he **Signing Key** (kaʻawale mai ke kī hōʻoia), i hōʻike ʻia kāu mau commit he verified.
+
+---
+
 ## Hoʻoponopono ID
 
 E kaomi i ka pahu status → "Hoʻoponopono ID" ma ka lalo o ka papa inoa e wehe i ka pale hoʻoponopono.
@@ -281,17 +313,20 @@ Hiki ke holoi i nā ID mai ka command palette me `Git ID Switcher: Delete Identi
 
 ### Nā Waiwai ID
 
-| Waiwai        | Pono | Wehewehe                                                              |
-| ------------- | ---- | --------------------------------------------------------------------- |
-| `id`          | ✅   | Hōʻailona kūʻokoʻa (laʻa: `"work"`, `"personal"`)                     |
-| `name`        | ✅   | Git user.name — hōʻike ʻia ma nā commit                               |
-| `email`       | ✅   | Git user.email — hōʻike ʻia ma nā commit                              |
-| `icon`        |      | Emoji hōʻike ma ka pahu status (laʻa: `"🌺"`). Hoʻokahi emoji wale nō |
-| `service`     |      | Inoa lawelawe (laʻa: `"GitHub"`, `"GitLab"`). No ka UI                |
-| `description` |      | Wehewehe pōkole no ke koho a me ke tooltip                            |
-| `sshKeyPath`  |      | Ala i ke kī SSH pilikino (laʻa: `"~/.ssh/id_ed25519_work"`)           |
-| `sshHost`     |      | Inoa hoʻololi host SSH config (laʻa: `"github-work"`)                 |
-| `gpgKeyId`    |      | GPG key ID no ke kākau inoa commit                                    |
+| Waiwai              | Pono | Wehewehe                                                                                                 |
+| ------------------- | ---- | -------------------------------------------------------------------------------------------------------- |
+| `id`                | ✅   | Hōʻailona kūʻokoʻa (laʻa: `"work"`, `"personal"`)                                                        |
+| `name`              | ✅   | Git user.name — hōʻike ʻia ma nā commit                                                                  |
+| `email`             | ✅   | Git user.email — hōʻike ʻia ma nā commit                                                                 |
+| `icon`              |      | Emoji hōʻike ma ka pahu status (laʻa: `"🌺"`). Hoʻokahi emoji wale nō                                    |
+| `service`           |      | Inoa lawelawe (laʻa: `"GitHub"`, `"GitLab"`). No ka UI                                                   |
+| `description`       |      | Wehewehe pōkole no ke koho a me ke tooltip                                                               |
+| `sshKeyPath`        |      | Ala i ke kī SSH pilikino no ka hōʻoia (laʻa: `"~/.ssh/id_ed25519_work"`)                                 |
+| `sshHost`           |      | Inoa hoʻololi host SSH config (laʻa: `"github-work"`)                                                    |
+| `gpgKeyId`          |      | GPG key ID no ke kākau inoa commit. ʻAʻole hiki me `sshSigningKeyPath`                                   |
+| `sshSigningKeyPath` |      | Ala i ke kī SSH no ke kākau inoa commit (laʻa: `"~/.ssh/id_ed25519_signing"`). ʻAʻole hiki me `gpgKeyId` |
+
+Heluhelu ʻia nā kī kākau inoa (`gpgKeyId`, `sshSigningKeyPath`) mai nā hoʻonohonoho mea hoʻohana wale nō.
 
 #### Nā Palena Hōʻike
 
@@ -304,7 +339,7 @@ Hiki ke holoi i nā ID mai ka command palette me `Git ID Switcher: Delete Identi
 | ------------------------------------------ | ---------- | --------------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | Nānā laʻa. | Papa inoa o nā hoʻonohonoho ID                                                          |
 | `gitIdSwitcher.defaultIdentity`            | Nānā laʻa. | ID paʻamau                                                                              |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Hoʻololi ʻia ke kī SSH ma ka hoʻololi ID                                                |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Hoʻololi ʻia ke kī SSH hōʻoia (`sshKeyPath`) ma ka ssh-agent ma ka hoʻololi ID          |
 | `gitIdSwitcher.showNotifications`          | `true`     | Hōʻike i ka hoʻolaha i ka hoʻololi ʻana                                                 |
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | Hoʻopili i ka ID i nā Git submodule                                                     |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | Hohonu nui loa no nā submodule nested (1-5)                                             |
@@ -365,13 +400,13 @@ I ka hoʻololi ʻana i ka ID, hana ka extension (ma ka ʻokoʻa):
 
 1. **Git Config** (mau): Hoʻonohonoho i ka `git config --local user.name` a me `user.email`
 2. **Kī SSH** (inā hoʻonohonoho ʻia ka `sshKeyPath`): Holoi i nā kī ʻē aʻe mai ka ssh-agent, hoʻohui i ka mea i koho ʻia
-3. **Kī GPG** (inā hoʻonohonoho ʻia ka `gpgKeyId`): Hoʻonohonoho i ka `git config --local user.signingkey` a hoʻohana i ke kākau inoa
+3. **Kākau Inoa Commit** (inā hoʻonohonoho ʻia ka `gpgKeyId` a i ʻole `sshSigningKeyPath`): Hoʻonohonoho me `git config --local` i ka `gpg.format` (`openpgp` a i ʻole `ssh`), `user.signingkey`, a me `commit.gpgsign` i `true`. Ke hoʻololi i kekahi ID me ka ʻole o ke kī kākau inoa: e nānā i [Kākau Inoa Commit me ke Kī SSH](#kākau-inoa-commit-me-ke-kī-ssh)
 4. **Submodule** (inā hoʻohana ʻia): Hoʻolaha i ka hoʻonohonoho i nā submodule āpau (paʻamau: hohonu 1)
 5. **Sync Check**: E hoʻoiaʻiʻo e like ka ID i hoʻopili ʻia me ka git config maoli
 
 ### Sync Check
 
-E hoʻohālikelike i ka ID i koho ʻia me nā waiwai maoli o `git config --local` (`user.name`, `user.email`, `user.signingkey`) a hōʻike i ka hoʻomaopopo ma ka pahu status ke ʻike ʻia ka ʻokoʻa.
+E hoʻohālikelike i ka ID i koho ʻia me nā waiwai maoli o ka Git config (`user.name`, `user.email`, a no ka ID kākau inoa `gpg.format`, `user.signingkey`, `commit.gpgsign`) a hōʻike i ka hoʻomaopopo ma ka pahu status ke ʻike ʻia ka ʻokoʻa. No ka ID me ka ʻole o ke kī kākau inoa, he ʻokoʻa nō nā waiwai kākau inoa i kākau ʻia e ka extension a hoʻihoʻi ʻole ʻia.
 
 **Ke hana nei nā nānā:**
 

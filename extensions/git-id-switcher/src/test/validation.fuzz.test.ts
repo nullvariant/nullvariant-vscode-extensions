@@ -7,17 +7,16 @@
  * Test Coverage:
  * - validateIdentity(): crash resistance, return type, dangerous patterns
  * - validateIdentities(): large array handling
- * - isShellSafePath(): path traversal, shell metacharacters
  * - Field-specific: GPG key ID (hex), SSH host (hostname pattern)
  *
- * Total: ~4,650 property-based test runs per execution
+ * Total: ~3,450 property-based test runs per execution
  *
  * @see https://github.com/dubzzz/fast-check
  */
 
 import * as assert from 'node:assert';
 import * as fc from 'fast-check';
-import { validateIdentity, validateIdentities, isShellSafePath } from '../identity/inputValidator';
+import { validateIdentity, validateIdentities } from '../identity/inputValidator';
 import { hasInvisibleUnicode, INVISIBLE_CHARS } from '../validators/common';
 import { Identity } from '../identity/identity';
 
@@ -36,35 +35,6 @@ const arbitraryIdentity = fc.record({
   sshHost: fc.option(fc.string(), { nil: undefined }),
   gpgKeyId: fc.option(fc.string(), { nil: undefined }),
 });
-
-/**
- * Arbitrary for generating potentially malicious strings
- */
-const maliciousStringArbitrary = fc.oneof(
-  // Shell metacharacters
-  fc.constant('`id`'),
-  fc.constant('$(whoami)'),
-  fc.constant('${PATH}'),
-  fc.constant('foo | bar'),
-  fc.constant('foo & bar'),
-  fc.constant('foo < bar'),
-  fc.constant('foo > bar'),
-  fc.constant('foo { bar }'),
-  // Newlines and null bytes (blocked by DANGEROUS_PATTERNS)
-  fc.constant('foo\nbar'),
-  fc.constant('foo\rbar'),
-  fc.constant('foo\0bar'),
-  // Note: tabs (\t) are intentionally allowed in names
-  // Hex escapes
-  fc.constant(String.raw`foo\x00bar`),
-  fc.constant(String.raw`foo\x0abar`),
-  // Path traversal
-  fc.constant('../../../etc/passwd'),
-  fc.constant('/home/../etc/passwd'),
-  // Mixed with normal text
-  fc.string().map(s => s + '$(id)'),
-  fc.string().map(s => '`' + s + '`'),
-);
 
 /**
  * Test: validateIdentity should never throw on arbitrary input
@@ -170,70 +140,6 @@ function testNewlineRejection(): void {
   );
 
   console.log('    ✅ Passed (100 runs)');
-}
-
-/**
- * Test: isShellSafePath should never throw
- */
-function testIsPathSafeNeverThrows(): void {
-  console.log('  Fuzzing: isShellSafePath should never throw...');
-
-  fc.assert(
-    fc.property(fc.string(), (path) => {
-      const isResult = isShellSafePath(path);
-      assert.strictEqual(typeof isResult, 'boolean');
-    }),
-    { numRuns: 1000, verbose: false }
-  );
-
-  console.log('    ✅ Passed (1000 runs)');
-}
-
-/**
- * Test: Path traversal should always be detected
- */
-function testPathTraversalDetection(): void {
-  console.log('  Fuzzing: path traversal should be detected...');
-
-  fc.assert(
-    fc.property(
-      fc.array(fc.constantFrom('/', 'a', 'b', 'c', '.'), { minLength: 1, maxLength: 20 }),
-      (pathChars: string[]) => {
-        const pathFragment = pathChars.join('');
-        // If path contains "..", it should be unsafe
-        if (pathFragment.includes('..')) {
-          const isResult = isShellSafePath(pathFragment);
-          assert.strictEqual(isResult, false,
-            `Should reject path with traversal: "${pathFragment}"`);
-        }
-      }
-    ),
-    { numRuns: 500, verbose: false }
-  );
-
-  console.log('    ✅ Passed (500 runs)');
-}
-
-/**
- * Test: Shell metacharacters in paths should be rejected
- */
-function testPathShellMetacharacters(): void {
-  console.log('  Fuzzing: shell metacharacters in paths should be rejected...');
-
-  fc.assert(
-    fc.property(maliciousStringArbitrary, (maliciousPath) => {
-      const isResult = isShellSafePath(maliciousPath);
-      // Most malicious strings should be rejected
-      // (some may be false positives, but that's acceptable for security)
-      if (/[`$(){}|&<>\n\r\0]/.test(maliciousPath)) {
-        assert.strictEqual(isResult, false,
-          `Should reject path with dangerous chars: "${maliciousPath}"`);
-      }
-    }),
-    { numRuns: 200, verbose: false }
-  );
-
-  console.log('    ✅ Passed (200 runs)');
 }
 
 /**
@@ -522,9 +428,6 @@ export function runFuzzingTests(): void {
     testDangerousPatternsDetected();
     testNewlineRejection();
     testNullByteInjection();
-    testIsPathSafeNeverThrows();
-    testPathTraversalDetection();
-    testPathShellMetacharacters();
     testValidateIdentitiesLargeArrays();
     testArbitraryStringHandling();
     testVeryLongStrings();

@@ -53,7 +53,7 @@ While many Git profile switchin' tools sail the seven seas, **Git ID Switcher** 
 - **Sync Check**: Real-time detection o' mismatches between yer profile an' git config, with a warnin' in the status bar
 - **Submodule Support**: Automatically propagate yer profile to Git submodules across yer fleet
 - **SSH Key Management**: Automatically switch yer SSH keys in ssh-agent, like changin' sails in a storm
-- **GPG Signin' Support**: Configure yer GPG key fer commit signin' (optional, but a true pirate always signs their plunder)
+- **Commit Signin' Support**: Sign yer commits with a GPG key or an SSH key (optional, but a true pirate always signs their plunder)
 - **Rich Tooltips**: Detailed profile info with description an' SSH host
 - **Cross-Platform**: Works on macOS, Linux, an' Windows — every port in the digital sea!
 - **Localized**: Supports 17 languages!
@@ -238,6 +238,38 @@ Note: The 4th profile (`client-b`) uses a shortened name, an' the 5th (`oss`) us
 
 ---
 
+## Commit Signin' with an SSH Key
+
+Git can sign yer commits with an SSH key instead o' a GPG key. Set `sshSigningKeyPath` on the profile in yer **user settings** (`settings.json`):
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Cap'n Morgan",
+      "email": "morgan@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` be the private key, or the public key (`.pub`) if the private key be in ssh-agent
+- `gpgKeyId` an' `sshSigningKeyPath` can't both be set on one profile
+- Signin' keys (`gpgKeyId`, `sshSigningKeyPath`) be read from user settings only, from the profile with the same `id`, `name` an' `email`. Values in a workspace's `.vscode/settings.json` be not used, an' the profile screens save to user settings only
+- Key paths may lie beyond `~/.ssh/`, as an absolute path or a path that starts with `~/`. On Windows, a drive path like `C:\Users\...` be welcome too. Afore git be told to use the key, the extension has it sign a wee test text the way git signs a commit (`ssh-keygen -Y sign`), without startin' an askpass program, an' with a 30-second time limit. If it can't sign, or another key signs (say, a stale `.pub` file lyin' next to the private key), the switch be stopped. The check be run again only when the key file or the `.pub` file beside it changes, so a hardware key asks fer a touch only then. A private key with a passphrase can't be checked this way: set `sshSigningKeyPath` to its public key file (`.pub`) and add the key to ssh-agent
+- On Unix, the signin' key file and the `.pub` file next to it must have the permissions of a key, same as the authentication key: no group or other hands may touch a private key, none may write a public key, and neither may be executable. Otherwise the switch be stopped
+- When ye switch, the extension writes `gpg.format`, `user.signingkey`, an' `commit.gpgsign` with `git config --local`. Switchin' to a profile without a signin' key puts these three back to their earlier values, but only if all three still hold what the extension wrote; if ye changed any o' them by hand, all three be left alone
+- The signin' key be not added to ssh-agent: `autoSwitchSshKey` switches the authentication key (`sshKeyPath`) only. When it casts off the other identities' keys, it keeps the key the chosen identity signs with
+- Signin' with an SSH key needs Git 2.34 or later. With an older Git, the switch be stopped without changin' yer Git config
+
+Register the public key on GitHub as a **signin' key** (separate from the authentication key) so yer commits show as verified. Arr!
+
+---
+
 ## Profile Management
 
 Click the status bar → at the bottom o' the list, click "Profile Management" to open the management screen.
@@ -264,17 +296,20 @@ Ye can also delete profiles from the command palette: `Git ID Switcher: Delete I
 
 ### Profile Properties
 
-| Property      | Required | Description                                                     |
-| ------------- | -------- | --------------------------------------------------------------- |
-| `id`          | ✅       | Unique identifier (e.g., `"personal"`, `"work"`)                |
-| `name`        | ✅       | Git user.name — shows in commits                                |
-| `email`       | ✅       | Git user.email — shows in commits                               |
-| `icon`        |          | Emoji fer status bar (e.g., `"🏴‍☠️"`). Single emoji only!         |
-| `service`     |          | Service name (e.g., `"GitHub"`, `"GitLab"`). Used in UI display |
-| `description` |          | Short description fer picker an' tooltip                        |
-| `sshKeyPath`  |          | Path to SSH private key (e.g., `"~/.ssh/id_ed25519_work"`)      |
-| `sshHost`     |          | SSH config Host alias (e.g., `"github-work"`)                   |
-| `gpgKeyId`    |          | GPG key ID fer commit signin'                                   |
+| Property            | Required | Description                                                                                                 |
+| ------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| `id`                | ✅       | Unique identifier (e.g., `"personal"`, `"work"`)                                                            |
+| `name`              | ✅       | Git user.name — shows in commits                                                                            |
+| `email`             | ✅       | Git user.email — shows in commits                                                                           |
+| `icon`              |          | Emoji fer status bar (e.g., `"🏴‍☠️"`). Single emoji only!                                                     |
+| `service`           |          | Service name (e.g., `"GitHub"`, `"GitLab"`). Used in UI display                                             |
+| `description`       |          | Short description fer picker an' tooltip                                                                    |
+| `sshKeyPath`        |          | Path to SSH private key fer authentication (e.g., `"~/.ssh/id_ed25519_work"`)                               |
+| `sshHost`           |          | SSH config Host alias (e.g., `"github-work"`)                                                               |
+| `gpgKeyId`          |          | GPG key ID fer commit signin'. Can't be set alongside `sshSigningKeyPath`                                   |
+| `sshSigningKeyPath` |          | Path to SSH key fer commit signin' (e.g., `"~/.ssh/id_ed25519_signing"`). Can't be set alongside `gpgKeyId` |
+
+Signin' keys (`gpgKeyId`, `sshSigningKeyPath`) be read from user settings only.
 
 #### Display Limitations
 
@@ -283,24 +318,24 @@ Ye can also delete profiles from the command palette: `Git ID Switcher: Delete I
 
 ### Global Settings
 
-| Setting                                    | Default     | Description                                                                                    |
-| ------------------------------------------ | ----------- | ---------------------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | See samples | List o' profiles                                                                               |
-| `gitIdSwitcher.defaultIdentity`            | See samples | Default profile ID                                                                             |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | Automatically switch SSH keys when changin' profiles                                           |
-| `gitIdSwitcher.showNotifications`          | `true`      | Show notification when switchin' profiles                                                      |
-| `gitIdSwitcher.applyToSubmodules`          | `true`      | Propagate profile to Git submodules                                                            |
-| `gitIdSwitcher.submoduleDepth`             | `1`         | Max depth fer nested submodules (1-5)                                                          |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Include emoji in Git config `user.name`                                                        |
-| `gitIdSwitcher.syncCheck.enabled`          | `true`      | Check whether selected profile matches the actual git config, savvy?                           |
-| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`      | Run sync check when the editor window regains focus                                            |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`     | Save audit logs to file (records profile switches, SSH key operations, etc.)                   |
-| `gitIdSwitcher.logging.filePath`           | `""`        | Log file path (e.g., `~/.git-id-switcher/security.log`). Empty = default path                  |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Max file size before rotation (bytes, 1MB-100MB)                                               |
-| `gitIdSwitcher.logging.maxFiles`           | `5`         | Number o' rotated log files to keep (1-20)                                                     |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | When enabled, all values be masked in logs (maximum privacy mode, arrr!)                       |
-| `gitIdSwitcher.logging.level`              | `"INFO"`    | Log verbosity (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Records selected level an' above |
-| `gitIdSwitcher.commandTimeouts`            | `{}`        | Custom timeouts per command (ms, 1s-5min). E.g., `{"git": 15000, "ssh-add": 10000}`            |
+| Setting                                    | Default     | Description                                                                                        |
+| ------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | See samples | List o' profiles                                                                                   |
+| `gitIdSwitcher.defaultIdentity`            | See samples | Default profile ID                                                                                 |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | Automatically switch the SSH authentication key (`sshKeyPath`) in ssh-agent when changin' profiles |
+| `gitIdSwitcher.showNotifications`          | `true`      | Show notification when switchin' profiles                                                          |
+| `gitIdSwitcher.applyToSubmodules`          | `true`      | Propagate profile to Git submodules                                                                |
+| `gitIdSwitcher.submoduleDepth`             | `1`         | Max depth fer nested submodules (1-5)                                                              |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`     | Include emoji in Git config `user.name`                                                            |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`      | Check whether selected profile matches the actual git config, savvy?                               |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`      | Run sync check when the editor window regains focus                                                |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`     | Save audit logs to file (records profile switches, SSH key operations, etc.)                       |
+| `gitIdSwitcher.logging.filePath`           | `""`        | Log file path (e.g., `~/.git-id-switcher/security.log`). Empty = default path                      |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`  | Max file size before rotation (bytes, 1MB-100MB)                                                   |
+| `gitIdSwitcher.logging.maxFiles`           | `5`         | Number o' rotated log files to keep (1-20)                                                         |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`     | When enabled, all values be masked in logs (maximum privacy mode, arrr!)                           |
+| `gitIdSwitcher.logging.level`              | `"INFO"`    | Log verbosity (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Records selected level an' above     |
+| `gitIdSwitcher.commandTimeouts`            | `{}`        | Custom timeouts per command (ms, 1s-5min). E.g., `{"git": 15000, "ssh-add": 10000}`                |
 
 #### `includeIconInGitConfig` Setting
 
@@ -348,13 +383,13 @@ When ye switch profiles, the extension does these things (in order):
 
 1. **Git Config** (always): Sets `git config --local user.name` an' `user.email`
 2. **SSH Key** (when `sshKeyPath` be set): Removes other keys from ssh-agent, adds selected key
-3. **GPG Key** (when `gpgKeyId` be set): Sets `git config --local user.signingkey` an' enables signin'
+3. **Commit Signin'** (when `gpgKeyId` or `sshSigningKeyPath` be set): Sets `gpg.format` (`openpgp` or `ssh`), `user.signingkey`, an' `commit.gpgsign` to `true` with `git config --local`. Switchin' to a profile without a signin' key: see [Commit Signin' with an SSH Key](#commit-signin-with-an-ssh-key)
 4. **Submodules** (when enabled): Propagates settings to all submodules (default: depth 1)
 5. **Sync Check**: Verifies that the applied profile matches the actual git config, arrr!
 
 ### Sync Check
 
-Compares yer selected profile against the actual `git config --local` values (`user.name`, `user.email`, `user.signingkey`) an' shows a status bar warnin' when a mismatch be detected.
+Compares yer selected profile against the actual git config values (`user.name`, `user.email`, an' fer a signin' profile `gpg.format`, `user.signingkey`, `commit.gpgsign`) an' shows a status bar warnin' when a mismatch be detected. Fer a profile without a signin' key, signin' values the extension wrote an' didn't put back count as a mismatch too.
 
 **When checks be runnin':**
 

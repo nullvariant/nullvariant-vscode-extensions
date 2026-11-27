@@ -14,7 +14,7 @@
  * |------------------|---------------------------------------------|----------------------------------|
  * | `is*()` / `has*()` | Returns boolean                           | `isValidEmail()`, `hasNullByte()` |
  * | `validate*()`    | Returns result object `{valid, reason?}`    | `validatePathSecurity()`         |
- * | `*OrThrow()`     | Throws exception on failure                 | `validateKeyPathOrThrow()`       |
+ * | `*OrThrow()`     | Throws exception on failure                 | `expandKeyPathOrThrow()`         |
  * | `assert*()`      | Returns error result or null if valid       | `assertWithinWorkspaceBoundary()`|
  * | `detect*()`      | Returns detected issue or null              | `detectUnsafeCharsInFlag()`      |
  * | `check*()`       | Queries external state (side effects)       | `checkKeyLoadedInAgent()`        |
@@ -25,7 +25,7 @@
  * |----------|------------------------------------------------------|-------------------------------|
  * | `valid`  | Format/structure is correct                          | `isEmailFormatValid()`        |
  * | `secure` | Resistant to security attacks                        | `validatePathSecurity()`      |
- * | `safe`   | Safe for a specific context (e.g., shell execution)  | `isShellSafePath()`           |
+ * | `safe`   | Safe for a specific context (e.g., a command argument) | `validatePathSafety()`      |
  *
  * ## Prohibited Patterns
  *
@@ -217,6 +217,14 @@ export function isValidHex(value: string): boolean {
   return /^[A-Fa-f0-9]+$/.test(value);
 }
 
+/**
+ * Whether a value read from settings or stored state is a plain object
+ * (not null, not an array), so its fields can be read by name
+ */
+export function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 // =============================================================================
 // SSH Host Validation
 // =============================================================================
@@ -260,14 +268,30 @@ export const WINDOWS_DRIVE_LETTER_PATTERN = '^[A-Za-z]:';
  */
 export const WINDOWS_DRIVE_LETTER_REGEX = new RegExp(WINDOWS_DRIVE_LETTER_PATTERN);
 
+/** Length of the drive prefix (`C:`) */
+export const DRIVE_PREFIX_LENGTH = 2;
+
+const PATH_SEPARATORS: ReadonlySet<string | undefined> = new Set(['/', '\\']);
+
 /**
- * Check if a path starts with a Windows drive letter (e.g., C:, D:)
- *
- * @param value - The path to check
- * @returns true if path starts with a Windows drive letter
+ * Whether a string starts like a Windows absolute path with a drive letter
+ * (`<letter>:` followed by `\` or `/`). A drive-relative path (`C:file`) does
+ * not match.
  */
-export function isWindowsAbsolutePath(value: string): boolean {
-  return WINDOWS_DRIVE_LETTER_REGEX.test(value);
+export function isDriveAbsolutePath(value: string): boolean {
+  return WINDOWS_DRIVE_LETTER_REGEX.test(value) && PATH_SEPARATORS.has(value[DRIVE_PREFIX_LENGTH]);
+}
+
+/**
+ * Whether a key path (sshKeyPath, sshSigningKeyPath) starts in an accepted
+ * way: an absolute Unix path (`/`), the user's home (`~/`, never `~user`), or
+ * a Windows drive path (`C:\` or `C:/`).
+ *
+ * The one prefix rule for key paths: the settings schema, the identity form
+ * and the checks before a key is used all call it.
+ */
+export function hasKeyPathPrefix(value: string): boolean {
+  return value.startsWith('/') || value.startsWith('~/') || isDriveAbsolutePath(value);
 }
 
 // =============================================================================
@@ -379,6 +403,19 @@ export const DANGEROUS_PATTERNS: ReadonlyArray<{ pattern: RegExp; description: s
 ] as const;
 
 /**
+ * Dangerous character patterns for path fields (sshKeyPath, sshSigningKeyPath)
+ *
+ * The same as DANGEROUS_PATTERNS, with the semicolon added to the shell
+ * metacharacters: a semicolon is allowed in names (e.g. "Null;Variant") but
+ * not in paths. This is the set of the schema pattern for key paths, plus the
+ * literal hex escape text (`\x41`), which the schema does not reject.
+ */
+export const DANGEROUS_PATTERNS_FOR_PATH: ReadonlyArray<{ pattern: RegExp; description: string }> = [
+  { pattern: /[`$(){}|;&<>]/, description: 'shell metacharacters' },
+  ...DANGEROUS_PATTERNS.slice(1),
+] as const;
+
+/**
  * Dangerous character patterns for text fields (relaxed mode)
  *
  * Only blocks command substitution characters (backtick, dollar sign),
@@ -419,22 +456,6 @@ export function hasDangerousChars(text: string): boolean {
 // =============================================================================
 
 /**
- * Pattern for dangerous characters in file paths (strict mode)
- *
- * Blocks shell metacharacters that could enable command injection:
- * - Backtick (`): Command substitution
- * - Dollar sign ($): Variable expansion / command substitution
- * - Pipe (|): Pipeline
- * - Semicolon (;): Command separator
- * - Ampersand (&): Background execution / logical AND
- * - Angle brackets (<>): Redirection
- *
- * Note: This is stricter than text fields because paths are more likely
- * to be used in shell contexts (e.g., ssh -i <path>).
- */
-export const DANGEROUS_CHARS_FOR_PATH_REGEX = /[`$|;&<>]/;
-
-/**
  * Pattern for dangerous characters in text fields (relaxed mode)
  *
  * Blocks:
@@ -452,19 +473,6 @@ export const DANGEROUS_CHARS_FOR_PATH_REGEX = /[`$|;&<>]/;
  */
 // eslint-disable-next-line no-control-regex
 export const DANGEROUS_CHARS_FOR_TEXT_REGEX = /[\u0000-\u001F\u007F`$]/;
-
-/**
- * Check for dangerous characters in file paths (strict mode)
- *
- * Blocks shell metacharacters that could enable command injection.
- * Use this for sshKeyPath and other path-related fields.
- *
- * @param value - The path string to check
- * @returns true if path contains dangerous characters
- */
-export function hasDangerousCharsForPath(value: string): boolean {
-  return DANGEROUS_CHARS_FOR_PATH_REGEX.test(value);
-}
 
 /**
  * Check for dangerous characters in text fields (relaxed mode)

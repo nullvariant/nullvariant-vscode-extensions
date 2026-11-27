@@ -4,15 +4,22 @@
  * Reads the identities from the VS Code settings (with schema validation and
  * a cache), and writes them back (add, update, delete, reorder).
  *
+ * SECURITY: Writes start from the identities in the user's settings only. The
+ * merged value also holds identities from a workspace's `.vscode/settings.json`
+ * (signing keys included); writing it back to the user's settings would move
+ * them there, where signing keys are trusted.
+ *
  * Uses vscodeLoader for testability (allows mocking in E2E tests).
  */
 
+import type { WorkspaceConfiguration } from "vscode";
 import { getVSCode } from "../core/vscodeLoader";
 import { validateIdentitySchema } from "./configSchema";
 import { securityLogger } from "../security/securityLogger";
 import { MAX_IDENTITIES, MAX_ID_LENGTH } from "../core/constants";
 import { isValidIdentityId } from "../validators/common";
 import type { Identity } from "./identity";
+import { takeSigningKeysFromUserScope, withoutSigningFields } from "./signingKeySource";
 
 /**
  * Session-level flag to prevent multiple validation error notifications.
@@ -88,23 +95,118 @@ function showValidationErrorNotification(invalidCount: number): void {
 }
 
 /**
- * Load identities from VS Code settings (raw, no validation)
+ * The identities in the user's settings (or the default, when the user has
+ * not set any), raw, as the writes start from them.
+ */
+function readUserScopeIdentities(config: WorkspaceConfiguration): Identity[] {
+  // Without inspect() (not in VS Code itself) nothing is known to be the user's
+  const inspected = config.inspect?.<Identity[]>("identities");
+  const value = inspected?.globalValue ?? inspected?.defaultValue;
+  return Array.isArray(value) ? [...value] : [];
+}
+
+/**
+ * Load the identities in the user's settings (raw, no validation)
  *
  * WARNING: This function does not validate identities.
  * Use getIdentitiesWithValidation() for security-critical code paths.
  *
  * NOTE: Always reads from VS Code configuration directly, bypassing the
  * identity cache. This is intentional for config mutation code paths
- * (add/delete/update/move) that need the latest raw configuration.
+ * (add/delete/update/move) that need the latest raw configuration. Identities
+ * that exist only in workspace settings are not included: the UI does not
+ * edit them (see the module comment).
  */
-export function getIdentities(): Identity[] {
+export function getUserScopeIdentities(): Identity[] {
   const vs = getVSCode();
-  if (!vs) {
-    return [];
+  return vs ? readUserScopeIdentities(vs.workspace.getConfiguration("gitIdSwitcher")) : [];
+}
+
+/**
+ * The index of the one entry with this ID in the user's identities.
+ *
+ * The screens list an ID once (getManagedIdentities skips the later
+ * duplicates and invalid entries), so with several entries of the same ID
+ * the entry the user confirmed cannot be told from the others: a change to
+ * any of them is refused rather than made to the wrong one, or to all.
+ *
+ * @throws Error if no entry or more than one entry has this ID
+ */
+function findSingleIdentityIndex(identities: readonly unknown[], id: string): number {
+  const indexes = identities
+    .map((entry, index) => (typeof entry === "object" && entry !== null && Reflect.get(entry, "id") === id ? index : -1))
+    .filter((index) => index !== -1);
+  if (indexes.length === 0) {
+    throw new Error(`Identity not found: ${id}`);
   }
-  const config = vs.workspace.getConfiguration("gitIdSwitcher");
-  const identities = config.get<Identity[]>("identities", []);
-  return identities;
+  if (indexes.length > 1) {
+    throw new Error(`Identity ID is not unique in the settings, so it is not changed: ${id}`);
+  }
+  return indexes[0];
+}
+
+function logSchemaErrors(index: number, errors: ReturnType<typeof validateIdentitySchema>["errors"]): void {
+  for (const error of errors) {
+    securityLogger.logValidationFailure(`identities[${index}].${error.field}`, error.message, error.value);
+  }
+}
+
+/**
+ * Validate the fields of a settings entry other than the signing fields
+ * (step 1 of reading an identity of the merged settings: its signing fields
+ * are replaced from the user's settings, so they are not validated here).
+ *
+ * @returns The entry as an identity, or undefined (the errors are logged)
+ */
+function parseOtherFields(entry: unknown, index: number): Identity | undefined {
+  const result = validateIdentitySchema(withoutSigningFields(entry));
+  if (!result.valid) {
+    logSchemaErrors(index, result.errors);
+    return undefined;
+  }
+  // Type assertion is safe: the fields other than the signing fields match
+  // the Identity schema, and the signing fields are replaced next
+  return entry as Identity;
+}
+
+/**
+ * Replace the signing fields with the user's (takeSigningKeysFromUserScope)
+ * and validate the identity as a whole (step 2): user signing keys that are
+ * invalid, or both gpgKeyId and sshSigningKeyPath, stop the identity (it is
+ * skipped, never applied without signing).
+ *
+ * @returns The identity, or undefined (the errors are logged)
+ */
+function withUserSigningKeys(identity: Identity, index: number, userScopeIdentities: readonly unknown[]): Identity | undefined {
+  const composed = takeSigningKeysFromUserScope(identity, userScopeIdentities);
+  const result = validateIdentitySchema(composed);
+  if (!result.valid) {
+    logSchemaErrors(index, result.errors);
+    return undefined;
+  }
+  // Type assertion is safe: the whole identity matched the Identity schema
+  return composed as unknown as Identity;
+}
+
+/**
+ * The identities the identity screens manage: those in the user's settings
+ * (or the default, when the user has none), validated, without duplicate IDs.
+ *
+ * The screens write the user's settings, so the list, the confirmation, the
+ * edited identity and the reloaded identity all come from here, never from
+ * the merged settings: a workspace's identity with the same ID and another
+ * name would otherwise be shown while the user's one is changed.
+ * Not cached: read again for every screen, after every write.
+ */
+export function getManagedIdentities(): Identity[] {
+  const seenIds = new Set<string>();
+  return getUserScopeIdentities().filter((identity) => {
+    if (!validateIdentitySchema(identity).valid || seenIds.has(identity.id)) {
+      return false;
+    }
+    seenIds.add(identity.id);
+    return true;
+  });
 }
 
 /**
@@ -160,33 +262,26 @@ export function getIdentitiesWithValidation(): Identity[] {
     return [];
   }
 
+  // SECURITY: Signing keys come from the user's settings only
+  const userScopeIdentities = readUserScopeIdentities(config);
+
   // Filter and validate individual identities
   const validIdentities: Identity[] = [];
   const invalidIndices: number[] = [];
   const seenIds = new Set<string>();
 
   for (const [i, identity] of rawIdentities.entries()) {
-    const result = validateIdentitySchema(identity);
-
-    if (!result.valid) {
+    // The signing fields of the merged value are not used (they may come from
+    // a workspace), so they are not validated here either: the other fields
+    // first, then the identity with the user's signing keys, as a whole
+    const otherFields = parseOtherFields(identity, i);
+    if (otherFields === undefined) {
       invalidIndices.push(i);
-      // Log validation failures
-      for (const error of result.errors) {
-        securityLogger.logValidationFailure(
-          `identities[${i}].${error.field}`,
-          error.message,
-          error.value,
-        );
-      }
       continue;
     }
 
-    // Type assertion is safe here because validateIdentitySchema() ensures
-    // the object matches the Identity schema structure
-    const validatedIdentity = identity as Identity;
-
     // Check for duplicate IDs (defense-in-depth: schema validation also checks this)
-    const id = validatedIdentity.id;
+    const id = otherFields.id;
     if (seenIds.has(id)) {
       invalidIndices.push(i);
       securityLogger.logValidationFailure(
@@ -198,6 +293,11 @@ export function getIdentitiesWithValidation(): Identity[] {
     }
 
     seenIds.add(id);
+    const validatedIdentity = withUserSigningKeys(otherFields, i, userScopeIdentities);
+    if (validatedIdentity === undefined) {
+      invalidIndices.push(i);
+      continue;
+    }
     validIdentities.push(validatedIdentity);
   }
 
@@ -283,16 +383,13 @@ export async function deleteIdentityFromConfig(id: string): Promise<void> {
   }
 
   const config = vs.workspace.getConfiguration("gitIdSwitcher");
-  const identities = config.get<Identity[]>("identities", []);
+  const identities = readUserScopeIdentities(config);
 
-  // Find the identity to delete
-  const index = identities.findIndex((i) => i.id === id);
-  if (index === -1) {
-    throw new Error(`Identity not found: ${id}`);
-  }
+  // Find the identity to delete (exactly one entry has its ID)
+  const index = findSingleIdentityIndex(identities, id);
 
   // Remove the identity from array
-  const updatedIdentities = identities.filter((i) => i.id !== id);
+  const updatedIdentities = identities.filter((_, entryIndex) => entryIndex !== index);
 
   // Update configuration
   await config.update(
@@ -339,7 +436,7 @@ export async function addIdentityToConfig(identity: Identity): Promise<void> {
   }
 
   const config = vs.workspace.getConfiguration("gitIdSwitcher");
-  const identities = config.get<Identity[]>("identities", []);
+  const identities = readUserScopeIdentities(config);
 
   // Check for duplicate ID
   const isDuplicateExists = identities.some((i) => i.id === identity.id);
@@ -411,7 +508,7 @@ export async function updateIdentityInConfig(
   }
 
   const config = vs.workspace.getConfiguration("gitIdSwitcher");
-  const identities = config.get<Identity[]>("identities", []);
+  const identities = readUserScopeIdentities(config);
 
   // If changing ID, validate new ID format and check for duplicates
   if (field === "id" && value !== undefined && value !== id) {
@@ -424,11 +521,8 @@ export async function updateIdentityInConfig(
     }
   }
 
-  // Find the identity to update
-  const index = identities.findIndex((i) => i.id === id);
-  if (index === -1) {
-    throw new Error(`Identity not found: ${id}`);
-  }
+  // Find the identity to update (exactly one entry has its ID)
+  const index = findSingleIdentityIndex(identities, id);
 
   // Create updated identity
   const updatedIdentity = { ...identities[index] };
@@ -498,13 +592,10 @@ export async function moveIdentityInConfig(
   }
 
   const config = vs.workspace.getConfiguration("gitIdSwitcher");
-  const identities = [...(config.get<Identity[]>("identities") ?? [])];
+  const identities = readUserScopeIdentities(config);
 
-  // Find the identity to move
-  const currentIndex = identities.findIndex((i) => i.id === id);
-  if (currentIndex === -1) {
-    throw new Error(`Identity not found: ${id}`);
-  }
+  // Find the identity to move (exactly one entry has its ID)
+  const currentIndex = findSingleIdentityIndex(identities, id);
 
   // Calculate new index
   const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;

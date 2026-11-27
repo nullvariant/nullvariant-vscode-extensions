@@ -3,7 +3,7 @@
  *
  * Covers the editable field list, the field metadata lookup, and each
  * field's validator (one accepted and one rejected value per field, plus each
- * layer of the SSH key path check).
+ * layer of the key path check).
  */
 
 import * as assert from 'node:assert';
@@ -67,25 +67,38 @@ function testFieldValidators(): void {
 }
 
 /**
- * The SSH key path check rejects each layer in order and accepts ~/.ssh/ paths.
+ * The key path check (sshKeyPath, sshSigningKeyPath) is the runtime level:
+ * absolute, ~/ or Windows drive paths anywhere, without traversal or
+ * dangerous characters (never ~user).
  */
-function testSshKeyPathValidator(): void {
-  console.log('Testing SSH key path validator...');
+function testKeyPathValidators(): void {
+  console.log('Testing key path validators...');
 
-  assert.strictEqual(validate('sshKeyPath', '~/.ssh/id_ed25519'), undefined, 'Path under ~/.ssh/ should be accepted');
+  for (const field of ['sshKeyPath', 'sshSigningKeyPath'] as const) {
+    for (const accepted of ['~/.ssh/id_ed25519', '~/keys/id_ed25519', '/opt/keys/id_sign.pub', String.raw`C:\Users\me\.ssh\id_ed25519`, 'D:/keys/id']) {
+      assert.strictEqual(validate(field, accepted), undefined, `${field} should accept ${accepted}`);
+    }
 
-  const rejected: ReadonlyArray<readonly [string, string]> = [
-    [String.raw`C:\Users\me\.ssh\id_ed25519`, 'sshKeyPath: use ~/.ssh/ format instead of drive letter paths'],
-    ['~/.ssh/id;rm', 'sshKeyPath contains dangerous characters'],
-    ['~/.ssh/../id_ed25519', 'sshKeyPath: path traversal (..) is not allowed'],
-    ['~/keys/id_ed25519', 'sshKeyPath must be under ~/.ssh/ directory'],
-  ];
-  for (const [value, expectedError] of rejected) {
-    const error = validate('sshKeyPath', value);
-    assert.ok(error?.startsWith(expectedError), `sshKeyPath should reject ${JSON.stringify(value)}, got ${String(error)}`);
+    const rejected: ReadonlyArray<readonly [string, string]> = [
+      ['~other/.ssh/id_ed25519', `${field}: must be an absolute path`],
+      ['C:id_ed25519', `${field}: must be an absolute path`],
+      ['~/.ssh/id;rm', `${field} contains shell metacharacters`],
+      ['~/.ssh/id$(rm)', `${field} contains shell metacharacters`],
+      ['~/.ssh/id\nrm', `${field} contains newline characters`],
+      ['~/.ssh/../id_ed25519', `${field}: path traversal (..) is not allowed`],
+      ['keys/id_ed25519', `${field}: must be an absolute path`],
+    ];
+    for (const [value, expectedError] of rejected) {
+      const error = validate(field, value);
+      assert.ok(error?.startsWith(expectedError), `${field} should reject ${JSON.stringify(value)}, got ${String(error)}`);
+    }
   }
 
-  console.log('  SSH key path validator tests passed!');
+  assert.strictEqual(getFieldMetadata('sshSigningKeyPath')?.labelKey, 'SSH Signing Key Path');
+  assert.strictEqual(getFieldMetadata('sshSigningKeyPath')?.inputType, 'file');
+  assert.strictEqual(EDITABLE_FIELDS.at(-1), 'sshSigningKeyPath');
+
+  console.log('  Key path validator tests passed!');
 }
 
 /**
@@ -95,6 +108,6 @@ export function runIdentityFieldsTests(): void {
   console.log('\n=== Identity Fields Tests ===\n');
   testFieldMetadataLookup();
   testFieldValidators();
-  testSshKeyPathValidator();
+  testKeyPathValidators();
   console.log('\n✅ All identityFields tests passed!\n');
 }

@@ -53,7 +53,7 @@ While many Git identity switchers exist, **Git ID Switcher** solves the complex 
 - **Sync Check**: Real-time detection of mismatches between profile and git config, with status bar warning
 - **Submodule Support**: Automatically propagate identity to Git submodules
 - **SSH Key Management**: Automatically switch SSH keys in ssh-agent
-- **GPG Signing Support**: Configure GPG key for commit signing (optional)
+- **Commit Signing Support**: Sign commits with a GPG key or an SSH key (optional)
 - **Rich Tooltips**: Detailed identity info including description and SSH host
 - **Cross-Platform**: Works on macOS, Linux, and Windows
 - **Multilingual**: Supports 17 languages
@@ -239,6 +239,38 @@ Note: The 4th profile (`client-b`) uses an abbreviated name, and the 5th (`oss`)
 
 ---
 
+## Commit Signing with an SSH Key
+
+Git can sign commits with an SSH key instead of a GPG key. Set `sshSigningKeyPath` on the identity in your **user settings** (`settings.json`):
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Alex Smith",
+      "email": "alex.smith@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` is the private key, or the public key (`.pub`) if the private key is in ssh-agent
+- `gpgKeyId` and `sshSigningKeyPath` cannot both be set on one identity
+- Signing keys (`gpgKeyId`, `sshSigningKeyPath`) are read from user settings only, from the identity with the same `id`, `name` and `email`. Values in a workspace's `.vscode/settings.json` are not used, and the identity screens save to user settings only
+- Key paths may be outside `~/.ssh/`, as an absolute path or a path starting with `~/`. On Windows, a drive path such as `C:\Users\...` is accepted too. Before git is told to use the key, the extension has it sign a short test text the way git signs a commit (`ssh-keygen -Y sign`), without starting an askpass program and with a 30-second time limit. If it cannot sign, or another key signs (for example a stale `.pub` file next to the private key), the switch stops. The check runs again only when the key file or the `.pub` file next to it changes, so a hardware key asks for a touch only then. A private key with a passphrase cannot be checked this way: set `sshSigningKeyPath` to its public key file (`.pub`) and add the key to ssh-agent
+- On Unix, the signing key file and the `.pub` file next to it must have the permissions of a key, as for the authentication key: a private key must not be accessible by group or others, a public key must not be writable by them, and neither may be executable. Otherwise the switch stops
+- When you switch, the extension writes `gpg.format`, `user.signingkey`, and `commit.gpgsign` with `git config --local`. Switching to an identity without a signing key puts these three back to their earlier values, but only if all three still hold what the extension wrote; if you changed any of them by hand, all three are left alone
+- The signing key is not added to ssh-agent: `autoSwitchSshKey` switches the authentication key (`sshKeyPath`) only. When it removes the other identities' keys, it keeps the key the selected identity signs with
+- Signing with an SSH key needs Git 2.34 or later. With an older Git, the switch stops without changing Git config
+
+Register the public key on GitHub as a **signing key** (separately from the authentication key) so that your commits show as verified.
+
+---
+
 ## Identity (Profile) Management
 
 Click the status bar → select "Manage Identities" at the bottom of the list to open the management screen.
@@ -265,17 +297,20 @@ You can also delete an identity from the command palette using `Git ID Switcher:
 
 ### Identity (Profile) Properties
 
-| Property      | Required | Description                                                      |
-| ------------- | -------- | ---------------------------------------------------------------- |
-| `id`          | ✅       | Unique identifier (e.g., `"personal"`, `"work"`)                 |
-| `name`        | ✅       | Git user.name — shown in commits                                 |
-| `email`       | ✅       | Git user.email — shown in commits                                |
-| `icon`        |          | Emoji shown in status bar (e.g., `"🏠"`). Single emoji only      |
-| `service`     |          | Service name (e.g., `"GitHub"`, `"GitLab"`). Used for UI display |
-| `description` |          | Short description shown in picker and tooltip                    |
-| `sshKeyPath`  |          | Path to SSH private key (e.g., `"~/.ssh/id_ed25519_work"`)       |
-| `sshHost`     |          | SSH config Host alias (e.g., `"github-work"`)                    |
-| `gpgKeyId`    |          | GPG key ID for commit signing                                    |
+| Property            | Required | Description                                                                                             |
+| ------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `id`                | ✅       | Unique identifier (e.g., `"personal"`, `"work"`)                                                        |
+| `name`              | ✅       | Git user.name — shown in commits                                                                        |
+| `email`             | ✅       | Git user.email — shown in commits                                                                       |
+| `icon`              |          | Emoji shown in status bar (e.g., `"🏠"`). Single emoji only                                             |
+| `service`           |          | Service name (e.g., `"GitHub"`, `"GitLab"`). Used for UI display                                        |
+| `description`       |          | Short description shown in picker and tooltip                                                           |
+| `sshKeyPath`        |          | Path to SSH private key for authentication (e.g., `"~/.ssh/id_ed25519_work"`)                           |
+| `sshHost`           |          | SSH config Host alias (e.g., `"github-work"`)                                                           |
+| `gpgKeyId`          |          | GPG key ID for commit signing. Cannot be set with `sshSigningKeyPath`                                   |
+| `sshSigningKeyPath` |          | Path to SSH key for commit signing (e.g., `"~/.ssh/id_ed25519_signing"`). Cannot be set with `gpgKeyId` |
+
+Signing keys (`gpgKeyId`, `sshSigningKeyPath`) are read from user settings only.
 
 #### Display Limitations
 
@@ -288,7 +323,7 @@ You can also delete an identity from the command palette using `Git ID Switcher:
 | ------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | See sample | List of identity configurations                                                                |
 | `gitIdSwitcher.defaultIdentity`            | See sample | ID of the default identity to use                                                              |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Auto-switch SSH key when changing identities                                                   |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Auto-switch the SSH authentication key (`sshKeyPath`) in ssh-agent when changing identities    |
 | `gitIdSwitcher.showNotifications`          | `true`     | Show notification on identity switch                                                           |
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | Propagate identity to Git submodules                                                           |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | Max depth for nested submodule configuration (1-5)                                             |
@@ -349,13 +384,13 @@ When you switch identities, the extension does the following (in order):
 
 1. **Git Config** (always): Sets `git config --local user.name` and `user.email`
 2. **SSH Key** (if `sshKeyPath` set): Removes other keys from ssh-agent and adds the selected key
-3. **GPG Key** (if `gpgKeyId` set): Sets `git config --local user.signingkey` and enables signing
+3. **Commit Signing** (if `gpgKeyId` or `sshSigningKeyPath` set): Sets `gpg.format` (`openpgp` or `ssh`), `user.signingkey`, and `commit.gpgsign` to `true` with `git config --local`. Switching to an identity without a signing key: see [Commit Signing with an SSH Key](#commit-signing-with-an-ssh-key)
 4. **Submodules** (if enabled): Propagates settings to all submodules (default: depth 1)
 5. **Sync Check**: Verifies that the applied profile matches the actual git config
 
 ### Sync Check
 
-Compares the selected profile against the actual `git config --local` values (`user.name`, `user.email`, `user.signingkey`) and shows a status bar warning when a mismatch is detected.
+Compares the selected profile against the actual git config values (`user.name`, `user.email`, and for a signing identity `gpg.format`, `user.signingkey`, `commit.gpgsign`) and shows a status bar warning when a mismatch is detected. For an identity without a signing key, signing values the extension wrote and did not put back also count as a mismatch.
 
 **When checks run:**
 

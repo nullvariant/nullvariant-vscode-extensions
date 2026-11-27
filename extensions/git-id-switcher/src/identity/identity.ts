@@ -9,7 +9,13 @@
  * `./identityConfig`, and the editable field definitions in
  * `./identityFields`; both are re-exported here so callers keep a single
  * import site for the identity domain.
+ *
+ * The field constants below are defined before the re-exports at the end of
+ * this file: identityConfig and configSchema import them, and they must be
+ * set when those modules are loaded through this one.
  */
+
+import type { GpgFormat } from "../core/constants";
 
 export interface Identity {
   /** Unique identifier (lowercase, no spaces) */
@@ -30,15 +36,38 @@ export interface Identity {
   /** Short description of this identity - optional */
   description?: string;
 
-  /** Path to SSH private key - optional */
+  /** Path to the SSH private key for authentication (added to ssh-agent) - optional */
   sshKeyPath?: string;
 
   /** SSH config host alias (for multi-account setups) - optional */
   sshHost?: string;
 
-  /** GPG key ID for commit signing - optional */
+  /** GPG key ID for commit signing - optional (not together with sshSigningKeyPath) */
   gpgKeyId?: string;
+
+  /**
+   * Path to the SSH key for commit signing - optional (not together with gpgKeyId).
+   * A private key, or the public key when the private key is in ssh-agent.
+   * Not added to ssh-agent by the extension.
+   */
+  sshSigningKeyPath?: string;
 }
+
+/** Fields that hold a key path */
+export const KEY_PATH_FIELDS = ["sshKeyPath", "sshSigningKeyPath"] as const;
+
+export type KeyPathField = (typeof KEY_PATH_FIELDS)[number];
+
+/** Fields that choose the key commits are signed with (at most one is set) */
+export const SIGNING_FIELDS = ["gpgKeyId", "sshSigningKeyPath"] as const;
+
+export type SigningField = (typeof SIGNING_FIELDS)[number];
+
+/** The `gpg.format` each signing field signs with */
+export const SIGNING_FIELD_FORMATS: Readonly<Record<SigningField, GpgFormat>> = {
+  gpgKeyId: "openpgp",
+  sshSigningKeyPath: "ssh",
+};
 
 /**
  * Get identity display label for UI
@@ -68,7 +97,8 @@ export function formatGitAuthor(identity: Identity): string {
 }
 
 export {
-  getIdentities,
+  getUserScopeIdentities,
+  getManagedIdentities,
   getIdentitiesWithValidation,
   invalidateIdentityCache,
   getIdentityById,

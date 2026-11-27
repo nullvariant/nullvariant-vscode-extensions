@@ -99,6 +99,11 @@ function createMockVSCode(options: {
         get: (key: string) => {
           return key === 'identities' ? options.identities ?? [] : undefined;
         },
+        // The identities are all in the user's settings
+        inspect: (key: string) => ({
+          key,
+          globalValue: key === 'identities' ? options.identities ?? [] : undefined,
+        }),
       }),
     },
     window: {
@@ -507,6 +512,11 @@ function createManageMockVSCode(options: {
         get: (key: string) => {
           return key === 'identities' ? options.identities ?? [] : undefined;
         },
+        // The identities are all in the user's settings
+        inspect: (key: string) => ({
+          key,
+          globalValue: key === 'identities' ? options.identities ?? [] : undefined,
+        }),
       }),
     },
     window: {

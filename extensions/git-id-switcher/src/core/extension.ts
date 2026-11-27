@@ -15,6 +15,11 @@ import { tryRestoreSavedIdentity, tryDetectFromGit, tryDetectFromSsh, applyDetec
 import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotification, handleDeleteIdentity, resolveSyncMismatchCommand } from '../commands/handlers';
 import { checkSync } from './syncChecker';
 import { extensionLogger } from '../logging/extensionLogger';
+import { maintainSigningRecords } from './repositoryConfigWriter';
+import { findSubmoduleRepository, isRepositoryGone } from './repositoryCheck';
+import { gitExec } from '../security/secureExec';
+import { entryExists } from './gitConfig';
+import { getSigningRecordStore, getSwitchGeneration, runInSwitchQueue } from '../services/switcher';
 
 // Global state
 let statusBar: IdentityStatusBar;
@@ -86,12 +91,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
  * Reads `syncCheck.enabled` from configuration. When disabled, restores
  * the status bar to normal (synced) state to clear any lingering warning.
  *
+ * The check runs outside the switch queue, so a switch can finish while it
+ * reads git config. Its result is shown only if the identity it checked is
+ * still current and no switch started meanwhile; otherwise it is about an
+ * identity or values that are no longer there.
+ *
  * @sideeffect Executes `git config --local` via checkSync()
  */
-async function performSyncCheck(): Promise<void> {
-  if (!currentIdentity) {
+async function performSyncCheck(context: vscode.ExtensionContext): Promise<void> {
+  const checkedIdentity = currentIdentity;
+  if (!checkedIdentity) {
     return;
   }
+  const generation = getSwitchGeneration();
 
   const config = vscode.workspace.getConfiguration('gitIdSwitcher');
   if (!config.get<boolean>('syncCheck.enabled', true)) {
@@ -101,8 +113,10 @@ async function performSyncCheck(): Promise<void> {
   }
 
   try {
-    const result = await checkSync(currentIdentity);
-    statusBar.setSyncState(result);
+    const result = await checkSync(checkedIdentity, { store: getSigningRecordStore(context) });
+    if (currentIdentity === checkedIdentity && getSwitchGeneration() === generation) {
+      statusBar.setSyncState(result);
+    }
   } catch {
     // Non-fatal: sync check failure should not disrupt the extension
     extensionLogger.debug('Sync check failed silently');
@@ -113,13 +127,13 @@ async function performSyncCheck(): Promise<void> {
  * Debounced sync check for focus-return events.
  * Prevents multiple rapid invocations when the window focus changes quickly.
  */
-function debouncedSyncCheck(): void {
+function debouncedSyncCheck(context: vscode.ExtensionContext): void {
   if (syncCheckDebounceTimer !== undefined) {
     clearTimeout(syncCheckDebounceTimer);
   }
   syncCheckDebounceTimer = setTimeout(() => {
     syncCheckDebounceTimer = undefined;
-    performSyncCheck().catch(error => {
+    performSyncCheck(context).catch(error => {
       const safeMessage = getUserSafeMessage(error);
       extensionLogger.debug(`Debounced sync check failed: ${safeMessage}`);
     });
@@ -135,7 +149,7 @@ function debouncedSyncCheck(): void {
 async function reinitialize(context: vscode.ExtensionContext, trigger: string): Promise<void> {
   try {
     await initializeState(context);
-    await performSyncCheck();
+    await performSyncCheck(context);
   } catch (error) {
     const safeMessage = getUserSafeMessage(error);
     extensionLogger.error(`Failed to initialize after ${trigger}: ${safeMessage}`);
@@ -188,7 +202,7 @@ function handleConfigurationChange(
 /**
  * Sync check on window focus return (if enabled).
  */
-function handleWindowStateChange(state: vscode.WindowState): void {
+function handleWindowStateChange(context: vscode.ExtensionContext, state: vscode.WindowState): void {
   if (!state.focused) {
     return;
   }
@@ -196,7 +210,7 @@ function handleWindowStateChange(state: vscode.WindowState): void {
   if (!config.get<boolean>('syncCheck.onFocusReturn', true)) {
     return;
   }
-  debouncedSyncCheck();
+  debouncedSyncCheck(context);
 }
 
 /**
@@ -204,10 +218,23 @@ function handleWindowStateChange(state: vscode.WindowState): void {
  * SECURITY: Only call after confirming workspace is trusted.
  */
 async function performTrustedInitialization(context: vscode.ExtensionContext): Promise<void> {
+  const store = getSigningRecordStore(context);
+  try {
+    // Remove records of repositories that are gone. Runs in the switch queue:
+    // the commands are registered already, and a switch must not interleave.
+    await runInSwitchQueue(() =>
+      maintainSigningRecords(store, (repositoryPath) =>
+        isRepositoryGone(repositoryPath, entryExists, (folder) => findSubmoduleRepository(folder, gitExec)),
+      ),
+    );
+  } catch (error) {
+    extensionLogger.warn(`Failed to tidy the signing config records: ${getUserSafeMessage(error)}`);
+  }
+
   await initializeState(context);
 
   // Run initial sync check after state is loaded
-  await performSyncCheck();
+  await performSyncCheck(context);
 
   securityLogger.storeConfigSnapshot();
 
@@ -218,7 +245,7 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
       handleConfigurationChange(context, e);
     }),
-    vscode.window.onDidChangeWindowState(handleWindowStateChange),
+    vscode.window.onDidChangeWindowState((state) => handleWindowStateChange(context, state)),
   );
 }
 

@@ -55,7 +55,7 @@ ilo ante mute li lon. taso **Git ID Switcher** li pona tan ni: ona li weka e ike
 - **Sync Check**: nimi en git config li sama ala la, status bar li toki e ike
 - **submodule pona**: Git submodule li kama jo e nimi
 - **SSH key**: ssh-agent SSH key li ante
-- **GPG sitelen**: GPG key li pona tawa commit sitelen (wile ala)
+- **commit sitelen**: GPG key anu SSH key li sitelen e commit (wile ala)
 - **sona mute tooltip**: description en SSH host li lon
 - **ma ale**: macOS, Linux, Windows
 - **toki mute**: toki 17
@@ -240,6 +240,38 @@ sona: nimi nanpa 4 (`client-b`) li nimi lili. nimi nanpa 5 (`oss`) li nimi pali.
 
 ---
 
+## commit sitelen kepeken SSH key
+
+Git li ken sitelen e commit kepeken SSH key, li wile ala e GPG key. o pana e `sshSigningKeyPath` lon nimi lon **user settings** sina (`settings.json`):
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "jan Mun",
+      "email": "mun@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` li key len. key len li lon ssh-agent la, ona li ken key open (`.pub`)
+- nimi wan li ken ala jo e `gpgKeyId` e `sshSigningKeyPath` lon tenpo sama
+- key sitelen (`gpgKeyId`, `sshSigningKeyPath`) li tan user settings taso, tan nimi pi `id` sama pi `name` sama pi `email` sama. ijo lon `.vscode/settings.json` pi workspace li kepeken ala. lipu nimi li awen e ijo lon user settings taso
+- nasin key li ken lon insa ala `~/.ssh/`: nasin ale anu nasin pi open `~/`. lon Windows la, nasin drive sama `C:\Users\...` li ken. tenpo git li kepeken e key la, extension li pana e sitelen lili pi lukin tawa key, li sitelen nimi kepeken nasin sama git (`ssh-keygen -Y sign`). ona li open ala e ilo askpass. tenpo pi sekon 30 li pini la, ona li pini. key li ken ala sitelen nimi, anu key ante li sitelen nimi (lipu `.pub` majuna li lon poka pi key len) la, ante li pini. lipu key anu lipu `.pub` poka li ante la taso, ona li lukin sin. tan ni la, key ilo li wile e luka lon tenpo ni taso. key len pi nimi len li ken ala lukin kepeken nasin ni: o pana e lipu pi key open (`.pub`) tawa `sshSigningKeyPath`, o pana e key tawa ssh-agent
+- lon Unix la, lipu pi key sitelen nimi en lipu `.pub` lon poka ona li wile jo e nasin key, sama key pi open: jan kulupu en jan ante li ken ala lukin e key len, li ken ala sitelen e key open, li ken ala pali e ona tu. ante la, ante li pini
+- sina ante e nimi la, extension li sitelen e `gpg.format` e `user.signingkey` e `commit.gpgsign` kepeken `git config --local`. sina tawa nimi pi key sitelen ala la, ijo tu wan li sama ijo pi extension la, extension li pana sin e ijo pi tenpo pini. sina ante e wan kepeken luka la, extension li ante ala e ijo tu wan
+- key sitelen li tawa ala ssh-agent. `autoSwitchSshKey` li ante e key pi open lupa (`sshKeyPath`) taso. ona li weka e key pi jan ante la, ona li weka ala e key sitelen pi jan sina
+- sina wile sitelen kepeken key SSH la, sina wile e Git 2.34 anu sin. Git li majuna la, ante li pini li ante ala e nasin Git
+
+o pana e key open tawa GitHub sama **Signing Key** (ante tan key pi open lupa). ni la, commit sina li verified.
+
+---
+
 ## nimi ante (Profile Management)
 
 status bar o luka → nanpa pini "nimi ante" o luka → UI o open.
@@ -266,17 +298,20 @@ command palette la, `Git ID Switcher: Delete Identity` li ken weka e nimi.
 
 ### nimi ijo (Identity Properties)
 
-| ijo           | wile | sona                                                         |
-| ------------- | ---- | ------------------------------------------------------------ |
-| `id`          | ✅   | nimi ante (example: `"personal"`, `"work-main"`)             |
-| `name`        | ✅   | Git user.name — commit li jo e ni                            |
-| `email`       | ✅   | Git user.email — commit li jo e ni                           |
-| `icon`        |      | sitelen lon status bar (example: `"☀️"`). sitelen wan taso   |
-| `service`     |      | nimi ilo (example: `"GitHub"`, `"GitLab"`). tawa UI          |
-| `description` |      | sona lili tawa picker en tooltip                             |
-| `sshKeyPath`  |      | nasin tawa SSH key len (example: `"~/.ssh/id_ed25519_work"`) |
-| `sshHost`     |      | SSH config host nimi (example: `"github-work"`)              |
-| `gpgKeyId`    |      | GPG key ID tawa commit sitelen                               |
+| ijo                 | wile | sona                                                                                                                       |
+| ------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------- |
+| `id`                | ✅   | nimi ante (example: `"personal"`, `"work-main"`)                                                                           |
+| `name`              | ✅   | Git user.name — commit li jo e ni                                                                                          |
+| `email`             | ✅   | Git user.email — commit li jo e ni                                                                                         |
+| `icon`              |      | sitelen lon status bar (example: `"☀️"`). sitelen wan taso                                                                 |
+| `service`           |      | nimi ilo (example: `"GitHub"`, `"GitLab"`). tawa UI                                                                        |
+| `description`       |      | sona lili tawa picker en tooltip                                                                                           |
+| `sshKeyPath`        |      | nasin tawa SSH key len pi open lupa (example: `"~/.ssh/id_ed25519_work"`)                                                  |
+| `sshHost`           |      | SSH config host nimi (example: `"github-work"`)                                                                            |
+| `gpgKeyId`          |      | GPG key ID tawa commit sitelen. ona en `sshSigningKeyPath` li ken ala lon tenpo sama                                       |
+| `sshSigningKeyPath` |      | nasin tawa SSH key pi commit sitelen (example: `"~/.ssh/id_ed25519_signing"`). ona en `gpgKeyId` li ken ala lon tenpo sama |
+
+key sitelen (`gpgKeyId`, `sshSigningKeyPath`) li tan user settings taso.
 
 #### lukin poka (Display Limitations)
 
@@ -285,24 +320,24 @@ command palette la, `Git ID Switcher: Delete Identity` li ken weka e nimi.
 
 ### settings ale (General Settings)
 
-| settings                                   | open       | sona                                                |
-| ------------------------------------------ | ---------- | --------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | lukin e ni | nimi ale                                            |
-| `gitIdSwitcher.defaultIdentity`            | lukin e ni | nimi open                                           |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | SSH key li ante                                     |
-| `gitIdSwitcher.showNotifications`          | `true`     | toki li kama                                        |
-| `gitIdSwitcher.applyToSubmodules`          | `true`     | submodule li kama jo e nimi                         |
-| `gitIdSwitcher.submoduleDepth`             | `1`        | submodule suli (1-5)                                |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | sitelen li tawa Git config `user.name`              |
-| `gitIdSwitcher.syncCheck.enabled`          | `true`     | nimi en git config li sama ala li sama              |
-| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | window li kama la, sync check li open               |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`    | file logging li open (tawa lukin)                   |
-| `gitIdSwitcher.logging.filePath`           | `""`       | nasin file log                                      |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | file log suli (bytes, 1MB-100MB)                    |
-| `gitIdSwitcher.logging.maxFiles`           | `5`        | file log nanpa (1-20)                               |
-| `gitIdSwitcher.logging.level`              | `"INFO"`   | logging suli (DEBUG/INFO/WARN/ERROR/SECURITY)       |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | ni li lon la, ale li len lon lipu (tenpo pona suli) |
-| `gitIdSwitcher.commandTimeouts`            | `{}`       | ilo weka tenpo (ms, 1s-5min)                        |
+| settings                                   | open       | sona                                                      |
+| ------------------------------------------ | ---------- | --------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | lukin e ni | nimi ale                                                  |
+| `gitIdSwitcher.defaultIdentity`            | lukin e ni | nimi open                                                 |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | SSH key pi open lupa (`sshKeyPath`) li ante lon ssh-agent |
+| `gitIdSwitcher.showNotifications`          | `true`     | toki li kama                                              |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | submodule li kama jo e nimi                               |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | submodule suli (1-5)                                      |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | sitelen li tawa Git config `user.name`                    |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`     | nimi en git config li sama ala li sama                    |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | window li kama la, sync check li open                     |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | file logging li open (tawa lukin)                         |
+| `gitIdSwitcher.logging.filePath`           | `""`       | nasin file log                                            |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | file log suli (bytes, 1MB-100MB)                          |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | file log nanpa (1-20)                                     |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | logging suli (DEBUG/INFO/WARN/ERROR/SECURITY)             |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | ni li lon la, ale li len lon lipu (tenpo pona suli)       |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | ilo weka tenpo (ms, 1s-5min)                              |
 
 #### sona `includeIconInGitConfig`
 
@@ -350,13 +385,13 @@ nimi ante la, ilo li pali (nanpa):
 
 1. **Git Config** (lon): `git config --local user.name` en `user.email` li ante
 2. **SSH Key** (`sshKeyPath` li lon): ssh-agent li kama jo e key ni, weka e key ante
-3. **GPG Key** (`gpgKeyId` li lon): `git config --local user.signingkey` li ante, sitelen li open
+3. **Commit sitelen** (`gpgKeyId` anu `sshSigningKeyPath` li lon): `git config --local` li ante e `gpg.format` (`openpgp` anu `ssh`), e `user.signingkey`, e `commit.gpgsign` tawa `true`. sina tawa nimi pi key sitelen ala la, o lukin e [commit sitelen kepeken SSH key](#commit-sitelen-kepeken-ssh-key)
 4. **Submodule** (open): submodule ale li kama jo e settings (open: linja wan)
 5. **Sync Check**: nimi pana li sama git config ala li sama
 
 ### Sync Check
 
-nimi sina en `git config --local` ijo (`user.name`, `user.email`, `user.signingkey`) li sama ala la, status bar li toki e ike.
+nimi sina en Git config ijo (`user.name`, `user.email`, en `gpg.format`, `user.signingkey`, `commit.gpgsign` tawa nimi pi sitelen) li sama ala la, status bar li toki e ike. nimi li jo ala e key sitelen la, ijo sitelen ni li ike kin: extension li sitelen e ona li pana sin ala e ijo pini.
 
 **tenpo seme la lukin li open:**
 

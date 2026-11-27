@@ -8,12 +8,40 @@ import * as assert from "node:assert";
 import {
   validateIdentity,
   validateIdentities,
-  isShellSafePath,
   validateFieldForDangerousPatterns,
   validateTextFieldForDangerousPatterns,
+  validateKeyPathFormat,
 } from "../identity/inputValidator";
 import { hasDangerousChars } from "../validators/common";
 import { Identity } from "../identity/identity";
+
+/**
+ * Key paths and the signing fields in validateIdentity
+ */
+function testKeyPathsAndSigningFields(): void {
+  console.log("Testing key paths and signing fields...");
+  const base: Identity = { id: "a", name: "A", email: "a@example.com" };
+
+  assert.strictEqual(validateIdentity({ ...base, sshSigningKeyPath: "~/.ssh/id_sign.pub" }).valid, true);
+  assert.deepStrictEqual(validateIdentity({ ...base, sshSigningKeyPath: "keys/id" }).errors, [
+    "sshSigningKeyPath: must be an absolute path (/ or a drive such as C:\\) or start with ~/ (e.g., ~/.ssh/id_ed25519)",
+  ]);
+  assert.deepStrictEqual(
+    validateIdentity({ ...base, gpgKeyId: "ABCD1234", sshSigningKeyPath: "~/.ssh/id_sign" }).errors,
+    ["sshSigningKeyPath: cannot be set together with gpgKeyId"],
+  );
+
+  // One dangerous-character error per path; ';' is rejected in paths only
+  const errors: string[] = [];
+  validateKeyPathFormat("~/.ssh/a;b", "sshKeyPath", errors);
+  validateKeyPathFormat("~/.ssh/a$(b);c", "sshSigningKeyPath", errors);
+  validateKeyPathFormat(undefined, "sshKeyPath", errors);
+  assert.deepStrictEqual(errors, [
+    "sshKeyPath contains shell metacharacters",
+    "sshSigningKeyPath contains shell metacharacters",
+  ]);
+  console.log("  Key path and signing field tests passed!");
+}
 
 /**
  * Test suite for validateIdentity
@@ -172,70 +200,22 @@ function testValidateIdentity(): void {
     );
   }
 
-  // Test 10a: Windows drive letter sshKeyPath should fail with ~/.ssh/ guidance
-  {
-    const windowsPath: Identity = {
-      id: "test",
-      name: "Test User",
-      email: "test@example.com",
-      sshKeyPath: "C:/Users/user/.ssh/id_ed25519",
-    };
-    const result = validateIdentity(windowsPath);
-    assert.strictEqual(
-      result.valid,
-      false,
-      "Windows drive letter SSH key path should fail",
-    );
-    assert.ok(
-      result.errors.some(
-        (e) => e.includes("sshKeyPath") && e.includes("~/.ssh/"),
-      ),
-      "Error should mention field name and guide to ~/.ssh/ format",
-    );
+  // Test 10a: Windows drive paths are accepted (forward and back slashes, any case)
+  for (const drivePath of [
+    "C:/Users/user/.ssh/id_ed25519",
+    String.raw`C:\Users\user\.ssh\id_ed25519`,
+    "c:/users/user/.ssh/id_ed25519",
+  ]) {
+    for (const field of ["sshKeyPath", "sshSigningKeyPath"] as const) {
+      const result = validateIdentity({ id: "test", name: "Test User", email: "test@example.com", [field]: drivePath });
+      assert.deepStrictEqual(result.errors, [], `${field}: ${drivePath} is accepted`);
+    }
   }
 
-  // Test 10b: Windows drive letter with backslashes should fail with ~/.ssh/ guidance
-  {
-    const windowsBackslashPath: Identity = {
-      id: "test",
-      name: "Test User",
-      email: "test@example.com",
-      sshKeyPath: String.raw`C:\Users\user\.ssh\id_ed25519`,
-    };
-    const result = validateIdentity(windowsBackslashPath);
-    assert.strictEqual(
-      result.valid,
-      false,
-      "Windows backslash SSH key path should fail",
-    );
-    assert.ok(
-      result.errors.some(
-        (e) => e.includes("sshKeyPath") && e.includes("~/.ssh/"),
-      ),
-      "Error should mention field name and guide to ~/.ssh/ format",
-    );
-  }
-
-  // Test 10c: Lowercase drive letter should also fail
-  {
-    const lowercaseWindowsPath: Identity = {
-      id: "test",
-      name: "Test User",
-      email: "test@example.com",
-      sshKeyPath: "c:/users/user/.ssh/id_ed25519",
-    };
-    const result = validateIdentity(lowercaseWindowsPath);
-    assert.strictEqual(
-      result.valid,
-      false,
-      "Lowercase drive letter path should fail",
-    );
-    assert.ok(
-      result.errors.some(
-        (e) => e.includes("sshKeyPath") && e.includes("~/.ssh/"),
-      ),
-      "Error should mention field name and guide to ~/.ssh/ format",
-    );
+  // Test 10b: a drive-relative path (C:file) and ~user are not
+  for (const rejected of ["C:id_ed25519", "~root/.ssh/id_ed25519", "~"]) {
+    const result = validateIdentity({ id: "test", name: "Test User", email: "test@example.com", sshKeyPath: rejected });
+    assert.strictEqual(result.valid, false, `${rejected} is rejected`);
   }
 
   // Test 11: Invalid GPG key ID should fail
@@ -512,79 +492,6 @@ function testValidateIdentities(): void {
 }
 
 /**
- * Test suite for isShellSafePath
- */
-function testIsPathSafe(): void {
-  console.log("Testing isShellSafePath...");
-
-  // Test 1: Normal path should be safe
-  assert.strictEqual(
-    isShellSafePath("/home/user/.ssh/id_rsa"),
-    true,
-    "Normal path is safe",
-  );
-
-  // Test 2: Path with ~ should be safe
-  assert.strictEqual(
-    isShellSafePath("~/.ssh/id_rsa"),
-    true,
-    "Path with ~ is safe",
-  );
-
-  // Test 3: Path traversal should be unsafe
-  assert.strictEqual(
-    isShellSafePath("/home/../etc/passwd"),
-    false,
-    "Path traversal is unsafe",
-  );
-
-  // Test 4: Shell metacharacters should be unsafe
-  assert.strictEqual(
-    isShellSafePath("/home/user/key$(rm -rf /)"),
-    false,
-    "Shell metachar is unsafe",
-  );
-
-  // Test 5: Command substitution should be unsafe
-  assert.strictEqual(
-    isShellSafePath("/home/$(whoami)/key"),
-    false,
-    "Command sub is unsafe",
-  );
-
-  // Test 6: Backticks should be unsafe
-  assert.strictEqual(
-    isShellSafePath("/home/`id`/key"),
-    false,
-    "Backticks are unsafe",
-  );
-
-  // Test 7: Pipe should be unsafe
-  assert.strictEqual(
-    isShellSafePath("/home/user/key|cat"),
-    false,
-    "Pipe is unsafe",
-  );
-
-  // Test 8: Windows forward-slash path is shell-safe (no metacharacters)
-  // isShellSafePath only checks shell injection — Windows rejection is caller's responsibility
-  assert.strictEqual(
-    isShellSafePath("C:/Users/user/.ssh/id_ed25519"),
-    true,
-    "Windows path has no shell metacharacters (rejection is NOT isShellSafePath's responsibility)",
-  );
-
-  // Test 9: Windows backslash path is also shell-safe
-  assert.strictEqual(
-    isShellSafePath(String.raw`C:\Users\user\.ssh\id_ed25519`),
-    true,
-    "Windows backslash path has no shell metacharacters",
-  );
-
-  console.log("✅ All isShellSafePath tests passed!");
-}
-
-/**
  * Test suite for validation consistency between UI layer and identity layer
  *
  * Invariant: validateFieldForDangerousPatterns rejects a SUPERSET of what
@@ -854,9 +761,9 @@ export function runSecurityTests(): void {
   try {
     testValidateIdentity();
     testValidateIdentities();
-    testIsPathSafe();
     testValidationConsistency();
     testValidateTextFieldForDangerousPatterns();
+    testKeyPathsAndSigningFields();
 
     console.log("\n✅ All security tests passed!\n");
   } catch (error) {

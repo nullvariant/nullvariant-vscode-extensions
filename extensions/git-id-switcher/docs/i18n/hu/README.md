@@ -49,7 +49,7 @@ Bár sok Git-profil váltó létezik, a **Git ID Switcher** olyan összetett pro
 - **Szinkronizáció-ellenőrzés**: Profil és git config közötti eltérés valós idejű észlelése, állapotsáv-figyelmeztetéssel
 - **Almodul-támogatás**: Profil automatikus alkalmazása a Git-almodulokra
 - **SSH-kulcs kezelés**: SSH-kulcsok automatikus váltása az ssh-agent-ben
-- **GPG-aláírás támogatás**: GPG-kulcs konfigurálása commit aláíráshoz (opcionális)
+- **Commit-aláírás támogatás**: Commitok aláírása GPG-kulccsal vagy SSH-kulccsal (opcionális)
 - **Részletes tooltipek**: Teljes körű profilinformáció leírással és SSH-hosttal
 - **Platformfüggetlen**: Működik macOS, Linux és Windows rendszeren
 - **Többnyelvű**: 17 nyelvet támogat
@@ -235,6 +235,38 @@ Megjegyzés: A 4. profil (`client-b`) rövidített nevet, az 5. (`oss`) fejleszt
 
 ---
 
+## Commit-aláírás SSH-kulccsal
+
+A Git a commitokat GPG-kulcs helyett SSH-kulccsal is alá tudja írni. Állítsa be a `sshSigningKeyPath` mezőt a profilnál a **felhasználói beállításokban** (`settings.json`):
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Nagy Alex",
+      "email": "alex.nagy@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- A `sshSigningKeyPath` a privát kulcs, vagy ha a privát kulcs az ssh-agentben van, a nyilvános kulcs (`.pub`)
+- Egy profilban a `gpgKeyId` és a `sshSigningKeyPath` nem adható meg egyszerre
+- Az aláíró kulcsok (`gpgKeyId`, `sshSigningKeyPath`) csak a felhasználói beállításokból olvashatók be, abból a profilból, amelynek azonos az `id`, a `name` és az `email` értéke. A munkaterület `.vscode/settings.json` fájljában lévő értékeket a bővítmény nem használja, és a profilképernyők csak a felhasználói beállításokba mentenek
+- A kulcsok útvonala lehet a `~/.ssh/` mappán kívül is, abszolút útvonalként vagy `~/` kezdetű útvonalként. Windowson a `C:\Users\...` formájú meghajtós útvonal is elfogadott. Mielőtt a git használná a kulcsot, a bővítmény aláírat vele egy rövid tesztszöveget úgy, ahogy a git egy commitot ír alá (`ssh-keygen -Y sign`), askpass program indítása nélkül, 30 másodperces időkorláttal. Ha nem tud aláírni, vagy egy másik kulcs ír alá (például a privát kulcs mellett maradt régi `.pub` fájl miatt), a váltás leáll. Az ellenőrzés csak akkor fut újra, ha a kulcsfájl vagy a mellette lévő `.pub` fájl megváltozik, így egy hardveres kulcs csak ekkor kér érintést. Jelmondattal védett privát kulcs így nem ellenőrizhető: állítsa a `sshSigningKeyPath` értékét a nyilvános kulcs fájljára (`.pub`), és adja hozzá a kulcsot az ssh-agenthez
+- Unixon az aláíró kulcs fájljának és a mellette lévő `.pub` fájlnak kulcshoz illő jogosultságokkal kell rendelkeznie, mint a hitelesítő kulcsnál: a privát kulcs nem lehet elérhető a csoport és mások számára, a nyilvános kulcs nem lehet általuk írható, és egyik sem lehet futtatható. Különben a váltás leáll
+- Váltáskor a bővítmény `git config --local` segítségével írja a `gpg.format`, `user.signingkey` és `commit.gpgsign` értékeket. Aláíró kulcs nélküli profilra váltáskor ezt a hármat a korábbi értékükre állítja vissza, de csak ha mindhárom még a bővítmény által írt értéket tartalmazza; ha bármelyiket kézzel módosította, egyikhez sem nyúl
+- Az aláíró kulcs nem kerül az ssh-agentbe: az `autoSwitchSshKey` csak a hitelesítő kulcsot (`sshKeyPath`) váltja. A többi identitás kulcsainak eltávolításakor megtartja azt a kulcsot, amellyel a kiválasztott identitás aláír
+- Az SSH-kulccsal való aláíráshoz Git 2.34 vagy újabb kell. Régebbi Gittel a váltás leáll, és a Git beállításai nem változnak
+
+Regisztrálja a nyilvános kulcsot a GitHubon **aláíró kulcsként** (Signing Key), a hitelesítő kulcstól külön, hogy a commitjai ellenőrzöttként jelenjenek meg.
+
+---
+
 ## Profilkezelés
 
 Kattintson az állapotsávra → a lista alján válassza a „Profilkezelés" lehetőséget a kezelőfelület megnyitásához.
@@ -261,17 +293,20 @@ A profilokat a Parancspalettából is törölheti a `Git ID Switcher: Delete Ide
 
 ### Profil tulajdonságai
 
-| Tulajdonság   | Kötelező | Leírás                                                               |
-| ------------- | -------- | -------------------------------------------------------------------- |
-| `id`          | ✅       | Egyedi azonosító (pl.: `"personal"`, `"work"`)                       |
-| `name`        | ✅       | Git user.name — commitokban jelenik meg                              |
-| `email`       | ✅       | Git user.email — commitokban jelenik meg                             |
-| `icon`        |          | Emoji az állapotsávon (pl.: `"🏠"`). Csak egyetlen emoji használható |
-| `service`     |          | Szolgáltatás neve (pl.: `"GitHub"`, `"GitLab"`). UI megjelenítéshez  |
-| `description` |          | Rövid leírás a választóban és tooltipben                             |
-| `sshKeyPath`  |          | Privát SSH-kulcs elérési útja (pl.: `"~/.ssh/id_ed25519_work"`)      |
-| `sshHost`     |          | SSH config host alias (pl.: `"github-work"`)                         |
-| `gpgKeyId`    |          | GPG-kulcs ID commit-aláíráshoz                                       |
+| Tulajdonság         | Kötelező | Leírás                                                                                                                     |
+| ------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `id`                | ✅       | Egyedi azonosító (pl.: `"personal"`, `"work"`)                                                                             |
+| `name`              | ✅       | Git user.name — commitokban jelenik meg                                                                                    |
+| `email`             | ✅       | Git user.email — commitokban jelenik meg                                                                                   |
+| `icon`              |          | Emoji az állapotsávon (pl.: `"🏠"`). Csak egyetlen emoji használható                                                       |
+| `service`           |          | Szolgáltatás neve (pl.: `"GitHub"`, `"GitLab"`). UI megjelenítéshez                                                        |
+| `description`       |          | Rövid leírás a választóban és tooltipben                                                                                   |
+| `sshKeyPath`        |          | Hitelesítésre szolgáló privát SSH-kulcs elérési útja (pl.: `"~/.ssh/id_ed25519_work"`)                                     |
+| `sshHost`           |          | SSH config host alias (pl.: `"github-work"`)                                                                               |
+| `gpgKeyId`          |          | GPG-kulcs ID commit-aláíráshoz. Nem adható meg a `sshSigningKeyPath` mellett                                               |
+| `sshSigningKeyPath` |          | Commit-aláírásra szolgáló SSH-kulcs elérési útja (pl.: `"~/.ssh/id_ed25519_signing"`). Nem adható meg a `gpgKeyId` mellett |
+
+Az aláíró kulcsok (`gpgKeyId`, `sshSigningKeyPath`) csak a felhasználói beállításokból olvashatók be.
 
 #### Megjelenítési korlátozások
 
@@ -280,24 +315,24 @@ A profilokat a Parancspalettából is törölheti a `Git ID Switcher: Delete Ide
 
 ### Globális beállítások
 
-| Beállítás                                  | Alapértelmezett | Leírás                                                                                          |
-| ------------------------------------------ | --------------- | ----------------------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | Lásd a mintát   | Profil konfigurációk listája                                                                    |
-| `gitIdSwitcher.defaultIdentity`            | Lásd a mintát   | Alapértelmezett profil ID                                                                       |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`          | SSH-kulcs automatikus váltása profilváltáskor                                                   |
-| `gitIdSwitcher.showNotifications`          | `true`          | Értesítés megjelenítése profilváltáskor                                                         |
-| `gitIdSwitcher.applyToSubmodules`          | `true`          | Profil alkalmazása Git-almodulokra                                                              |
-| `gitIdSwitcher.submoduleDepth`             | `1`             | Max. mélység beágyazott almodulokhoz (1-5)                                                      |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`         | Ikon emoji beírása a Git config `user.name`-be                                                  |
-| `gitIdSwitcher.syncCheck.enabled`          | `true`          | Kiválasztott profil és a tényleges git config egyezésének ellenőrzése                           |
-| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`          | Szinkronizáció-ellenőrzés futtatása, amikor a szerkesztőablak visszakapja a fókuszt             |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`         | Audit naplózás fájlba (profilváltások, SSH műveletek, stb.)                                     |
-| `gitIdSwitcher.logging.filePath`           | `""`            | Naplófájl elérési útja (pl.: `~/.git-id-switcher/security.log`). Üres = alapértelmezett hely    |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760`      | Max. fájlméret rotálás előtt (bájt, 1MB-100MB)                                                  |
-| `gitIdSwitcher.logging.maxFiles`           | `5`             | Rotált naplófájlok max. száma (1-20)                                                            |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`         | Ha engedélyezve van, minden érték maszkolva van a naplókban (maximális adatvédelem)             |
-| `gitIdSwitcher.logging.level`              | `"INFO"`        | Naplózási szint (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). A kiválasztott szint és felette |
-| `gitIdSwitcher.commandTimeouts`            | `{}`            | Egyedi időtúllépés parancsonként (ms, 1mp-5perc). Pl.: `{"git": 15000, "ssh-add": 10000}`       |
+| Beállítás                                  | Alapértelmezett | Leírás                                                                                                |
+| ------------------------------------------ | --------------- | ----------------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Lásd a mintát   | Profil konfigurációk listája                                                                          |
+| `gitIdSwitcher.defaultIdentity`            | Lásd a mintát   | Alapértelmezett profil ID                                                                             |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`          | A hitelesítésre szolgáló SSH-kulcs (`sshKeyPath`) automatikus váltása az ssh-agentben profilváltáskor |
+| `gitIdSwitcher.showNotifications`          | `true`          | Értesítés megjelenítése profilváltáskor                                                               |
+| `gitIdSwitcher.applyToSubmodules`          | `true`          | Profil alkalmazása Git-almodulokra                                                                    |
+| `gitIdSwitcher.submoduleDepth`             | `1`             | Max. mélység beágyazott almodulokhoz (1-5)                                                            |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`         | Ikon emoji beírása a Git config `user.name`-be                                                        |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`          | Kiválasztott profil és a tényleges git config egyezésének ellenőrzése                                 |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`          | Szinkronizáció-ellenőrzés futtatása, amikor a szerkesztőablak visszakapja a fókuszt                   |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`         | Audit naplózás fájlba (profilváltások, SSH műveletek, stb.)                                           |
+| `gitIdSwitcher.logging.filePath`           | `""`            | Naplófájl elérési útja (pl.: `~/.git-id-switcher/security.log`). Üres = alapértelmezett hely          |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`      | Max. fájlméret rotálás előtt (bájt, 1MB-100MB)                                                        |
+| `gitIdSwitcher.logging.maxFiles`           | `5`             | Rotált naplófájlok max. száma (1-20)                                                                  |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`         | Ha engedélyezve van, minden érték maszkolva van a naplókban (maximális adatvédelem)                   |
+| `gitIdSwitcher.logging.level`              | `"INFO"`        | Naplózási szint (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). A kiválasztott szint és felette       |
+| `gitIdSwitcher.commandTimeouts`            | `{}`            | Egyedi időtúllépés parancsonként (ms, 1mp-5perc). Pl.: `{"git": 15000, "ssh-add": 10000}`             |
 
 #### Az `includeIconInGitConfig` beállításról
 
@@ -345,13 +380,13 @@ Profil váltásakor a bővítmény a következőket hajtja végre (sorrendben):
 
 1. **Git konfiguráció** (mindig): Beállítja a `git config --local user.name` és `user.email` értékeket
 2. **SSH-kulcs** (ha `sshKeyPath` be van állítva): Eltávolítja a többi kulcsot az ssh-agent-ből, hozzáadja a kiválasztottat
-3. **GPG-kulcs** (ha `gpgKeyId` be van állítva): Beállítja a `git config --local user.signingkey` értéket és engedélyezi az aláírást
+3. **Commit-aláírás** (ha `gpgKeyId` vagy `sshSigningKeyPath` be van állítva): `git config --local` segítségével beállítja a `gpg.format` (`openpgp` vagy `ssh`) és a `user.signingkey` értéket, a `commit.gpgsign` értékét pedig `true`-ra. Aláíró kulcs nélküli profilra váltás: lásd [Commit-aláírás SSH-kulccsal](#commit-aláírás-ssh-kulccsal)
 4. **Almodulok** (ha engedélyezve): Propagálja a konfigurációt az összes almodulba (alapértelmezett: mélység 1)
 5. **Szinkronizáció-ellenőrzés**: Ellenőrzi, hogy az alkalmazott profil megegyezik-e a tényleges git configgal
 
 ### Szinkronizáció-ellenőrzés
 
-Összehasonlítja a kiválasztott profilt a tényleges `git config --local` értékekkel (`user.name`, `user.email`, `user.signingkey`), és eltérés észlelése esetén figyelmeztetést jelenít meg az állapotsávon.
+Összehasonlítja a kiválasztott profilt a tényleges Git-konfigurációs értékekkel (`user.name`, `user.email`, aláíró profilnál `gpg.format`, `user.signingkey`, `commit.gpgsign`), és eltérés észlelése esetén figyelmeztetést jelenít meg az állapotsávon. Aláíró kulcs nélküli profilnál a bővítmény által írt, de vissza nem állított aláírási értékek is eltérésnek számítanak.
 
 **Mikor fut az ellenőrzés:**
 

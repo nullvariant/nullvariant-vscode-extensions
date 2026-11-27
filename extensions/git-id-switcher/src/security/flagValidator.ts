@@ -30,15 +30,6 @@ export interface CombinedFlagResult {
 }
 
 /**
- * Allowed combined flag patterns per command
- * Only explicitly listed combinations are allowed.
- * Patterns are matched exactly (order matters).
- */
-const ALLOWED_COMBINED_PATTERNS: Record<string, readonly string[]> = {
-  "ssh-keygen": ["lf"], // -lf (list fingerprint of file)
-};
-
-/**
  * Detect unsafe characters in a flag argument.
  *
  * @remarks
@@ -124,15 +115,12 @@ function validateCombinedFlagChars(
  */
 function validateCombinedFlagAgainstAllowlist(
   flagChars: string,
-  command: string,
   allowedArgs: readonly string[],
 ): CombinedFlagResult {
-  // Check if this command has allowed combined patterns
-  const commandPatterns = ALLOWED_COMBINED_PATTERNS[command];
-  if (commandPatterns?.includes(flagChars)) {
-    return { valid: true };
-  }
-
+  // No command allows a combination of flags as a whole (ssh-keygen's forms,
+  // -lf included, are checked by its grammar in sshKeygenRules.ts first), so
+  // a combined flag is always rejected; the reason says whether every
+  // character is a flag this command allows on its own.
   // Extract allowed single-char flags from allowedArgs
   const allowedSingleChars = new Set<string>();
   for (const allowed of allowedArgs) {
@@ -175,17 +163,14 @@ function validateCombinedFlagAgainstAllowlist(
  * 1. Length limit to prevent DoS attacks
  * 2. Duplicate flag detection (e.g., -ll is rejected)
  * 3. Unknown flag detection (each character must be in allowlist)
- * 4. Exact match validation (patterns must match exactly)
- * 5. Only explicitly allowed combinations are permitted
+ * 4. Every combination is rejected: no command allows combined flags
  *
  * @param flag - The flag to validate (e.g., '-lf', '-abc')
- * @param command - The command being executed (e.g., 'ssh-keygen')
  * @param allowedArgs - Array of allowed individual flags
  * @returns CombinedFlagResult indicating if the flag is valid
  */
 export function validateCombinedFlags(
   flag: string,
-  command: string,
   allowedArgs: readonly string[],
 ): CombinedFlagResult {
   const normalization = normalizeFlagSafely(flag);
@@ -205,7 +190,7 @@ export function validateCombinedFlags(
   }
 
   // Extract flag characters (remove leading dash)
-  return validateShortFlagChars(normalizedFlag.slice(1), command, allowedArgs);
+  return validateShortFlagChars(normalizedFlag.slice(1), allowedArgs);
 }
 
 /**
@@ -291,7 +276,6 @@ function detectMalformedFlagChars(flagChars: string): CombinedFlagResult | null 
  */
 function validateShortFlagChars(
   flagChars: string,
-  command: string,
   allowedArgs: readonly string[],
 ): CombinedFlagResult {
   const malformed = detectMalformedFlagChars(flagChars);
@@ -311,9 +295,9 @@ function validateShortFlagChars(
     return { valid: false, reason: "Combined flag has too many characters" };
   }
 
-  // Check for duplicate characters, then against allowlist patterns and individual flags
+  // Check for duplicate characters, then against the individual flags
   return (
     validateCombinedFlagChars(flagChars) ??
-    validateCombinedFlagAgainstAllowlist(flagChars, command, allowedArgs)
+    validateCombinedFlagAgainstAllowlist(flagChars, allowedArgs)
   );
 }

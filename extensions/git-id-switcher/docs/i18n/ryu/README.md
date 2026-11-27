@@ -71,7 +71,7 @@ Gitプロフィール切り替えツールやいっぺーあいびーしが、**
 - **Sync Check**: プロフィールとぅgit configぬ不一致ばリアルタイムんかい検出さーに、ステータスバーんかい警告表示
 - **サブモジュール対応**: Gitサブモジュールんかいも自動的にプロフィール伝播
 - **SSH鍵管理**: ssh-agentぬSSH鍵自動的に切り替え
-- **GPG署名対応**: コミット署名用ぬGPG鍵設定（オプション）
+- **コミット署名対応**: GPG鍵かSSH鍵さーにコミットんかい署名（オプション）
 - **リッチなツールチップ**: 説明やSSHホスト含む詳細なプロフィール情報
 - **クロスプラットフォーム**: macOS、Linux、Windowsんかい動ちゃびーん
 - **多言語対応**: 17言語サポート
@@ -257,6 +257,38 @@ Host gitlab-oss
 
 ---
 
+## SSH鍵さーにコミット署名
+
+GitやGPG鍵ぬ代わいんかいSSH鍵さーにコミットんかい署名ないびーん。**ユーザー設定**（`settings.json`）ぬプロフィールんかい`sshSigningKeyPath`ば設定さびり:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "比嘉真",
+      "email": "makoto.higa@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath`んかいや秘密鍵ば指定さびーん。秘密鍵がssh-agentんかいあいねー公開鍵（`.pub`）ん指定ないびーん
+- 一ちぬプロフィールんかい`gpgKeyId`とぅ`sshSigningKeyPath`ば一緒ねー設定ないびらん
+- 署名用ぬ鍵（`gpgKeyId`、`sshSigningKeyPath`）や、ユーザー設定ぬ、`id`・`name`・`email`ぬ同じプロフィールからぬみ読み込まりーん。ワークスペースぬ`.vscode/settings.json`ぬ値や使わらん、プロフィールぬ画面んユーザー設定んかいだけ保存さびーん
+- 鍵ぬパスや`~/.ssh/`ぬ外ん指定ないびーん（絶対パスか`~/`から始まるパス）。Windowsや`C:\Users\...`ぬようなドライブぬパスん指定ないびーん。gitんかい鍵ば使わする前に、拡張機能やその鍵さーに、gitぬコミットんかい署名するとぅ同じ形（`ssh-keygen -Y sign`）さーに短さるテストぬ文んかい署名さびーん。askpassぬプログラムや起動さびらん、30秒し打ち切いびーん。署名ならんたい、別ぬ鍵ぬ署名さるばーや（秘密鍵ぬ隣に古さる`.pub`ファイルぬ残とーるばーなど）、切り替えや止みやびーん。この確かみや、鍵ぬファイルか隣ぬ`.pub`ファイルぬ変わたるばーだけ直さびーくとぅ、ハードウェアぬ鍵ぬタッチ求みゆしんそぬ時だけやいびーん。パスフレーズぬある秘密鍵やこの方法さーに確かみららんくとぅ、`sshSigningKeyPath`んかいその公開鍵ぬファイル（`.pub`）ば指定し、鍵ばssh-agentんかい追加さびり
+- Unixや、署名ぬ鍵ぬファイルとぅ隣ぬ`.pub`ファイルんかい、認証ぬ鍵とぅ同じ鍵ぬ権限ぬ要いびーん。秘密鍵やグループ・他人ぬアクセスならん、公開鍵やグループ・他人ぬ書き込みならん、どっちん実行ぬ権限ぬ無らんくとぅ。あらんばーや切り替えや止みやびーん
+- 切り替え時、拡張機能や`git config --local`さーに`gpg.format`・`user.signingkey`・`commit.gpgsign`ば書き込みびーん。署名鍵ぬねーんプロフィールんかい切り替えーねー、三ちぬ値が拡張機能ぬ書ちゃるまますぃがー、三ちとぅん前ぬ値んかい戻しーん。一ちやてぃん手さーに変えーてぃれー、三ちとぅん触らん
+- 署名用ぬ鍵やssh-agentんかい追加さらん。`autoSwitchSshKey`ぬ切り替えーしや認証用ぬ鍵（`sshKeyPath`）だけ。他ぬプロファイルぬ鍵外すしん、切り替え先ぬプロファイルぬ署名に使ゆる鍵や外さん
+- SSHぬ鍵っし署名するにはGit 2.34以降ぬ要いん。うりより古さるGitやれー、Gitぬ設定変えらんぐとぅ切り替え止みいん
+
+コミットが検証済み（Verified）んでぃ表示さりーぐとぅ、公開鍵ばGitHubんかい**署名鍵**（Signing Key）とぅさーに登録さびり（認証用ぬ鍵とぅや別に登録）。
+
+---
+
 ## プロフィール管理
 
 ステータスバークリック → 一覧下部ぬ「プロフィール管理」んかい管理画面開ちゅん。
@@ -283,17 +315,20 @@ Host gitlab-oss
 
 ### プロフィールぬプロパティ
 
-| プロパティ    | 必須 | 説明                                                               |
-| ------------- | ---- | ------------------------------------------------------------------ |
-| `id`          | ✅   | 一意ぬ識別子（例：`"personal"`, `"work"`）                         |
-| `name`        | ✅   | Git user.name - コミットんかい表示                                 |
-| `email`       | ✅   | Git user.email - コミットんかい表示                                |
-| `icon`        |      | ステータスバーんかい表示さーる絵文字（例：`"🐉"`）。単一絵文字のみ |
-| `service`     |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI表示んかい使用         |
-| `description` |      | ピッカーとぅツールチップんかい表示さーる短い説明                   |
-| `sshKeyPath`  |      | SSHプライベートキーぬパス（例：`"~/.ssh/id_ed25519_work"`）        |
-| `sshHost`     |      | SSH configぬHostエイリアス（例：`"github-work"`）                  |
-| `gpgKeyId`    |      | コミット署名用ぬGPG鍵ID                                            |
+| プロパティ          | 必須 | 説明                                                                                                   |
+| ------------------- | ---- | ------------------------------------------------------------------------------------------------------ |
+| `id`                | ✅   | 一意ぬ識別子（例：`"personal"`, `"work"`）                                                             |
+| `name`              | ✅   | Git user.name - コミットんかい表示                                                                     |
+| `email`             | ✅   | Git user.email - コミットんかい表示                                                                    |
+| `icon`              |      | ステータスバーんかい表示さーる絵文字（例：`"🐉"`）。単一絵文字のみ                                     |
+| `service`           |      | サービス名（例：`"GitHub"`, `"GitLab"`）。UI表示んかい使用                                             |
+| `description`       |      | ピッカーとぅツールチップんかい表示さーる短い説明                                                       |
+| `sshKeyPath`        |      | 認証用ぬSSHプライベートキーぬパス（例：`"~/.ssh/id_ed25519_work"`）                                    |
+| `sshHost`           |      | SSH configぬHostエイリアス（例：`"github-work"`）                                                      |
+| `gpgKeyId`          |      | コミット署名用ぬGPG鍵ID。`sshSigningKeyPath`とぅ一緒ねー設定ないびらん                                 |
+| `sshSigningKeyPath` |      | コミット署名用ぬSSH鍵ぬパス（例：`"~/.ssh/id_ed25519_signing"`）。`gpgKeyId`とぅ一緒ねー設定ないびらん |
+
+署名用ぬ鍵（`gpgKeyId`、`sshSigningKeyPath`）や、ユーザー設定からぬみ読み込まりーん。
 
 #### 表示んかい関すーる制限
 
@@ -306,7 +341,7 @@ Host gitlab-oss
 | ------------------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | サンプル参照 | プロフィール設定ぬリスト                                                                                  |
 | `gitIdSwitcher.defaultIdentity`            | サンプル参照 | 使用すーるデフォルトプロフィールぬID                                                                      |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | プロフィール変更時んかいSSH鍵自動切り替え                                                                 |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | プロフィール変更時んかい認証用ぬSSH鍵（`sshKeyPath`）ばssh-agentさーに自動切り替え                        |
 | `gitIdSwitcher.showNotifications`          | `true`       | プロフィール切り替え時んかい通知表示                                                                      |
 | `gitIdSwitcher.applyToSubmodules`          | `true`       | Gitサブモジュールんかいプロフィール伝播                                                                   |
 | `gitIdSwitcher.submoduleDepth`             | `1`          | ネストさりたサブモジュール設定ぬ最大深度（1-5）                                                           |
@@ -367,13 +402,13 @@ Gitぬ設定んかいや3つぬレイヤーあいん、下位ぬ設定ば上位�
 
 1. **Git Config**（常時）: `git config --local user.name`とぅ`user.email`ば設定
 2. **SSH鍵**（`sshKeyPath`設定時）: 他ぬ鍵ばssh-agentから削除さーに、選択した鍵ば追加
-3. **GPG鍵**（`gpgKeyId`設定時）: `git config --local user.signingkey`ば設定さーに、署名ば有効化
+3. **コミット署名**（`gpgKeyId`か`sshSigningKeyPath`設定時）: `git config --local`さーに`gpg.format`（`openpgp`か`ssh`）・`user.signingkey`・`commit.gpgsign`（`true`）ば設定。署名鍵ぬねーんプロフィールんかい切り替えーる時や[SSH鍵さーにコミット署名](#ssh鍵さーにコミット署名)ば見ちくぃみそーれー
 4. **サブモジュール**（有効時）: 全部ぬサブモジュールんかい設定ば伝播（デフォルト：深度1）
 5. **Sync Check**: 適用したプロフィールが実際ぬgit configとぅ一致しちょーるか確認
 
 ### Sync Check
 
-選択したプロフィールば実際ぬ`git config --local`ぬ値（`user.name`, `user.email`, `user.signingkey`）とぅ比較さーに、不一致が検出さりたらステータスバーんかい警告表示さびーん。
+選択したプロフィールば実際ぬGit設定ぬ値（`user.name`, `user.email`、署名するプロフィールや`gpg.format`, `user.signingkey`, `commit.gpgsign`）とぅ比較さーに、不一致が検出さりたらステータスバーんかい警告表示さびーん。署名鍵ぬねーんプロフィールでー、拡張機能ぬ書ちゃい元んかい戻さんたる署名ぬ値ん不一致とぅさびーん。
 
 **確認が実行さーるタイミング:**
 

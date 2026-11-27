@@ -55,7 +55,7 @@ Git profile switchers law' tu'lu', 'ach **Git ID Switcher** latlh tools complex 
 - **Sync Check**: Profile je git config mismatch real-time detect, status bar warning show
 - **Submodule support**: Git submodules automatic profiles propagate
 - **SSH key management**: ssh-agent SSH keys automatic switch
-- **GPG signing support**: Commit signing GPG keys configure (optional)
+- **Commit signing support**: GPG key pagh SSH key commit sign (optional)
 - **Rich tooltips**: Description 'ej SSH host profile details
 - **Cross-platform**: macOS, Linux, Windows - Hoch platforms!
 - **Multilingual**: 17 languages support
@@ -240,6 +240,38 @@ ghu: profile 4 (`client-b`) pong mojaq lo'. profile 5 (`oss`) chenmoH pong lo'. 
 
 ---
 
+## SSH key commit signing
+
+Git GPG key rather SSH key commit sign laH. Profile **user settings** (`settings.json`) `sshSigningKeyPath` set:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Qapla'",
+      "email": "qapla@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath`: private key, pagh private key ssh-agent Daq: public key (`.pub`)
+- One profile `gpgKeyId` `sshSigningKeyPath` both set Qo'
+- Signing keys (`gpgKeyId`, `sshSigningKeyPath`) user settings neH read, rap `id`, `name`, `email` profile vo'. Workspace `.vscode/settings.json` values used ghobe', profile screens user settings neH pol
+- Key paths `~/.ssh/` outside OK: absolute path pagh `~/` start path. Windows: drive path (`C:\Users\...`) OK. git key lo'pa', extension key test text sign (`ssh-keygen -Y sign`) git commit sign rur; askpass program chu'be', 30 lup poH. sign laHbe' pagh latlh key sign (private key retlh `.pub` file ngo'): switch mev. key file pagh `.pub` file choHlu'DI' neH check nIteb; hardware key: vaj neH touch tlhob. passphrase private key: check laHbe'; `sshSigningKeyPath` public key file (`.pub`) yIlo', key ssh-agent yIchel
+- Unix: sign key file `.pub` file je: key permission tu'lu'nIS, authentication key rur: private key group latlh ghaj laHbe', public key group latlh ghItlh laHbe', wa' je qaSmoH laHbe'. pagh: switch mev
+- Switch: extension `gpg.format`, `user.signingkey`, `commit.gpgsign` `git config --local` write. Signing key-less profile switch: all three extension-written values remain, then previous values restore; one hand-changed, all three untouched
+- Signing key ssh-agent chel ghobe': `autoSwitchSshKey` authentication key (`sshKeyPath`) neH switch. latlh identity key teq, 'ach identity wIvlu'pu'bogh signing key teqbe'
+- SSH key signing Git 2.34 pagh ghu'vam neH poQ. Git ngo' lo'lu'chugh, Git config choHbe' 'ej switch mev
+
+GitHub public key **Signing Key** register (authentication key separate), commits verified. Qapla'!
+
+---
+
 ## Profiles qon
 
 Status bar yIwIv → list bIng "Profile Management" qon screen poSmoH.
@@ -266,17 +298,20 @@ Command Palette `Git ID Switcher: Delete Identity` profile teq je Datu'.
 
 ### Profile Dotlh
 
-| Property      | Required | Description                                                 |
-| ------------- | -------- | ----------------------------------------------------------- |
-| `id`          | ✅       | Unique identifier (e.g., `"personal"`, `"work"`)            |
-| `name`        | ✅       | Git user.name — commits show                                |
-| `email`       | ✅       | Git user.email — commits show                               |
-| `icon`        |          | Status bar emoji (e.g., `"⚔️"`). Single emoji only          |
-| `service`     |          | Service name (e.g., `"GitHub"`, `"GitLab"`). UI display use |
-| `description` |          | Picker 'ej tooltip short description                        |
-| `sshKeyPath`  |          | SSH private key path (e.g., `"~/.ssh/id_ed25519_work"`)     |
-| `sshHost`     |          | SSH config Host alias (e.g., `"github-work"`)               |
-| `gpgKeyId`    |          | Commit signing GPG key ID                                   |
+| Property            | Required | Description                                                                                |
+| ------------------- | -------- | ------------------------------------------------------------------------------------------ |
+| `id`                | ✅       | Unique identifier (e.g., `"personal"`, `"work"`)                                           |
+| `name`              | ✅       | Git user.name — commits show                                                               |
+| `email`             | ✅       | Git user.email — commits show                                                              |
+| `icon`              |          | Status bar emoji (e.g., `"⚔️"`). Single emoji only                                         |
+| `service`           |          | Service name (e.g., `"GitHub"`, `"GitLab"`). UI display use                                |
+| `description`       |          | Picker 'ej tooltip short description                                                       |
+| `sshKeyPath`        |          | Authentication SSH private key path (e.g., `"~/.ssh/id_ed25519_work"`)                     |
+| `sshHost`           |          | SSH config Host alias (e.g., `"github-work"`)                                              |
+| `gpgKeyId`          |          | Commit signing GPG key ID. `sshSigningKeyPath` with set Qo'                                |
+| `sshSigningKeyPath` |          | Commit signing SSH key path (e.g., `"~/.ssh/id_ed25519_signing"`). `gpgKeyId` with set Qo' |
+
+Signing keys (`gpgKeyId`, `sshSigningKeyPath`) user settings neH read.
 
 #### cha' jen
 
@@ -289,7 +324,7 @@ Command Palette `Git ID Switcher: Delete Identity` profile teq je Datu'.
 | ------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | Sample     | Profile configurations list                                                               |
 | `gitIdSwitcher.defaultIdentity`            | Sample     | Default profile ID use                                                                    |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Profile change SSH keys automatic switch                                                  |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Profile change authentication SSH key (`sshKeyPath`) ssh-agent automatic switch           |
 | `gitIdSwitcher.showNotifications`          | `true`     | Profile switch notification show                                                          |
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | Git submodules profiles propagate                                                         |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | Nested submodules max depth (1-5)                                                         |
@@ -350,13 +385,13 @@ Profile DachoH, extension (order) vum:
 
 1. **Git Config** (reH): `git config --local user.name` je `user.email` Datogh
 2. **SSH key** (`sshKeyPath` toghta'): latlh keys ssh-agent teq, wIvta' chel
-3. **GPG key** (`gpgKeyId` toghta'): `git config --local user.signingkey` Datogh, signing chu'
+3. **Commit signing** (`gpgKeyId` pagh `sshSigningKeyPath` toghta'): `git config --local` `gpg.format` (`openpgp` pagh `ssh`), `user.signingkey`, `commit.gpgsign` `true` Datogh. Signing key-less profile switch: [SSH key commit signing](#ssh-key-commit-signing) yIlegh
 4. **Submodules** (chu'ta'): Hoch submodules config ngeH (default: depth 1)
 5. **Sync Check**: Profile applied git config actual match verify
 
 ### Sync Check
 
-Profile wIvta' `git config --local` values (`user.name`, `user.email`, `user.signingkey`) actual compare, mismatch detect status bar warning show.
+Profile wIvta' Git config values (`user.name`, `user.email`, signing profile: `gpg.format`, `user.signingkey`, `commit.gpgsign`) actual compare, mismatch detect status bar warning show. Signing key-less profile: extension-written, not-restored signing values also mismatch.
 
 **ghorgh checks run:**
 

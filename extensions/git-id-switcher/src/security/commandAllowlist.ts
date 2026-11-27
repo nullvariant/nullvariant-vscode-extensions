@@ -9,6 +9,11 @@
 
 import { validatePathSecurity, isPathArgument } from './pathValidator';
 import { validateCombinedFlags } from './flagValidator';
+import { validateGitConfigArgs } from './gitConfigRules';
+import { validateSshKeygenArgs, validateSshKeygenInput } from './sshKeygenRules';
+import { validateDriveAbsolutePathSecurity } from './drivePathValidator';
+import { isDriveAbsolutePath } from '../validators/common';
+import { MAX_COMMAND_ARG_LENGTH } from '../core/constants';
 
 // Re-export path security utilities
 export { validatePathSecurity, isPathArgument, SecurePathResult } from './pathValidator';
@@ -18,7 +23,6 @@ export { validateCombinedFlags, CombinedFlagResult } from './flagValidator';
  * Security constants for argument validation
  */
 const MAX_ARGS_COUNT = 20;
-const MAX_ARG_LENGTH = 256;
 
 /**
  * Subcommand configuration
@@ -28,21 +32,17 @@ interface SubcommandConfig {
   allowedArgs?: readonly string[];
   description?: string;
   /**
-   * List of arguments that expect a user-supplied value immediately following them.
-   * Only the value strictly following one of these arguments will be allowed as an arbitrary string.
-   * Example: ['user.name'] allows 'user.name "John Doe"'.
-   */
-  allowedOptionsWithValues?: readonly string[];
-  /**
-   * Whether to allow arbitrary positional arguments (use sparingly!).
-   */
-  allowAnyPositional?: boolean;
-  /**
-   * Whether to allow path-like positional arguments only.
-   * More restrictive than allowAnyPositional - only allows paths (starting with /, ~, ., or containing /).
+   * Whether to allow path-like positional arguments only (starting with /,
+   * ~, ., or containing /). Arbitrary positional arguments are never allowed.
    * Useful for commands like 'git submodule status <path>'.
    */
   allowPathPositionals?: boolean;
+  /**
+   * Validate the whole argument list as one grammar instead of token by token.
+   * When set, the token rules above are not used; the length and path checks
+   * that apply to every argument still run first.
+   */
+  validateArgs?: (args: readonly string[]) => AllowlistCheckResult;
 }
 
 /**
@@ -54,18 +54,17 @@ interface CommandConfig {
   subcommands?: Record<string, SubcommandConfig>;
   allowedArgs?: readonly string[];
   /**
-   * List of arguments that expect a user-supplied value immediately following them.
-   */
-  allowedOptionsWithValues?: readonly string[];
-  /**
-   * Whether to allow arbitrary positional arguments.
-   */
-  allowAnyPositional?: boolean;
-  /**
-   * Whether to allow path-like positional arguments only.
-   * More restrictive than allowAnyPositional - only allows paths (starting with /, ~, ., or containing /).
+   * Whether to allow path-like positional arguments only (starting with /,
+   * ~, ., or containing /).
    */
   allowPathPositionals?: boolean;
+  /** See SubcommandConfig.validateArgs */
+  validateArgs?: (args: readonly string[]) => AllowlistCheckResult;
+  /**
+   * Check the standard input given to the command. A command without it
+   * takes no standard input at all.
+   */
+  validateInput?: (args: readonly string[], input: string | undefined) => AllowlistCheckResult;
 }
 
 /**
@@ -80,22 +79,8 @@ export const ALLOWED_COMMANDS: Record<string, CommandConfig> = {
       config: {
         allowed: true,
         description: 'Git configuration',
-        // STRICT: Only allow values for specific config keys
-        allowAnyPositional: false,
-        allowedArgs: [
-          '--local',
-          '--global',
-          'user.name',
-          'user.email',
-          'user.signingkey',
-          'commit.gpgsign',
-        ],
-        allowedOptionsWithValues: [
-          'user.name',
-          'user.email',
-          'user.signingkey',
-          'commit.gpgsign',
-        ],
+        // STRICT: per-key rules for operation, scope and value (see gitConfigRules)
+        validateArgs: validateGitConfigArgs,
       },
       'rev-parse': {
         allowed: true,
@@ -106,7 +91,7 @@ export const ALLOWED_COMMANDS: Record<string, CommandConfig> = {
         allowed: true,
         description: 'Submodule operations',
         // Only 'status' subcommand is allowed, with optional path arguments
-        // Using allowPathPositionals instead of allowAnyPositional to prevent
+        // Path positionals only, to prevent
         // dangerous subcommands like 'update', 'init', 'add' from being allowed
         allowPathPositionals: true,
         allowedArgs: ['status', '--recursive'],
@@ -117,16 +102,17 @@ export const ALLOWED_COMMANDS: Record<string, CommandConfig> = {
     allowed: true,
     description: 'SSH agent key management',
     // ssh-add takes key paths directly as positional args
-    allowAnyPositional: true,
+    allowPathPositionals: true,
     // SECURITY: -D (remove all keys) intentionally excluded — only -d (remove specific key) is used
     allowedArgs: ['-l', '-d', '--apple-use-keychain'],
   },
   'ssh-keygen': {
     allowed: true,
     description: 'SSH key operations (read-only)',
-    allowedArgs: ['-lf', '-l', '-f'],
-    // -f takes a filename argument, and -lf implies -f
-    allowedOptionsWithValues: ['-f', '-lf'],
+    // STRICT: -lf <path>, -y -P '' -f <path> and -Y sign -n git -f <path> only (see sshKeygenRules)
+    validateArgs: validateSshKeygenArgs,
+    // STRICT: only the signing form reads stdin, and only the fixed test data
+    validateInput: validateSshKeygenInput,
   },
 };
 
@@ -175,49 +161,17 @@ function resolveSubcommandConfig(
 /* c8 ignore stop */
 
 /**
- * Check if an argument is a value for a preceding flag that expects values.
- *
- * @remarks
- * **Naming convention**: Named with `is` prefix (boolean-like predicate) and
- * explicit parameter description (`ArgumentValue`, `PrecedingFlag`) to clarify
- * the relationship between the current argument and the previous flag.
- *
- * @internal
- */
-// eslint-disable-next-line sonarjs/function-return-type -- discriminated union return is intentional for security validation flow
-function isArgumentValueForPrecedingFlag(
-  arg: string,
-  index: number,
-  argsToValidate: string[],
-  allowedOptionsWithValues: readonly string[]
-): AllowlistCheckResult | 'is_value' | 'not_value' {
-  if (index === 0) {
-    return 'not_value';
-  }
-  const prevArg = argsToValidate[index - 1];
-  if (!allowedOptionsWithValues.includes(prevArg)) {
-    return 'not_value';
-  }
-  // Security: reject if value looks like a flag
-  if (arg.startsWith('-')) {
-    return { allowed: false, reason: `Value for '${prevArg}' cannot mean a flag ('${arg}')` };
-  }
-  return 'is_value';
-}
-
-/**
  * Validate a flag argument.
  * @internal
  */
 // eslint-disable-next-line sonarjs/function-return-type -- discriminated union return is intentional
 function validateFlagArgument(
   arg: string,
-  command: string,
   allowedArgs: readonly string[]
 ): AllowlistCheckResult | 'allowed' {
   // Check for combined flags (only if it's not a long option --)
   if (!arg.startsWith('--') && arg.length > 2) {
-    const flagResult = validateCombinedFlags(arg, command, allowedArgs);
+    const flagResult = validateCombinedFlags(arg, allowedArgs);
     /* c8 ignore start: combined patterns also in allowedArgs - matches earlier */
     // eslint-disable-next-line unicorn/prefer-ternary -- keep the c8 ignore boundary around the unreachable branch
     if (flagResult.valid) {
@@ -247,6 +201,28 @@ function validatePathSafety(arg: string): AllowlistCheckResult | 'safe' {
 }
 
 /**
+ * Validate the length of an argument (a path argument is checked by the path
+ * checks instead).
+ * @internal
+ */
+function validateArgumentLength(arg: string): AllowlistCheckResult | 'safe' {
+  return !isPathArgument(arg) && arg.length > MAX_COMMAND_ARG_LENGTH
+    ? { allowed: false, reason: 'Argument exceeds maximum length' }
+    : 'safe';
+}
+
+/**
+ * Validate path safety for a Windows drive path argument.
+ * @internal
+ */
+function validateDrivePathSafety(arg: string): AllowlistCheckResult | 'safe' {
+  const pathResult = validateDriveAbsolutePathSecurity(arg);
+  return pathResult.valid
+    ? 'safe'
+    : { allowed: false, reason: `Path argument rejected: ${pathResult.reason}` };
+}
+
+/**
  * Result of single argument validation
  */
 type ArgValidationResult = AllowlistCheckResult | 'continue';
@@ -258,21 +234,16 @@ type ArgValidationResult = AllowlistCheckResult | 'continue';
 // eslint-disable-next-line sonarjs/function-return-type -- discriminated union return is intentional
 function validateSingleArgument(
   arg: string,
-  index: number,
-  argsToValidate: string[],
-  command: string,
   config: {
     allowedArgs: readonly string[];
-    allowAnyPositional: boolean;
     allowPathPositionals: boolean;
-    allowedOptionsWithValues: readonly string[];
   }
 ): ArgValidationResult {
-  const { allowedArgs, allowAnyPositional: isAllowAnyPositional, allowPathPositionals: isAllowPathPositionals, allowedOptionsWithValues } = config;
+  const { allowedArgs, allowPathPositionals: isAllowPathPositionals } = config;
 
-  // Length check (path arguments are checked separately)
-  if (!isPathArgument(arg) && arg.length > MAX_ARG_LENGTH) {
-    return { allowed: false, reason: 'Argument exceeds maximum length' };
+  const lengthCheck = validateArgumentLength(arg);
+  if (lengthCheck !== 'safe') {
+    return lengthCheck;
   }
 
   // Path Safety Check
@@ -282,23 +253,14 @@ function validateSingleArgument(
   }
   const isLooksLikePathForSecurity = isPathArgument(arg) || arg.includes('/');
 
-  // 1. Check if this is a value for a previous option
-  const valueCheck = isArgumentValueForPrecedingFlag(arg, index, argsToValidate, allowedOptionsWithValues);
-  if (valueCheck === 'is_value') {
-    return 'continue';
-  }
-  if (typeof valueCheck === 'object') {
-    return valueCheck;
-  }
-
-  // 2. Exact Match Allowlist
+  // 1. Exact Match Allowlist
   if (allowedArgs.includes(arg)) {
     return 'continue';
   }
 
-  // 3. Strict Flag Validation
+  // 2. Strict Flag Validation
   if (arg.startsWith('-')) {
-    const flagCheck = validateFlagArgument(arg, command, allowedArgs);
+    const flagCheck = validateFlagArgument(arg, allowedArgs);
     /* c8 ignore start: combined patterns also in allowedArgs - matches earlier */
     // eslint-disable-next-line unicorn/prefer-ternary -- keep the c8 ignore boundary around the unreachable branch
     if (flagCheck === 'allowed') {
@@ -308,23 +270,46 @@ function validateSingleArgument(
     return flagCheck;
   }
 
-  // 4. Fallback: arbitrary positionals allowed?
-  if (isAllowAnyPositional) {
-    return 'continue';
-  }
+  // 3. Path-only positionals allowed?
+  return isAllowPathPositionals && isLooksLikePathForSecurity
+    ? 'continue'
+    : { allowed: false, reason: `Argument '${arg}' is not allowed for this command` };
+}
 
-  // 5. Path-only positionals allowed?
-  if (isAllowPathPositionals && isLooksLikePathForSecurity) {
-    return 'continue';
+/**
+ * Validate arguments with a grammar validator, after the length and path
+ * checks that apply to every argument.
+ * @internal
+ */
+function validateWithGrammar(
+  argsToValidate: string[],
+  validateArgs: (args: readonly string[]) => AllowlistCheckResult
+): AllowlistCheckResult {
+  for (const arg of argsToValidate) {
+    const lengthCheck = validateArgumentLength(arg);
+    if (lengthCheck !== 'safe') {
+      return lengthCheck;
+    }
+    // A Windows drive path (what ~/ expands to on Windows) gets the same
+    // checks with the drive prefix removed; the grammar decides whether the
+    // key takes a path at all
+    const pathCheck = isDriveAbsolutePath(arg)
+      ? validateDrivePathSafety(arg)
+      : validatePathSafety(arg);
+    if (pathCheck !== 'safe') {
+      return pathCheck;
+    }
   }
-
-  return { allowed: false, reason: `Argument '${arg}' is not allowed for this command` };
+  return validateArgs(argsToValidate);
 }
 
 /**
  * Check if a command is in the allowlist
+ *
+ * @param input - The text the command gets on standard input (undefined:
+ *   none). Only a command with an input rule accepts standard input.
  */
-export function isCommandAllowed(command: string, args: string[]): AllowlistCheckResult {
+export function isCommandAllowed(command: string, args: string[], input?: string): AllowlistCheckResult {
   const commandConfig = ALLOWED_COMMANDS[command];
 
   if (!commandConfig) {
@@ -337,7 +322,15 @@ export function isCommandAllowed(command: string, args: string[]): AllowlistChec
   }
   /* c8 ignore stop */
 
-  if (args.length === 0) {
+  const inputCheck = commandConfig.validateInput
+    ? commandConfig.validateInput(args, input)
+    : { allowed: input === undefined, reason: `Command '${command}' takes no standard input` };
+  if (!inputCheck.allowed) {
+    return inputCheck;
+  }
+
+  // A command read as one grammar decides about no arguments too
+  if (args.length === 0 && !commandConfig.validateArgs) {
     return { allowed: true };
   }
 
@@ -352,23 +345,19 @@ export function isCommandAllowed(command: string, args: string[]): AllowlistChec
   }
   const { config: currentConfig, argsToValidate } = subResult;
 
+  if (currentConfig.validateArgs) {
+    return validateWithGrammar(argsToValidate, currentConfig.validateArgs);
+  }
+
   // Extract config options for argument validation
   const validationConfig = {
     allowedArgs: currentConfig.allowedArgs || [],
-    allowAnyPositional: currentConfig.allowAnyPositional || false,
     allowPathPositionals: currentConfig.allowPathPositionals || false,
-    allowedOptionsWithValues: currentConfig.allowedOptionsWithValues || [],
   };
 
   // Validate each argument
-  for (let i = 0; i < argsToValidate.length; i++) {
-    const result = validateSingleArgument(
-      argsToValidate[i],
-      i,
-      argsToValidate,
-      command,
-      validationConfig
-    );
+  for (const arg of argsToValidate) {
+    const result = validateSingleArgument(arg, validationConfig);
 
     if (result === 'continue') {
       continue;

@@ -7,8 +7,10 @@
  * @see https://json-schema.org/
  */
 
+import { SIGNING_FIELDS } from "./identity";
 import { isSingleGrapheme } from "../ui/displayLimits";
 import {
+  hasKeyPathPrefix,
   isValidEmail,
   isValidHex,
   SSH_HOST_PATTERN,
@@ -28,6 +30,23 @@ import {
 } from "../core/constants";
 
 /**
+ * Pattern for key path fields (sshKeyPath, sshSigningKeyPath): no control
+ * characters or shell metacharacters. How the path starts (`/`, `~/`, or a
+ * Windows drive such as `C:\`) is checked by the "key-path" format, the same
+ * prefix rule as the identity form and the checks before a key is used
+ * (validators/common.hasKeyPathPrefix). The runtime check
+ * (inputValidator.validateKeyPathFormat) rejects the same characters, and
+ * also the literal hex escape text (`\x41`), which this pattern does not.
+ */
+const KEY_PATH_PATTERN = "^[^\\x00-\\x1f\\x7f`$(){}|;&<>]*$";
+
+/**
+ * Values that count as "not set" for an optional field.
+ * SECURITY: Required fields (id, name, email) are still checked for presence.
+ */
+const UNSET_VALUES: ReadonlySet<unknown> = new Set([undefined, null, ""]);
+
+/**
  * Property schema definition
  */
 interface PropertySchema {
@@ -38,7 +57,7 @@ interface PropertySchema {
   minLength?: number;
   pattern?: string;
   compiledPattern?: RegExp;
-  format?: "email" | "uri" | "date" | "hex" | "single-grapheme";
+  format?: "email" | "uri" | "date" | "hex" | "single-grapheme" | "key-path";
   minimum?: number;
   maximum?: number;
 }
@@ -102,11 +121,10 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
   },
   sshKeyPath: {
     type: "string",
-    description: "Path to SSH private key",
+    description: "Path to SSH private key for authentication",
     maxLength: PATH_MAX, // PATH_MAX on most systems
-    // Unix absolute path (/) or tilde path (~) only — no dangerous chars
-    // Windows drive letter paths rejected: use ~/.ssh/ for cross-platform compatibility
-    pattern: "^[~/][^\\x00-\\x1f\\x7f`$(){}|;&<>]*$",
+    pattern: KEY_PATH_PATTERN,
+    format: "key-path",
   },
   sshHost: {
     type: "string",
@@ -122,7 +140,42 @@ export const IDENTITY_SCHEMA: Record<string, PropertySchema> = {
     maxLength: MAX_GPG_KEY_LENGTH, // SHA-1 fingerprint length
     format: "hex",
   },
+  sshSigningKeyPath: {
+    type: "string",
+    description: "Path to SSH key for commit signing",
+    maxLength: PATH_MAX,
+    pattern: KEY_PATH_PATTERN,
+    format: "key-path",
+  },
 };
+
+/**
+ * Whether both signing fields are set: gpgKeyId and sshSigningKeyPath each
+ * choose a signing method, and an identity signs with one of them. Empty
+ * strings count as not set (same as for any optional field).
+ */
+export function hasBothSigningFields(identity: Readonly<Record<string, unknown>>): boolean {
+  return SIGNING_FIELDS.every((field) => Object.hasOwn(identity, field) && !UNSET_VALUES.has(identity[field]));
+}
+
+/**
+ * Report an identity that sets both signing fields.
+ * @internal
+ */
+function validateMutuallyExclusiveFields(
+  obj: Readonly<Record<string, unknown>>,
+  errors: SchemaError[],
+): void {
+  if (!hasBothSigningFields(obj)) {
+    return;
+  }
+  const [field, otherField] = SIGNING_FIELDS;
+  errors.push({
+    field: otherField,
+    message: `Cannot be set together with ${field}`,
+    value: undefined,
+  });
+}
 
 // Pre-compile all regex patterns at module load to avoid per-validation RegExp instantiation
 for (const schema of Object.values(IDENTITY_SCHEMA)) {
@@ -211,6 +264,9 @@ function validateStringFormat(
   if (format === "hex" && !isValidHex(value)) {
     errors.push({ field, message: "Must be hexadecimal", value });
   }
+  if (format === "key-path" && !hasKeyPathPrefix(value)) {
+    errors.push({ field, message: String.raw`Must start with /, ~/ or a drive (C:\ or C:/)`, value });
+  }
   if (format === "single-grapheme" && !isSingleGrapheme(value)) {
     errors.push({
       field,
@@ -274,8 +330,7 @@ function validateProperty(
 ): void {
   // Empty string is treated as "not set" for optional fields.
   // SECURITY: Required fields (id, name, email) are still protected via else-if below.
-  const unsetValues: readonly unknown[] = [undefined, null, ""];
-  if (!unsetValues.includes(value)) {
+  if (!UNSET_VALUES.has(value)) {
     if (typeof value !== schema.type) {
       errors.push({
         field,
@@ -383,6 +438,8 @@ export function validateIdentitySchema(
     const value = Object.hasOwn(obj, field) ? obj[field] : undefined;
     validateProperty(field, value, schema, errors);
   }
+
+  validateMutuallyExclusiveFields(obj, errors);
 
   return {
     valid: errors.length === 0,

@@ -9,7 +9,6 @@
  * - pathSymlinkResolver.ts: Symlink resolution and detection
  */
 
-import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { PATH_MAX } from '../core/constants';
@@ -451,74 +450,6 @@ export function validateSubmodulePath(
   }
 
   return result;
-}
-
-// =============================================================================
-// SSH Directory Validation
-// =============================================================================
-
-/**
- * Check if a path is under the SSH directory (~/.ssh/)
- *
- * Validates that the given path is within the user's SSH configuration directory.
- * This is a security measure to prevent SSH key paths pointing to arbitrary
- * locations that could be exploited.
- *
- * Accepted formats:
- * - User input format: `~/.ssh/...` (tilde notation)
- * - Expanded Unix: `/home/user/.ssh/...` or `/Users/user/.ssh/...`
- * - Expanded Windows: `C:\Users\user\.ssh\...`
- *
- * @param value - The path to check
- * @returns true if path is under ~/.ssh/ directory
- *
- * @example
- * isUnderSshDirectory('~/.ssh/id_rsa')           // true
- * isUnderSshDirectory('~/.ssh/keys/work_key')    // true
- * isUnderSshDirectory('~/documents/key')         // false
- * isUnderSshDirectory('~/.ssh_backup/key')       // false
- */
-export function isUnderSshDirectory(value: string): boolean {
-  // Empty string is not a valid path
-  if (!value || value.length === 0) {
-    return false;
-  }
-
-  // User input format (~/.ssh/) is always accepted
-  if (value.startsWith('~/.ssh/')) {
-    return true;
-  }
-
-  // Normalize the path for comparison
-  const normalizedValue = path.normalize(value);
-
-  // SECURITY: Use os.homedir() for consistent, robust home directory resolution
-  // os.homedir() handles platform differences internally (HOME on Unix, USERPROFILE on Windows)
-  const homeDir = os.homedir();
-
-  /* c8 ignore start - defense-in-depth: os.homedir() always returns a string, but guard against edge cases */
-  if (!homeDir) {
-    // Home directory unavailable: only accept ~/.ssh/ format for safety
-    return false;
-  }
-  /* c8 ignore stop */
-
-  // Build the expected SSH directory path
-  const sshDir = path.normalize(path.join(homeDir, '.ssh'));
-
-  // Check if the normalized path starts with the SSH directory
-  // Must include path separator to prevent matching ~/.ssh_backup/
-  const sshDirWithSep = sshDir + path.sep;
-
-  // Windows paths are case-insensitive, use lowercase comparison
-  /* c8 ignore start - Windows-only code path, tested on Windows CI */
-  // eslint-disable-next-line unicorn/prefer-ternary -- keep the c8 ignore boundary around the Windows-only branch
-  if (process.platform === 'win32') {
-    return normalizedValue.toLowerCase().startsWith(sshDirWithSep.toLowerCase());
-  }
-  /* c8 ignore stop */
-
-  return normalizedValue.startsWith(sshDirWithSep);
 }
 
 /**

@@ -22,6 +22,13 @@ import { runDisplayLimitsTests } from './displayLimits.test';
 import { runSshAgentParsingTests } from './sshAgentParsing.test';
 import { runSyncCheckerTests } from './syncChecker.test';
 import { runHtmlTemplatesTests } from './htmlTemplates.test';
+import { runSigningPlanTests } from './signingPlan.test';
+import { runLocalGitConfigTests } from './localGitConfig.test';
+import { runSigningRecordStoreTests } from './signingRecordStore.test';
+import { runRepositoryConfigWriterTests } from './repositoryConfigWriter.test';
+import { runSerialRunnerTests } from './serialRunner.test';
+import { runRepositoryCheckTests } from './repositoryCheck.test';
+import { runSigningKeyCheckTests } from './signingKeyCheck.test';
 
 async function main(): Promise<void> {
   console.log('╔════════════════════════════════════════════╗');
@@ -79,6 +86,15 @@ async function main(): Promise<void> {
 
     // Run sync checker tests (profile vs git config comparison)
     await runSyncCheckerTests();
+
+    // Run commit signing config tests (switching table against real git, rollback, records)
+    runSigningPlanTests();
+    await runLocalGitConfigTests();
+    await runSigningRecordStoreTests();
+    await runRepositoryConfigWriterTests();
+    await runSerialRunnerTests();
+    await runRepositoryCheckTests();
+    await runSigningKeyCheckTests();
 
     // Run HTML template tests (pure functions, no VS Code dependency)
     runHtmlTemplatesTests();

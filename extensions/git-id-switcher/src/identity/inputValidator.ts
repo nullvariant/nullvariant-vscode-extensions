@@ -8,7 +8,7 @@
  * @see https://cwe.mitre.org/data/definitions/78.html
  */
 
-import { Identity } from "./identity";
+import type { Identity, KeyPathField } from "./identity";
 import {
   isValidEmail,
   hasPathTraversal,
@@ -18,8 +18,9 @@ import {
   GPG_KEY_REGEX,
   SSH_HOST_REGEX,
   DANGEROUS_PATTERNS,
+  DANGEROUS_PATTERNS_FOR_PATH,
   DANGEROUS_PATTERNS_FOR_TEXT,
-  isWindowsAbsolutePath,
+  hasKeyPathPrefix,
 } from "../validators/common";
 import {
   MAX_ID_LENGTH,
@@ -30,6 +31,7 @@ import {
   MAX_DESCRIPTION_LENGTH,
   MAX_ICON_BYTE_LENGTH,
 } from "../core/constants";
+import { hasBothSigningFields } from "./configSchema";
 
 export interface ValidationResult {
   valid: boolean;
@@ -134,12 +136,22 @@ export function validateEmailField(
 }
 
 /**
- * Validate SSH key path format.
+ * Validate the format of a key path field (sshKeyPath, sshSigningKeyPath).
  *
  * This validates only the format/structure of the path:
- * - Must be absolute or start with ~
+ * - Must be absolute (`/`, or a Windows drive such as `C:\\`) or start with `~/`
  * - No path traversal (..)
- * - No dangerous characters
+ * - No dangerous characters (DANGEROUS_PATTERNS_FOR_PATH): control
+ *   characters, newlines, null bytes, literal hex escapes, and the shell
+ *   metacharacters `` ` $ ( ) { } | ; & < > ``. The schema pattern for key
+ *   paths rejects the same characters, but not the literal hex escape text
+ *
+ * Where the file lives is not restricted: the checks of the file itself
+ * protect the use of the key. An authentication key (keyFileValidator.ts),
+ * after resolving symlinks: a regular file, its size, its permissions and a
+ * private key format. A signing key (signingKeyCheck.ts): a regular file, its
+ * size, its permissions and those of the `.pub` next to it, and a test
+ * signature made with the key it names.
  *
  * @remarks
  * **Naming convention**: Named with `Format` suffix to distinguish from
@@ -149,40 +161,34 @@ export function validateEmailField(
  * **Terminology**:
  * - `valid`: Format/structure is correct (this function)
  * - `secure`: Resistant to security attacks (pathUtils.validateSshKeyPath)
+ *
+ * @param value - The path to validate
+ * @param field - The field name used in error messages
+ * @param errors - Array to accumulate validation errors
  */
-export function validateSshKeyPathFormat(
-  sshKeyPath: string | undefined,
+export function validateKeyPathFormat(
+  value: string | undefined,
+  field: KeyPathField,
   errors: string[],
 ): void {
-  if (!sshKeyPath) {
+  if (!value) {
     return;
   }
 
-  // Windows drive letter paths are not supported — use ~/.ssh/ format
-  if (isWindowsAbsolutePath(sshKeyPath)) {
+  // An absolute path, ~/ (never ~user), or a Windows drive path (C:\ or C:/)
+  if (!hasKeyPathPrefix(value)) {
     errors.push(
-      "sshKeyPath: use ~/.ssh/ format instead of drive letter paths (e.g., ~/.ssh/id_ed25519)",
-    );
-    return;
-  }
-
-  // Must start with / or ~
-  const isUnixAbsolute = sshKeyPath.startsWith("/");
-  const isTildePath = sshKeyPath.startsWith("~");
-
-  if (!isUnixAbsolute && !isTildePath) {
-    errors.push(
-      "sshKeyPath: must be an absolute path (/) or start with ~ (e.g., ~/.ssh/id_ed25519)",
+      String.raw`${field}: must be an absolute path (/ or a drive such as C:\) or start with ~/ (e.g., ~/.ssh/id_ed25519)`,
     );
   }
 
   // No path traversal
-  if (hasPathTraversal(sshKeyPath)) {
-    errors.push("sshKeyPath: path traversal (..) is not allowed");
+  if (hasPathTraversal(value)) {
+    errors.push(`${field}: path traversal (..) is not allowed`);
   }
 
   // No dangerous characters in path
-  validateFieldForDangerousPatterns(sshKeyPath, "sshKeyPath", errors);
+  pushFirstDangerousPatternError(value, field, errors, DANGEROUS_PATTERNS_FOR_PATH, hasDangerousChars);
 }
 
 /**
@@ -280,9 +286,15 @@ export function validateIdentity(identity: Identity): ValidationResult {
 
   // Format-specific validation
   validateEmailField(identity.email, errors);
-  validateSshKeyPathFormat(identity.sshKeyPath, errors);
+  validateKeyPathFormat(identity.sshKeyPath, "sshKeyPath", errors);
+  validateKeyPathFormat(identity.sshSigningKeyPath, "sshSigningKeyPath", errors);
   validateGpgKeyId(identity.gpgKeyId, errors);
   validateSshHost(identity.sshHost, errors);
+
+  // The signing fields choose between two methods (see configSchema)
+  if (hasBothSigningFields({ ...identity })) {
+    errors.push("sshSigningKeyPath: cannot be set together with gpgKeyId");
+  }
 
   // Length limits
   if (identity.name && identity.name.length > MAX_NAME_LENGTH) {
@@ -344,42 +356,4 @@ export function validateIdentities(identities: Identity[]): ValidationResult {
     valid: errors.length === 0,
     errors,
   };
-}
-
-/**
- * Check if a path is safe for shell execution (no injection risk).
- *
- * Used for SSH key paths and other file system operations where the path
- * may be passed to shell commands.
- *
- * @remarks
- * **Naming convention**: Named with `is` prefix (boolean predicate) and
- * `ShellSafe` to indicate this specifically checks for shell injection safety,
- * not comprehensive path security.
- *
- * **Terminology**:
- * - `safe`: Safe for a specific context (shell execution in this case)
- * - `secure`: Resistant to security attacks (use `validatePathSecurity` instead)
- *
- * @see validatePathSecurity from security/pathValidator for comprehensive
- * security checks. This function maintains the original behavior of checking
- * for path traversal and shell metacharacters only.
- *
- * @param path - The path to check
- * @returns true if the path appears safe for shell execution
- */
-export function isShellSafePath(path: string): boolean {
-  // Control characters (0x00-0x1F, 0x7F) and shell metacharacters are checked alongside traversal
-  if (hasPathTraversal(path) || hasDangerousChars(path)) {
-    return false;
-  }
-
-  // Text-level patterns (hex escape sequences like literal \x00)
-  for (const { pattern } of DANGEROUS_PATTERNS) {
-    if (pattern.test(path)) {
-      return false;
-    }
-  }
-
-  return true;
 }
