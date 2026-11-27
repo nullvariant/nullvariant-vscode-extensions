@@ -39,11 +39,14 @@ import { removeTrailingNewline } from '../security/secureExec';
 let isolatedEnv: NodeJS.ProcessEnv = {};
 
 function createIsolatedEnv(home: string): NodeJS.ProcessEnv {
+  // An empty file, not os.devNull: git for Windows cannot read \\.\nul as a config file
+  const emptyGlobalConfig = path.join(home, '.gitconfig-empty');
+  fs.writeFileSync(emptyGlobalConfig, '');
   return {
     ...process.env,
     HOME: home,
     USERPROFILE: home,
-    GIT_CONFIG_GLOBAL: os.devNull,
+    GIT_CONFIG_GLOBAL: emptyGlobalConfig,
     GIT_CONFIG_NOSYSTEM: '1',
     SSH_AUTH_SOCK: '',
   };
