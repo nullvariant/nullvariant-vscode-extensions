@@ -265,7 +265,8 @@ Git GPG key rather SSH key commit sign laH. Profile **user settings** (`settings
 - Key paths `~/.ssh/` outside OK: absolute path pagh `~/` start path. Windows: drive path (`C:\Users\...`) OK. git key lo'pa', extension key test text sign (`ssh-keygen -Y sign`) git commit sign rur; askpass program chu'be', 30 lup poH. sign laHbe' pagh latlh key sign (private key retlh `.pub` file ngo'): switch mev. key file pagh `.pub` file choHlu'DI' neH check nIteb; hardware key: vaj neH touch tlhob. passphrase private key: check laHbe'; `sshSigningKeyPath` public key file (`.pub`) yIlo', key ssh-agent yIchel
 - Unix: sign key file `.pub` file je: key permission tu'lu'nIS, authentication key rur: private key group latlh ghaj laHbe', public key group latlh ghItlh laHbe', wa' je qaSmoH laHbe'. pagh: switch mev
 - Switch: extension `gpg.format`, `user.signingkey`, `commit.gpgsign` `git config --local` write. Signing key-less profile switch: all three extension-written values remain, then previous values restore; one hand-changed, all three untouched
-- Signing key ssh-agent chel ghobe': `autoSwitchSshKey` authentication key (`sshKeyPath`) neH switch
+- Signing key ssh-agent chel ghobe': `autoSwitchSshKey` authentication key (`sshKeyPath`) neH switch. latlh identity key teq, 'ach identity wIvlu'pu'bogh signing key teqbe'
+- SSH key signing Git 2.34 pagh ghu'vam neH poQ. Git ngo' lo'lu'chugh, Git config choHbe' 'ej switch mev
 
 GitHub public key **Signing Key** register (authentication key separate), commits verified. Qapla'!
 

@@ -23,15 +23,13 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { normalizeSigningKeyPath, resolveSigningSpec } from '../core/signingPlan';
-import { applyIdentityToRepository } from '../core/repositoryConfigWriter';
+import { applyIdentityToRepository, parseGitVersion } from '../core/repositoryConfigWriter';
+import { MIN_GIT_VERSION_FOR_SSH_SIGNING } from '../core/constants';
 import { createLocalGitConfigPort } from '../core/localGitConfig';
 import { createSigningRecordStore } from '../core/signingRecordStore';
 import { checkSigningKey, createSigningKeyCheckDependencies, type SigningKeyCheckDependencies } from '../ssh/signingKeyCheck';
 import { createMemento } from './helpers/signingFixtures';
 import { removeTrailingNewline } from '../security/secureExec';
-
-/** First git version with gpg.format=ssh */
-const MIN_GIT_VERSION: readonly [number, number] = [2, 34];
 
 /**
  * The environment of git and ssh-keygen: the temporary home directory, and
@@ -57,11 +55,10 @@ function getSkipReason(): string | undefined {
     return `ssh-keygen is not available (${(keygen.error as NodeJS.ErrnoException).code ?? 'error'})`;
   }
   const versionOutput = spawnSync('git', ['--version'], { encoding: 'utf8' }).stdout ?? '';
-  // "git version 2.50.1 (Apple Git-155)"
-  const version = versionOutput.split(' ', 3).at(2) ?? '';
-  const [major = 0, minor = 0] = version.split('.', 2).map(Number);
-  const isTooOld = major < MIN_GIT_VERSION[0] || (major === MIN_GIT_VERSION[0] && minor < MIN_GIT_VERSION[1]);
-  return isTooOld ? `git ${versionOutput.trim()} is older than ${MIN_GIT_VERSION.join('.')}` : undefined;
+  const [major = 0, minor = 0] = parseGitVersion(versionOutput) ?? [];
+  const [minMajor, minMinor] = MIN_GIT_VERSION_FOR_SSH_SIGNING;
+  const isTooOld = major < minMajor || (major === minMajor && minor < minMinor);
+  return isTooOld ? `git ${versionOutput.trim()} is older than ${MIN_GIT_VERSION_FOR_SSH_SIGNING.join('.')}` : undefined;
 }
 
 /** Run git; its output with only the last newline removed (as the extension reads it) */

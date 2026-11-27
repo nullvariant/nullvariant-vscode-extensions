@@ -125,5 +125,6 @@
   "Could not check whether the Git config matches this profile.": "無法檢查 Git 設定是否與此設定檔一致。",
   "The public key of the SSH signing key could not be read without a passphrase, so Git config was not changed. Set sshSigningKeyPath to its public key file (.pub) and add the key to ssh-agent.": "無法在沒有密碼短語的情況下讀取 SSH 簽署金鑰的公鑰，因此未變更 Git 設定。請將 sshSigningKeyPath 設為其公鑰檔案（.pub），並將金鑰加入 ssh-agent。",
   "Could not sign with the SSH signing key, so Git config was not changed. A key with a passphrase must be in ssh-agent.": "無法使用 SSH 簽署金鑰簽署，因此未變更 Git 設定。具有密碼短語的金鑰必須位於 ssh-agent 中。",
-  "The SSH signing key signed with another key than the one in sshSigningKeyPath (check the .pub file next to it), so Git config was not changed.": "SSH 簽署金鑰使用了與 sshSigningKeyPath 中不同的金鑰簽署（請檢查旁邊的 .pub 檔案），因此未變更 Git 設定。"
+  "The SSH signing key signed with another key than the one in sshSigningKeyPath (check the .pub file next to it), so Git config was not changed.": "SSH 簽署金鑰使用了與 sshSigningKeyPath 中不同的金鑰簽署（請檢查旁邊的 .pub 檔案），因此未變更 Git 設定。",
+  "Signing with an SSH key needs Git {0} or later, so Git config was not changed. Update Git and try again.": "使用 SSH 金鑰簽署需要 Git {0} 或更新版本，因此未變更 Git 設定。請更新 Git 後再試一次。"
 }

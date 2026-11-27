@@ -265,7 +265,8 @@ Git li ken sitelen e commit kepeken SSH key, li wile ala e GPG key. o pana e `ss
 - nasin key li ken lon insa ala `~/.ssh/`: nasin ale anu nasin pi open `~/`. lon Windows la, nasin drive sama `C:\Users\...` li ken. tenpo git li kepeken e key la, extension li pana e sitelen lili pi lukin tawa key, li sitelen nimi kepeken nasin sama git (`ssh-keygen -Y sign`). ona li open ala e ilo askpass. tenpo pi sekon 30 li pini la, ona li pini. key li ken ala sitelen nimi, anu key ante li sitelen nimi (lipu `.pub` majuna li lon poka pi key len) la, ante li pini. lipu key anu lipu `.pub` poka li ante la taso, ona li lukin sin. tan ni la, key ilo li wile e luka lon tenpo ni taso. key len pi nimi len li ken ala lukin kepeken nasin ni: o pana e lipu pi key open (`.pub`) tawa `sshSigningKeyPath`, o pana e key tawa ssh-agent
 - lon Unix la, lipu pi key sitelen nimi en lipu `.pub` lon poka ona li wile jo e nasin key, sama key pi open: jan kulupu en jan ante li ken ala lukin e key len, li ken ala sitelen e key open, li ken ala pali e ona tu. ante la, ante li pini
 - sina ante e nimi la, extension li sitelen e `gpg.format` e `user.signingkey` e `commit.gpgsign` kepeken `git config --local`. sina tawa nimi pi key sitelen ala la, ijo tu wan li sama ijo pi extension la, extension li pana sin e ijo pi tenpo pini. sina ante e wan kepeken luka la, extension li ante ala e ijo tu wan
-- key sitelen li tawa ala ssh-agent. `autoSwitchSshKey` li ante e key pi open lupa (`sshKeyPath`) taso
+- key sitelen li tawa ala ssh-agent. `autoSwitchSshKey` li ante e key pi open lupa (`sshKeyPath`) taso. ona li weka e key pi jan ante la, ona li weka ala e key sitelen pi jan sina
+- sina wile sitelen kepeken key SSH la, sina wile e Git 2.34 anu sin. Git li majuna la, ante li pini li ante ala e nasin Git
 
 o pana e key open tawa GitHub sama **Signing Key** (ante tan key pi open lupa). ni la, commit sina li verified.
 

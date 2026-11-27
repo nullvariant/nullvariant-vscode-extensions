@@ -16,9 +16,11 @@ import {
   applyIdentityToRepository,
   assertSigningKeyUsable,
   combineSigningResidue,
+  assertGitSupportsSigning,
   createApplyError,
   detectSigningResidue,
   maintainSigningRecords,
+  parseGitVersion,
 } from '../core/repositoryConfigWriter';
 import { SIGNING_RECORD_STATE_KEY, createSigningRecordStore, type SigningRecordStore } from '../core/signingRecordStore';
 import { SIGNING_CONFIG_KEYS, type RepositoryRecord } from '../core/signingPlan';
@@ -491,6 +493,36 @@ async function testAssertSigningKeyUsable(): Promise<void> {
   }
 }
 
+async function testAssertGitSupportsSigning(): Promise<void> {
+  console.log('  Testing parseGitVersion() and assertGitSupportsSigning()...');
+  assert.deepStrictEqual(parseGitVersion('git version 2.50.1 (Apple Git-155)\n'), [2, 50]);
+  assert.deepStrictEqual(parseGitVersion('git version 2.45.1.windows.1'), [2, 45]);
+  assert.deepStrictEqual(parseGitVersion('git version 2.34'), [2, 34]);
+  for (const output of ['', 'git version', 'git version 2', 'git version .34', 'git version x.34', 'git version 2.3x', 'git version 1e1.34', 'hub version 2.40.0', 'git 2.40.0']) {
+    assert.strictEqual(parseGitVersion(output), undefined, JSON.stringify(output));
+  }
+
+  const ssh = { gpgFormat: 'ssh' as const, signingKey: K1 };
+  // No signing, or a GPG key: git's version is not read
+  for (const signing of [undefined, { gpgFormat: 'openpgp' as const, signingKey: G1 }]) {
+    await assertGitSupportsSigning(signing, async () => assert.fail('the version is not read'));
+  }
+  for (const version of ['2.34.0', '2.50.1', '3.0.0']) {
+    await assertGitSupportsSigning(ssh, async () => `git version ${version}`);
+  }
+  // Older than 2.34, or a version that cannot be read: stopped before anything is written
+  for (const output of ['git version 2.33.8', 'git version 1.99.0', 'garbage']) {
+    await assert.rejects(assertGitSupportsSigning(ssh, async () => output), (error: unknown) => {
+      assert.strictEqual(
+        getUserSafeMessage(error),
+        'Signing with an SSH key needs Git 2.34 or later, so Git config was not changed. Update Git and try again.',
+        output,
+      );
+      return true;
+    });
+  }
+}
+
 function testCreateApplyError(): void {
   console.log('  Testing createApplyError()...');
   const message = (error: Error): string => getUserSafeMessage(error);
@@ -523,6 +555,7 @@ export async function runRepositoryConfigWriterTests(): Promise<void> {
   await testMaintainSigningRecords();
   await testDetectSigningResidue();
   await testAssertSigningKeyUsable();
+  await testAssertGitSupportsSigning();
   testCreateApplyError();
   console.log('\n✅ All Repository Config Writer Tests Passed!\n');
 }

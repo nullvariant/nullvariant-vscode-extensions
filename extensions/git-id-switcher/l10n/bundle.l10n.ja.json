@@ -125,5 +125,6 @@
   "Could not check whether the Git config matches this profile.": "Git の設定がこのプロファイルと一致しているか確認できませんでした。",
   "The public key of the SSH signing key could not be read without a passphrase, so Git config was not changed. Set sshSigningKeyPath to its public key file (.pub) and add the key to ssh-agent.": "SSH 署名鍵の公開鍵をパスフレーズなしで読めないため、Git の設定を変更していません。sshSigningKeyPath にその公開鍵のファイル（.pub）を指定し、鍵を ssh-agent に追加してください。",
   "Could not sign with the SSH signing key, so Git config was not changed. A key with a passphrase must be in ssh-agent.": "SSH 署名鍵で署名できなかったため、Git の設定を変更していません。パスフレーズのある鍵は ssh-agent に入れておく必要があります。",
-  "The SSH signing key signed with another key than the one in sshSigningKeyPath (check the .pub file next to it), so Git config was not changed.": "SSH 署名鍵が sshSigningKeyPath の鍵とは別の鍵で署名したため、Git の設定を変更していません（隣にある .pub ファイルを確認してください）。"
+  "The SSH signing key signed with another key than the one in sshSigningKeyPath (check the .pub file next to it), so Git config was not changed.": "SSH 署名鍵が sshSigningKeyPath の鍵とは別の鍵で署名したため、Git の設定を変更していません（隣にある .pub ファイルを確認してください）。",
+  "Signing with an SSH key needs Git {0} or later, so Git config was not changed. Update Git and try again.": "SSH の鍵で署名するには Git {0} 以降が必要なため、Git の設定を変更していません。Git を更新してから、もう一度お試しください。"
 }

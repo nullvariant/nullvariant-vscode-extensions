@@ -265,7 +265,7 @@ function validateStringFormat(
     errors.push({ field, message: "Must be hexadecimal", value });
   }
   if (format === "key-path" && !hasKeyPathPrefix(value)) {
-    errors.push({ field, message: "Must start with /, ~/ or a drive (C:\\ or C:/)", value });
+    errors.push({ field, message: String.raw`Must start with /, ~/ or a drive (C:\ or C:/)`, value });
   }
   if (format === "single-grapheme" && !isSingleGrapheme(value)) {
     errors.push({

@@ -224,6 +224,15 @@ export const GPG_FORMATS = ['openpgp', 'ssh'] as const;
 export type GpgFormat = (typeof GPG_FORMATS)[number];
 
 /**
+ * The first git version (major, minor) that signs with `gpg.format ssh`.
+ * An older git does not stop a switch from writing the config, but cannot
+ * sign with it, so the extension does not write SSH signing config then.
+ *
+ * @see https://github.com/git/git/blob/master/Documentation/RelNotes/2.34.0.txt
+ */
+export const MIN_GIT_VERSION_FOR_SSH_SIGNING = [2, 34] as const;
+
+/**
  * Security limits object for backwards compatibility
  *
  * @deprecated Use individual constants instead

@@ -125,5 +125,6 @@
   "Could not check whether the Git config matches this profile.": "Git 설정이 이 프로필과 일치하는지 확인할 수 없습니다.",
   "The public key of the SSH signing key could not be read without a passphrase, so Git config was not changed. Set sshSigningKeyPath to its public key file (.pub) and add the key to ssh-agent.": "패스프레이즈 없이 SSH 서명 키의 공개 키를 읽을 수 없어 Git 설정을 변경하지 않았습니다. sshSigningKeyPath를 해당 공개 키 파일(.pub)로 지정하고 키를 ssh-agent에 추가하세요.",
   "Could not sign with the SSH signing key, so Git config was not changed. A key with a passphrase must be in ssh-agent.": "SSH 서명 키로 서명할 수 없어 Git 설정을 변경하지 않았습니다. 패스프레이즈가 있는 키는 ssh-agent에 있어야 합니다.",
-  "The SSH signing key signed with another key than the one in sshSigningKeyPath (check the .pub file next to it), so Git config was not changed.": "SSH 서명 키가 sshSigningKeyPath의 키가 아닌 다른 키로 서명했으므로 Git 설정을 변경하지 않았습니다(옆에 있는 .pub 파일을 확인하세요)."
+  "The SSH signing key signed with another key than the one in sshSigningKeyPath (check the .pub file next to it), so Git config was not changed.": "SSH 서명 키가 sshSigningKeyPath의 키가 아닌 다른 키로 서명했으므로 Git 설정을 변경하지 않았습니다(옆에 있는 .pub 파일을 확인하세요).",
+  "Signing with an SSH key needs Git {0} or later, so Git config was not changed. Update Git and try again.": "SSH 키로 서명하려면 Git {0} 이상이 필요하므로 Git 설정을 변경하지 않았습니다. Git을 업데이트한 후 다시 시도하세요."
 }

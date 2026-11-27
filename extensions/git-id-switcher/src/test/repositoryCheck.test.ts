@@ -10,9 +10,9 @@
 import * as assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { classifyRepositoryCheck, hasGitEntryUpwards, isRepositoryGone } from '../core/repositoryCheck';
+import { classifyRepositoryCheck, findSubmoduleRepository, hasGitEntryUpwards, isRepositoryGone } from '../core/repositoryCheck';
 import { gitExec, type GitExecResult } from '../security/secureExec';
-import { git, makeTempDir } from './helpers/signingFixtures';
+import { git, initRepository, makeTempDir } from './helpers/signingFixtures';
 
 const failed = (exitCode?: number): GitExecResult =>
   exitCode === undefined ? { success: false, error: new Error('x') } : { success: false, error: new Error('x'), exitCode };
@@ -110,21 +110,92 @@ async function testIsRepositoryGone(): Promise<void> {
   console.log('  Testing isRepositoryGone()...');
   const repository = path.join(path.parse(process.cwd()).root, 'repo');
   const gitEntryPath = path.join(repository, '.git');
-  const answers = (folder: boolean | 'error', entry: boolean | 'error') => async (entryPath: string) =>
-    entryPath === repository ? folder : entry;
-  assert.strictEqual(await isRepositoryGone(repository, answers(true, true)), false);
-  // The folder is gone, or it is no longer a repository (its .git is gone)
-  assert.strictEqual(await isRepositoryGone(repository, answers(false, 'error')), true);
-  assert.strictEqual(await isRepositoryGone(repository, answers(true, false)), true);
+  const kept = path.join(path.parse(process.cwd()).root, 'parent', '.git', 'modules', 'repo');
+  const answers = (folder: boolean | 'error', entry: boolean | 'error', keptEntry: boolean | 'error' = false) =>
+    async (entryPath: string) => {
+      if (entryPath === repository) {
+        return folder;
+      }
+      return entryPath === gitEntryPath ? entry : keptEntry;
+    };
+  const noKept = async (): Promise<undefined> => undefined;
+  const keptAt = async (): Promise<string> => kept;
+  assert.strictEqual(await isRepositoryGone(repository, answers(true, true), noKept), false);
+  // The folder is gone, or it is no longer a repository (its .git is gone, and no repository is kept for it)
+  assert.strictEqual(await isRepositoryGone(repository, answers(false, 'error'), noKept), true);
+  assert.strictEqual(await isRepositoryGone(repository, answers(true, false), noKept), true);
+  assert.strictEqual(await isRepositoryGone(repository, answers(true, false, false), keptAt), true);
+  // A deinitialized submodule: its repository is kept (or cannot be checked), so it is not gone
+  assert.strictEqual(await isRepositoryGone(repository, answers(true, false, true), keptAt), false);
+  assert.strictEqual(await isRepositoryGone(repository, answers(true, false, 'error'), keptAt), false);
   // Either cannot be checked: not gone (the record is kept)
-  assert.strictEqual(await isRepositoryGone(repository, answers('error', true)), false);
-  assert.strictEqual(await isRepositoryGone(repository, answers(true, 'error')), false);
+  assert.strictEqual(await isRepositoryGone(repository, answers('error', true), noKept), false);
+  assert.strictEqual(await isRepositoryGone(repository, answers(true, 'error'), noKept), false);
   const asked: string[] = [];
   await isRepositoryGone(repository, async (entryPath) => {
     asked.push(entryPath);
     return true;
-  });
+  }, async () => assert.fail('the kept repository is looked for only when .git is gone'));
   assert.deepStrictEqual(asked, [repository, gitEntryPath]);
+
+  // findSubmoduleRepository(): git answers for the folder (fake git)
+  const root = path.parse(process.cwd()).root;
+  const folder = path.join(root, 'parent', 'libs', 'sub');
+  const gitAnswering = (topLevel: GitExecResult, gitDirectory: GitExecResult) =>
+    async (args: string[]): Promise<GitExecResult> => (args[1] === '--show-toplevel' ? topLevel : gitDirectory);
+  const ok = (stdout: string): GitExecResult => ({ success: true, stdout });
+  const parentGitDirectory = ok(path.join(root, 'parent', '.git'));
+  const parentTopLevel = ok(path.join(root, 'parent'));
+  const notRepository = failed(128);
+  assert.strictEqual(
+    await findSubmoduleRepository(folder, gitAnswering(parentTopLevel, parentGitDirectory)),
+    path.join(root, 'parent', '.git', 'modules', 'libs', 'sub'),
+  );
+  // Not in a repository, or git fails for either question
+  for (const [topLevel, gitDirectory] of [[notRepository, notRepository], [parentTopLevel, notRepository], [notRepository, parentGitDirectory]]) {
+    assert.strictEqual(await findSubmoduleRepository(folder, gitAnswering(topLevel, gitDirectory)), undefined);
+  }
+  // The folder is the top level itself, or not under it
+  for (const topLevel of [ok(folder), ok(path.join(root, 'elsewhere'))]) {
+    const answer = gitAnswering(topLevel, parentGitDirectory);
+    assert.strictEqual(await findSubmoduleRepository(folder, answer), undefined, JSON.stringify(topLevel));
+  }
+}
+
+/**
+ * A deinitialized submodule, with real git: its work tree is removed but git
+ * keeps its repository (and its config) under the parent's .git/modules, so
+ * its record is kept until that is gone too.
+ */
+async function testDeinitializedSubmodule(): Promise<void> {
+  console.log('  Testing isRepositoryGone() for a deinitialized submodule (real git)...');
+  const dir = makeTempDir('repository-check-deinit-');
+  const isOnDisk = async (entryPath: string): Promise<boolean> => fs.existsSync(entryPath);
+  const findKept = (folder: string): Promise<string | undefined> => findSubmoduleRepository(folder, gitExec);
+  try {
+    const source = path.join(dir, 'source');
+    const parent = path.join(dir, 'parent');
+    fs.mkdirSync(source);
+    fs.mkdirSync(parent);
+    initRepository(source);
+    initRepository(parent);
+    git(parent, ['-c', 'protocol.file.allow=always', 'submodule', 'add', '-q', source, path.join('libs', 'sub')]);
+    const submodule = path.join(parent, 'libs', 'sub');
+    const kept = path.join(parent, '.git', 'modules', 'libs', 'sub');
+    assert.strictEqual(await isRepositoryGone(submodule, isOnDisk, findKept), false);
+
+    git(parent, ['submodule', 'deinit', '-q', '-f', path.join('libs', 'sub')]);
+    assert.ok(fs.existsSync(submodule) && !fs.existsSync(path.join(submodule, '.git')), 'the work tree is removed, the folder stays');
+    assert.strictEqual(await findKept(submodule), kept);
+    assert.strictEqual(await isRepositoryGone(submodule, isOnDisk, findKept), false, 'its repository is kept');
+
+    fs.rmSync(kept, { recursive: true, force: true });
+    assert.strictEqual(await isRepositoryGone(submodule, isOnDisk, findKept), true, 'its repository is gone too');
+    // The work tree root of the parent itself is no submodule of it
+    assert.strictEqual(await findKept(parent), undefined);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 export async function runRepositoryCheckTests(): Promise<void> {
@@ -133,5 +204,6 @@ export async function runRepositoryCheckTests(): Promise<void> {
   await testHasGitEntryUpwards();
   await testWithRealGit();
   await testIsRepositoryGone();
+  await testDeinitializedSubmodule();
   console.log('\n✅ All Repository Check Tests Passed!\n');
 }

@@ -15,30 +15,29 @@
  *   checked, stop the switch before anything is written
  * - a submodule's signing keys are written and put back with the workspace's
  * - the identity screens work on the user settings, not the merged ones
- * - the switch itself (switchToIdentity, with a context of in-memory states):
- *   that it puts the values back when their record cannot be saved, what it
- *   tells the user when a submodule was left undone, that it stops when it
- *   cannot tell whether the folder is a repository, and that a switch that
- *   waited reads its identity again
+ * - what the switch tells the user when a submodule was left undone, that it
+ *   stops when it cannot tell whether the folder is a repository, and that a
+ *   switch that waited reads its identity again
+ * - switching the authentication key in a real ssh-agent keeps the signing key
  * - the form and the status bar: one signing field at a time, key paths,
  *   masked keys, and a Sync Check that could not be made
  *
  * The messages shown to the user are recorded by wrapping vscode.window for
- * the test; other failure injection with fake stores lives in the unit tests
- * (repositoryConfigWriter.test.ts, signingKeyCheck.test.ts).
+ * the test; failure injection with fake stores (a record that cannot be
+ * saved, for one) lives in the unit tests (repositoryConfigWriter.test.ts,
+ * signingKeyCheck.test.ts).
  */
 
 import * as assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import * as vscode from 'vscode';
 import { getIdentityLabel, getManagedIdentities, invalidateIdentityCache, type Identity } from '../../identity/identity';
 import { getUserSafeMessage } from '../../core/errors';
-import { SIGNING_RECORD_STATE_KEY } from '../../core/signingRecordStore';
-import { runInSwitchQueue, switchToIdentity } from '../../services/switcher';
-import { createMemento } from '../helpers/signingFixtures';
+import { runInSwitchQueue } from '../../services/switcher';
+import { switchToIdentitySshKey } from '../../ssh/sshAgent';
 import { getOtherSigningValue, validateFieldInput } from '../../ui/identityFormValidation';
 import { showEditProfileFlow } from '../../ui/identityEditFlow';
 import {
@@ -364,61 +363,16 @@ describe('Commit signing: through the command and the real settings', function (
     });
   });
 
-  describe('the switch itself', () => {
-    let current: Identity | undefined;
-    let statusBar: ReturnType<typeof createStatusBar>;
-
-    /** A context with in-memory states; writing `failingKey` to the workspace state fails */
-    function createContext(failingKey?: string): vscode.ExtensionContext {
-      const workspaceState = createMemento();
-      return {
-        workspaceState: {
-          get: workspaceState.get,
-          update: async (key: string, value: unknown): Promise<void> => {
-            if (key === failingKey) {
-              throw new Error('the workspace state cannot be written');
-            }
-            await workspaceState.update(key, value);
-          },
-        },
-        globalState: createMemento(),
-      } as unknown as vscode.ExtensionContext;
-    }
-
-    function switchDirectly(identityId: string, context: vscode.ExtensionContext): Promise<void> {
-      return switchToIdentity(identityId, context, statusBar, () => current, (identity) => {
-        current = identity;
-      });
-    }
-
-    beforeEach(async () => {
-      current = undefined;
-      statusBar = createStatusBar();
-      await setIdentities([PLAIN_IDENTITY, GPG_IDENTITY], vscode.ConfigurationTarget.Global);
-    });
-
-    afterEach(() => {
-      statusBar.dispose();
-      for (const key of ['commit.gpgsign', 'user.signingkey', 'gpg.format']) {
-        if (readLocal(workspacePath, key) !== undefined) {
-          git(workspacePath, ['config', '--local', '--unset', key]);
-        }
-      }
-    });
-
-    it('puts the values back and fails when the record of the values could not be saved', async () => {
-      await assert.rejects(switchDirectly(GPG_IDENTITY.id, createContext(SIGNING_RECORD_STATE_KEY)), (error: unknown) =>
-        getUserSafeMessage(error) === 'Failed to update Git config. The previous values were restored.',
-      );
-      assert.deepStrictEqual(readSigning(workspacePath), [undefined, undefined, undefined]);
-      assert.strictEqual(readLocal(workspacePath, 'user.name'), 'Before');
-      assert.strictEqual(current, undefined);
+  describe('what the switch tells the user', () => {
+    // The values the switch wrote are put back through the extension's own record
+    afterEach(async () => {
+      await switchTo(PLAIN_IDENTITY);
     });
 
     it('tells the user when a submodule could not be written', async () => {
       await withSubmodule(async (submodulePath) => {
         git(submodulePath, ['config', '--local', 'gpg.format', 'x509']);
-        const warnings = await recordMessages('showWarningMessage', () => switchDirectly(GPG_IDENTITY.id, createContext()));
+        const warnings = await recordMessages('showWarningMessage', () => switchTo(GPG_IDENTITY));
         assert.deepStrictEqual(readSigning(workspacePath), ['openpgp', GPG_IDENTITY.gpgKeyId, 'true']);
         assert.deepStrictEqual(readSigning(submodulePath), ['x509', undefined, undefined]);
         assert.deepStrictEqual(warnings, [
@@ -431,7 +385,7 @@ describe('Commit signing: through the command and the real settings', function (
       // A submodule in the index without an entry in .gitmodules: git submodule status fails
       git(workspacePath, ['update-index', '--add', '--cacheinfo', '160000,0123456789abcdef0123456789abcdef01234567,orphan-submodule']);
       try {
-        const warnings = await recordMessages('showWarningMessage', () => switchDirectly(GPG_IDENTITY.id, createContext()));
+        const warnings = await recordMessages('showWarningMessage', () => switchTo(GPG_IDENTITY));
         assert.deepStrictEqual(readSigning(workspacePath), ['openpgp', GPG_IDENTITY.gpgKeyId, 'true']);
         assert.deepStrictEqual(warnings, [
           `Switched to ${getIdentityLabel(GPG_IDENTITY)}, but the submodules could not all be listed; some may keep the previous Git config.`,
@@ -446,35 +400,81 @@ describe('Commit signing: through the command and the real settings', function (
       const configBefore = fs.readFileSync(configPath, 'utf8');
       // git exits 128 on a broken config, and the folder has a .git: not known
       fs.writeFileSync(configPath, `${configBefore}[broken\n`);
-      const context = createContext();
+      let errors: string[];
       try {
-        await assert.rejects(switchDirectly(GPG_IDENTITY.id, context), (error: unknown) =>
-          getUserSafeMessage(error) === 'Could not tell whether the workspace folder is in a Git repository; nothing was changed.',
-        );
+        errors = await recordMessages('showErrorMessage', () => switchTo(GPG_IDENTITY));
       } finally {
         fs.writeFileSync(configPath, configBefore);
       }
+      assert.deepStrictEqual(errors, [
+        'Git ID Switcher: Failed to select identity: Could not tell whether the workspace folder is in a Git repository; nothing was changed.',
+      ]);
       assert.deepStrictEqual(readSigning(workspacePath), [undefined, undefined, undefined]);
       assert.strictEqual(readLocal(workspacePath, 'user.name'), 'Before');
-      assert.strictEqual(current, undefined);
-      assert.strictEqual(context.workspaceState.get(SIGNING_RECORD_STATE_KEY), undefined);
     });
 
     it('reads the identity again when a switch that waited gets its turn', async () => {
+      await setIdentities([GPG_IDENTITY], vscode.ConfigurationTarget.Global);
       let release: () => void = () => undefined;
       // eslint-disable-next-line unicorn/prefer-promise-with-resolvers -- the Node.js of VS Code 1.85 (engines.vscode) has no Promise.withResolvers
       const held = runInSwitchQueue(() => new Promise<void>((resolve) => {
         release = resolve;
       }));
-      const waiting = switchDirectly(GPG_IDENTITY.id, createContext());
-      // Meanwhile the signing key is removed from the user settings
-      await setIdentities([PLAIN_IDENTITY, { id: GPG_IDENTITY.id, name: GPG_IDENTITY.name, email: GPG_IDENTITY.email }], vscode.ConfigurationTarget.Global);
+      // The identity is picked while the queue is held; then its signing key is
+      // removed from the user settings before the switch gets its turn
+      const shown = nextQuickPickShown();
+      const command = Promise.resolve(vscode.commands.executeCommand('git-id-switcher.selectIdentity'));
+      await shown;
+      await setIdentities([{ id: GPG_IDENTITY.id, name: GPG_IDENTITY.name, email: GPG_IDENTITY.email }], vscode.ConfigurationTarget.Global);
+      await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
       release();
       await held;
-      await waiting;
+      await command;
       assert.deepStrictEqual(readSigning(workspacePath), [undefined, undefined, undefined]);
       assert.strictEqual(readLocal(workspacePath, 'user.name'), 'GPG User');
     });
+  });
+
+  it('keeps the signing key in ssh-agent when the authentication key is switched', async function () {
+    // ssh-agent on a socket of its own (Windows uses a named pipe, not started here)
+    if (process.platform === 'win32') {
+      this.skip();
+    }
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'git-id-switcher-agent-e2e-'));
+    const dir = fs.realpathSync.native(tempDir);
+    const socket = path.join(dir, 'agent.sock');
+    const agent = spawn('ssh-agent', ['-D', '-a', socket], { stdio: 'ignore' });
+    const savedSocket = process.env.SSH_AUTH_SOCK;
+    try {
+      for (let attempt = 0; attempt < 50 && !fs.existsSync(socket); attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      assert.ok(fs.existsSync(socket), 'ssh-agent started');
+      const keyA = path.join(dir, 'id_a');
+      const keyB = path.join(dir, 'id_b');
+      for (const [keyPath, comment] of [[keyA, 'key-a'], [keyB, 'key-b']]) {
+        execFileSync('ssh-keygen', ['-q', '-t', 'ed25519', '-N', '', '-C', comment, '-f', keyPath], { stdio: 'ignore' });
+      }
+      const env = { ...process.env, SSH_AUTH_SOCK: socket };
+      const loadedKeys = (): string[] =>
+        execFileSync('ssh-add', ['-l'], { env, encoding: 'utf8' }).split('\n').filter(Boolean).map((line) => line.split(' ', 3)[2]);
+      execFileSync('ssh-add', [keyA], { env, stdio: 'ignore' });
+      process.env.SSH_AUTH_SOCK = socket;
+
+      // Identity B authenticates with key B and signs with key A, which is identity A's authentication key
+      const identityA: Identity = { id: 'a', name: 'A', email: 'a@example.com', sshKeyPath: keyA };
+      const identityB: Identity = { id: 'b', name: 'B', email: 'b@example.com', sshKeyPath: keyB, sshSigningKeyPath: `${keyA}.pub` };
+      await setIdentities([identityA, identityB], vscode.ConfigurationTarget.Global);
+      await switchToIdentitySshKey(identityB);
+      assert.deepStrictEqual(loadedKeys(), ['key-a', 'key-b'], 'the signing key stays');
+      // An identity that signs with nothing: the other identities' keys are removed, as before
+      await switchToIdentitySshKey(identityA);
+      assert.deepStrictEqual(loadedKeys(), ['key-a']);
+    } finally {
+      process.env.SSH_AUTH_SOCK = savedSocket;
+      agent.kill();
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('manages the identities in user settings, not the merged ones', async () => {

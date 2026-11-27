@@ -84,21 +84,54 @@ export async function classifyRepositoryCheck(
 }
 
 /**
+ * Where git keeps the repository of a submodule whose work tree is removed
+ * (`git submodule deinit`): `modules/<path>` in the git directory of the
+ * repository whose work tree holds the folder. Undefined when the folder is
+ * not inside another repository's work tree, or git cannot tell.
+ *
+ * A submodule whose name is not its path (added with `--name`, or moved
+ * since) is kept under its name, and is not found here.
+ *
+ * @param runGit - Runs git in a folder (gitExec)
+ */
+export async function findSubmoduleRepository(
+  folder: string,
+  runGit: (args: string[], cwd: string) => Promise<GitExecResult>,
+): Promise<string | undefined> {
+  const [topLevel, gitDirectory] = await Promise.all([
+    runGit(['rev-parse', '--show-toplevel'], folder),
+    runGit(['rev-parse', '--git-dir'], folder),
+  ]);
+  if (!topLevel.success || !gitDirectory.success) {
+    return undefined;
+  }
+  const submodulePath = path.relative(topLevel.stdout, folder);
+  const isInside = submodulePath !== '' && !submodulePath.startsWith('..');
+  return isInside ? path.resolve(folder, gitDirectory.stdout, 'modules', submodulePath) : undefined;
+}
+
+/**
  * Whether the repository a record belongs to (a workspace root or a
- * submodule) is gone: its folder or its `.git` entry does not exist. When
- * that cannot be told (a folder that cannot be read), it is not gone.
+ * submodule) is gone: its folder does not exist, or its `.git` entry does
+ * not and neither does the repository git keeps for a deinitialized
+ * submodule (which a later `git submodule init` uses again, with its config).
+ * When that cannot be told (a folder that cannot be read), it is not gone.
  *
  * @param exists - Whether a path exists: true, false, or 'error'
+ * @param findKeptRepository - See findSubmoduleRepository
  */
 export async function isRepositoryGone(
   repositoryPath: string,
   exists: (entryPath: string) => Promise<boolean | 'error'>,
+  findKeptRepository: (folder: string) => Promise<string | undefined>,
 ): Promise<boolean> {
-  for (const entryPath of [repositoryPath, path.join(repositoryPath, '.git')]) {
-    const found = await exists(entryPath);
-    if (found !== true) {
-      return found === false;
-    }
+  const folder = await exists(repositoryPath);
+  if (folder !== true) {
+    return folder === false;
   }
-  return false;
+  if ((await exists(path.join(repositoryPath, '.git'))) !== false) {
+    return false;
+  }
+  const keptRepository = await findKeptRepository(repositoryPath);
+  return keptRepository === undefined || (await exists(keptRepository)) === false;
 }

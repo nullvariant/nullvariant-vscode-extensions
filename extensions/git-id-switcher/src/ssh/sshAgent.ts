@@ -5,7 +5,9 @@
  * Cross-platform support for macOS, Linux, and Windows.
  *
  * Only the authentication key (sshKeyPath) is handled here. The signing key
- * (sshSigningKeyPath) is used by git directly and never added to the agent.
+ * (sshSigningKeyPath) is used by git directly and never added to the agent;
+ * when it is another identity's authentication key, a switch to the identity
+ * that signs with it does not remove it.
  *
  * SECURITY: Uses execFile() via secureExec to prevent command injection.
  * @see https://owasp.org/www-community/attacks/Command_Injection
@@ -233,14 +235,40 @@ export async function removeSshKey(keyPath: string): Promise<void> {
 }
 
 /**
+ * The expanded private key path of an identity's SSH signing key (without
+ * `.pub`), or undefined when it has none or the path is not accepted.
+ */
+function getSigningPrivateKeyPath(identity: Identity): string | undefined {
+  const signingKeyPath = identity.sshSigningKeyPath?.replace(/\.pub$/, "");
+  try {
+    return signingKeyPath ? expandKeyPathOrThrow(signingKeyPath) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Whether an authentication key path names the given expanded key path */
+function isSameKey(sshKeyPath: string, expandedKeyPath: string | undefined): boolean {
+  try {
+    return expandedKeyPath !== undefined && expandKeyPathOrThrow(sshKeyPath) === expandedKeyPath;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Remove all identity keys from agent
  *
  * This removes all keys for configured identities, leaving other keys intact
+ *
+ * @param keptKeyPath - An expanded key path that is not removed (the signing
+ *   key of the identity switched to, when it is another identity's
+ *   authentication key: git signs with it from ssh-agent)
  */
-export async function removeAllIdentityKeys(): Promise<void> {
+export async function removeAllIdentityKeys(keptKeyPath?: string): Promise<void> {
   const identities = getIdentitiesWithValidation();
   const removePromises = identities
-    .filter((identity) => identity.sshKeyPath)
+    .filter((identity) => identity.sshKeyPath && !isSameKey(identity.sshKeyPath, keptKeyPath))
     .map((identity) =>
       removeSshKey(identity.sshKeyPath!).catch(() => {
         // Ignore individual errors
@@ -253,7 +281,8 @@ export async function removeAllIdentityKeys(): Promise<void> {
 /**
  * Switch to a specific identity's SSH key
  *
- * Removes all identity keys and adds only the selected one
+ * Removes all identity keys and adds only the selected one. The key the
+ * selected identity signs with (sshSigningKeyPath) is not removed.
  */
 export async function switchToIdentitySshKey(
   identity: Identity,
@@ -263,8 +292,8 @@ export async function switchToIdentitySshKey(
     return;
   }
 
-  // First, remove all identity keys
-  await removeAllIdentityKeys();
+  // First, remove all identity keys but the signing key of this identity
+  await removeAllIdentityKeys(getSigningPrivateKeyPath(identity));
 
   // Then add the selected identity's key
   await addSshKey(identity.sshKeyPath);

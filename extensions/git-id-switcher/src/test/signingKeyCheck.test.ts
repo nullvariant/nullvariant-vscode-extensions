@@ -7,6 +7,7 @@
  */
 
 import * as assert from 'node:assert';
+import * as path from 'node:path';
 import { MAX_IDENTITIES } from '../core/constants';
 import {
   SIGNING_KEY_CHECK_STATE_KEY,
@@ -59,7 +60,7 @@ interface FakeOptions {
 
 type FakeDependencies = SigningKeyCheckDependencies & { calls: string[] };
 
-/** The current user (the tests run on Unix) */
+/** The current user (0 on Windows, which has no user IDs) */
 const UID = typeof process.getuid === 'function' ? process.getuid() : 0;
 
 /** A key file with safe permissions */
@@ -107,6 +108,26 @@ const failed = (reason: Extract<SigningKeyCheckResult, { result: 'failed' }>['re
   reason,
 });
 
+const OK: SigningKeyCheckResult = { result: 'ok' };
+
+/**
+ * The result where permissions and owners are checked (Unix); on Windows
+ * (process.platform when the check runs) they are not, and the check passes.
+ */
+const onUnix = (result: SigningKeyCheckResult): SigningKeyCheckResult => (process.platform === 'win32' ? OK : result);
+
+/** Run `run` with process.platform set to win32: the Windows branches, on any OS */
+async function asWindows(run: () => Promise<void>): Promise<void> {
+  const original = Object.getOwnPropertyDescriptor(process, 'platform');
+  assert.ok(original, 'process.platform descriptor should exist');
+  Object.defineProperty(process, 'platform', { ...original, value: 'win32' });
+  try {
+    await run();
+  } finally {
+    Object.defineProperty(process, 'platform', original);
+  }
+}
+
 async function testCheckSigningKey(): Promise<void> {
   console.log('  Testing checkSigningKey()...');
 
@@ -142,17 +163,22 @@ async function testCheckSigningKey(): Promise<void> {
     const fileDeps: SigningKeyCheckDependencies = { ...fakeDependencies(), stat: async () => stat };
     assert.deepStrictEqual(await checkSigningKey('/k', fileDeps), failed('not-a-key-file'), JSON.stringify(stat));
   }
-  // A path that is not absolute on this platform (a drive path on POSIX):
-  // stopped before the file is looked at
+  // A drive path: absolute on Windows; not on POSIX, where it is stopped
+  // before the file is looked at
   const drivePath = fakeDependencies({ publicKey: KEY, signedWith: KEY, files: { 'C:/Users/u/.ssh/k': FILE } });
-  assert.deepStrictEqual(await checkSigningKey('C:/Users/u/.ssh/k', drivePath), failed('not-a-key-file'));
-  assert.deepStrictEqual(drivePath.calls, []);
+  if (path.isAbsolute('C:/')) {
+    assert.deepStrictEqual(await checkSigningKey('C:/Users/u/.ssh/k', drivePath), OK);
+  } else {
+    assert.deepStrictEqual(await checkSigningKey('C:/Users/u/.ssh/k', drivePath), failed('not-a-key-file'));
+    assert.deepStrictEqual(drivePath.calls, []);
+  }
 }
 
 /**
  * The permissions of the key file and the `.pub` file next to it (Unix): a
  * private key that group or others can read, or a public key (a `.pub`
- * file) they can write, stops the check before anything is read.
+ * file) they can write, stops the check before anything is read. On Windows
+ * neither the permissions nor the owner are checked.
  */
 async function testPermissions(): Promise<void> {
   console.log('  Testing the permissions of the key files...');
@@ -176,9 +202,10 @@ async function testPermissions(): Promise<void> {
     { path: '/k', files: { '/k': FILE, '/k.pub': { ...withMode(0o644), uid: UID + 1 } }, result: failed('insecure-permissions') },
     { path: '/p.pub', files: { '/p.pub': { ...withMode(0o644), uid: UID + 1 } }, fileText: publicKeyLine(KEY), result: failed('insecure-permissions') },
   ];
-  for (const { path, files, fileText, result } of cases) {
-    const deps = fakeDependencies({ publicKey: path.endsWith('.pub') ? undefined : KEY, signedWith: KEY, files, fileText });
-    assert.deepStrictEqual(await checkSigningKey(path, deps), result, JSON.stringify({ path, files }));
+  for (const { path: keyPath, files, fileText, result: unixResult } of cases) {
+    const result = onUnix(unixResult);
+    const deps = fakeDependencies({ publicKey: keyPath.endsWith('.pub') ? undefined : KEY, signedWith: KEY, files, fileText });
+    assert.deepStrictEqual(await checkSigningKey(keyPath, deps), result, JSON.stringify({ keyPath, files }));
     if (result.result === 'failed') {
       assert.deepStrictEqual(deps.calls, [], 'nothing is read, ssh-keygen does not run');
     }
@@ -213,11 +240,11 @@ async function testRememberedChecks(): Promise<void> {
     assert.deepStrictEqual(await checkSigningKey('/k', deps), { result: 'ok' });
     assert.ok(deps.calls.includes('-Y sign -n git -f /k'), JSON.stringify(files));
   }
-  // A file owned by another user is stopped even when its stamp was remembered
+  // A file owned by another user is stopped even when its stamp was remembered (Unix)
   const foreign = { ...FILE, uid: UID + 1 };
   const remembered = createMemento({ [SIGNING_KEY_CHECK_STATE_KEY]: { '/k': { key: foreign, publicKey: null } } });
   const foreignDeps = fakeDependencies({ publicKey: KEY, signedWith: KEY, files: { '/k': foreign } }, remembered);
-  assert.deepStrictEqual(await checkSigningKey('/k', foreignDeps), failed('insecure-permissions'));
+  assert.deepStrictEqual(await checkSigningKey('/k', foreignDeps), onUnix(failed('insecure-permissions')));
   // Only the latest MAX_IDENTITIES keys are kept; the key checked is the newest
   const many = Object.fromEntries(Array.from({ length: MAX_IDENTITIES }, (_, index) => [`/old${index}`, {}]));
   const full = createMemento({ [SIGNING_KEY_CHECK_STATE_KEY]: { ...many, '/k': {} } });
@@ -235,5 +262,12 @@ export async function runSigningKeyCheckTests(): Promise<void> {
   await testCheckSigningKey();
   await testPermissions();
   await testRememberedChecks();
+  if (process.platform !== 'win32') {
+    console.log('  Testing the permissions and the remembered checks as on Windows...');
+    await asWindows(async () => {
+      await testPermissions();
+      await testRememberedChecks();
+    });
+  }
   console.log('\n✅ All SSH Signing Key Check Tests Passed!\n');
 }

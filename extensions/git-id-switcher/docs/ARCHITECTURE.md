@@ -348,7 +348,9 @@ Key paths are accepted outside `~/.ssh/`: an absolute path, a path starting with
 | `sshKeyPath`        | SSH (push, pull) via ssh-agent | Added and removed when `autoSwitchSshKey`   | Private key                                                                       |
 | `sshSigningKeyPath` | Git, as `user.signingkey`      | Never added; Git reads it or finds it there | Private key without a passphrase, or public key whose private key is in ssh-agent |
 
-`ssh/signingKeyCheck.ts` checks an SSH signing key before git is told to use it, by the result, not by predicting what OpenSSH will do:
+When `autoSwitchSshKey` removes the authentication keys of the configured identities from ssh-agent, it does not remove the key the selected identity signs with (`sshSigningKeyPath`, or the private key of its `.pub` file): git may sign with it from ssh-agent.
+
+Before SSH signing config is written, `git --version` must be 2.34 or later (the first version that signs with `gpg.format ssh`); otherwise the switch stops before anything is written. Then `ssh/signingKeyCheck.ts` checks an SSH signing key before git is told to use it, by the result, not by predicting what OpenSSH will do:
 
 1. The path must be absolute on the platform the extension runs on (a drive path such as `C:/...` is not on POSIX), and the key file a regular file of at most 1 MiB
 2. The key file and the `.pub` file next to it, if there is one, must be owned by the current user or root (Unix)
@@ -397,7 +399,7 @@ For an identity without a signing key, the three signing keys are put back to th
 3. Write `user.name`, `user.email`, then the signing operations
 4. On success, store the new record; if that fails, git config stays written and the switch warns that the values will not be put back for another identity (this is not a failed write). On a failed write, put back the earlier writes in reverse order and keep the old record; if putting back is not complete, rebuild the record from the values found in the repository: the record (new or old) that matches all three signing values, or no record when they are a mix, so they are treated as the user's
 
-At startup, in the same queue as the switches, records of repositories that are gone (the folder, or its `.git` entry) are removed, and so is stored data that is not a record. A repository that cannot be told present or gone keeps its record.
+At startup, in the same queue as the switches, records of repositories that are gone (the folder, or its `.git` entry and, for a submodule removed with `git submodule deinit`, the repository git keeps for it under the parent's `.git/modules/<path>`) are removed, and so is stored data that is not a record. A repository that cannot be told present or gone keeps its record.
 
 Sync Check reports leftover signing values in the repository root and, with submodule support on, in each submodule that has a record. For a signing identity it also checks that the three signing keys are in the repository's `--local` config. A switch moves the switch generation on when it starts and when it ends, and a Sync Check started outside the switch queue (window focus, a settings change) shows its result only if the identity it checked is still current and the generation has not moved meanwhile.
 

@@ -16,7 +16,8 @@ import { selectIdentityCommand, showCurrentIdentityCommand, showWelcomeNotificat
 import { checkSync } from './syncChecker';
 import { extensionLogger } from '../logging/extensionLogger';
 import { maintainSigningRecords } from './repositoryConfigWriter';
-import { isRepositoryGone } from './repositoryCheck';
+import { findSubmoduleRepository, isRepositoryGone } from './repositoryCheck';
+import { gitExec } from '../security/secureExec';
 import { entryExists } from './gitConfig';
 import { getSigningRecordStore, getSwitchGeneration, runInSwitchQueue } from '../services/switcher';
 
@@ -222,7 +223,9 @@ async function performTrustedInitialization(context: vscode.ExtensionContext): P
     // Remove records of repositories that are gone. Runs in the switch queue:
     // the commands are registered already, and a switch must not interleave.
     await runInSwitchQueue(() =>
-      maintainSigningRecords(store, (repositoryPath) => isRepositoryGone(repositoryPath, entryExists)),
+      maintainSigningRecords(store, (repositoryPath) =>
+        isRepositoryGone(repositoryPath, entryExists, (folder) => findSubmoduleRepository(folder, gitExec)),
+      ),
     );
   } catch (error) {
     extensionLogger.warn(`Failed to tidy the signing config records: ${getUserSafeMessage(error)}`);

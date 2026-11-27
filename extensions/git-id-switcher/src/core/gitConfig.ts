@@ -35,6 +35,7 @@ import { extensionLogger } from '../logging/extensionLogger';
 import { createLocalGitConfigPort, readConfigArgs, toConfigReadResult, type ConfigReadResult } from './localGitConfig';
 import {
   applyIdentityToRepository,
+  assertGitSupportsSigning,
   assertSigningKeyUsable,
   combineSigningResidue,
   createApplyError,
@@ -304,6 +305,11 @@ export async function setGitConfigForIdentity(
   const userName = buildGitUserName(identity);
   const signing = resolveSigningSpec(identity);
 
+  // An SSH signing identity needs a git that signs with SSH: otherwise the config is not written
+  await assertGitSupportsSigning(signing, async () => {
+    const { stdout } = await secureExec('git', ['--version']);
+    return stdout;
+  });
   // SECURITY: Check that the signing key signs, with the key it names, before git is told to use it
   await assertSigningKeyUsable(signing, createSigningKeyCheckDependencies(globalState));
 

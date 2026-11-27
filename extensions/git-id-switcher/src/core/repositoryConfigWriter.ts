@@ -30,6 +30,7 @@ import {
   type SigningSpec,
 } from './signingPlan';
 import { checkSigningKey, type SigningKeyCheckDependencies, type SigningKeyCheckResult } from '../ssh/signingKeyCheck';
+import { MIN_GIT_VERSION_FOR_SSH_SIGNING } from './constants';
 
 export type ApplyResult =
   | { readonly result: 'ok' }
@@ -265,8 +266,14 @@ export async function maintainSigningRecords(
   store: SigningRecordStore,
   isGone: (repositoryPath: string) => Promise<boolean>,
 ): Promise<void> {
-  for (const repositoryPath of store.repositoryPaths()) {
-    if (store.get(repositoryPath) === undefined || (await isGone(repositoryPath))) {
+  const repositoryPaths = store.repositoryPaths();
+  // The repositories are looked at together; the records are removed one at
+  // a time, since each write replaces all the stored records
+  const toRemove = await Promise.all(
+    repositoryPaths.map(async (repositoryPath) => store.get(repositoryPath) === undefined || isGone(repositoryPath)),
+  );
+  for (const [index, repositoryPath] of repositoryPaths.entries()) {
+    if (toRemove[index]) {
       await store.set(repositoryPath, undefined);
     }
   }
@@ -307,6 +314,53 @@ export async function assertSigningKeyUsable(
       field: 'sshSigningKeyPath',
       context: { reason: check.reason },
     });
+  }
+}
+
+/** What the output of `git --version` starts with */
+const GIT_VERSION_PREFIX = 'git version ';
+
+/** Whether a version part is digits only (Number('') is 0, and Number('1e1') is 10) */
+function isDigits(part: string): boolean {
+  return part !== '' && [...part].every((char) => char >= '0' && char <= '9');
+}
+
+/**
+ * The version (major, minor) in the output of `git --version`
+ * ("git version 2.50.1 (Apple Git-155)", "git version 2.45.1.windows.1"),
+ * or undefined when the output is not of that form.
+ */
+export function parseGitVersion(output: string): readonly [number, number] | undefined {
+  const text = output.trim();
+  if (!text.startsWith(GIT_VERSION_PREFIX)) {
+    return undefined;
+  }
+  const [major = '', minor = ''] = text.slice(GIT_VERSION_PREFIX.length).split('.', 2);
+  return isDigits(major) && isDigits(minor) ? [Number(major), Number(minor)] : undefined;
+}
+
+/**
+ * Check, before SSH signing config is written, that git can sign with it
+ * (git 2.34 or later). Other signing is not checked.
+ *
+ * @param readGitVersion - The output of `git --version`
+ * @throws ConfigError if git is older, or its version cannot be read
+ */
+export async function assertGitSupportsSigning(
+  signing: SigningSpec | undefined,
+  readGitVersion: () => Promise<string>,
+): Promise<void> {
+  if (signing?.gpgFormat !== 'ssh') {
+    return;
+  }
+  const version = parseGitVersion(await readGitVersion());
+  const [minMajor, minMinor] = MIN_GIT_VERSION_FOR_SSH_SIGNING;
+  const isSupported = version !== undefined && (version[0] > minMajor || (version[0] === minMajor && version[1] >= minMinor));
+  if (!isSupported) {
+    throw createConfigError(
+      localize('Signing with an SSH key needs Git {0} or later, so Git config was not changed. Update Git and try again.', MIN_GIT_VERSION_FOR_SSH_SIGNING.join('.')),
+      { field: 'sshSigningKeyPath', context: { reason: 'git-too-old' } },
+    );
   }
 }
 
