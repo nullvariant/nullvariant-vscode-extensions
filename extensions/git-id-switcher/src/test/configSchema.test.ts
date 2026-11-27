@@ -16,7 +16,44 @@ import {
   validateIdentitiesSchema,
   getSchemaDocumentation,
   IDENTITY_SCHEMA,
+  hasBothSigningFields,
 } from "../identity/configSchema";
+
+/**
+ * gpgKeyId and sshSigningKeyPath choose the signing method: only one can be set.
+ * Empty strings and null count as not set.
+ */
+function testSigningFieldsMutuallyExclusive(): void {
+  console.log("Testing signing fields are mutually exclusive...");
+  const base = { id: "a", name: "A", email: "a@example.com" };
+
+  assert.strictEqual(validateIdentitySchema({ ...base, gpgKeyId: "ABCD1234" }).valid, true);
+  assert.strictEqual(validateIdentitySchema({ ...base, sshSigningKeyPath: "~/.ssh/id_sign" }).valid, true);
+
+  const both = validateIdentitySchema({ ...base, gpgKeyId: "ABCD1234", sshSigningKeyPath: "~/.ssh/id_sign" });
+  assert.strictEqual(both.valid, false);
+  assert.deepStrictEqual(both.errors, [
+    { field: "sshSigningKeyPath", message: "Cannot be set together with gpgKeyId", value: undefined },
+  ]);
+
+  for (const unset of ["", null, undefined]) {
+    assert.strictEqual(
+      hasBothSigningFields({ ...base, gpgKeyId: "ABCD1234", sshSigningKeyPath: unset }),
+      false,
+      `sshSigningKeyPath ${String(unset)} counts as not set`,
+    );
+  }
+  assert.strictEqual(
+    validateIdentitySchema({ ...base, gpgKeyId: "", sshSigningKeyPath: "~/.ssh/id_sign" }).valid,
+    true,
+  );
+
+  // The key path pattern is shared with sshKeyPath
+  assert.strictEqual(IDENTITY_SCHEMA.sshSigningKeyPath.pattern, IDENTITY_SCHEMA.sshKeyPath.pattern);
+  assert.strictEqual(validateIdentitySchema({ ...base, sshSigningKeyPath: "relative/key" }).valid, false);
+  assert.strictEqual(validateIdentitySchema({ ...base, sshSigningKeyPath: "~/.ssh/k;rm" }).valid, false);
+  console.log("  Signing field exclusivity tests passed!");
+}
 
 /**
  * Test empty string handling for required fields
@@ -387,51 +424,22 @@ function testMaliciousValueRejection(): void {
     );
   }
 
-  // Test 7.1: Windows absolute path in sshKeyPath should fail (use ~/.ssh/ format)
-  {
-    const identity = {
-      id: "test",
-      name: "Test User",
-      email: "test@example.com",
-      sshKeyPath: String.raw`C:\Users\test\.ssh\id_rsa`,
-    };
-    const result = validateIdentitySchema(identity);
-    assert.strictEqual(
-      result.valid,
-      false,
-      "Windows absolute path in sshKeyPath should fail",
-    );
+  // Test 7.1: Windows drive paths are accepted in both key path fields (the
+  // same prefix rule as the identity form and the runtime check)
+  for (const drivePath of [String.raw`C:\Users\test\.ssh\id_rsa`, String.raw`d:\keys\work_key`, "C:/Users/test/.ssh/id_rsa"]) {
+    for (const field of ["sshKeyPath", "sshSigningKeyPath"]) {
+      const result = validateIdentitySchema({ id: "test", name: "Test User", email: "test@example.com", [field]: drivePath });
+      assert.deepStrictEqual(result.errors, [], `${field}: ${drivePath} is accepted`);
+    }
   }
 
-  // Test 7.2: Windows lowercase drive letter should fail (use ~/.ssh/ format)
-  {
-    const identity = {
-      id: "test",
-      name: "Test User",
-      email: "test@example.com",
-      sshKeyPath: String.raw`d:\keys\work_key`,
-    };
-    const result = validateIdentitySchema(identity);
-    assert.strictEqual(
-      result.valid,
-      false,
-      "Windows lowercase drive letter should fail",
-    );
-  }
-
-  // Test 7.3: Windows forward-slash path should fail (use ~/.ssh/ format)
-  {
-    const identity = {
-      id: "test",
-      name: "Test User",
-      email: "test@example.com",
-      sshKeyPath: "C:/Users/test/.ssh/id_rsa",
-    };
-    const result = validateIdentitySchema(identity);
-    assert.strictEqual(
-      result.valid,
-      false,
-      "Windows forward-slash path in sshKeyPath should fail",
+  // Test 7.2: a drive-relative path (C:file) and ~user are rejected
+  for (const rejected of ["C:id_rsa", "~root/.ssh/id_rsa", "~"]) {
+    const result = validateIdentitySchema({ id: "test", name: "Test User", email: "test@example.com", sshKeyPath: rejected });
+    assert.deepStrictEqual(
+      result.errors.map((error) => error.message),
+      ["Must start with /, ~/ or a drive (C:\\ or C:/)"],
+      `${rejected} is rejected by the key-path format`,
     );
   }
 
@@ -1477,6 +1485,7 @@ export function runConfigSchemaTests(): void {
     testFormatValidation();
     testTypeValidation();
     testPrototypePollutionPrevention();
+    testSigningFieldsMutuallyExclusive();
 
     console.log("\n  All configSchema tests passed!\n");
   } catch (error) {

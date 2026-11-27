@@ -49,7 +49,7 @@ Git 프로필 전환 도구는 여럿 존재하지만, **Git ID Switcher**는 �
 - **동기화 체크**: 프로필과 git config 간의 불일치를 실시간으로 감지하여 상태 표시줄에 경고 표시
 - **서브모듈 지원**: Git 서브모듈에 자동으로 프로필 전파
 - **SSH 키 관리**: ssh-agent에서 SSH 키를 자동으로 전환
-- **GPG 서명 지원**: 커밋 서명을 위한 GPG 키 설정 (선택 사항)
+- **커밋 서명 지원**: GPG 키 또는 SSH 키로 커밋 서명 (선택 사항)
 - **풍부한 툴팁**: 설명과 SSH 호스트를 포함한 상세 프로필 정보
 - **크로스 플랫폼**: macOS, Linux, Windows에서 동작
 - **다국어 지원**: 17개 언어 지원
@@ -235,6 +235,37 @@ Host gitlab-oss
 
 ---
 
+## SSH 키로 커밋 서명
+
+Git은 GPG 키 대신 SSH 키로 커밋에 서명할 수 있습니다. **사용자 설정**(`settings.json`)의 프로필에 `sshSigningKeyPath`를 설정하세요:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "김하늘",
+      "email": "haneul.kim@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath`에는 개인 키를 지정합니다. 개인 키가 ssh-agent에 있으면 공개 키(`.pub`)를 지정할 수도 있습니다
+- 하나의 프로필에 `gpgKeyId`와 `sshSigningKeyPath`를 함께 설정할 수 없습니다
+- 서명 키(`gpgKeyId`, `sshSigningKeyPath`)는 사용자 설정에서, `id`·`name`·`email`이 모두 같은 프로필에서만 읽습니다. 작업 영역의 `.vscode/settings.json`에 있는 값은 사용되지 않으며, 프로필 화면도 사용자 설정에만 저장합니다
+- 키 경로는 `~/.ssh/` 밖이어도 되며, 절대 경로나 `~/`로 시작하는 경로로 지정합니다. Windows에서는 `C:\Users\...` 같은 드라이브 경로도 허용됩니다. git이 키를 사용하기 전에, 확장 프로그램은 git이 커밋에 서명하는 것과 같은 방식(`ssh-keygen -Y sign`)으로 그 키로 짧은 테스트 문장에 서명하게 하며, askpass 프로그램은 실행하지 않고 30초가 지나면 중단합니다. 서명할 수 없거나 다른 키가 서명하면(예: 개인 키 옆에 오래된 `.pub` 파일이 남아 있을 때) 전환을 중단합니다. 이 확인은 키 파일이나 옆의 `.pub` 파일이 바뀌었을 때만 다시 하므로, 하드웨어 키가 터치를 요구하는 것도 그때뿐입니다. 패스프레이즈가 있는 개인 키는 이 방법으로 확인할 수 없으므로, `sshSigningKeyPath`를 해당 공개 키 파일(`.pub`)로 지정하고 키를 ssh-agent에 추가하세요
+- Unix에서는 서명 키 파일과 옆의 `.pub` 파일이 인증 키와 마찬가지로 키의 권한을 가져야 합니다. 개인 키는 그룹이나 다른 사용자가 접근할 수 없어야 하고, 공개 키는 그들이 쓸 수 없어야 하며, 어느 쪽도 실행 권한이 없어야 합니다. 그렇지 않으면 전환을 중단합니다
+- 전환 시 확장 프로그램은 `git config --local`로 `gpg.format`, `user.signingkey`, `commit.gpgsign`을 씁니다. 서명 키가 없는 프로필로 전환하면, 세 값이 모두 확장 프로그램이 쓴 그대로일 때만 세 값을 이전 값으로 되돌립니다. 하나라도 직접 바꿨다면 세 값 모두 건드리지 않습니다
+- 서명 키는 ssh-agent에 추가되지 않습니다. `autoSwitchSshKey`는 인증 키(`sshKeyPath`)만 전환합니다
+
+커밋이 검증됨(Verified)으로 표시되도록 공개 키를 GitHub에 **서명 키**(Signing Key)로 등록하세요(인증 키와 별도로 등록).
+
+---
+
 ## 프로필 관리
 
 상태 표시줄 클릭 → 목록 하단의 「프로필 관리」에서 관리 화면을 엽니다.
@@ -261,17 +292,20 @@ Host gitlab-oss
 
 ### 프로필 속성
 
-| 속성          | 필수 | 설명                                                           |
-| ------------- | ---- | -------------------------------------------------------------- |
-| `id`          | ✅   | 고유 식별자 (예: `"personal"`, `"work"`)                       |
-| `name`        | ✅   | Git user.name - 커밋에 표시                                    |
-| `email`       | ✅   | Git user.email - 커밋에 표시                                   |
-| `icon`        |      | 상태 표시줄에 표시되는 이모지 (예: `"🏠"`). 단일 이모지만 허용 |
-| `service`     |      | 서비스 이름 (예: `"GitHub"`, `"GitLab"`). UI 표시에 사용       |
-| `description` |      | 선택기와 툴팁에 표시되는 짧은 설명                             |
-| `sshKeyPath`  |      | SSH 개인 키 경로 (예: `"~/.ssh/id_ed25519_work"`)              |
-| `sshHost`     |      | SSH config의 Host 별칭 (예: `"github-work"`)                   |
-| `gpgKeyId`    |      | 커밋 서명용 GPG 키 ID                                          |
+| 속성                | 필수 | 설명                                                                                          |
+| ------------------- | ---- | --------------------------------------------------------------------------------------------- |
+| `id`                | ✅   | 고유 식별자 (예: `"personal"`, `"work"`)                                                      |
+| `name`              | ✅   | Git user.name - 커밋에 표시                                                                   |
+| `email`             | ✅   | Git user.email - 커밋에 표시                                                                  |
+| `icon`              |      | 상태 표시줄에 표시되는 이모지 (예: `"🏠"`). 단일 이모지만 허용                                |
+| `service`           |      | 서비스 이름 (예: `"GitHub"`, `"GitLab"`). UI 표시에 사용                                      |
+| `description`       |      | 선택기와 툴팁에 표시되는 짧은 설명                                                            |
+| `sshKeyPath`        |      | 인증용 SSH 개인 키 경로 (예: `"~/.ssh/id_ed25519_work"`)                                      |
+| `sshHost`           |      | SSH config의 Host 별칭 (예: `"github-work"`)                                                  |
+| `gpgKeyId`          |      | 커밋 서명용 GPG 키 ID. `sshSigningKeyPath`와 함께 설정할 수 없음                              |
+| `sshSigningKeyPath` |      | 커밋 서명용 SSH 키 경로 (예: `"~/.ssh/id_ed25519_signing"`). `gpgKeyId`와 함께 설정할 수 없음 |
+
+서명 키(`gpgKeyId`, `sshSigningKeyPath`)는 사용자 설정에서만 읽습니다.
 
 #### 표시 제한
 
@@ -284,7 +318,7 @@ Host gitlab-oss
 | ------------------------------------------ | ---------- | ----------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | 샘플 참조  | 프로필 설정 목록                                                                    |
 | `gitIdSwitcher.defaultIdentity`            | 샘플 참조  | 사용할 기본 프로필의 ID                                                             |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | 프로필 변경 시 SSH 키 자동 전환                                                     |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | 프로필 변경 시 ssh-agent에서 인증용 SSH 키(`sshKeyPath`) 자동 전환                  |
 | `gitIdSwitcher.showNotifications`          | `true`     | 프로필 전환 시 알림 표시                                                            |
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | Git 서브모듈에 프로필 전파                                                          |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | 중첩된 서브모듈 설정의 최대 깊이 (1-5)                                              |
@@ -345,13 +379,13 @@ Git 설정에는 세 개의 레이어가 있으며, 하위 설정을 상위가 �
 
 1. **Git Config** (항상): `git config --local user.name`과 `user.email`을 설정
 2. **SSH 키** (`sshKeyPath` 설정 시): 다른 키를 ssh-agent에서 제거하고 선택한 키를 추가
-3. **GPG 키** (`gpgKeyId` 설정 시): `git config --local user.signingkey`를 설정하고 서명을 활성화
+3. **커밋 서명** (`gpgKeyId` 또는 `sshSigningKeyPath` 설정 시): `git config --local`로 `gpg.format`(`openpgp` 또는 `ssh`), `user.signingkey`를 설정하고 `commit.gpgsign`을 `true`로 설정. 서명 키가 없는 프로필로 전환할 때: [SSH 키로 커밋 서명](#ssh-키로-커밋-서명) 참조
 4. **서브모듈** (활성화 시): 모든 서브모듈에 설정을 전파 (기본값: 깊이 1)
 5. **동기화 체크**: 적용된 프로필이 실제 git config와 일치하는지 확인
 
 ### 동기화 체크
 
-선택한 프로필을 실제 `git config --local` 값 (`user.name`, `user.email`, `user.signingkey`)과 비교하고, 불일치가 감지되면 상태 표시줄에 경고를 표시합니다.
+선택한 프로필을 실제 Git 구성 값 (`user.name`, `user.email`, 서명하는 프로필이면 `gpg.format`, `user.signingkey`, `commit.gpgsign`)과 비교하고, 불일치가 감지되면 상태 표시줄에 경고를 표시합니다. 서명 키가 없는 프로필에서는 확장 프로그램이 쓰고 되돌리지 않은 서명 값도 불일치로 처리합니다.
 
 **체크가 실행되는 시점:**
 

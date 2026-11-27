@@ -13,6 +13,7 @@ import {
   type Identity,
   type FieldMetadata,
   FIELD_METADATA,
+  KEY_PATH_FIELDS,
   addIdentityToConfig,
   updateIdentityInConfig,
 } from '../identity/identity';
@@ -64,9 +65,10 @@ export const FIELD_PLACEHOLDER_KEYS: Partial<Record<keyof Identity, string>> = {
   service: 'Git hosting service (e.g., GitHub, GitLab, Bitbucket)',
   icon: 'Emoji to display in status bar (e.g., 🏠, 💼)',
   description: 'Note for this identity (e.g., Work, Personal)',
-  sshKeyPath: 'Path to SSH private key (e.g., ~/.ssh/id_ed25519_work)',
+  sshKeyPath: 'Path to SSH private key for authentication (e.g., ~/.ssh/id_ed25519_work)',
   sshHost: 'SSH config host alias (e.g., github-work, gitlab-personal)',
   gpgKeyId: 'GPG key ID for commit signing (e.g., ABCD1234EF567890)',
+  sshSigningKeyPath: 'Path to SSH key for commit signing (e.g., ~/.ssh/id_ed25519_signing)',
 };
 
 /** Prompt keys for InputBox based on mode */
@@ -366,7 +368,7 @@ function waitForInputBoxValue(
 /**
  * Show field input box with back button.
  * Common function for both Add and Edit forms.
- * Supports file picker button for sshKeyPath field.
+ * Supports a file picker button for the key path fields.
  *
  * @param vs - VS Code API
  * @param options - Input box options
@@ -384,9 +386,9 @@ export async function showFieldInputBox(
   inputBox.prompt = options.prompt;
   inputBox.buttons = [vs.QuickInputButtons.Back];
 
-  // File picker handler for sshKeyPath field
+  // File picker handler for the key path fields
   let onCustomButton: (() => Promise<string | undefined>) | undefined;
-  if (options.field === 'sshKeyPath') {
+  if (options.field !== undefined && (KEY_PATH_FIELDS as readonly string[]).includes(options.field)) {
     inputBox.buttons = [
       vs.QuickInputButtons.Back,
       { iconPath: new vs.ThemeIcon('folder-opened'), tooltip: vs.l10n.t('Browse for SSH key path...') },

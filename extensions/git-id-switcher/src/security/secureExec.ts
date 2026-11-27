@@ -389,6 +389,18 @@ export interface ExecOptions {
   maxBuffer?: number;
   /** Optional logger for dependency injection (defaults to securityLogger) */
   logger?: ISecurityLogger;
+  /**
+   * Text written to the command's standard input, which is then closed (the
+   * test data `ssh-keygen -Y sign` signs). Without it, standard input is left
+   * as Node.js opens it.
+   */
+  input?: string;
+  /**
+   * Run the command with `SSH_ASKPASS_REQUIRE=never`, so OpenSSH does not
+   * start an askpass program. It is not kept from a terminal the extension
+   * host may have; the timeout stops a command that waits there.
+   */
+  isNonInteractive?: boolean;
 }
 
 export interface ExecResult {
@@ -405,7 +417,7 @@ export interface ExecResult {
  * - Failed command (e.g., config not set, not a repo, timeout)
  *
  * @example
- * const result = await gitExec(['config', 'user.name'], cwd);
+ * const result = await gitExec(['config', '-z', '--get', 'user.name'], cwd);
  * if (result.success) {
  *   console.log('Name:', result.stdout);
  * } else {
@@ -413,8 +425,35 @@ export interface ExecResult {
  * }
  */
 export type GitExecResult =
-  | { success: true; stdout: string }
-  | { success: false; error: Error };
+  | {
+      success: true;
+      stdout: string;
+      /** What git printed on standard error (set by gitExec): a warning, for example */
+      stderr?: string;
+    }
+  | {
+      success: false;
+      error: Error;
+      /** What git printed on standard error, when it ran (set by gitExec) */
+      stderr?: string;
+      /**
+       * git's exit code, when git ran and exited with one. Absent when the
+       * command was blocked, timed out, or could not be started. Lets callers
+       * tell a missing config key (`git config --get` exits 1) from a failure.
+       */
+      exitCode?: number;
+    };
+
+/**
+ * Exit code of a failed execFile call, if the process exited with one.
+ * Node sets `code` to the exit code (a number) when the process ran, and to a
+ * string such as 'ENOENT' when it could not be started.
+ */
+export function getExitCode(error: unknown): number | undefined {
+  // Object() boxes non-object throwables so the lookup never throws
+  const code: unknown = Reflect.get(new Object(error), 'code');
+  return typeof code === 'number' ? code : undefined;
+}
 
 /**
  * Secure command execution using execFile
@@ -443,7 +482,7 @@ export async function secureExec(
   const logger = options.logger ?? securityLogger;
 
   // Defense-in-depth: Check command allowlist
-  const allowlistCheck = isCommandAllowed(command, args);
+  const allowlistCheck = isCommandAllowed(command, args, options.input);
   if (!allowlistCheck.allowed) {
     const reason = allowlistCheck.reason || 'Unknown reason';
     // SECURITY: Log blocked command to audit trail for attack detection
@@ -478,11 +517,18 @@ export async function secureExec(
     timeout,
     maxBuffer: options.maxBuffer ?? 1024 * 1024, // 1MB buffer
     cwd: options.cwd,
+    ...(options.isNonInteractive && {
+      env: { ...process.env, SSH_ASKPASS_REQUIRE: 'never' },
+    }),
   };
 
   try {
     // SECURITY: Execute using absolute path, not command name
-    const { stdout, stderr } = await execFilePromise(absolutePath, args, execOptions);
+    const execution = execFilePromise(absolutePath, args, execOptions);
+    if (options.input !== undefined) {
+      execution.child.stdin?.end(options.input);
+    }
+    const { stdout, stderr } = await execution;
     return { stdout, stderr };
   } catch (error: unknown) /* c8 ignore start */ {
     // Handle timeout errors specifically
@@ -507,10 +553,24 @@ export async function secureExec(
 }
 
 /**
+ * Remove the one newline (`\n`) git adds after its output.
+ *
+ * Nothing else is removed, a carriage return included: a repository root or
+ * a value may itself end with spaces, `\r` or a newline, and removing them
+ * would name another directory or another value.
+ *
+ * @see https://github.com/git/git/blob/v2.50.1/builtin/rev-parse.c (the root is printed with puts())
+ */
+export function removeTrailingNewline(output: string): string {
+  return output.endsWith('\n') ? output.slice(0, -1) : output;
+}
+
+/**
  * Git command wrapper
  *
  * Executes git commands securely with proper argument handling.
- * Uses command-specific timeout (10 seconds for git).
+ * Uses command-specific timeout (10 seconds for git). Only the line ending
+ * git adds after the output is removed (removeTrailingNewline).
  *
  * BREAKING CHANGE: Returns GitExecResult instead of string.
  * This allows callers to distinguish between:
@@ -525,7 +585,7 @@ export async function secureExec(
  *
  * @example
  * // Get config value
- * const result = await gitExec(['config', 'user.name'], '/path/to/repo');
+ * const result = await gitExec(['config', '-z', '--get', 'user.name'], '/path/to/repo');
  * if (result.success) {
  *   console.log('Name:', result.stdout);
  * } else {
@@ -540,8 +600,8 @@ export async function secureExec(
  */
 export async function gitExec(args: string[], cwd?: string): Promise<GitExecResult> {
   try {
-    const { stdout } = await secureExec('git', args, { cwd });
-    return { success: true, stdout: stdout.trim() };
+    const { stdout, stderr } = await secureExec('git', args, { cwd });
+    return { success: true, stdout: removeTrailingNewline(stdout), stderr };
   } catch (error) {
     // Git command failed (e.g., config not set, not a repo, timeout)
     // Timeout errors are already logged by secureExec via logCommandTimeout
@@ -554,7 +614,14 @@ export async function gitExec(args: string[], cwd?: string): Promise<GitExecResu
       securityLogger.logCommandError('git', args, errorObj, cwd);
     }
 
-    return { success: false, error: errorObj };
+    const exitCode = getExitCode(error);
+    const stderr: unknown = Reflect.get(new Object(error), 'stderr');
+    return {
+      success: false,
+      error: errorObj,
+      ...(exitCode !== undefined && { exitCode }),
+      ...(typeof stderr === 'string' && { stderr }),
+    };
   }
 }
 
@@ -616,18 +683,29 @@ export async function sshAgentExec(args: string[]): Promise<ExecResult> {
  * SSH-keygen command wrapper
  *
  * Executes ssh-keygen commands securely (read-only operations).
- * Uses command-specific timeout (5 seconds for ssh-keygen).
+ * Uses command-specific timeout (5 seconds for ssh-keygen) unless given.
  *
  * @param args - SSH-keygen arguments as array
+ * @param options - Standard input, timeout, and whether askpass is turned
+ *   off (see ExecOptions)
  * @returns Full result with stdout and stderr
- * @throws TimeoutError if command times out (5 seconds)
+ * @throws TimeoutError if command times out
  *
  * @example
  * // Get key fingerprint
  * const result = await sshKeygenExec(['-lf', keyPath]);
+ *
+ * // Sign the fixed test data as git would, without askpass
+ * const signed = await sshKeygenExec(['-Y', 'sign', '-n', 'git', '-f', keyPath], {
+ *   input: SIGNING_TEST_DATA,
+ *   isNonInteractive: true,
+ * });
  */
-export async function sshKeygenExec(args: string[]): Promise<ExecResult> {
-  return secureExec('ssh-keygen', args);
+export async function sshKeygenExec(
+  args: string[],
+  options: Pick<ExecOptions, 'input' | 'timeout' | 'isNonInteractive'> = {},
+): Promise<ExecResult> {
+  return secureExec('ssh-keygen', args, options);
 }
 
 /**

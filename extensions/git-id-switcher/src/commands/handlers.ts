@@ -16,6 +16,7 @@ import {
   Identity,
   getIdentityLabel,
   getIdentitiesWithValidation,
+  getManagedIdentities,
   deleteIdentityFromConfig,
   moveIdentityInConfig,
 } from '../identity/identity';
@@ -67,17 +68,10 @@ export async function selectIdentityCommand(
       return;
     }
 
-    if (selectedIdentity.id === currentIdentity?.id) {
-      // Same identity selected, no change needed
-      vscode.window.showInformationMessage(
-        vscode.l10n.t('Already using {0}', getIdentityLabel(selectedIdentity))
-      );
-      return;
-    }
-
-    // Switch to selected identity
+    // Switch to the selected identity, also when it is the current one (its
+    // values may have been changed by hand since)
     await switchToIdentity(
-      selectedIdentity,
+      selectedIdentity.id,
       context,
       statusBar,
       getCurrentIdentity,
@@ -103,7 +97,7 @@ export async function selectIdentityCommand(
 async function handleManageAdd(lastIndex: number): Promise<number> {
   const isSuccess = await handleAddIdentity();
   if (isSuccess) {
-    const newIdentities = getIdentitiesWithValidation();
+    const newIdentities = getManagedIdentities();
     return newIdentities.length - 1;
   }
   return lastIndex;
@@ -142,7 +136,7 @@ async function handleManageDelete(
 ): Promise<number> {
   const isSuccess = await handleDeleteIdentity(context, statusBar, identity);
   if (isSuccess) {
-    const newIdentities = getIdentitiesWithValidation();
+    const newIdentities = getManagedIdentities();
     return Math.min(index, Math.max(0, newIdentities.length - 1));
   }
   return index;
@@ -201,7 +195,8 @@ async function handleManageIdentities(
   let lastIndex = 0;
 
   while (true) {
-    const identities = getIdentitiesWithValidation();
+    // The identities in the user's settings: the ones the screens change
+    const identities = getManagedIdentities();
     const result = await showManageIdentitiesQuickPick(identities, lastIndex);
 
     if (!result || result.action === 'back') {
@@ -471,7 +466,7 @@ export async function resolveSyncMismatchCommand(
 
       try {
         await switchToIdentity(
-          currentIdentity,
+          currentIdentity.id,
           context,
           statusBar,
           getCurrentIdentity,

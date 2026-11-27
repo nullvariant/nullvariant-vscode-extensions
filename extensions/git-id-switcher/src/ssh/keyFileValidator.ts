@@ -4,19 +4,18 @@
  * Checks a private key file before it is added to ssh-agent: that it is a
  * regular file, within size limits, not readable by group or others, and in
  * a known private key format. Failures are logged as security events.
+ *
+ * The permission rules are shared with the signing key check
+ * (signingKeyCheck.ts), which also checks public key files: a public key may
+ * be readable by anyone (it usually is, 0644), but not writable by group or
+ * others, and not executable.
  */
 
 import type { Stats } from "node:fs";
 import type { FileHandle } from "node:fs/promises";
 import * as fs from "node:fs/promises";
 import { securityLogger } from "../security/securityLogger";
-
-/**
- * Maximum allowed SSH key file size (1MB)
- * SSH private keys are typically small (1-4KB).
- * 1MB is a generous limit that catches DoS attacks while allowing for edge cases.
- */
-const MAX_SSH_KEY_FILE_SIZE = 1_048_576; // 1 MiB (1024 * 1024)
+import { MAX_SSH_KEY_FILE_SIZE } from "../core/constants";
 
 /**
  * Minimum SSH key file size (10 bytes)
@@ -36,6 +35,35 @@ const INSECURE_PERMISSION_BITS = 0o077;
  * SSH private keys should not be executable (security best practice)
  */
 const OWNER_EXECUTE_BIT = 0o100;
+
+/**
+ * Unix permission bits that should NOT be set on SSH public key files:
+ * group/others write. Reading is allowed (public keys are usually 0644).
+ */
+const INSECURE_PUBLIC_KEY_PERMISSION_BITS = 0o022;
+
+/**
+ * Execute bits (owner, group, others) that should NOT be set on public key files
+ */
+const ANY_EXECUTE_BITS = 0o111;
+
+/** Kind of key a file holds */
+export type KeyFileKind = "private" | "public";
+
+/**
+ * The permission rules of each kind of key file: bits that must not be set,
+ * with the problem they show (checked in order).
+ */
+const PERMISSION_RULES: Readonly<Record<KeyFileKind, ReadonlyArray<{ readonly bits: number; readonly problem: string }>>> = {
+  private: [
+    { bits: INSECURE_PERMISSION_BITS, problem: "group/others have access" },
+    { bits: OWNER_EXECUTE_BIT, problem: "owner execute bit set" },
+  ],
+  public: [
+    { bits: INSECURE_PUBLIC_KEY_PERMISSION_BITS, problem: "group/others can write" },
+    { bits: ANY_EXECUTE_BITS, problem: "execute bit set" },
+  ],
+};
 
 /**
  * Valid SSH private key format headers
@@ -225,40 +253,34 @@ function validateKeyFileSize(size: number): KeyFileValidationResult | null {
 }
 
 /**
- * Validate file permissions (Unix only).
+ * The permission problem of a key file of a kind, or undefined when its
+ * permissions are safe. Always undefined on Windows (ACL-based permissions).
+ *
+ * @param mode - The file mode (stat)
+ */
+export function findInsecurePermission(mode: number, kind: KeyFileKind): string | undefined {
+  return process.platform === "win32"
+    ? undefined
+    : PERMISSION_RULES[kind].find(({ bits }) => (mode & bits) !== 0)?.problem; // eslint-disable-line no-bitwise -- permission bit extraction
+}
+
+/**
+ * Validate file permissions of a private key (Unix only).
  * @internal
  */
 function validateKeyFilePermissions(
   mode: number,
 ): KeyFileValidationResult | null {
-  // Skip on Windows (uses ACL-based permissions)
-  if (process.platform === "win32") {
-    return null;
+  const problem = findInsecurePermission(mode, "private");
+  if (problem === undefined) {
+    return null; // Valid
   }
-
   const modeString = (mode & FILE_PERMISSION_BITS).toString(OCTAL_RADIX); // eslint-disable-line no-bitwise -- file permission extraction
-
-  // Check if group or others have any permissions
-  // eslint-disable-next-line no-bitwise -- permission bit extraction
-  if ((mode & INSECURE_PERMISSION_BITS) !== 0) {
-    securityLogger.logValidationFailure(
-      "ssh-key-file",
-      `Insecure permissions: ${modeString} (group/others have access)`,
-    );
-    return { valid: false, reason: "insecure_permissions" };
-  }
-
-  // Check if owner execute bit is set (SSH keys should not be executable)
-  // eslint-disable-next-line no-bitwise -- permission bit extraction
-  if ((mode & OWNER_EXECUTE_BIT) !== 0) {
-    securityLogger.logValidationFailure(
-      "ssh-key-file",
-      `Insecure permissions: ${modeString} (owner execute bit set)`,
-    );
-    return { valid: false, reason: "insecure_permissions" };
-  }
-
-  return null; // Valid
+  securityLogger.logValidationFailure(
+    "ssh-key-file",
+    `Insecure permissions: ${modeString} (${problem})`,
+  );
+  return { valid: false, reason: "insecure_permissions" };
 }
 
 /**
@@ -275,7 +297,7 @@ function validateKeyFilePermissions(
  * **Naming convention**: Named with `BeforeAddToAgent` suffix to clarify
  * the timing/context of this validation (pre-operation check before ssh-add).
  *
- * Note: Symlinks are already resolved by expandPath/validateSshKeyPath,
+ * Note: Symlinks are already resolved by expandKeyPathOrThrow,
  * so we use fs.stat here which follows symlinks.
  *
  * @param expandedPath - Already expanded and validated path (symlinks resolved)

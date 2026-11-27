@@ -9,6 +9,7 @@ import type * as vscodeTypes from 'vscode';
 import {
   Identity,
   getIdentitiesWithValidation,
+  getManagedIdentities,
   getIdentityLabel,
   getIdentityDetail,
 } from '../identity/identity';
@@ -216,7 +217,8 @@ export async function showDeleteIdentityQuickPick(
     return undefined;
   }
 
-  const identities = getIdentitiesWithValidation();
+  // The identities in the user's settings: the ones deleteIdentityFromConfig() changes
+  const identities = getManagedIdentities();
 
   if (identities.length === 0) {
     vs.window.showWarningMessage(

@@ -10,6 +10,7 @@ import {
   getWorkspace,
   getWindow,
   getExtensions,
+  localize,
   _resetCache,
   _setMockVSCode,
 } from '../core/vscodeLoader';
@@ -184,6 +185,36 @@ function testMockVSCodeInjection(): void {
 /**
  * Run all tests
  */
+/**
+ * Test suite for localize
+ */
+function testLocalize(): void {
+  console.log('Testing localize...');
+  // Without VS Code: the message, with the placeholders filled in
+  _setMockVSCode(undefined);
+  assert.strictEqual(localize('Plain message'), 'Plain message');
+  assert.strictEqual(localize('Key {0} in {1}', 'gpg.format', 2), 'Key gpg.format in 2');
+  assert.strictEqual(localize('Missing {1}', 'only zero'), 'Missing {1}', 'a placeholder without a value is kept');
+
+  // With VS Code: its l10n API
+  const calls: unknown[][] = [];
+  _setMockVSCode({
+    l10n: {
+      t: (message: string, ...args: unknown[]) => {
+        calls.push([message, ...args]);
+        return `translated: ${message}`;
+      },
+    },
+  } as never);
+  try {
+    assert.strictEqual(localize('Key {0}', 'gpg.format'), 'translated: Key {0}');
+    assert.deepStrictEqual(calls, [['Key {0}', 'gpg.format']]);
+  } finally {
+    _resetCache();
+  }
+  console.log('✅ localize tests passed!');
+}
+
 export function runVSCodeLoaderTests(): void {
   console.log('\n=== VS Code Loader Tests ===\n');
 
@@ -195,6 +226,7 @@ export function runVSCodeLoaderTests(): void {
     testCacheReset();
     testLazyLoading();
     testMockVSCodeInjection();
+    testLocalize();
 
     console.log('\n✅ All VS Code loader tests passed!\n');
   } catch (error) {

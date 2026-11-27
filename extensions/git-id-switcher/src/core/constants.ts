@@ -16,6 +16,27 @@
 export const PATH_MAX = 4096;
 
 /**
+ * Maximum length of a command argument that is not a path
+ *
+ * Used by:
+ * - commandAllowlist.ts: every argument passed to secureExec
+ * - gitConfigRules.ts: whether a `git config` text value can be written back
+ */
+export const MAX_COMMAND_ARG_LENGTH = 256;
+
+/**
+ * Maximum size of an SSH key file read (1 MiB)
+ *
+ * SSH keys are typically small (1-4KB); 1 MiB catches DoS attacks while
+ * allowing for edge cases.
+ *
+ * Used by:
+ * - keyFileValidator.ts: an authentication key before it is added to ssh-agent
+ * - signingKeyCheck.ts: a signing key before it is checked
+ */
+export const MAX_SSH_KEY_FILE_SIZE = 1_048_576; // 1 MiB (1024 * 1024)
+
+/**
  * Maximum number of identities allowed
  *
  * Used for DoS protection in:
@@ -185,6 +206,22 @@ export const MIN_GPG_KEY_LENGTH = 8;
  * Full fingerprints are 40 hex characters.
  */
 export const MAX_GPG_KEY_LENGTH = 40;
+
+// ============================================================================
+// Commit Signing Formats
+// ============================================================================
+
+/**
+ * Values of git's `gpg.format` that the extension writes.
+ *
+ * Mirrors git's own key name so no translation layer is needed. git also
+ * accepts `x509`, which the extension never writes: an identity signs with
+ * either a GPG key ID (`openpgp`) or an SSH key path (`ssh`).
+ */
+export const GPG_FORMATS = ['openpgp', 'ssh'] as const;
+
+/** A signing format the extension writes to `gpg.format` */
+export type GpgFormat = (typeof GPG_FORMATS)[number];
 
 /**
  * Security limits object for backwards compatibility

@@ -49,7 +49,7 @@
 - **同步檢查**: 即時偵測身分檔案與 git config 之間的不一致，並在狀態列中發出警告
 - **子模組支援**: 自動將身分檔案傳播到 Git 子模組
 - **SSH 金鑰管理**: 自動在 ssh-agent 中切換 SSH 金鑰
-- **GPG 簽署支援**: 設定用於提交簽署的 GPG 金鑰（選用）
+- **提交簽署支援**: 使用 GPG 金鑰或 SSH 金鑰簽署提交（選用）
 - **豐富的工具提示**: 包含描述和 SSH 主機的詳細身分檔案資訊
 - **跨平台**: 支援 macOS、Linux 和 Windows
 - **多語言**: 支援 17 種語言
@@ -235,6 +235,37 @@ Host gitlab-oss
 
 ---
 
+## 使用 SSH 金鑰簽署提交
+
+Git 可以使用 SSH 金鑰代替 GPG 金鑰簽署提交。在**使用者設定**（`settings.json`）的身分檔案中設定 `sshSigningKeyPath`：
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "陳雨",
+      "email": "chenyu.chen@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` 指定私鑰；如果私鑰已在 ssh-agent 中，也可以指定公鑰（`.pub`）
+- 同一個身分檔案不能同時設定 `gpgKeyId` 與 `sshSigningKeyPath`
+- 簽署金鑰（`gpgKeyId`、`sshSigningKeyPath`）僅從使用者設定中 `id`、`name` 和 `email` 都相同的身分檔案讀取。工作區 `.vscode/settings.json` 中的值不會被使用，身分檔案管理畫面也只儲存到使用者設定
+- 金鑰路徑可以在 `~/.ssh/` 之外，使用絕對路徑或以 `~/` 開頭的路徑。在 Windows 上也接受 `C:\Users\...` 這樣的磁碟機路徑。在讓 git 使用該金鑰之前，擴充功能會讓它以 git 簽署提交的同樣方式（`ssh-keygen -Y sign`）對一小段測試文字簽署，不會啟動 askpass 程式，並在 30 秒後停止。如果無法簽署，或由另一把金鑰簽署（例如私鑰旁邊殘留了舊的 `.pub` 檔案），切換將停止。只有當金鑰檔案或旁邊的 `.pub` 檔案變更時才會重新檢查，因此硬體金鑰只會在那時要求觸碰。具有密碼短語的私鑰無法用這種方式檢查：請將 `sshSigningKeyPath` 設為其公鑰檔案（`.pub`），並將金鑰加入 ssh-agent
+- 在 Unix 上，簽署金鑰檔案及其旁邊的 `.pub` 檔案必須具有金鑰的權限，與驗證金鑰相同：私鑰不得被群組或其他使用者存取，公鑰不得被他們寫入，兩者都不得可執行。否則切換將停止
+- 切換時，擴充功能透過 `git config --local` 寫入 `gpg.format`、`user.signingkey` 與 `commit.gpgsign`。切換到沒有簽署金鑰的身分檔案時，如果這三個值仍是擴充功能寫入的值，則將三者還原為先前的值；只要其中任何一個被手動修改過，三者都不會被變更
+- 簽署金鑰不會加入 ssh-agent：`autoSwitchSshKey` 只切換驗證金鑰（`sshKeyPath`）
+
+請將公鑰以**簽署金鑰**（Signing Key）註冊到 GitHub（與驗證金鑰分開註冊），提交才會顯示為已驗證。
+
+---
+
 ## 身分檔案管理
 
 點擊狀態列 → 在列表底部選擇「身分檔案管理」開啟管理介面。
@@ -261,17 +292,20 @@ Host gitlab-oss
 
 ### 身分檔案屬性
 
-| 屬性          | 必需 | 描述                                                |
-| ------------- | ---- | --------------------------------------------------- |
-| `id`          | ✅   | 唯一識別碼（如 `"personal"`、`"work"`）             |
-| `name`        | ✅   | Git user.name - 顯示在提交中                        |
-| `email`       | ✅   | Git user.email - 顯示在提交中                       |
-| `icon`        |      | 狀態列顯示的表情符號（如 `"🏠"`）。僅限單一表情符號 |
-| `service`     |      | 服務名稱（如 `"GitHub"`、`"GitLab"`）。用於 UI 顯示 |
-| `description` |      | 在選擇器和工具提示中顯示的簡短描述                  |
-| `sshKeyPath`  |      | SSH 私鑰路徑（如 `"~/.ssh/id_ed25519_work"`）       |
-| `sshHost`     |      | SSH 設定主機別名（如 `"github-work"`）              |
-| `gpgKeyId`    |      | 用於提交簽署的 GPG 金鑰 ID                          |
+| 屬性                | 必需 | 描述                                                                                        |
+| ------------------- | ---- | ------------------------------------------------------------------------------------------- |
+| `id`                | ✅   | 唯一識別碼（如 `"personal"`、`"work"`）                                                     |
+| `name`              | ✅   | Git user.name - 顯示在提交中                                                                |
+| `email`             | ✅   | Git user.email - 顯示在提交中                                                               |
+| `icon`              |      | 狀態列顯示的表情符號（如 `"🏠"`）。僅限單一表情符號                                         |
+| `service`           |      | 服務名稱（如 `"GitHub"`、`"GitLab"`）。用於 UI 顯示                                         |
+| `description`       |      | 在選擇器和工具提示中顯示的簡短描述                                                          |
+| `sshKeyPath`        |      | 用於驗證的 SSH 私鑰路徑（如 `"~/.ssh/id_ed25519_work"`）                                    |
+| `sshHost`           |      | SSH 設定主機別名（如 `"github-work"`）                                                      |
+| `gpgKeyId`          |      | 用於提交簽署的 GPG 金鑰 ID。不能與 `sshSigningKeyPath` 同時設定                             |
+| `sshSigningKeyPath` |      | 用於提交簽署的 SSH 金鑰路徑（如 `"~/.ssh/id_ed25519_signing"`）。不能與 `gpgKeyId` 同時設定 |
+
+簽署金鑰（`gpgKeyId`、`sshSigningKeyPath`）僅從使用者設定中讀取。
 
 #### 顯示限制
 
@@ -284,7 +318,7 @@ Host gitlab-oss
 | ------------------------------------------ | ---------- | --------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | 見範例     | 身分檔案設定列表                                                                  |
 | `gitIdSwitcher.defaultIdentity`            | 見範例     | 預設使用的身分檔案 ID                                                             |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | 切換身分檔案時自動切換 SSH 金鑰                                                   |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | 切換身分檔案時自動在 ssh-agent 中切換用於驗證的 SSH 金鑰（`sshKeyPath`）          |
 | `gitIdSwitcher.showNotifications`          | `true`     | 切換身分檔案時顯示通知                                                            |
 | `gitIdSwitcher.applyToSubmodules`          | `true`     | 將身分檔案傳播到 Git 子模組                                                       |
 | `gitIdSwitcher.submoduleDepth`             | `1`        | 巢狀子模組設定的最大深度（1-5）                                                   |
@@ -345,13 +379,13 @@ Git 設定有三個層次，下層的設定會覆蓋上層：
 
 1. **Git 設定**（始終）: 設定 `git config --local user.name` 和 `user.email`
 2. **SSH 金鑰**（如果設定了 `sshKeyPath`）: 從 ssh-agent 移除其他金鑰，加入選定的金鑰
-3. **GPG 金鑰**（如果設定了 `gpgKeyId`）: 設定 `git config --local user.signingkey` 並啟用簽署
+3. **提交簽署**（如果設定了 `gpgKeyId` 或 `sshSigningKeyPath`）: 透過 `git config --local` 設定 `gpg.format`（`openpgp` 或 `ssh`）、`user.signingkey`，並將 `commit.gpgsign` 設為 `true`。切換到沒有簽署金鑰的身分檔案時：請參閱[使用 SSH 金鑰簽署提交](#使用-ssh-金鑰簽署提交)
 4. **子模組**（如果啟用）: 將設定傳播到所有子模組（預設：深度 1）
 5. **同步檢查**: 驗證所套用的身分檔案是否與實際 git config 一致
 
 ### 同步檢查
 
-將所選身分檔案與實際的 `git config --local` 值（`user.name`、`user.email`、`user.signingkey`）進行比較，當偵測到不一致時在狀態列中顯示警告。
+將所選身分檔案與實際的 Git 設定值（`user.name`、`user.email`，以及簽署身分檔案的 `gpg.format`、`user.signingkey`、`commit.gpgsign`）進行比較，當偵測到不一致時在狀態列中顯示警告。對於沒有簽署金鑰的身分檔案，擴充功能寫入但未還原的簽署值也視為不一致。
 
 **檢查執行時機：**
 

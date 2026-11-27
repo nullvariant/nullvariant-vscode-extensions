@@ -47,6 +47,9 @@
 
 import * as assert from 'node:assert';
 import * as os from 'node:os';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import {
   secureExec,
   gitExec,
@@ -1166,12 +1169,17 @@ async function testGitExecResultType(): Promise<void> {
     }
   }
 
-  // Test 3: Empty stdout success is different from failure
+  // Test 3: A key that is not set fails with git's exit code 1
   {
-    // 'git config nonexistent.key' fails with exit code, so success=false
-    const result = await gitExec(['config', 'nonexistent.key.that.does.not.exist']);
-    // This should return failure (config not found)
-    assert.strictEqual(result.success, false, 'Nonexistent config should fail');
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'gitexec-missing-key-'));
+    try {
+      execFileSync('git', ['init', '-q'], { cwd: repo });
+      const result = await gitExec(['config', '-z', '--local', '--get', 'user.signingkey'], repo);
+      assert.strictEqual(result.success, false, 'A missing config key should fail');
+      assert.strictEqual(!result.success && result.exitCode, 1, 'git config --get exits 1 for a missing key');
+    } finally {
+      fs.rmSync(repo, { recursive: true, force: true });
+    }
   }
 
   console.log('✅ gitExec Result type tests passed!');
@@ -1216,14 +1224,16 @@ async function testGitExecErrorLogging(): Promise<void> {
     }
   }
 
-  // Test 3: Verify error object preserves original error type
+  // Test 3: A key outside the allowlist is blocked before git runs: no exit code
   {
     const result = await gitExec(['config', 'nonexistent.key.xyz']);
-    assert.strictEqual(result.success, false, 'Config miss should fail');
+    assert.strictEqual(result.success, false, 'A blocked config key should fail');
     if (!result.success) {
       // Error should be a proper Error instance, not a string
       assert.strictEqual(typeof result.error.message, 'string');
       assert.strictEqual(typeof result.error.name, 'string');
+      assert.ok(result.error.message.includes('Command blocked'), result.error.message);
+      assert.strictEqual(result.exitCode, undefined, 'A blocked command has no exit code');
     }
   }
 

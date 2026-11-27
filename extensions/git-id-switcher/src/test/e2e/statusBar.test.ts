@@ -361,7 +361,7 @@ describe('StatusBar E2E Test Suite', function () {
       const syncResult: SyncCheckResult = {
         state: 'out_of_sync',
         mismatches: [
-          { field: 'name', expected: 'Test User', actual: 'Wrong Name' },
+          { field: 'user.name', expected: 'Test User', actual: 'Wrong Name' },
         ],
       };
 
@@ -397,7 +397,7 @@ describe('StatusBar E2E Test Suite', function () {
       const syncResult: SyncCheckResult = {
         state: 'out_of_sync',
         mismatches: [
-          { field: 'email', expected: 'a@b.com', actual: 'c@d.com' },
+          { field: 'user.email', expected: 'a@b.com', actual: 'c@d.com' },
         ],
       };
 
@@ -413,7 +413,7 @@ describe('StatusBar E2E Test Suite', function () {
       // Set out_of_sync
       statusBar.setSyncState({
         state: 'out_of_sync',
-        mismatches: [{ field: 'name', expected: 'A', actual: 'B' }],
+        mismatches: [{ field: 'user.name', expected: 'A', actual: 'B' }],
       });
       assert.strictEqual(statusBar.getSyncState()?.state, 'out_of_sync');
 
@@ -429,9 +429,9 @@ describe('StatusBar E2E Test Suite', function () {
       const syncResult: SyncCheckResult = {
         state: 'out_of_sync',
         mismatches: [
-          { field: 'name', expected: 'Full Test User', actual: 'Wrong Name' },
-          { field: 'email', expected: 'full@example.com', actual: 'wrong@example.com' },
-          { field: 'signingKey', expected: 'ABCD1234', actual: 'EFGH5678' },
+          { field: 'user.name', expected: 'Full Test User', actual: 'Wrong Name' },
+          { field: 'user.email', expected: 'full@example.com', actual: 'wrong@example.com' },
+          { field: 'user.signingkey', expected: 'ABCD1234', actual: 'EFGH5678' },
         ],
       };
 
@@ -449,7 +449,7 @@ describe('StatusBar E2E Test Suite', function () {
       const syncResult: SyncCheckResult = {
         state: 'out_of_sync',
         mismatches: [
-          { field: 'email', expected: 'test@example.com', actual: 'other@example.com' },
+          { field: 'user.email', expected: 'test@example.com', actual: 'other@example.com' },
         ],
       };
 
@@ -465,7 +465,7 @@ describe('StatusBar E2E Test Suite', function () {
       // First set out_of_sync
       statusBar.setSyncState({
         state: 'out_of_sync',
-        mismatches: [{ field: 'name', expected: 'A', actual: 'B' }],
+        mismatches: [{ field: 'user.name', expected: 'A', actual: 'B' }],
       });
 
       // Then set synced
@@ -479,10 +479,10 @@ describe('StatusBar E2E Test Suite', function () {
   describe('buildMismatchTooltip', () => {
     it('should generate markdown with single mismatch', () => {
       const tooltip = buildMismatchTooltip([
-        { field: 'name', expected: 'John', actual: 'Jane' },
+        { field: 'user.name', expected: 'John', actual: 'Jane' },
       ]);
 
-      assert.ok(tooltip.includes('name'), 'Should contain field name');
+      assert.ok(tooltip.includes('user.name'), 'Should contain field name');
       assert.ok(tooltip.includes('John'), 'Should contain expected value');
       assert.ok(tooltip.includes('Jane'), 'Should contain actual value');
       assert.ok(tooltip.includes('|'), 'Should contain table markers');
@@ -490,25 +490,25 @@ describe('StatusBar E2E Test Suite', function () {
 
     it('should generate markdown with multiple mismatches', () => {
       const tooltip = buildMismatchTooltip([
-        { field: 'name', expected: 'John', actual: 'Jane' },
-        { field: 'email', expected: 'j@a.com', actual: 'j@b.com' },
+        { field: 'user.name', expected: 'John', actual: 'Jane' },
+        { field: 'user.email', expected: 'j@a.com', actual: 'j@b.com' },
       ]);
 
-      assert.ok(tooltip.includes('name'), 'Should contain name field');
-      assert.ok(tooltip.includes('email'), 'Should contain email field');
+      assert.ok(tooltip.includes('user.name'), 'Should contain name field');
+      assert.ok(tooltip.includes('user.email'), 'Should contain email field');
     });
 
-    it('should include signingKey field label', () => {
+    it('should include the user.signingkey field label', () => {
       const tooltip = buildMismatchTooltip([
-        { field: 'signingKey', expected: 'KEY1', actual: 'KEY2' },
+        { field: 'user.signingkey', expected: 'KEY1', actual: 'KEY2' },
       ]);
 
-      assert.ok(tooltip.includes('signingKey'), 'Should contain signingKey field');
+      assert.ok(tooltip.includes('user.signingkey'), 'Should contain the user.signingkey field');
     });
 
     it('should escape pipe characters in mismatch values', () => {
       const tooltip = buildMismatchTooltip([
-        { field: 'name', expected: 'Org | Team', actual: 'Other | Group' },
+        { field: 'user.name', expected: 'Org | Team', actual: 'Other | Group' },
       ]);
 
       assert.ok(
@@ -551,12 +551,9 @@ describe('Tooltip Masking Functions', () => {
       assert.strictEqual(maskSshKeyPath('id_rsa'), 'id_rsa');
     });
 
-    // path.basename only recognizes \ as separator on Windows
-    if (process.platform === 'win32') {
-      it('should handle Windows-style paths', () => {
-        assert.strictEqual(maskSshKeyPath(String.raw`C:\Users\user\.ssh\id_rsa`), 'id_rsa');
-      });
-    }
+    it('should handle Windows-style paths on every platform', () => {
+      assert.strictEqual(maskSshKeyPath(String.raw`C:\Users\user\.ssh\id_rsa`), 'id_rsa');
+    });
 
     it('should return empty string for empty input', () => {
       assert.strictEqual(maskSshKeyPath(''), '');

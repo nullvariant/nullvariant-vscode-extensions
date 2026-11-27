@@ -54,7 +54,7 @@ Kvankam multaj Git-profilo-ŝanĝiloj ekzistas, **Git ID Switcher** solvas kompl
 - **Sync Check**: Realtempa detekto de malkongruoj inter profilo kaj git-agordo, kun statusa averto
 - **Submodula Subteno**: Aŭtomate disvastigu vian profilon al Git-submoduloj
 - **SSH-Ŝlosila Administrado**: Aŭtomate ŝanĝu SSH-ŝlosilojn en ssh-agent
-- **GPG-Subskriba Subteno**: Agordu vian GPG-ŝlosilon por commit-subskribo (laŭvola)
+- **Commit-Subskriba Subteno**: Subskribu commit-ojn per GPG-ŝlosilo aŭ SSH-ŝlosilo (laŭvola)
 - **Riĉaj Konsiletoj**: Detalaj profilo-informoj kun priskribo kaj SSH-gastigo
 - **Plurplatforma**: Funkcias sur macOS, Linux, kaj Windows
 - **Lokalizita**: Subtenas 17 lingvojn
@@ -240,6 +240,37 @@ Noto: La 4-a profilo (`client-b`) uzas mallongigitan nomon, kaj la 5-a (`oss`) p
 
 ---
 
+## Commit-Subskribo per SSH-Ŝlosilo
+
+Git povas subskribi commit-ojn per SSH-ŝlosilo anstataŭ GPG-ŝlosilo. Agordu `sshSigningKeyPath` en la profilo de viaj **uzantaj agordoj** (`settings.json`):
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Ludoviko Zamenhof",
+      "email": "ludoviko.zamenhof@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` estas la privata ŝlosilo, aŭ la publika ŝlosilo (`.pub`) se la privata ŝlosilo estas en ssh-agent
+- `gpgKeyId` kaj `sshSigningKeyPath` ne povas esti ambaŭ agorditaj en unu profilo
+- Subskribaj ŝlosiloj (`gpgKeyId`, `sshSigningKeyPath`) estas legataj nur el la uzantaj agordoj, el la profilo kun la samaj `id`, `name` kaj `email`. Valoroj en la `.vscode/settings.json` de laborspaco ne estas uzataj, kaj la profilaj ekranoj konservas nur en la uzantajn agordojn
+- Ŝlosilaj vojoj povas esti ekster `~/.ssh/`, kiel absoluta vojo aŭ vojo komenciĝanta per `~/`. En Windows ankaŭ akceptiĝas diska vojo kiel `C:\Users\...`. Antaŭ ol git uzu la ŝlosilon, la etendaĵo igas ĝin subskribi mallongan testan tekston same kiel git subskribas enmeton (`ssh-keygen -Y sign`), sen lanĉi askpass-programon kaj kun tempolimo de 30 sekundoj. Se ĝi ne povas subskribi, aŭ alia ŝlosilo subskribas (ekzemple pro malnova `.pub`-dosiero apud la privata ŝlosilo), la ŝanĝo haltas. La kontrolo ripetiĝas nur kiam la ŝlosila dosiero aŭ la apuda `.pub`-dosiero ŝanĝiĝas, do aparata ŝlosilo petas tuŝon nur tiam. Privata ŝlosilo kun pasfrazo ne kontroleblas tiel: agordu `sshSigningKeyPath` al ĝia publika ŝlosila dosiero (`.pub`) kaj aldonu la ŝlosilon al ssh-agent
+- En Unikso, la dosiero de la subskriba ŝlosilo kaj la dosiero `.pub` apud ĝi devas havi la permesojn de ŝlosilo, kiel por la aŭtentiga ŝlosilo: privata ŝlosilo ne estu alirebla por grupo aŭ aliaj, publika ne estu skribebla de ili, kaj neniu estu plenumebla. Alie la ŝanĝo haltas
+- Ĉe ŝanĝo, la etendaĵo skribas `gpg.format`, `user.signingkey` kaj `commit.gpgsign` per `git config --local`. Ĉe ŝanĝo al profilo sen subskriba ŝlosilo, ĝi remetas tiujn tri al iliaj antaŭaj valoroj, nur se ĉiuj tri ankoraŭ enhavas tion, kion la etendaĵo skribis; se vi mane ŝanĝis iun ajn, ĉiuj tri restas netuŝitaj
+- La subskriba ŝlosilo ne estas aldonata al ssh-agent: `autoSwitchSshKey` ŝanĝas nur la aŭtentigan ŝlosilon (`sshKeyPath`)
+
+Registru la publikan ŝlosilon ĉe GitHub kiel **subskriba ŝlosilo** (Signing Key), aparte de la aŭtentiga ŝlosilo, por ke viaj commit-oj aperu kiel kontrolitaj.
+
+---
+
 ## Profila Administrado
 
 Klaku statusbreton → Malfermu "Profila Administrado" ĉe la fundo de la listo.
@@ -266,17 +297,20 @@ Vi ankaŭ povas forigi profilon el komand-paleto per `Git ID Switcher: Delete Id
 
 ### Profilo-Propraĵoj
 
-| Propraĵo      | Deviga | Priskribo                                                     |
-| ------------- | ------ | ------------------------------------------------------------- |
-| `id`          | ✅     | Unika identigilo (ekz: `"personal"`, `"work-main"`)           |
-| `name`        | ✅     | Git user.name — montrita en commit-oj                         |
-| `email`       | ✅     | Git user.email — montrita en commit-oj                        |
-| `icon`        |        | Emoji montrita en statusbreto (ekz: `"🏠"`). Nur unu emoji    |
-| `service`     |        | Serva nomo (ekz: `"GitHub"`, `"GitLab"`). Por UI              |
-| `description` |        | Mallonga priskribo por elektilo kaj konsileto                 |
-| `sshKeyPath`  |        | Vojo al privata SSH-ŝlosilo (ekz: `"~/.ssh/id_ed25519_work"`) |
-| `sshHost`     |        | SSH-agordo gastiga kaŝnomo (ekz: `"github-work"`)             |
-| `gpgKeyId`    |        | GPG-ŝlosila ID por commit-subskribo                           |
+| Propraĵo            | Deviga | Priskribo                                                                                                       |
+| ------------------- | ------ | --------------------------------------------------------------------------------------------------------------- |
+| `id`                | ✅     | Unika identigilo (ekz: `"personal"`, `"work-main"`)                                                             |
+| `name`              | ✅     | Git user.name — montrita en commit-oj                                                                           |
+| `email`             | ✅     | Git user.email — montrita en commit-oj                                                                          |
+| `icon`              |        | Emoji montrita en statusbreto (ekz: `"🏠"`). Nur unu emoji                                                      |
+| `service`           |        | Serva nomo (ekz: `"GitHub"`, `"GitLab"`). Por UI                                                                |
+| `description`       |        | Mallonga priskribo por elektilo kaj konsileto                                                                   |
+| `sshKeyPath`        |        | Vojo al privata SSH-ŝlosilo por aŭtentigo (ekz: `"~/.ssh/id_ed25519_work"`)                                     |
+| `sshHost`           |        | SSH-agordo gastiga kaŝnomo (ekz: `"github-work"`)                                                               |
+| `gpgKeyId`          |        | GPG-ŝlosila ID por commit-subskribo. Ne agordebla kune kun `sshSigningKeyPath`                                  |
+| `sshSigningKeyPath` |        | Vojo al SSH-ŝlosilo por commit-subskribo (ekz: `"~/.ssh/id_ed25519_signing"`). Ne agordebla kune kun `gpgKeyId` |
+
+Subskribaj ŝlosiloj (`gpgKeyId`, `sshSigningKeyPath`) estas legataj nur el la uzantaj agordoj.
 
 #### Montraj Limigoj
 
@@ -289,7 +323,7 @@ Vi ankaŭ povas forigi profilon el komand-paleto per `Git ID Switcher: Delete Id
 | ------------------------------------------ | ------------ | ------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | Ekzemplo ref | Listo de profilo-agordoj                                                        |
 | `gitIdSwitcher.defaultIdentity`            | Ekzemplo ref | Defaŭlta profilo ID                                                             |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | Aŭtomate ŝanĝu SSH-ŝlosilon                                                     |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | Aŭtomate ŝanĝu la aŭtentigan SSH-ŝlosilon (`sshKeyPath`) en ssh-agent           |
 | `gitIdSwitcher.showNotifications`          | `true`       | Montru sciigon kiam ŝanĝante profilon                                           |
 | `gitIdSwitcher.applyToSubmodules`          | `true`       | Apliku profilon al Git-submoduloj                                               |
 | `gitIdSwitcher.submoduleDepth`             | `1`          | Maks. profundeco por nestitaj submoduloj (1-5)                                  |
@@ -350,13 +384,13 @@ Kiam vi ŝanĝas profilon, la etendo plenumas (en ordo):
 
 1. **Git-Agordo** (ĉiam): Agordas `git config --local user.name` kaj `user.email`
 2. **SSH-Ŝlosilo** (se `sshKeyPath` agordita): Forigas aliajn ŝlosilojn el ssh-agent, aldonas la elektitan
-3. **GPG-Ŝlosilo** (se `gpgKeyId` agordita): Agordas `git config --local user.signingkey` kaj ebligas subskribon
+3. **Commit-Subskribo** (se `gpgKeyId` aŭ `sshSigningKeyPath` agordita): Per `git config --local` agordas `gpg.format` (`openpgp` aŭ `ssh`), `user.signingkey` kaj `commit.gpgsign` al `true`. Ŝanĝo al profilo sen subskriba ŝlosilo: vidu [Commit-Subskribo per SSH-Ŝlosilo](#commit-subskribo-per-ssh-ŝlosilo)
 4. **Submoduloj** (se ebligita): Disvastigas agordon al ĉiuj submoduloj (defaŭlte: profundeco 1)
 5. **Sync Check**: Kontrolas ĉu la aplikita profilo kongruas kun la reala git-agordo
 
 ### Sync Check
 
-Komparas la elektitan profilon kun la realaj `git config --local`-valoroj (`user.name`, `user.email`, `user.signingkey`) kaj montras statusbretan averton kiam malkongruo estas detektita.
+Komparas la elektitan profilon kun la realaj Git-agordaj valoroj (`user.name`, `user.email`, kaj por subskribanta profilo `gpg.format`, `user.signingkey`, `commit.gpgsign`) kaj montras statusbretan averton kiam malkongruo estas detektita. Por profilo sen subskriba ŝlosilo, subskribaj valoroj, kiujn la etendaĵo skribis kaj ne remetis, ankaŭ estas malkongruo.
 
 **Kiam kontroloj rulas:**
 

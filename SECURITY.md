@@ -57,6 +57,8 @@ This repository contains VS Code extensions with the following security measures
 - **No eval()**: Script execution is disabled in webviews (`enableScripts: false` where possible)
 - **Minimal Permissions**: Only requests necessary VS Code API permissions
 - **Command Injection Prevention**: Git commands use `execFile` with explicit argument arrays, never string interpolation
+- **Git Config Rules**: Each `git config` call is checked against per-key rules for the operation, the scope and the value. Writes go to `--local` only; `--global` is never written by name (a repository's own `.git` can still redirect git, see the [threat model](extensions/git-id-switcher/docs/THREAT_MODEL.md#limits)); only the three signing keys can be unset
+- **Commit Signing Keys**: The signing keys (`gpgKeyId`, `sshSigningKeyPath`) are read from user settings only, from the identity with the same `id`, name and email, so workspace settings cannot choose a signing key other than the one the user set for that identity, or pair it with another name or email. The identity screens write only what is in user settings, so they never move a workspace's identities into them. Before git is told to use an SSH signing key, its file (and the `.pub` file next to it) must have the permissions of a key and be owned by the user or root (on Unix; Windows ACLs are not checked), and the key signs a short test text the way git signs a commit, without an askpass program and with a time limit, and the switch stops unless the signature is made with the key the setting names. See the [threat model](extensions/git-id-switcher/docs/THREAT_MODEL.md) for what this does not cover
 
 ### CI/CD Security
 

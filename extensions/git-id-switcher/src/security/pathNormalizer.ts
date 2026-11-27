@@ -9,8 +9,9 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { validatePathSecurity, SecurePathResult } from './pathValidator';
+import { validateDriveAbsolutePathSecurity } from './drivePathValidator';
 import { PATH_MAX } from '../core/constants';
-import { hasNullByte, hasPathTraversal } from '../validators/common';
+import { hasNullByte, hasPathTraversal, isDriveAbsolutePath } from '../validators/common';
 import { resolveSymlinksSecurely } from './pathSymlinkResolver';
 
 /**
@@ -34,6 +35,13 @@ export interface NormalizePathOptions {
    * Default: process.cwd()
    */
   baseDir?: string;
+
+  /**
+   * The platform the path is used on. A Windows drive path (`C:\` or `C:/`)
+   * is accepted on Windows only; on other platforms it names no file.
+   * Default: process.platform
+   */
+  platform?: NodeJS.Platform;
 }
 
 /**
@@ -94,6 +102,40 @@ function validatePathLength(
     };
   }
   return null;
+}
+
+/**
+ * The pre-normalization check: a Windows drive path is checked for the
+ * platform, any other path by the path security checks.
+ */
+function validateBeforeNormalization(inputPath: string, platform: NodeJS.Platform): SecurePathResult {
+  return isDriveAbsolutePath(inputPath) ? validateDrivePathOnPlatform(inputPath, platform) : validatePathSecurity(inputPath);
+}
+
+/**
+ * Expand `~/`, resolve against `baseDir` when relative, and normalize
+ * (resolve ., .., //) with the given path rules.
+ */
+function resolveAndNormalize(
+  inputPath: string,
+  baseDir: string,
+  pathApi: Pick<typeof path, 'isAbsolute' | 'resolve' | 'normalize'>,
+): string {
+  const expandedPath = expandTilde(inputPath);
+  const resolvedAbsolutePath = pathApi.isAbsolute(expandedPath)
+    ? pathApi.resolve(expandedPath)
+    : pathApi.resolve(baseDir, expandedPath);
+  return pathApi.normalize(resolvedAbsolutePath);
+}
+
+/**
+ * Pre-normalization check of a Windows drive path: accepted on Windows only,
+ * with the same checks as any other path for the part after the drive.
+ */
+function validateDrivePathOnPlatform(inputPath: string, platform: NodeJS.Platform): SecurePathResult {
+  return platform === 'win32'
+    ? validateDriveAbsolutePathSecurity(inputPath)
+    : { valid: false, reason: 'A Windows drive path is used on Windows only' };
 }
 
 /**
@@ -199,7 +241,12 @@ export function normalizeAndValidatePath(
   inputPath: string,
   options: NormalizePathOptions = {}
 ): NormalizedPathResult {
-  const { resolveSymlinks: isResolveSymlinks = false, requireExists: isRequireExists = false, baseDir = process.cwd() } = options;
+  const {
+    resolveSymlinks: isResolveSymlinks = false,
+    requireExists: isRequireExists = false,
+    baseDir = process.cwd(),
+    platform = process.platform,
+  } = options;
 
   // Step 1: Basic input validation
   if (!inputPath || inputPath.length === 0) {
@@ -210,23 +257,21 @@ export function normalizeAndValidatePath(
   const inputLengthCheck = validatePathLength(inputPath, inputPath, 'Path');
   if (inputLengthCheck) return inputLengthCheck;
 
-  // Step 3: Pre-normalization security check on raw input
-  const preCheck = validatePathSecurity(inputPath);
+  // Step 3: Pre-normalization security check on raw input. A Windows drive
+  // path gets the same checks with the drive prefix removed (Windows only).
+  const isDrivePath = isDriveAbsolutePath(inputPath);
+  const preCheck = validateBeforeNormalization(inputPath, platform);
   if (!preCheck.valid) {
     return { valid: false, originalPath: inputPath, reason: `Pre-normalization check failed: ${preCheck.reason}` };
   }
 
-  // Step 4: Expand tilde and resolve to absolute path
-  const expandedPath = expandTilde(inputPath);
-  const resolvedAbsolutePath = path.isAbsolute(expandedPath)
-    ? path.resolve(expandedPath)
-    : path.resolve(baseDir, expandedPath);
-
-  // Step 5: Normalize the path (resolve ., .., //)
-  let normalizedPath = path.normalize(resolvedAbsolutePath);
+  // Steps 4-5: Expand tilde, resolve to an absolute path and normalize it.
+  // A drive path is read with the Windows path rules, also where tests run.
+  const pathApi = isDrivePath ? path.win32 : path;
+  let normalizedPath = resolveAndNormalize(inputPath, baseDir, pathApi);
 
   // Step 5.5: Verify normalization consistency (defensive check)
-  const doubleCheckNormalized = path.normalize(path.resolve(normalizedPath));
+  const doubleCheckNormalized = pathApi.normalize(pathApi.resolve(normalizedPath));
   /* c8 ignore start - Defense-in-depth: path.normalize is idempotent, this branch should never execute */
   if (normalizedPath !== doubleCheckNormalized) {
     normalizedPath = doubleCheckNormalized;

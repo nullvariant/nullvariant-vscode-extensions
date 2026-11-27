@@ -71,7 +71,7 @@ Git プロフィール ウコイタㇰ ツール ポㇿ アン、**Git ID Switch
 - **Sync Check**: プロフィール ウン git config ウコイタㇰ ソモ ヤㇰ ステータスバー 警告
 - **サブモジュール 対応**: Git サブモジュール オロワノ プロフィール 自動伝播
 - **SSH キー 管理**: ssh-agent SSH キー 自動ウコイタㇰ
-- **GPG サイン 対応**: commit サイン GPG キー（オプション）
+- **commit サイン 対応**: GPG キー ネ ヤ SSH キー オロ commit サイン（オプション）
 - **リッチ ツールチップ**: 説明、SSH ホスト 詳細情報
 - **クロスプラットフォーム**: macOS, Linux, Windows
 - **17 イタㇰ 対応**: 17 言語 サポート
@@ -257,6 +257,37 @@ Host gitlab-oss
 
 ---
 
+## SSH キー オロ commit サイン
+
+Git GPG キー カリ ソモ、SSH キー オロ commit サイン エアシㇼネ。**ユーザー 設定**（`settings.json`）プロフィール `sshSigningKeyPath` 設定:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "シサㇺ",
+      "email": "sisam@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` 秘密鍵。秘密鍵 ssh-agent オㇿ アン ヤㇰ 公開鍵（`.pub`）ナ エアシㇼネ
+- シネ プロフィール `gpgKeyId` `sshSigningKeyPath` トゥラ 設定 エアイカㇷ゚
+- サイン キー（`gpgKeyId`、`sshSigningKeyPath`）ユーザー 設定 オロワ ポカ、`id`・`name`・`email` ウコ プロフィール オロワ 読み込み。ワークスペース `.vscode/settings.json` 値 使用 ソモ、プロフィール 画面 ユーザー 設定 オロ ポカ 保存
+- キー パス `~/.ssh/` ソイ ナ エアシㇼネ（絶対パス ネ ヤ `~/` 開始 パス）。Windows タ `C:\Users\...` ネ ドライブ パス ポカ エアシㇼネ。git キー エウン 使う オカケ、拡張機能 キー オロ 短い テスト 文 git コミット サイン ネノ サイン（`ssh-keygen -Y sign`）、askpass プログラム 起動 ソモ、30 秒 オカケ 止める。サイン ソモ ヤクン、ネ ヤ オヤ キー サイン ヤクン（秘密鍵 サム タ 古い `.pub` ファイル アン）、切り替え 止める。キー ファイル ネ ヤ サム `.pub` ファイル 変わる ヤクン ポカ 確かめる、ネアクス ハードウェア キー タッチ ネ オカケ ポカ。パスフレーズ アン 秘密鍵 ネノ 確かめる ソモ：`sshSigningKeyPath` 公開鍵 ファイル（`.pub`）ネ 指定、キー ssh-agent エウン 追加
+- Unix タ、サイン キー ファイル ネ ヤ サム `.pub` ファイル、認証 キー ネノ キー 権限 アン ナ。秘密鍵 グループ・オヤ ウタㇻ アクセス ソモ、公開鍵 グループ・オヤ ウタㇻ 書き込む ソモ、ウトゥラ 実行 権限 イサㇺ。ソモ ヤクン 切り替え 止める
+- 切り替え 時、拡張機能 `git config --local` オロ `gpg.format`・`user.signingkey`・`commit.gpgsign` 書き込み。サイン キー ソモ プロフィール 切り替え 時、レ 値 拡張機能 書き込み 値 ネ ヤㇰ、レ 値 以前 値 戻し。シネ ナ 手 変更 ヤㇰ、レ 値 触る ソモ
+- サイン キー ssh-agent 追加 ソモ。`autoSwitchSshKey` 認証 キー（`sshKeyPath`）ポカ 切り替え
+
+commit 検証済み（Verified）表示 クス、公開鍵 GitHub **Signing Key** ネ 登録（認証 キー ウン 別）。
+
+---
+
 ## プロフィール 管理
 
 ステータスバー クリㇰ → 一覧 ハヨㇰペ「プロフィール 管理」オロワ 管理画面。
@@ -283,17 +314,20 @@ Host gitlab-oss
 
 ### プロフィール プロパティ
 
-| プロパティ    | 必須 | ウコイタㇰ                                                |
-| ------------- | ---- | --------------------------------------------------------- |
-| `id`          | ✅   | ユニーク ID（例：`"personal"`, `"work"`）                 |
-| `name`        | ✅   | Git user.name — commit オロワ                             |
-| `email`       | ✅   | Git user.email — commit オロワ                            |
-| `icon`        |      | ステータスバー 絵文字（例：`"🐻"`）。シネㇷ゚ 絵文字 ワノ |
-| `service`     |      | サービス レー（例：`"GitHub"`, `"GitLab"`）。UI オロワ    |
-| `description` |      | ピッカー ウン ツールチップ 短い説明                       |
-| `sshKeyPath`  |      | SSH 秘密鍵 パス（例：`"~/.ssh/id_ed25519_work"`）         |
-| `sshHost`     |      | SSH config ホスト エイリアス（例：`"github-work"`）       |
-| `gpgKeyId`    |      | commit サイン GPG キー ID                                 |
+| プロパティ          | 必須 | ウコイタㇰ                                                                                            |
+| ------------------- | ---- | ----------------------------------------------------------------------------------------------------- |
+| `id`                | ✅   | ユニーク ID（例：`"personal"`, `"work"`）                                                             |
+| `name`              | ✅   | Git user.name — commit オロワ                                                                         |
+| `email`             | ✅   | Git user.email — commit オロワ                                                                        |
+| `icon`              |      | ステータスバー 絵文字（例：`"🐻"`）。シネㇷ゚ 絵文字 ワノ                                             |
+| `service`           |      | サービス レー（例：`"GitHub"`, `"GitLab"`）。UI オロワ                                                |
+| `description`       |      | ピッカー ウン ツールチップ 短い説明                                                                   |
+| `sshKeyPath`        |      | 認証 SSH 秘密鍵 パス（例：`"~/.ssh/id_ed25519_work"`）                                                |
+| `sshHost`           |      | SSH config ホスト エイリアス（例：`"github-work"`）                                                   |
+| `gpgKeyId`          |      | commit サイン GPG キー ID。`sshSigningKeyPath` トゥラ 設定 エアイカㇷ゚                               |
+| `sshSigningKeyPath` |      | commit サイン SSH キー パス（例：`"~/.ssh/id_ed25519_signing"`）。`gpgKeyId` トゥラ 設定 エアイカㇷ゚ |
+
+サイン キー（`gpgKeyId`、`sshSigningKeyPath`）ユーザー 設定 オロワ ポカ 読み込み。
 
 #### 表示制限
 
@@ -306,7 +340,7 @@ Host gitlab-oss
 | ------------------------------------------ | ------------ | --------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | サンプル参照 | プロフィール 設定 リスト                                                          |
 | `gitIdSwitcher.defaultIdentity`            | サンプル参照 | デフォルト プロフィール ID                                                        |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | プロフィール 変更時 SSH キー 自動切り替え                                         |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | プロフィール 変更時 認証 SSH キー（`sshKeyPath`）ssh-agent オロ 自動切り替え      |
 | `gitIdSwitcher.showNotifications`          | `true`       | プロフィール 切り替え時 通知                                                      |
 | `gitIdSwitcher.applyToSubmodules`          | `true`       | Git サブモジュール プロフィール 伝播                                              |
 | `gitIdSwitcher.submoduleDepth`             | `1`          | ネスト サブモジュール 設定 最大深度（1-5）                                        |
@@ -367,13 +401,13 @@ Git 設定 3 レイヤー; ハヨㇰペ 設定 リㇰンペ 上書き:
 
 1. **Git Config**（常時）: `git config --local user.name` ウン `user.email` 設定
 2. **SSH キー**（`sshKeyPath` 設定時）: ホッカ キー ssh-agent オロワ 削除、選択 キー 追加
-3. **GPG キー**（`gpgKeyId` 設定時）: `git config --local user.signingkey` 設定、サイン 有効化
+3. **commit サイン**（`gpgKeyId` ネ ヤ `sshSigningKeyPath` 設定時）: `git config --local` オロ `gpg.format`（`openpgp` ネ ヤ `ssh`）、`user.signingkey`、`commit.gpgsign`（`true`）設定。サイン キー ソモ プロフィール 切り替え 時：[SSH キー オロ commit サイン](#ssh-キー-オロ-commit-サイン) エヌカㇻ
 4. **サブモジュール**（有効時）: オㇿ サブモジュール 設定 伝播（デフォルト：深度 1）
 5. **Sync Check**: プロフィール ウン git config ウコイタㇰ 確認
 
 ### Sync Check
 
-プロフィール ウン `git config --local` 値（`user.name`, `user.email`, `user.signingkey`）ウコイタㇰ、ソモ ヤㇰ ステータスバー 警告。
+プロフィール ウン 実際 Git 設定 値（`user.name`, `user.email`、サイン プロフィール `gpg.format`, `user.signingkey`, `commit.gpgsign`）ウコイタㇰ、ソモ ヤㇰ ステータスバー 警告。サイン キー ソモ プロフィール、拡張機能 書き込み 戻し ソモ サイン 値 ナ 不一致。
 
 **確認 タイミング:**
 

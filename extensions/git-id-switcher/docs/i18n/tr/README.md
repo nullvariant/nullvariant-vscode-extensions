@@ -49,7 +49,7 @@ Birçok Git profil değiştirici olmasına rağmen, **Git ID Switcher** diğerle
 - **Senkronizasyon Kontrolü**: Profil ile git config arasındaki uyumsuzlukları gerçek zamanlı tespit eder ve durum çubuğunda uyarı gösterir
 - **Alt Modül Desteği**: Profili Git alt modüllerine otomatik olarak yayın
 - **SSH Anahtar Yönetimi**: ssh-agent'ta SSH anahtarlarını otomatik olarak değiştirin
-- **GPG İmzalama Desteği**: Commit imzalamak için GPG anahtarını yapılandırın (isteğe bağlı)
+- **Commit İmzalama Desteği**: Commit'leri GPG anahtarı veya SSH anahtarıyla imzalayın (isteğe bağlı)
 - **Zengin Araç İpuçları**: Açıklama ve SSH hostu içeren ayrıntılı profil bilgileri
 - **Çapraz Platform**: macOS, Linux ve Windows'ta çalışır
 - **Çok Dilli**: 17 dili destekler
@@ -235,6 +235,37 @@ Not: 4. profil (`client-b`) kısaltılmış ad, 5. profil (`oss`) geliştirici t
 
 ---
 
+## SSH Anahtarıyla Commit İmzalama
+
+Git, commit'leri GPG anahtarı yerine SSH anahtarıyla da imzalayabilir. **Kullanıcı ayarlarınızdaki** (`settings.json`) profilde `sshSigningKeyPath` değerini ayarlayın:
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Deniz Yılmaz",
+      "email": "deniz.yilmaz@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` özel anahtardır; özel anahtar ssh-agent'taysa açık anahtar (`.pub`) da olabilir
+- Bir profilde `gpgKeyId` ve `sshSigningKeyPath` birlikte ayarlanamaz
+- İmzalama anahtarları (`gpgKeyId`, `sshSigningKeyPath`) yalnızca kullanıcı ayarlarından, `id`, `name` ve `email` değerleri aynı olan profilden okunur. Bir çalışma alanının `.vscode/settings.json` dosyasındaki değerler kullanılmaz ve profil ekranları yalnızca kullanıcı ayarlarına kaydeder
+- Anahtar yolları `~/.ssh/` dışında da olabilir: mutlak yol ya da `~/` ile başlayan yol. Windows'ta `C:\Users\...` gibi bir sürücü yolu da kabul edilir. git anahtarı kullanmadan önce, eklenti ona kısa bir deneme metnini git'in bir commit'i imzaladığı şekilde imzalatır (`ssh-keygen -Y sign`); askpass programı başlatmaz ve 30 saniyelik bir süre sınırı uygular. İmzalayamazsa ya da başka bir anahtar imzalarsa (örneğin özel anahtarın yanında eski bir `.pub` dosyası kaldıysa), geçiş durur. Denetim yalnızca anahtar dosyası ya da yanındaki `.pub` dosyası değiştiğinde yeniden yapılır; böylece bir donanım anahtarı yalnızca o zaman dokunma ister. Parolalı bir özel anahtar bu yolla denetlenemez: `sshSigningKeyPath` değerini açık anahtar dosyasına (`.pub`) ayarlayın ve anahtarı ssh-agent'a ekleyin
+- Unix'te imza anahtarı dosyası ve yanındaki `.pub` dosyası, kimlik doğrulama anahtarında olduğu gibi bir anahtarın izinlerine sahip olmalıdır: özel anahtara grup ve diğerleri erişememeli, açık anahtara onlar yazamamalı ve hiçbiri çalıştırılabilir olmamalıdır. Aksi hâlde geçiş durur
+- Geçiş sırasında eklenti `gpg.format`, `user.signingkey` ve `commit.gpgsign` değerlerini `git config --local` ile yazar. İmzalama anahtarı olmayan bir profile geçildiğinde, üçü de hâlâ eklentinin yazdığı değerdeyse üçünü önceki değerlerine döndürür; birini elle değiştirdiyseniz üçüne de dokunmaz
+- İmzalama anahtarı ssh-agent'a eklenmez: `autoSwitchSshKey` yalnızca kimlik doğrulama anahtarını (`sshKeyPath`) değiştirir
+
+Commit'lerinizin doğrulanmış görünmesi için açık anahtarı GitHub'a, kimlik doğrulama anahtarından ayrı olarak, **imzalama anahtarı** (Signing Key) olarak kaydedin.
+
+---
+
 ## Profil Yönetimi
 
 Durum çubuğuna tıklayın → Listenin altındaki "Profil Yönetimi"ni seçerek yönetim ekranını açın.
@@ -261,17 +292,20 @@ Profilleri silmek için Komut Paleti'nden `Git ID Switcher: Delete Identity` kom
 
 ### Profil Özellikleri
 
-| Özellik       | Gerekli | Açıklama                                                         |
-| ------------- | ------- | ---------------------------------------------------------------- |
-| `id`          | ✅      | Benzersiz tanımlayıcı (örn: `"personal"`, `"work"`)              |
-| `name`        | ✅      | Git user.name — commitlerde gösterilir                           |
-| `email`       | ✅      | Git user.email — commitlerde gösterilir                          |
-| `icon`        |         | Durum çubuğunda gösterilen emoji (örn: `"🏠"`). Sadece tek emoji |
-| `service`     |         | Hizmet adı (örn: `"GitHub"`, `"GitLab"`). UI için                |
-| `description` |         | Seçici ve araç ipucunda gösterilen kısa açıklama                 |
-| `sshKeyPath`  |         | Özel SSH anahtarının yolu (örn: `"~/.ssh/id_ed25519_work"`)      |
-| `sshHost`     |         | SSH yapılandırma host takma adı (örn: `"github-work"`)           |
-| `gpgKeyId`    |         | Commit imzalamak için GPG anahtar ID'si                          |
+| Özellik             | Gerekli | Açıklama                                                                                                             |
+| ------------------- | ------- | -------------------------------------------------------------------------------------------------------------------- |
+| `id`                | ✅      | Benzersiz tanımlayıcı (örn: `"personal"`, `"work"`)                                                                  |
+| `name`              | ✅      | Git user.name — commitlerde gösterilir                                                                               |
+| `email`             | ✅      | Git user.email — commitlerde gösterilir                                                                              |
+| `icon`              |         | Durum çubuğunda gösterilen emoji (örn: `"🏠"`). Sadece tek emoji                                                     |
+| `service`           |         | Hizmet adı (örn: `"GitHub"`, `"GitLab"`). UI için                                                                    |
+| `description`       |         | Seçici ve araç ipucunda gösterilen kısa açıklama                                                                     |
+| `sshKeyPath`        |         | Kimlik doğrulama için özel SSH anahtarının yolu (örn: `"~/.ssh/id_ed25519_work"`)                                    |
+| `sshHost`           |         | SSH yapılandırma host takma adı (örn: `"github-work"`)                                                               |
+| `gpgKeyId`          |         | Commit imzalamak için GPG anahtar ID'si. `sshSigningKeyPath` ile birlikte ayarlanamaz                                |
+| `sshSigningKeyPath` |         | Commit imzalamak için SSH anahtarının yolu (örn: `"~/.ssh/id_ed25519_signing"`). `gpgKeyId` ile birlikte ayarlanamaz |
+
+İmzalama anahtarları (`gpgKeyId`, `sshSigningKeyPath`) yalnızca kullanıcı ayarlarından okunur.
 
 #### Görüntüleme Sınırlamaları
 
@@ -280,24 +314,24 @@ Profilleri silmek için Komut Paleti'nden `Git ID Switcher: Delete Identity` kom
 
 ### Genel Ayarlar
 
-| Ayar                                       | Varsayılan | Açıklama                                                                                       |
-| ------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | Örneğe bak | Profil yapılandırmaları listesi                                                                |
-| `gitIdSwitcher.defaultIdentity`            | Örneğe bak | Varsayılan profil ID'si                                                                        |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Profil değiştirildiğinde SSH anahtarını otomatik değiştir                                      |
-| `gitIdSwitcher.showNotifications`          | `true`     | Profil değiştirildiğinde bildirim göster                                                       |
-| `gitIdSwitcher.applyToSubmodules`          | `true`     | Profili Git alt modüllerine uygula                                                             |
-| `gitIdSwitcher.submoduleDepth`             | `1`        | İç içe alt modüller için maks. derinlik (1-5)                                                  |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Emoji ikonunu Git config `user.name`'e yaz                                                     |
-| `gitIdSwitcher.syncCheck.enabled`          | `true`     | Seçilen profilin gerçek git config ile eşleşip eşleşmediğini kontrol et                        |
-| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | Editör penceresi odağı geri aldığında senkronizasyon kontrolü çalıştır                         |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Denetim günlüğünü dosyaya kaydet (profil değişiklikleri, SSH işlemleri vb.)                    |
-| `gitIdSwitcher.logging.filePath`           | `""`       | Günlük dosyası yolu (örn.: `~/.git-id-switcher/security.log`). Boş = varsayılan konum          |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Döndürmeden önce maks. dosya boyutu (bayt, 1MB-100MB)                                          |
-| `gitIdSwitcher.logging.maxFiles`           | `5`        | Döndürülen günlük dosyası maks. sayısı (1-20)                                                  |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Etkinleştirildiğinde, günlüklerdeki tüm değerler maskelenir (maksimum gizlilik)                |
-| `gitIdSwitcher.logging.level`              | `"INFO"`   | Günlük düzeyi (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Seçilen düzey ve üstünü kaydeder |
-| `gitIdSwitcher.commandTimeouts`            | `{}`       | Komut başına özel zaman aşımı (ms, 1sn-5dk). Örn.: `{"git": 15000, "ssh-add": 10000}`          |
+| Ayar                                       | Varsayılan | Açıklama                                                                                                 |
+| ------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Örneğe bak | Profil yapılandırmaları listesi                                                                          |
+| `gitIdSwitcher.defaultIdentity`            | Örneğe bak | Varsayılan profil ID'si                                                                                  |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`     | Profil değiştirildiğinde ssh-agent'taki kimlik doğrulama SSH anahtarını (`sshKeyPath`) otomatik değiştir |
+| `gitIdSwitcher.showNotifications`          | `true`     | Profil değiştirildiğinde bildirim göster                                                                 |
+| `gitIdSwitcher.applyToSubmodules`          | `true`     | Profili Git alt modüllerine uygula                                                                       |
+| `gitIdSwitcher.submoduleDepth`             | `1`        | İç içe alt modüller için maks. derinlik (1-5)                                                            |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`    | Emoji ikonunu Git config `user.name`'e yaz                                                               |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`     | Seçilen profilin gerçek git config ile eşleşip eşleşmediğini kontrol et                                  |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`     | Editör penceresi odağı geri aldığında senkronizasyon kontrolü çalıştır                                   |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`    | Denetim günlüğünü dosyaya kaydet (profil değişiklikleri, SSH işlemleri vb.)                              |
+| `gitIdSwitcher.logging.filePath`           | `""`       | Günlük dosyası yolu (örn.: `~/.git-id-switcher/security.log`). Boş = varsayılan konum                    |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760` | Döndürmeden önce maks. dosya boyutu (bayt, 1MB-100MB)                                                    |
+| `gitIdSwitcher.logging.maxFiles`           | `5`        | Döndürülen günlük dosyası maks. sayısı (1-20)                                                            |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`    | Etkinleştirildiğinde, günlüklerdeki tüm değerler maskelenir (maksimum gizlilik)                          |
+| `gitIdSwitcher.logging.level`              | `"INFO"`   | Günlük düzeyi (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Seçilen düzey ve üstünü kaydeder           |
+| `gitIdSwitcher.commandTimeouts`            | `{}`       | Komut başına özel zaman aşımı (ms, 1sn-5dk). Örn.: `{"git": 15000, "ssh-add": 10000}`                    |
 
 #### `includeIconInGitConfig` Hakkında
 
@@ -345,13 +379,13 @@ Profil değiştirirken, eklenti şunları yapar (sırayla):
 
 1. **Git Yapılandırması** (her zaman): `git config --local user.name` ve `user.email`'i ayarlar
 2. **SSH Anahtarı** (`sshKeyPath` ayarlanmışsa): Diğer anahtarları ssh-agent'tan kaldırır, seçileni ekler
-3. **GPG Anahtarı** (`gpgKeyId` ayarlanmışsa): `git config --local user.signingkey`'i ayarlar ve imzalamayı etkinleştirir
+3. **Commit İmzalama** (`gpgKeyId` veya `sshSigningKeyPath` ayarlanmışsa): `git config --local` ile `gpg.format` (`openpgp` veya `ssh`) ve `user.signingkey` değerlerini ayarlar, `commit.gpgsign`'ı `true` yapar. İmzalama anahtarı olmayan bir profile geçiş: bkz. [SSH Anahtarıyla Commit İmzalama](#ssh-anahtarıyla-commit-i̇mzalama)
 4. **Alt Modüller** (etkinse): Yapılandırmayı tüm alt modüllere yayar (varsayılan: derinlik 1)
 5. **Senkronizasyon Kontrolü**: Uygulanan profilin gerçek git config ile eşleştiğini doğrular
 
 ### Senkronizasyon Kontrolü
 
-Seçilen profili gerçek `git config --local` değerleriyle (`user.name`, `user.email`, `user.signingkey`) karşılaştırır ve uyumsuzluk tespit edildiğinde durum çubuğunda uyarı gösterir.
+Seçilen profili gerçek Git yapılandırma değerleriyle (`user.name`, `user.email` ve imzalayan bir profil için `gpg.format`, `user.signingkey`, `commit.gpgsign`) karşılaştırır ve uyumsuzluk tespit edildiğinde durum çubuğunda uyarı gösterir. İmzalama anahtarı olmayan bir profilde, eklentinin yazıp geri almadığı imzalama değerleri de uyumsuzluk sayılır.
 
 **Kontroller ne zaman çalışır:**
 

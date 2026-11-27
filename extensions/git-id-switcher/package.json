@@ -131,6 +131,10 @@
                 "gpgKeyId": {
                   "type": "string",
                   "description": "%config.identities.gpgKeyId%"
+                },
+                "sshSigningKeyPath": {
+                  "type": "string",
+                  "description": "%config.identities.sshSigningKeyPath%"
                 }
               },
               "required": [

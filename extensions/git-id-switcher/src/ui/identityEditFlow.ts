@@ -11,8 +11,7 @@
 import { getVSCode } from '../core/vscodeLoader';
 import {
   type Identity,
-  getIdentities,
-  getIdentitiesWithValidation,
+  getManagedIdentities,
   getIdentityLabel,
   getIdentityDetail,
   getFieldMetadata,
@@ -31,6 +30,7 @@ import {
 import {
   isOptionalField,
   validateFieldInput,
+  getOtherSigningValue,
 } from './identityFormValidation';
 
 // ============================================================================
@@ -68,7 +68,7 @@ interface EditLoopState {
  * @returns Selected identity or undefined if cancelled
  */
 async function selectIdentityToEdit(vs: VSCodeAPI): Promise<Identity | undefined> {
-  const identities = getIdentitiesWithValidation();
+  const identities = getManagedIdentities();
   if (identities.length === 0) {
     vs.window.showWarningMessage(
       vs.l10n.t('No identities configured. Add identities in settings: {0}', 'gitIdSwitcher.identities')
@@ -108,7 +108,7 @@ async function showFieldSelectionQuickPick(
   identity: Identity,
   savedField?: keyof Identity
 ): Promise<'back' | { item: FieldQuickPickItem; field: EditableFieldOrId } | undefined> {
-  const identities = getIdentities();
+  const identities = getManagedIdentities();
   const identityCount = identities.length;
 
   const quickPick = vs.window.createQuickPick<FieldQuickPickItem>();
@@ -159,7 +159,8 @@ async function promptFieldValueInput(
   vs: VSCodeAPI,
   field: EditableFieldOrId,
   currentValue: string,
-  currentIdentityId?: string
+  currentIdentityId?: string,
+  otherSigningValue?: string
 ): Promise<QuickInputResult<string>> {
   const isOptional = isOptionalField(field);
 
@@ -169,7 +170,7 @@ async function promptFieldValueInput(
     placeholder: getPlaceholderForField(vs, field),
     prompt: getInputBoxPrompt(vs, isOptional, 'edit'),
     field,
-    validateInput: (value: string) => validateFieldInput(vs, field, value, isOptional, currentIdentityId),
+    validateInput: (value: string) => validateFieldInput(vs, field, value, isOptional, currentIdentityId, otherSigningValue),
   });
 }
 
@@ -184,7 +185,8 @@ async function promptFieldValueInput(
  * @returns Refreshed identity or undefined if not found
  */
 function refreshIdentity(identityId: string): Identity | undefined {
-  const identities = getIdentitiesWithValidation();
+  // The identity in the user's settings, as saved (not the merged settings)
+  const identities = getManagedIdentities();
   return identities.find(i => i.id === identityId);
 }
 
@@ -204,7 +206,13 @@ async function processFieldValueInput(
   inputValue: string
 ): Promise<'saved' | 'back' | 'error'> {
   const { field } = selection;
-  const result = await promptFieldValueInput(vs, field, inputValue, state.identity.id);
+  const result = await promptFieldValueInput(
+    vs,
+    field,
+    inputValue,
+    state.identity.id,
+    getOtherSigningValue(state.identity, field)
+  );
 
   // 'back' or undefined: return to field selection
   if (result === undefined || result === 'back') {
@@ -288,5 +296,22 @@ export async function showEditProfileFlow(
 
   // Determine identity to edit
   const selectedIdentity = targetIdentity ?? (await selectIdentityToEdit(vs));
-  return selectedIdentity ? executeFieldEditLoop(vs, selectedIdentity) : false;
+  if (!selectedIdentity) {
+    return false;
+  }
+
+  // SECURITY: Only identities in the user's settings are edited (saving
+  // writes the user's settings). One defined only in workspace settings is
+  // edited in that workspace's settings file instead.
+  const userScopeIdentity = getManagedIdentities().find((identity) => identity.id === selectedIdentity.id);
+  if (!userScopeIdentity) {
+    vs.window.showWarningMessage(
+      vs.l10n.t(
+        'The identity "{0}" is defined only in workspace settings, so it cannot be edited here. Edit it in the workspace settings file.',
+        selectedIdentity.id,
+      )
+    );
+    return false;
+  }
+  return executeFieldEditLoop(vs, userScopeIdentity);
 }

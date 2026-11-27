@@ -49,7 +49,7 @@ Existem muitas ferramentas para alternar perfis Git, mas o **Git ID Switcher** r
 - **Verificação de sincronização**: Detecção em tempo real de discrepâncias entre o perfil e a configuração git, com aviso na barra de status
 - **Suporte a submódulos**: Propague automaticamente o perfil aos submódulos Git
 - **Gerenciamento de chaves SSH**: Alterne automaticamente as chaves SSH no ssh-agent
-- **Suporte a assinatura GPG**: Configure a chave GPG para assinar commits (opcional)
+- **Suporte a assinatura de commits**: Assine commits com uma chave GPG ou uma chave SSH (opcional)
 - **Tooltips detalhados**: Informações completas do perfil, incluindo descrição e host SSH
 - **Multiplataforma**: Funciona no macOS, Linux e Windows
 - **Multilíngue**: Suporta 17 idiomas
@@ -235,6 +235,37 @@ Nota: O 4º perfil (`client-b`) usa um nome abreviado e o 5º (`oss`) usa um han
 
 ---
 
+## Assinatura de commits com uma chave SSH
+
+O Git pode assinar commits com uma chave SSH em vez de uma chave GPG. Defina `sshSigningKeyPath` no perfil das suas **configurações de usuário** (`settings.json`):
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Alex Silva",
+      "email": "alex.silva@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` é a chave privada, ou a chave pública (`.pub`) se a chave privada estiver no ssh-agent
+- `gpgKeyId` e `sshSigningKeyPath` não podem ser definidos juntos no mesmo perfil
+- As chaves de assinatura (`gpgKeyId`, `sshSigningKeyPath`) são lidas apenas das configurações de usuário, do perfil com os mesmos `id`, `name` e `email`. Valores no `.vscode/settings.json` de um workspace não são usados, e as telas de perfil salvam apenas nas configurações de usuário
+- Os caminhos das chaves podem ficar fora de `~/.ssh/`, como caminho absoluto ou caminho que começa com `~/`. No Windows, um caminho de unidade como `C:\Users\...` também é aceito. Antes de o git usar a chave, a extensão faz com que ela assine um pequeno texto de teste do mesmo jeito que o git assina um commit (`ssh-keygen -Y sign`), sem abrir um programa askpass e com um limite de 30 segundos. Se ela não conseguir assinar, ou outra chave assinar (por exemplo, por causa de um arquivo `.pub` antigo ao lado da chave privada), a troca é interrompida. A verificação só é refeita quando o arquivo da chave ou o arquivo `.pub` ao lado muda, então uma chave de hardware só pede um toque nesse momento. Uma chave privada com frase secreta não pode ser verificada assim: defina `sshSigningKeyPath` para o arquivo da chave pública (`.pub`) e adicione a chave ao ssh-agent
+- No Unix, o arquivo da chave de assinatura e o arquivo `.pub` ao lado dele precisam ter as permissões de uma chave, como a chave de autenticação: uma chave privada não pode ser acessível ao grupo nem a outros, uma pública não pode ser gravável por eles, e nenhuma pode ser executável. Caso contrário, a troca para
+- Na troca, a extensão escreve `gpg.format`, `user.signingkey` e `commit.gpgsign` com `git config --local`. Ao trocar para um perfil sem chave de assinatura, ela devolve esses três aos valores anteriores, somente se os três ainda tiverem o que a extensão escreveu; se você mudou algum deles manualmente, nenhum dos três é alterado
+- A chave de assinatura não é adicionada ao ssh-agent: `autoSwitchSshKey` troca apenas a chave de autenticação (`sshKeyPath`)
+
+Registre a chave pública no GitHub como **chave de assinatura** (Signing Key), separada da chave de autenticação, para que seus commits apareçam como verificados.
+
+---
+
 ## Gerenciamento de perfis
 
 Clique na barra de status → selecione «Gerenciamento de perfis» na parte inferior da lista para abrir a tela de gerenciamento.
@@ -261,17 +292,20 @@ Também é possível excluir um perfil pela paleta de comandos com `Git ID Switc
 
 ### Propriedades do perfil
 
-| Propriedade   | Obrigatório | Descrição                                                                |
-| ------------- | ----------- | ------------------------------------------------------------------------ |
-| `id`          | ✅          | Identificador único (ex.: `"personal"`, `"work"`)                        |
-| `name`        | ✅          | Git user.name — exibido nos commits                                      |
-| `email`       | ✅          | Git user.email — exibido nos commits                                     |
-| `icon`        |             | Emoji na barra de status (ex.: `"🏠"`). Apenas um emoji                  |
-| `service`     |             | Nome do serviço (ex.: `"GitHub"`, `"GitLab"`). Usado para exibição na UI |
-| `description` |             | Descrição breve exibida no seletor e no tooltip                          |
-| `sshKeyPath`  |             | Caminho para a chave SSH privada (ex.: `"~/.ssh/id_ed25519_work"`)       |
-| `sshHost`     |             | Alias de host SSH (ex.: `"github-work"`)                                 |
-| `gpgKeyId`    |             | ID da chave GPG para assinar commits                                     |
+| Propriedade         | Obrigatório | Descrição                                                                                                                          |
+| ------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                | ✅          | Identificador único (ex.: `"personal"`, `"work"`)                                                                                  |
+| `name`              | ✅          | Git user.name — exibido nos commits                                                                                                |
+| `email`             | ✅          | Git user.email — exibido nos commits                                                                                               |
+| `icon`              |             | Emoji na barra de status (ex.: `"🏠"`). Apenas um emoji                                                                            |
+| `service`           |             | Nome do serviço (ex.: `"GitHub"`, `"GitLab"`). Usado para exibição na UI                                                           |
+| `description`       |             | Descrição breve exibida no seletor e no tooltip                                                                                    |
+| `sshKeyPath`        |             | Caminho para a chave SSH privada de autenticação (ex.: `"~/.ssh/id_ed25519_work"`)                                                 |
+| `sshHost`           |             | Alias de host SSH (ex.: `"github-work"`)                                                                                           |
+| `gpgKeyId`          |             | ID da chave GPG para assinar commits. Não pode ser definido junto com `sshSigningKeyPath`                                          |
+| `sshSigningKeyPath` |             | Caminho para a chave SSH de assinatura de commits (ex.: `"~/.ssh/id_ed25519_signing"`). Não pode ser definido junto com `gpgKeyId` |
+
+As chaves de assinatura (`gpgKeyId`, `sshSigningKeyPath`) são lidas apenas das configurações de usuário.
 
 #### Limitações de exibição
 
@@ -284,7 +318,7 @@ Também é possível excluir um perfil pela paleta de comandos com `Git ID Switc
 | ------------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------ |
 | `gitIdSwitcher.identities`                 | Ver exemplos | Lista de configurações de perfis                                                                       |
 | `gitIdSwitcher.defaultIdentity`            | Ver exemplos | ID do perfil padrão a ser usado                                                                        |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | Trocar automaticamente a chave SSH ao mudar de perfil                                                  |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`       | Trocar automaticamente a chave SSH de autenticação (`sshKeyPath`) no ssh-agent ao mudar de perfil      |
 | `gitIdSwitcher.showNotifications`          | `true`       | Mostrar notificação ao trocar de perfil                                                                |
 | `gitIdSwitcher.applyToSubmodules`          | `true`       | Propagar o perfil aos submódulos Git                                                                   |
 | `gitIdSwitcher.submoduleDepth`             | `1`          | Profundidade máxima para submódulos aninhados (1-5)                                                    |
@@ -345,13 +379,13 @@ Ao trocar de perfil, a extensão executa (em ordem):
 
 1. **Git Config** (sempre): Define `git config --local user.name` e `user.email`
 2. **Chave SSH** (se `sshKeyPath` configurado): Remove outras chaves do ssh-agent e adiciona a selecionada
-3. **Chave GPG** (se `gpgKeyId` configurado): Define `git config --local user.signingkey` e ativa a assinatura
+3. **Assinatura de commits** (se `gpgKeyId` ou `sshSigningKeyPath` configurado): Define com `git config --local` `gpg.format` (`openpgp` ou `ssh`), `user.signingkey` e `commit.gpgsign` como `true`. Troca para um perfil sem chave de assinatura: veja [Assinatura de commits com uma chave SSH](#assinatura-de-commits-com-uma-chave-ssh)
 4. **Submódulos** (se ativado): Propaga a configuração para todos os submódulos (padrão: profundidade 1)
 5. **Verificação de sincronização**: Verifica se o perfil aplicado corresponde à configuração git atual
 
 ### Verificação de sincronização
 
-Compara o perfil selecionado com os valores reais de `git config --local` (`user.name`, `user.email`, `user.signingkey`) e exibe um aviso na barra de status quando uma discrepância é detectada.
+Compara o perfil selecionado com os valores reais da configuração do Git (`user.name`, `user.email` e, para um perfil que assina, `gpg.format`, `user.signingkey`, `commit.gpgsign`) e exibe um aviso na barra de status quando uma discrepância é detectada. Para um perfil sem chave de assinatura, valores de assinatura que a extensão escreveu e não restaurou também contam como discrepância.
 
 **Quando as verificações são executadas:**
 

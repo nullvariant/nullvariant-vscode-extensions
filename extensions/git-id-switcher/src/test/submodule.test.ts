@@ -15,16 +15,28 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { validateSubmodulePath } from '../security/pathUtils';
 import {
+  collectSubmodules,
   getMaxSubmoduleDepth,
-  listSubmodules,
-  listSubmodulesRecursive,
-  setSubmoduleGitConfig,
   setIdentityForSubmodules,
   isSubmoduleSupportEnabled,
   getSubmoduleDepth,
   __testExports,
 } from '../core/submodule';
 import { _resetCache, _setMockVSCode } from '../core/vscodeLoader';
+import { removeTrailingNewline } from '../security/secureExec';
+import { git as runGit, initRepository, makeTempDir } from './helpers/signingFixtures';
+import { createSigningRecordStore, type SigningRecordStore } from '../core/signingRecordStore';
+
+/** A record store backed by memory (VS Code's workspace state in production) */
+function createMemoryStore(): SigningRecordStore {
+  const data = new Map<string, unknown>();
+  return createSigningRecordStore({
+    get: <T>(key: string): T | undefined => data.get(key) as T | undefined,
+    update: async (key: string, value: unknown): Promise<void> => {
+      data.set(key, structuredClone(value));
+    },
+  });
+}
 
 /**
  * Test submodule path validation basics
@@ -482,9 +494,9 @@ function testWorkspaceValidationFailureReason(): void {
 /**
  * Test parseSubmoduleEntry on well-formed `git submodule status` lines
  *
- * The rejection branches of parseSubmoduleEntry are c8-ignored
- * defense-in-depth for malformed git output, so only the accepted shapes
- * are exercised here.
+ * Most rejection branches of parseSubmoduleEntry are c8-ignored
+ * defense-in-depth for malformed git output; the status character and the
+ * separator after the hash are exercised here.
  */
 function testParseSubmoduleEntry(): void {
   console.log('Testing parseSubmoduleEntry...');
@@ -500,20 +512,30 @@ function testParseSubmoduleEntry(): void {
       { line: ` ${hashA} submodule (main)`, path: 'submodule', hash: hashA },
       { line: `+${hashA} path/to/submodule`, path: 'path/to/submodule', hash: hashA },
       { line: ` ${hashMixed} module (feature/branch)`, path: 'module', hash: hashMixed },
+      // Only the space git prints after the hash is removed
+      { line: ` ${hashA}  lib`, path: ' lib', hash: hashA },
     ];
 
     for (const { line, path: expectedPath, hash } of cases) {
-      const entry = parseSubmoduleEntry(line, workspace);
-      assert.ok(entry, `Well-formed line should parse: "${line.slice(0, 50)}..."`);
-      assert.strictEqual(entry.path, expectedPath, 'path should drop the branch suffix');
-      assert.strictEqual(entry.commitHash, hash, 'commit hash should be kept as is');
-      assert.strictEqual(entry.initialized, true, 'space and + mean initialized');
+      const parsed = parseSubmoduleEntry(line, workspace);
+      assert.strictEqual(parsed.kind, 'submodule', `Well-formed line should parse: "${line.slice(0, 50)}..."`);
+      const entry = parsed.kind === 'submodule' ? parsed.submodule : undefined;
+      assert.strictEqual(entry?.path, expectedPath, 'path should drop the branch suffix');
+      assert.strictEqual(entry?.commitHash, hash, 'commit hash should be kept as is');
+      assert.strictEqual(entry?.initialized, true, 'space and + mean initialized');
       assert.strictEqual(
-        entry.absolutePath,
+        entry?.absolutePath,
         path.resolve(workspace, expectedPath),
         'absolute path should resolve inside the workspace'
       );
     }
+
+    // A submodule with merge conflicts ('U') is not read: it is missed, not
+    // left out like an uninitialized one
+    assert.deepStrictEqual(parseSubmoduleEntry(`U${hashA} submodule`, workspace), { kind: 'unreadable' });
+    assert.deepStrictEqual(parseSubmoduleEntry(`?${hashA} submodule`, workspace), { kind: 'unreadable' });
+    // Another separator than one space after the hash is not read
+    assert.deepStrictEqual(parseSubmoduleEntry(` ${hashA}\tsubmodule`, workspace), { kind: 'unreadable' });
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
   }
@@ -545,78 +567,30 @@ function testInvalidWorkspacePaths(): void {
 }
 
 /**
- * Test listSubmodules GitExecResult error handling
+ * Test collectSubmodules when the listing fails
  *
- * Coverage target: listSubmodules() error path (lines 137-148)
- * Tests that git command failures are handled gracefully.
+ * A failed listing is never "no submodules": it is reported as not complete.
  */
 async function testListSubmodulesErrorHandling(): Promise<void> {
-  console.log('Testing listSubmodules error handling...');
+  console.log('Testing collectSubmodules error handling...');
 
-  // Test 1: Non-git directory returns empty array (not throw)
+  // Test 1: Non-git directory (git submodule status fails)
   {
-    // Create a temporary directory that is NOT a git repository
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'submodule-test-'));
     try {
-      const result = await listSubmodules(tempDir);
-      assert.ok(Array.isArray(result), 'Should return an array');
-      assert.strictEqual(result.length, 0, 'Non-git directory should return empty array');
+      assert.deepStrictEqual(await collectSubmodules(tempDir), { submodules: [], isComplete: false });
     } finally {
-      // Cleanup
       fs.rmdirSync(tempDir);
     }
   }
 
-  // Test 2: Non-existent path returns empty array (validation fails first)
-  {
-    const result = await listSubmodules('/non/existent/path/xyz123');
-    assert.ok(Array.isArray(result), 'Should return an array');
-    assert.strictEqual(result.length, 0, 'Non-existent path should return empty array');
-  }
+  // Test 2: Non-existent path (validation fails first)
+  assert.deepStrictEqual(await collectSubmodules('/non/existent/path/xyz123'), { submodules: [], isComplete: false });
 
-  // Test 3: Empty string returns empty array
-  {
-    const result = await listSubmodules('');
-    assert.ok(Array.isArray(result), 'Should return an array');
-    assert.strictEqual(result.length, 0, 'Empty path should return empty array');
-  }
+  // Test 3: Empty string
+  assert.deepStrictEqual(await collectSubmodules(''), { submodules: [], isComplete: false });
 
-  console.log('✅ listSubmodules error handling tests passed!');
-}
-
-/**
- * Test setSubmoduleGitConfig GitExecResult error handling
- *
- * Coverage target: setSubmoduleGitConfig() error path (lines 241-251)
- * Tests that git config failures are handled gracefully.
- */
-async function testSetSubmoduleGitConfigErrorHandling(): Promise<void> {
-  console.log('Testing setSubmoduleGitConfig error handling...');
-
-  // Test 1: Non-git directory returns false (not throw)
-  {
-    // Create a temporary directory that is NOT a git repository
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gitconfig-test-'));
-    try {
-      const isResult = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
-      assert.strictEqual(isResult, false, 'Non-git directory should return false');
-    } finally {
-      // Cleanup
-      fs.rmdirSync(tempDir);
-    }
-  }
-
-  // Test 2: Non-existent path returns false
-  {
-    const isResult = await setSubmoduleGitConfig(
-      '/non/existent/path/xyz123',
-      'user.name',
-      'Test User'
-    );
-    assert.strictEqual(isResult, false, 'Non-existent path should return false');
-  }
-
-  console.log('✅ setSubmoduleGitConfig error handling tests passed!');
+  console.log('✅ collectSubmodules error handling tests passed!');
 }
 
 /**
@@ -745,12 +719,12 @@ function testGetSubmoduleDepthClamping(): void {
 }
 
 /**
- * Test listSubmodulesRecursive with various depths
+ * Test collectSubmodules with various depths
  *
- * Coverage target: listSubmodulesRecursive() depth handling
+ * Coverage target: collectSubmodules() depth handling
  */
 async function testListSubmodulesRecursiveDepth(): Promise<void> {
-  console.log('Testing listSubmodulesRecursive depth handling...');
+  console.log('Testing collectSubmodules depth handling...');
 
   // Reset cache
   _resetCache();
@@ -759,7 +733,7 @@ async function testListSubmodulesRecursiveDepth(): Promise<void> {
   {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'recursive-test-'));
     try {
-      const result = await listSubmodulesRecursive(tempDir, 0);
+      const { submodules: result } = await collectSubmodules(tempDir, 0);
       assert.ok(Array.isArray(result), 'Should return an array');
       assert.strictEqual(result.length, 0, 'Depth 0 should return empty array');
     } finally {
@@ -771,7 +745,7 @@ async function testListSubmodulesRecursiveDepth(): Promise<void> {
   {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'recursive-test-'));
     try {
-      const result = await listSubmodulesRecursive(tempDir, -5);
+      const { submodules: result } = await collectSubmodules(tempDir, -5);
       assert.ok(Array.isArray(result), 'Should return an array');
       assert.strictEqual(result.length, 0, 'Negative depth should return empty array');
     } finally {
@@ -784,7 +758,7 @@ async function testListSubmodulesRecursiveDepth(): Promise<void> {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'recursive-test-'));
     try {
       // This won't find any submodules, but should not throw
-      const result = await listSubmodulesRecursive(tempDir, 100);
+      const { submodules: result } = await collectSubmodules(tempDir, 100);
       assert.ok(Array.isArray(result), 'Should return an array');
       // Non-git directory returns empty array
       assert.strictEqual(result.length, 0, 'Non-git directory should return empty array');
@@ -793,7 +767,7 @@ async function testListSubmodulesRecursiveDepth(): Promise<void> {
     }
   }
 
-  console.log('✅ listSubmodulesRecursive depth handling tests passed!');
+  console.log('✅ collectSubmodules depth handling tests passed!');
 }
 
 /**
@@ -860,42 +834,12 @@ async function testSetIdentityForSubmodulesEmpty(): Promise<void> {
   console.log('Testing setIdentityForSubmodules with empty array...');
 
   // Test with empty submodules array
-  const result = await setIdentityForSubmodules([], 'Test User', 'test@example.com');
+  const result = await setIdentityForSubmodules([], 'Test User', 'test@example.com', undefined, createMemoryStore());
 
   assert.strictEqual(result.success, 0, 'Should have 0 success with empty array');
   assert.strictEqual(result.failed, 0, 'Should have 0 failed with empty array');
 
   console.log('✅ setIdentityForSubmodules empty array tests passed!');
-}
-
-/**
- * Test setSubmoduleGitConfig success path with real git repo
- *
- * Coverage target: setSubmoduleGitConfig() success return (line 255)
- */
-async function testSetSubmoduleGitConfigSuccess(): Promise<void> {
-  console.log('Testing setSubmoduleGitConfig success path...');
-
-  const { execSync } = await import('node:child_process');
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gitconfig-success-'));
-
-  try {
-    // Initialize a git repo
-    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
-
-    // Test setting user.name (should succeed)
-    const isResult = await setSubmoduleGitConfig(tempDir, 'user.name', 'Test User');
-    assert.strictEqual(isResult, true, 'setSubmoduleGitConfig should return true on success');
-
-    // Test setting user.email (should succeed)
-    const isResult2 = await setSubmoduleGitConfig(tempDir, 'user.email', 'test@example.com');
-    assert.strictEqual(isResult2, true, 'setSubmoduleGitConfig should return true on success');
-
-    console.log('✅ setSubmoduleGitConfig success path tests passed!');
-  } finally {
-    // Cleanup
-    fs.rmSync(tempDir, { recursive: true, force: true });
-  }
 }
 
 /**
@@ -906,12 +850,20 @@ async function testSetSubmoduleGitConfigSuccess(): Promise<void> {
 async function testSetIdentityForSubmodulesWithRepo(): Promise<void> {
   console.log('Testing setIdentityForSubmodules with real repo...');
 
-  const { execSync } = await import('node:child_process');
+  const { execFileSync } = await import('node:child_process');
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'identity-test-'));
+  const readLocal = (key: string): string | undefined => {
+    try {
+      return removeTrailingNewline(execFileSync('git', ['config', '--local', '--get', key], { cwd: tempDir, encoding: 'utf8' }));
+    } catch {
+      return undefined;
+    }
+  };
 
   try {
     // Initialize a git repo
-    execSync('git init', { cwd: tempDir, stdio: 'ignore' });
+    execFileSync('git', ['init', '-q'], { cwd: tempDir });
+    const store = createMemoryStore();
 
     // Create a mock submodule object pointing to the temp git repo
     const mockSubmodule = {
@@ -921,26 +873,29 @@ async function testSetIdentityForSubmodulesWithRepo(): Promise<void> {
       initialized: true,
     };
 
-    // Test with a single valid submodule (no GPG key)
-    const result1 = await setIdentityForSubmodules(
-      [mockSubmodule],
-      'Test User',
-      'test@example.com'
-    );
-    assert.strictEqual(result1.success, 1, 'Should have 1 success');
-    assert.strictEqual(result1.failed, 0, 'Should have 0 failed');
+    // A single valid submodule (no signing): the values are written
+    const result1 = await setIdentityForSubmodules([mockSubmodule], 'Test User', 'test@example.com', undefined, store);
+    assert.deepStrictEqual(result1, { success: 1, failed: 0 });
+    assert.strictEqual(readLocal('user.name'), 'Test User');
+    assert.strictEqual(readLocal('user.email'), 'test@example.com');
+    assert.strictEqual(readLocal('user.signingkey'), undefined);
 
-    // Test with GPG key (covers gpgKeyId branch)
-    const result2 = await setIdentityForSubmodules(
-      [mockSubmodule],
-      'Test User',
-      'test@example.com',
-      'ABCD1234'
-    );
-    assert.strictEqual(result2.success, 1, 'Should have 1 success with GPG key');
-    assert.strictEqual(result2.failed, 0, 'Should have 0 failed');
+    // With a GPG key: the three signing keys are written and read back
+    const gpg = { gpgFormat: 'openpgp' as const, signingKey: 'ABCD1234' };
+    const result2 = await setIdentityForSubmodules([mockSubmodule], 'Test User', 'test@example.com', gpg, store);
+    assert.deepStrictEqual(result2, { success: 1, failed: 0 });
+    assert.strictEqual(readLocal('gpg.format'), 'openpgp');
+    assert.strictEqual(readLocal('user.signingkey'), 'ABCD1234');
+    assert.strictEqual(readLocal('commit.gpgsign'), 'true');
 
-    // Test with invalid submodule (non-git directory)
+    // Back to unsigned: what the extension wrote is removed
+    const result3 = await setIdentityForSubmodules([mockSubmodule], 'Test User', 'test@example.com', undefined, store);
+    assert.deepStrictEqual(result3, { success: 1, failed: 0 });
+    assert.strictEqual(readLocal('gpg.format'), undefined);
+    assert.strictEqual(readLocal('user.signingkey'), undefined);
+    assert.strictEqual(readLocal('commit.gpgsign'), undefined);
+
+    // An invalid submodule (non-git directory) counts as failed; the valid one still succeeds
     const nonGitDir = fs.mkdtempSync(path.join(os.tmpdir(), 'non-git-'));
     const invalidSubmodule = {
       path: 'invalid',
@@ -950,13 +905,15 @@ async function testSetIdentityForSubmodulesWithRepo(): Promise<void> {
     };
 
     try {
-      const result3 = await setIdentityForSubmodules(
-        [invalidSubmodule],
-        'Test User',
-        'test@example.com'
+      const result4 = await setIdentityForSubmodules(
+        [invalidSubmodule, mockSubmodule],
+        'Other User',
+        'other@example.com',
+        undefined,
+        store
       );
-      assert.strictEqual(result3.success, 0, 'Should have 0 success for non-git dir');
-      assert.strictEqual(result3.failed, 1, 'Should have 1 failed for non-git dir');
+      assert.deepStrictEqual(result4, { success: 1, failed: 1 });
+      assert.strictEqual(readLocal('user.name'), 'Other User');
     } finally {
       fs.rmSync(nonGitDir, { recursive: true, force: true });
     }
@@ -968,14 +925,14 @@ async function testSetIdentityForSubmodulesWithRepo(): Promise<void> {
 }
 
 /**
- * Test listSubmodules with git repo that has no submodules (empty stdout path)
+ * Test collectSubmodules with git repo that has no submodules (empty stdout path)
  *
- * Coverage target: listSubmodules() empty stdout path (line 153-155)
+ * Coverage target: collectSubmodules() empty stdout path (line 153-155)
  * Note: The success path test is now in testListSubmodulesWithSubmodule().
  * Bug fix: gitExecRaw() added to preserve raw stdout.
  */
 async function testListSubmodulesEmptyResult(): Promise<void> {
-  console.log('Testing listSubmodules with repo having no submodules...');
+  console.log('Testing collectSubmodules with repo having no submodules...');
 
   const { execSync } = await import('node:child_process');
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'no-submodules-'));
@@ -989,27 +946,27 @@ async function testListSubmodulesEmptyResult(): Promise<void> {
     execSync('git add .', { cwd: tempDir, stdio: 'ignore' });
     execSync('git commit -m "Initial commit"', { cwd: tempDir, stdio: 'ignore' });
 
-    // Test listSubmodules - should return empty array
-    const submodules = await listSubmodules(tempDir);
+    // Test collectSubmodules - should return empty array
+    const { submodules } = await collectSubmodules(tempDir);
 
     assert.ok(Array.isArray(submodules), 'Should return an array');
     assert.strictEqual(submodules.length, 0, 'Should find 0 submodules');
 
-    console.log('✅ listSubmodules empty result tests passed!');
+    console.log('✅ collectSubmodules empty result tests passed!');
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 }
 
 /**
- * Test listSubmodules with a real submodule
+ * Test collectSubmodules with a real submodule
  *
- * Coverage target: listSubmodules() success path (lines 152, 157-167)
+ * Coverage target: collectSubmodules() success path (lines 152, 157-167)
  * This test creates a temporary git repo with a submodule to verify
  * that the parsing logic works correctly after fixing the gitExec trim bug.
  */
 async function testListSubmodulesWithSubmodule(): Promise<void> {
-  console.log('Testing listSubmodules with real submodule...');
+  console.log('Testing collectSubmodules with real submodule...');
 
   const { execSync } = await import('node:child_process');
   // Use realpathSync to resolve /tmp -> /private/tmp on macOS
@@ -1037,8 +994,8 @@ async function testListSubmodulesWithSubmodule(): Promise<void> {
     execSync(`git -c protocol.file.allow=always submodule add ${childDir} vendor/child`, { cwd: parentDir, stdio: 'ignore' });
     execSync('git commit -m "Add submodule"', { cwd: parentDir, stdio: 'ignore' });
 
-    // 4. Call listSubmodules
-    const submodules = await listSubmodules(parentDir);
+    // 4. Call collectSubmodules
+    const { submodules } = await collectSubmodules(parentDir);
 
     // 5. Assertions
     assert.ok(Array.isArray(submodules), 'Should return an array');
@@ -1054,7 +1011,7 @@ async function testListSubmodulesWithSubmodule(): Promise<void> {
       'Absolute path should end with vendor/child'
     );
 
-    console.log('✅ listSubmodules with real submodule tests passed!');
+    console.log('✅ collectSubmodules with real submodule tests passed!');
   } finally {
     fs.rmSync(parentDir, { recursive: true, force: true });
     fs.rmSync(childDir, { recursive: true, force: true });
@@ -1062,14 +1019,14 @@ async function testListSubmodulesWithSubmodule(): Promise<void> {
 }
 
 /**
- * Test listSubmodules with multiple submodules
+ * Test collectSubmodules with multiple submodules
  *
- * Coverage target: listSubmodules() success path with multiple entries
+ * Coverage target: collectSubmodules() success path with multiple entries
  * This test verifies that the gitExecRaw fix works correctly when
  * there are multiple submodules (the original bug only affected the first).
  */
 async function testListSubmodulesWithMultipleSubmodules(): Promise<void> {
-  console.log('Testing listSubmodules with multiple submodules...');
+  console.log('Testing collectSubmodules with multiple submodules...');
 
   const { execSync } = await import('node:child_process');
   // Use realpathSync to resolve /tmp -> /private/tmp on macOS
@@ -1107,8 +1064,8 @@ async function testListSubmodulesWithMultipleSubmodules(): Promise<void> {
     execSync(`git -c protocol.file.allow=always submodule add ${childDir3} tools/cli`, { cwd: parentDir, stdio: 'ignore' });
     execSync('git commit -m "Add submodules"', { cwd: parentDir, stdio: 'ignore' });
 
-    // 4. Call listSubmodules
-    const submodules = await listSubmodules(parentDir);
+    // 4. Call collectSubmodules
+    const { submodules } = await collectSubmodules(parentDir);
 
     // 5. Assertions
     assert.ok(Array.isArray(submodules), 'Should return an array');
@@ -1124,7 +1081,7 @@ async function testListSubmodulesWithMultipleSubmodules(): Promise<void> {
       assert.ok(sub.commitHash.match(/^[a-f0-9]{40}$/), `Submodule ${sub.path} should have valid commit hash`);
     }
 
-    console.log('✅ listSubmodules with multiple submodules tests passed!');
+    console.log('✅ collectSubmodules with multiple submodules tests passed!');
   } finally {
     fs.rmSync(parentDir, { recursive: true, force: true });
     fs.rmSync(childDir1, { recursive: true, force: true });
@@ -1134,14 +1091,14 @@ async function testListSubmodulesWithMultipleSubmodules(): Promise<void> {
 }
 
 /**
- * Test listSubmodulesRecursive with real nested submodules
+ * Test collectSubmodules with real nested submodules
  *
- * Coverage target: listSubmodulesRecursive() with nested submodules
+ * Coverage target: collectSubmodules() with nested submodules
  * This test verifies that nested submodules are correctly detected at all depth levels.
  * Creates a 3-level hierarchy: root → level1 → level2
  */
 async function testListSubmodulesRecursiveWithRealRepos(): Promise<void> {
-  console.log('Testing listSubmodulesRecursive with nested submodules...');
+  console.log('Testing collectSubmodules with nested submodules...');
 
   const { execSync } = await import('node:child_process');
   // Use realpathSync to resolve /tmp -> /private/tmp on macOS
@@ -1182,26 +1139,26 @@ async function testListSubmodulesRecursiveWithRealRepos(): Promise<void> {
     execSync('git -c protocol.file.allow=always submodule update --init --recursive', { cwd: rootDir, stdio: 'ignore' });
 
     // 4. Test with depth=1 (should find only level1)
-    const depth1Results = await listSubmodulesRecursive(rootDir, 1);
+    const { submodules: depth1Results } = await collectSubmodules(rootDir, 1);
     assert.strictEqual(depth1Results.length, 1, 'Depth 1 should find 1 submodule');
     assert.strictEqual(depth1Results[0].path, 'libs/level1', 'Should find level1');
 
     // 5. Test with depth=2 (should find level1 and level2)
-    const depth2Results = await listSubmodulesRecursive(rootDir, 2);
+    const { submodules: depth2Results } = await collectSubmodules(rootDir, 2);
     assert.strictEqual(depth2Results.length, 2, 'Depth 2 should find 2 submodules');
     const paths = new Set(depth2Results.map(s => s.path).sort());
     assert.ok(paths.has('libs/level1'), 'Should find level1');
     assert.ok(paths.has('nested/level2'), 'Should find level2');
 
     // 6. Test with depth=3 (should still find 2, no more nesting)
-    const depth3Results = await listSubmodulesRecursive(rootDir, 3);
+    const { submodules: depth3Results } = await collectSubmodules(rootDir, 3);
     assert.strictEqual(depth3Results.length, 2, 'Depth 3 should still find 2 submodules (no deeper nesting)');
 
     // 7. Test with depth=0 (should find nothing)
-    const depth0Results = await listSubmodulesRecursive(rootDir, 0);
+    const { submodules: depth0Results } = await collectSubmodules(rootDir, 0);
     assert.strictEqual(depth0Results.length, 0, 'Depth 0 should find 0 submodules');
 
-    console.log('✅ listSubmodulesRecursive with nested submodules tests passed!');
+    console.log('✅ collectSubmodules with nested submodules tests passed!');
   } finally {
     fs.rmSync(rootDir, { recursive: true, force: true });
     fs.rmSync(level1Dir, { recursive: true, force: true });
@@ -1212,6 +1169,58 @@ async function testListSubmodulesRecursiveWithRealRepos(): Promise<void> {
 /**
  * Run all submodule tests
  */
+/**
+ * collectSubmodules(): a listing that failed is told apart from "no
+ * submodules", and the submodules are found from the repository root.
+ */
+async function testCollectSubmodules(): Promise<void> {
+  console.log('Testing collectSubmodules()...');
+  const missing = await collectSubmodules(path.join(os.tmpdir(), 'git-id-switcher-no-such-directory'), 1);
+  assert.deepStrictEqual(missing, { submodules: [], isComplete: false });
+
+  const root = makeTempDir('collect-submodules-');
+  try {
+    const source = path.join(root, 'source');
+    const parent = path.join(root, 'parent');
+    fs.mkdirSync(source);
+    fs.mkdirSync(parent);
+    initRepository(source);
+    initRepository(parent);
+    runGit(parent, ['-c', 'protocol.file.allow=always', 'submodule', 'add', '-q', source, 'lib']);
+
+    const found = await collectSubmodules(parent, 1);
+    assert.strictEqual(found.isComplete, true);
+    assert.deepStrictEqual(found.submodules.map((submodule) => submodule.path), ['lib']);
+    // Depth 0: nothing is listed, and nothing failed
+    assert.deepStrictEqual(await collectSubmodules(parent, 0), { submodules: [], isComplete: true });
+    // A repository without submodules: complete, none
+    assert.deepStrictEqual(await collectSubmodules(source, 1), { submodules: [], isComplete: true });
+
+    // A submodule with merge conflicts (git prints 'U'): missed, so the
+    // listing is not complete (an uninitialized one is left out on purpose)
+    const lib = path.join(parent, 'lib');
+    const commitInLib = (message: string): void => {
+      runGit(lib, ['-c', 'commit.gpgsign=false', 'commit', '-q', '--allow-empty', '-m', message]);
+    };
+    runGit(lib, ['config', '--local', 'user.name', 'Fixture']);
+    runGit(lib, ['config', '--local', 'user.email', 'fixture@example.com']);
+    runGit(parent, ['-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'add lib']);
+    const base = runGit(parent, ['rev-parse', '--abbrev-ref', 'HEAD']);
+    runGit(parent, ['checkout', '-q', '-b', 'other']);
+    commitInLib('other');
+    runGit(parent, ['-c', 'commit.gpgsign=false', 'commit', '-q', '-a', '-m', 'lib on other']);
+    runGit(parent, ['checkout', '-q', base]);
+    runGit(parent, ['-c', 'protocol.file.allow=always', 'submodule', 'update', '-q']);
+    commitInLib('base');
+    runGit(parent, ['-c', 'commit.gpgsign=false', 'commit', '-q', '-a', '-m', 'lib on base']);
+    assert.throws(() => runGit(parent, ['-c', 'commit.gpgsign=false', 'merge', '-q', 'other']), 'the merge conflicts');
+    assert.ok(runGit(parent, ['submodule', 'status']).startsWith('U'), 'git prints U for the conflict');
+    assert.deepStrictEqual(await collectSubmodules(parent, 1), { submodules: [], isComplete: false });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
 export async function runSubmoduleTests(): Promise<void> {
   console.log('\n=== Submodule Security Tests ===\n');
 
@@ -1241,10 +1250,10 @@ export async function runSubmoduleTests(): Promise<void> {
 
     // GitExecResult error handling tests
     await testListSubmodulesErrorHandling();
-    await testSetSubmoduleGitConfigErrorHandling();
 
     // Recursive depth handling tests
     await testListSubmodulesRecursiveDepth();
+    await testCollectSubmodules();
 
     // Mocked workspace tests
     testIsSubmoduleSupportEnabledWithMock();
@@ -1253,19 +1262,18 @@ export async function runSubmoduleTests(): Promise<void> {
     await testSetIdentityForSubmodulesEmpty();
 
     // Success path tests with real git repos
-    await testSetSubmoduleGitConfigSuccess();
     await testSetIdentityForSubmodulesWithRepo();
 
-    // listSubmodules empty result path with real git repo
+    // collectSubmodules empty result path with real git repo
     await testListSubmodulesEmptyResult();
 
-    // listSubmodules success path with real submodule
+    // collectSubmodules success path with real submodule
     await testListSubmodulesWithSubmodule();
 
-    // listSubmodules with multiple submodules (verifies gitExecRaw fix)
+    // collectSubmodules with multiple submodules (verifies gitExecRaw fix)
     await testListSubmodulesWithMultipleSubmodules();
 
-    // listSubmodulesRecursive with nested submodules (verifies depth handling)
+    // collectSubmodules with nested submodules (verifies depth handling)
     await testListSubmodulesRecursiveWithRealRepos();
 
     console.log('\n✅ All submodule tests passed!\n');

@@ -56,24 +56,28 @@ export class IdentityStatusBar implements vscode.Disposable {
   /**
    * Update status bar to reflect sync state between profile and git config.
    *
-   * - synced: normal display with sync confirmation in tooltip
+   * - synced: normal display
    * - out_of_sync: warning background, ⚠️ prefix, mismatch details in tooltip
-   * - unknown: no change (preserves current display)
+   * - unknown: normal display, and the tooltip says the check could not be
+   *   made (an earlier result is not left on display as if it were current)
    */
   setSyncState(result: SyncCheckResult): void {
     this.currentSyncState = result;
 
-    if (!this.currentIdentity || (result.state === 'unknown')) {
+    if (!this.currentIdentity) {
       return;
     }
 
-    if (result.state === 'synced') {
+    if (result.state !== 'out_of_sync') {
       // Restore normal display
+      const tooltip = this.buildTooltip(this.currentIdentity);
       this.statusBarItem.text = truncateForStatusBar(
         this.buildDisplayText(this.currentIdentity)
       );
       this.statusBarItem.tooltip = new vscode.MarkdownString(
-        this.buildTooltip(this.currentIdentity)
+        result.state === 'unknown'
+          ? `${tooltip}\n\n${vscode.l10n.t('Could not check whether the Git config matches this profile.')}`
+          : tooltip
       );
       this.statusBarItem.backgroundColor = undefined;
       this.statusBarItem.command = 'git-id-switcher.selectIdentity';
@@ -167,11 +171,18 @@ export class IdentityStatusBar implements vscode.Disposable {
     }
 
     if (identity.sshKeyPath) {
-      lines.push('- ' + vscode.l10n.t('**SSH Key:** {0}', escapeMarkdownInline(maskSshKeyPath(identity.sshKeyPath))));
+      const authenticationKeyName = escapeMarkdownInline(maskSshKeyPath(identity.sshKeyPath));
+      lines.push('- ' + vscode.l10n.t('**SSH Authentication Key:** {0}', authenticationKeyName));
     }
 
     if (identity.gpgKeyId) {
-      lines.push('- ' + vscode.l10n.t('**GPG Key:** {0}', escapeMarkdownInline(maskGpgKeyId(identity.gpgKeyId))));
+      const gpgKeyName = escapeMarkdownInline(maskGpgKeyId(identity.gpgKeyId));
+      lines.push('- ' + vscode.l10n.t('**GPG Key:** {0}', gpgKeyName));
+    }
+
+    if (identity.sshSigningKeyPath) {
+      const signingKeyName = escapeMarkdownInline(maskSshKeyPath(identity.sshSigningKeyPath));
+      lines.push('- ' + vscode.l10n.t('**SSH Signing Key:** {0}', signingKeyName));
     }
 
     lines.push('', '---', '', vscode.l10n.t('*Click to switch identity*'));
@@ -197,9 +208,11 @@ const GPG_SHORT_KEY_ID_LENGTH = 8;
 /**
  * Mask SSH key path to show only the filename.
  * Prevents full filesystem path exposure in tooltip during screen sharing.
+ * Both `/` and `\` are separators, so a path of another platform (from
+ * settings sync, or read from git config) is masked too.
  */
 export function maskSshKeyPath(keyPath: string): string {
-  return path.basename(keyPath);
+  return path.win32.basename(keyPath);
 }
 
 /**
@@ -211,14 +224,17 @@ export function maskGpgKeyId(keyId: string): string {
 }
 
 /**
- * Field display labels for mismatch tooltip.
- * Maps internal field names to user-facing labels.
+ * Mask a user.signingkey value for display: an SSH key path shows only the
+ * file name, a GPG key ID only its last 8 characters.
  */
-const FIELD_LABELS: Readonly<Record<SyncMismatch['field'], string>> = {
-  name: 'name',
-  email: 'email',
-  signingKey: 'signingKey',
-};
+export function maskSigningKey(value: string): string {
+  return value.includes('/') || value.includes('\\') ? maskSshKeyPath(value) : maskGpgKeyId(value);
+}
+
+/** A value of a mismatch as shown in the tooltip (user.signingkey masked) */
+export function displayMismatchValue(mismatch: SyncMismatch, value: string): string {
+  return value !== '' && mismatch.field === 'user.signingkey' ? maskSigningKey(value) : value;
+}
 
 /**
  * Build markdown tooltip content showing mismatch details.
@@ -238,7 +254,7 @@ export function buildMismatchTooltip(mismatches: readonly SyncMismatch[]): strin
 
   for (const mismatch of mismatches) {
     lines.push(
-      `| ${FIELD_LABELS[mismatch.field]} | ${escapeMarkdownInline(mismatch.expected)} | ${escapeMarkdownInline(mismatch.actual)} |`
+      `| ${mismatch.field} | ${escapeMarkdownInline(displayMismatchValue(mismatch, mismatch.expected))} | ${escapeMarkdownInline(displayMismatchValue(mismatch, mismatch.actual))} |`
     );
   }
 

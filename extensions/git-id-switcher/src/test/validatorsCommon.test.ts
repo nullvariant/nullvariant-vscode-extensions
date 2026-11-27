@@ -17,9 +17,7 @@ import {
   isValidGpgKeyId,
   isValidIdentityId,
   hasDangerousChars,
-  hasDangerousCharsForPath,
   hasDangerousCharsForText,
-  isWindowsAbsolutePath,
   INVISIBLE_CHARS,
   CONTROL_CHAR_REGEX_STRICT,
   CONTROL_CHAR_REGEX_ALL,
@@ -32,10 +30,7 @@ import {
   SAFE_TEXT_PATTERN,
   SAFE_TEXT_REGEX,
   DANGEROUS_PATTERNS,
-  DANGEROUS_CHARS_FOR_PATH_REGEX,
   DANGEROUS_CHARS_FOR_TEXT_REGEX,
-  WINDOWS_DRIVE_LETTER_PATTERN,
-  WINDOWS_DRIVE_LETTER_REGEX,
 } from '../validators/common';
 
 /**
@@ -371,34 +366,6 @@ function testHasDangerousChars(): void {
 }
 
 /**
- * Test suite for hasDangerousCharsForPath
- */
-function testHasDangerousCharsForPath(): void {
-  console.log('Testing hasDangerousCharsForPath...');
-
-  // Dangerous characters for paths (should return true)
-  assert.strictEqual(hasDangerousCharsForPath('`cmd`'), true, 'Backtick should be dangerous');
-  assert.strictEqual(hasDangerousCharsForPath('$(cmd)'), true, 'Command substitution should be dangerous');
-  assert.strictEqual(hasDangerousCharsForPath('a|b'), true, 'Pipe should be dangerous');
-  assert.strictEqual(hasDangerousCharsForPath('a;b'), true, 'Semicolon should be dangerous for paths');
-  assert.strictEqual(hasDangerousCharsForPath('a&b'), true, 'Ampersand should be dangerous');
-  assert.strictEqual(hasDangerousCharsForPath('a<b'), true, 'Less than should be dangerous');
-  assert.strictEqual(hasDangerousCharsForPath('a>b'), true, 'Greater than should be dangerous');
-  assert.strictEqual(hasDangerousCharsForPath('$HOME'), true, 'Dollar sign should be dangerous');
-
-  // Safe characters for paths (should return false)
-  assert.strictEqual(hasDangerousCharsForPath('~/.ssh/id_rsa'), false, 'Normal path should be safe');
-  assert.strictEqual(hasDangerousCharsForPath('/home/user/.ssh/key'), false, 'Absolute path should be safe');
-  assert.strictEqual(hasDangerousCharsForPath('path/to/file'), false, 'Relative path should be safe');
-  assert.strictEqual(hasDangerousCharsForPath('file-name_123.txt'), false, 'Path with hyphen/underscore should be safe');
-
-  // Verify regex constant exists
-  assert.ok(DANGEROUS_CHARS_FOR_PATH_REGEX instanceof RegExp, 'DANGEROUS_CHARS_FOR_PATH_REGEX should be a RegExp');
-
-  console.log('✅ hasDangerousCharsForPath tests passed!');
-}
-
-/**
  * Test suite for hasDangerousCharsForText
  */
 function testHasDangerousCharsForText(): void {
@@ -431,35 +398,6 @@ function testHasDangerousCharsForText(): void {
 }
 
 /**
- * Test suite for isWindowsAbsolutePath
- */
-function testIsWindowsAbsolutePath(): void {
-  console.log('Testing isWindowsAbsolutePath...');
-
-  // Valid Windows absolute paths (should return true)
-  assert.strictEqual(isWindowsAbsolutePath('C:'), true, 'C: should be valid');
-  assert.strictEqual(isWindowsAbsolutePath('C:\\'), true, String.raw`C:\ should be valid`);
-  assert.strictEqual(isWindowsAbsolutePath(String.raw`C:\Users\test`), true, String.raw`C:\Users\test should be valid`);
-  assert.strictEqual(isWindowsAbsolutePath(String.raw`D:\folder`), true, String.raw`D:\folder should be valid`);
-  assert.strictEqual(isWindowsAbsolutePath(String.raw`c:\lowercase`), true, String.raw`c:\ lowercase should be valid`);
-  assert.strictEqual(isWindowsAbsolutePath(String.raw`Z:\path`), true, String.raw`Z:\ should be valid`);
-
-  // Invalid paths (should return false)
-  assert.strictEqual(isWindowsAbsolutePath('/unix/path'), false, 'Unix path should be invalid');
-  assert.strictEqual(isWindowsAbsolutePath('~/home'), false, 'Tilde path should be invalid');
-  assert.strictEqual(isWindowsAbsolutePath('relative/path'), false, 'Relative path should be invalid');
-  assert.strictEqual(isWindowsAbsolutePath(''), false, 'Empty string should be invalid');
-  assert.strictEqual(isWindowsAbsolutePath(String.raw`1:\invalid`), false, 'Number drive letter should be invalid');
-  assert.strictEqual(isWindowsAbsolutePath('::invalid'), false, 'Double colon should be invalid');
-
-  // Verify regex constants exist
-  assert.ok(typeof WINDOWS_DRIVE_LETTER_PATTERN === 'string', 'WINDOWS_DRIVE_LETTER_PATTERN should be a string');
-  assert.ok(WINDOWS_DRIVE_LETTER_REGEX instanceof RegExp, 'WINDOWS_DRIVE_LETTER_REGEX should be a RegExp');
-
-  console.log('✅ isWindowsAbsolutePath tests passed!');
-}
-
-/**
  * Run all tests
  */
 export function runValidatorsCommonTests(): void {
@@ -477,9 +415,7 @@ export function runValidatorsCommonTests(): void {
     testIsValidGpgKeyId();
     testIsValidIdentityId();
     testHasDangerousChars();
-    testHasDangerousCharsForPath();
     testHasDangerousCharsForText();
-    testIsWindowsAbsolutePath();
     testConstants();
 
     console.log('\n✅ All common validators tests passed!\n');

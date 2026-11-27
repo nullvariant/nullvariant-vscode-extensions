@@ -162,6 +162,11 @@ function createMockVSCode(options: {
         get: (key: string) => {
           return key === "identities" ? options.identities ?? [] : undefined;
         },
+        // The identities are all in the user's settings
+        inspect: (key: string) => ({
+          key,
+          globalValue: key === "identities" ? options.identities ?? [] : undefined,
+        }),
         update: async (key: string, value: unknown) => {
           if (options.configUpdateError) {
             throw options.configUpdateError;
@@ -1981,7 +1986,7 @@ describe("identityManager E2E Test Suite", function () {
   // SSH/GPG Field Editing Tests
   //
   // Tests for SSH/GPG field editing requirements:
-  // - sshKeyPath: validateSshKeyPathFormat(), isUnderSshDirectory(),
+  // - sshKeyPath: validateKeyPathFormat() (absolute or ~ path anywhere),
   //   path traversal, dangerous chars
   // - sshHost: SSH_HOST_REGEX validation, MAX_SSH_HOST_LENGTH
   // - gpgKeyId: GPG_KEY_REGEX validation (8-40 hex chars)
@@ -2044,8 +2049,9 @@ describe("identityManager E2E Test Suite", function () {
           );
         });
 
-        // SSH directory restriction tests (isUnderSshDirectory)
-        it("should reject path outside .ssh directory (~/documents/key)", async () => {
+        // Key paths are not restricted to ~/.ssh/ (same level as the runtime check;
+        // the key file itself is checked before use)
+        it("should accept path outside .ssh directory (~/documents/key)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
             quickPickSelections: [{ field: "sshKeyPath" }, undefined],
@@ -2057,12 +2063,12 @@ describe("identityManager E2E Test Suite", function () {
 
           assert.strictEqual(
             isResult,
-            false,
-            "Path outside .ssh directory should be rejected",
+            true,
+            "Path outside .ssh directory should be accepted",
           );
         });
 
-        it("should reject path in .ssh_backup directory (~/.ssh_backup/key)", async () => {
+        it("should accept path in .ssh_backup directory (~/.ssh_backup/key)", async () => {
           const mockVSCode = createMockVSCode({
             identities: [TEST_IDENTITIES.work],
             quickPickSelections: [{ field: "sshKeyPath" }, undefined],
@@ -2074,8 +2080,8 @@ describe("identityManager E2E Test Suite", function () {
 
           assert.strictEqual(
             isResult,
-            false,
-            "Path in .ssh_backup (not .ssh) should be rejected",
+            true,
+            "Path in .ssh_backup should be accepted",
           );
         });
 
@@ -3154,13 +3160,13 @@ describe("identityManager E2E Test Suite", function () {
     /**
      * Tests for ARCHITECTURE.md Defense-in-Depth compliance
      *
-     * Validation order (light to heavy):
-     * - Layer 1: hasDangerousCharsForPath() - Dangerous character detection
+     * Validation (validateKeyPathFormat, the same level as at runtime):
+     * - Layer 1: Dangerous character detection
      * - Layer 2: hasPathTraversal() - Path traversal detection
-     * - Layer 3: isUnderSshDirectory() - SSH directory restriction (includes path normalization)
+     * - Layer 3: absolute (/) or home (~) path; the location is not restricted
      */
 
-    describe("Layer 1: hasDangerousCharsForPath() for sshKeyPath", () => {
+    describe("Layer 1: dangerous characters for sshKeyPath", () => {
       const dangerousChars = ["$", "`", "|", ";", "&", "<", ">"];
 
       for (const char of dangerousChars) {
@@ -3215,7 +3221,7 @@ describe("identityManager E2E Test Suite", function () {
       });
     });
 
-    describe("Layer 3: isUnderSshDirectory() restriction", () => {
+    describe("Layer 3: absolute or home path, any location", () => {
       it("should accept path under ~/.ssh/", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
@@ -3254,7 +3260,7 @@ describe("identityManager E2E Test Suite", function () {
         );
       });
 
-      it("should reject path in home directory but not under .ssh", async () => {
+      it("should accept path in home directory but not under .ssh", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [{ field: "sshKeyPath" }, undefined],
@@ -3266,12 +3272,12 @@ describe("identityManager E2E Test Suite", function () {
 
         assert.strictEqual(
           isResult,
-          false,
-          "Path not under ~/.ssh/ should be rejected",
+          true,
+          "Path not under ~/.ssh/ should be accepted",
         );
       });
 
-      it("should reject absolute path not under .ssh (/etc/ssh/key)", async () => {
+      it("should accept absolute path not under .ssh (/etc/ssh/key)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [{ field: "sshKeyPath" }, undefined],
@@ -3283,12 +3289,12 @@ describe("identityManager E2E Test Suite", function () {
 
         assert.strictEqual(
           isResult,
-          false,
-          "Absolute path /etc/ssh/ should be rejected (not user .ssh)",
+          true,
+          "Absolute path /etc/ssh/ should be accepted",
         );
       });
 
-      it("should reject path with similar name (~/.ssh_backup/key)", async () => {
+      it("should accept path with similar name (~/.ssh_backup/key)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [{ field: "sshKeyPath" }, undefined],
@@ -3300,8 +3306,8 @@ describe("identityManager E2E Test Suite", function () {
 
         assert.strictEqual(
           isResult,
-          false,
-          "Path in .ssh_backup (not .ssh) should be rejected",
+          true,
+          "Path in .ssh_backup should be accepted",
         );
       });
     });
@@ -3309,7 +3315,7 @@ describe("identityManager E2E Test Suite", function () {
     describe("Validation layers are independently testable", () => {
       it("should reject at Layer 1 before reaching Layer 2 or 3", async () => {
         // A path with dangerous char should fail immediately at Layer 1
-        // without needing Layer 2 (traversal) or Layer 3 (directory) checks
+        // without needing Layer 2 (traversal) or Layer 3 (path form) checks
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],
           quickPickSelections: [{ field: "sshKeyPath" }, undefined],
@@ -3505,7 +3511,7 @@ describe("identityManager E2E Test Suite", function () {
       });
     });
 
-    describe("sshKeyPath field: hasDangerousCharsForPath() (stricter)", () => {
+    describe("sshKeyPath field: semicolons rejected (stricter than text fields)", () => {
       it("should reject sshKeyPath with semicolon (unlike name field)", async () => {
         const mockVSCode = createMockVSCode({
           identities: [TEST_IDENTITIES.work],

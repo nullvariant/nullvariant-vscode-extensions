@@ -49,7 +49,7 @@ I když existuje mnoho nástrojů pro přepínání Git profilů, **Git ID Switc
 - **Kontrola synchronizace**: Detekce nesouladu mezi profilem a git config v reálném čase s varováním ve stavovém řádku
 - **Podpora submodulů**: Automatická propagace profilu do Git submodulů
 - **Správa SSH klíčů**: Automatické přepínání SSH klíčů v ssh-agent
-- **Podpora GPG podepisování**: Konfigurace GPG klíče pro podepisování commitů (volitelné)
+- **Podpora podepisování commitů**: Podepisování commitů GPG klíčem nebo SSH klíčem (volitelné)
 - **Podrobné nápovědy**: Kompletní informace s popisem a SSH hostem
 - **Multiplatformní**: Funguje na macOS, Linux a Windows
 - **Vícejazyčný**: Podporuje 17 jazyků
@@ -235,6 +235,37 @@ Poznámka: 4. profil (`client-b`) používá zkrácené jméno a 5. (`oss`) výv
 
 ---
 
+## Podepisování commitů SSH klíčem
+
+Git umí podepisovat commity SSH klíčem místo GPG klíče. Nastavte `sshSigningKeyPath` u profilu ve svých **uživatelských nastaveních** (`settings.json`):
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Alex Novák",
+      "email": "alex.novak@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` je soukromý klíč, nebo veřejný klíč (`.pub`), pokud je soukromý klíč v ssh-agent
+- `gpgKeyId` a `sshSigningKeyPath` nelze nastavit současně v jednom profilu
+- Podpisové klíče (`gpgKeyId`, `sshSigningKeyPath`) se čtou pouze z uživatelských nastavení, z profilu se stejnými `id`, `name` a `email`. Hodnoty v `.vscode/settings.json` pracovního prostoru se nepoužijí a obrazovky profilů ukládají pouze do uživatelských nastavení
+- Cesty ke klíčům mohou být mimo `~/.ssh/`, jako absolutní cesta nebo cesta začínající `~/`. Ve Windows je přijata i cesta s písmenem jednotky, např. `C:\Users\...`. Než git začne klíč používat, rozšíření jím nechá podepsat krátký testovací text stejně, jako git podepisuje commit (`ssh-keygen -Y sign`), bez spuštění programu askpass a s časovým limitem 30 sekund. Pokud podepsat nelze nebo podepíše jiný klíč (například kvůli starému souboru `.pub` vedle soukromého klíče), přepnutí se zastaví. Kontrola se opakuje jen tehdy, když se změní soubor klíče nebo soubor `.pub` vedle něj, takže hardwarový klíč žádá o dotyk jen tehdy. Soukromý klíč s přístupovou frází takto ověřit nelze: nastavte `sshSigningKeyPath` na jeho soubor veřejného klíče (`.pub`) a přidejte klíč do ssh-agent
+- V Unixu musí mít soubor podpisového klíče a soubor `.pub` vedle něj oprávnění klíče, stejně jako ověřovací klíč: soukromý klíč nesmí být přístupný skupině ani ostatním, veřejný klíč pro ně nesmí být zapisovatelný a žádný z nich nesmí být spustitelný. Jinak se přepnutí zastaví
+- Při přepnutí rozšíření zapíše `gpg.format`, `user.signingkey` a `commit.gpgsign` pomocí `git config --local`. Při přepnutí na profil bez podpisového klíče vrátí tyto tři hodnoty na předchozí, ale jen pokud všechny tři stále obsahují to, co rozšíření zapsalo; pokud jste některou z nich změnili ručně, nechá všechny tři beze změny
+- Podpisový klíč se do ssh-agent nepřidává: `autoSwitchSshKey` přepíná jen klíč pro ověřování (`sshKeyPath`)
+
+Zaregistrujte veřejný klíč na GitHubu jako **podpisový klíč** (Signing Key), odděleně od klíče pro ověřování, aby se vaše commity zobrazovaly jako ověřené.
+
+---
+
 ## Správa profilů
 
 Klikněte na stavový řádek → „Správa profilů" ve spodní části seznamu pro otevření obrazovky správy.
@@ -261,17 +292,20 @@ Profily můžete také mazat z palety příkazů pomocí `Git ID Switcher: Delet
 
 ### Vlastnosti profilu
 
-| Vlastnost     | Povinná | Popis                                                                       |
-| ------------- | ------- | --------------------------------------------------------------------------- |
-| `id`          | ✅      | Jedinečný identifikátor (např.: `"personal"`, `"work"`)                     |
-| `name`        | ✅      | Git user.name — zobrazeno v commitech                                       |
-| `email`       | ✅      | Git user.email — zobrazeno v commitech                                      |
-| `icon`        |         | Emoji ve stavovém řádku (např.: `"🏠"`). Pouze jedno emoji                  |
-| `service`     |         | Název služby (např.: `"GitHub"`, `"GitLab"`). Používá se pro zobrazení v UI |
-| `description` |         | Krátký popis ve výběru a nápovědě                                           |
-| `sshKeyPath`  |         | Cesta k soukromému SSH klíči (např.: `"~/.ssh/id_ed25519_work"`)            |
-| `sshHost`     |         | SSH config host alias (např.: `"github-work"`)                              |
-| `gpgKeyId`    |         | ID GPG klíče pro podepisování commitů                                       |
+| Vlastnost           | Povinná | Popis                                                                                                                |
+| ------------------- | ------- | -------------------------------------------------------------------------------------------------------------------- |
+| `id`                | ✅      | Jedinečný identifikátor (např.: `"personal"`, `"work"`)                                                              |
+| `name`              | ✅      | Git user.name — zobrazeno v commitech                                                                                |
+| `email`             | ✅      | Git user.email — zobrazeno v commitech                                                                               |
+| `icon`              |         | Emoji ve stavovém řádku (např.: `"🏠"`). Pouze jedno emoji                                                           |
+| `service`           |         | Název služby (např.: `"GitHub"`, `"GitLab"`). Používá se pro zobrazení v UI                                          |
+| `description`       |         | Krátký popis ve výběru a nápovědě                                                                                    |
+| `sshKeyPath`        |         | Cesta k soukromému SSH klíči pro ověřování (např.: `"~/.ssh/id_ed25519_work"`)                                       |
+| `sshHost`           |         | SSH config host alias (např.: `"github-work"`)                                                                       |
+| `gpgKeyId`          |         | ID GPG klíče pro podepisování commitů. Nelze nastavit spolu s `sshSigningKeyPath`                                    |
+| `sshSigningKeyPath` |         | Cesta k SSH klíči pro podepisování commitů (např.: `"~/.ssh/id_ed25519_signing"`). Nelze nastavit spolu s `gpgKeyId` |
+
+Podpisové klíče (`gpgKeyId`, `sshSigningKeyPath`) se čtou pouze z uživatelských nastavení.
 
 #### Omezení zobrazení
 
@@ -284,7 +318,7 @@ Profily můžete také mazat z palety příkazů pomocí `Git ID Switcher: Delet
 | ------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------- |
 | `gitIdSwitcher.identities`                 | Viz příklad | Seznam konfigurací profilů                                                                   |
 | `gitIdSwitcher.defaultIdentity`            | Viz příklad | ID výchozího profilu                                                                         |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | Automaticky přepínat SSH klíč při změně profilu                                              |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`      | Automaticky přepínat SSH klíč pro ověřování (`sshKeyPath`) v ssh-agent při změně profilu     |
 | `gitIdSwitcher.showNotifications`          | `true`      | Zobrazit oznámení při přepnutí profilu                                                       |
 | `gitIdSwitcher.applyToSubmodules`          | `true`      | Aplikovat profil na Git submoduly                                                            |
 | `gitIdSwitcher.submoduleDepth`             | `1`         | Maximální hloubka pro vnořené submoduly (1-5)                                                |
@@ -345,13 +379,13 @@ Při přepnutí profilu rozšíření provede (v pořadí):
 
 1. **Git konfigurace** (vždy): Nastaví `git config --local user.name` a `user.email`
 2. **SSH klíč** (pokud je nastaven `sshKeyPath`): Odstraní ostatní klíče z ssh-agent, přidá vybraný
-3. **GPG klíč** (pokud je nastaven `gpgKeyId`): Nastaví `git config --local user.signingkey` a povolí podepisování
+3. **Podepisování commitů** (pokud je nastaven `gpgKeyId` nebo `sshSigningKeyPath`): Pomocí `git config --local` nastaví `gpg.format` (`openpgp` nebo `ssh`), `user.signingkey` a `commit.gpgsign` na `true`. Přepnutí na profil bez podpisového klíče: viz [Podepisování commitů SSH klíčem](#podepisování-commitů-ssh-klíčem)
 4. **Submoduly** (pokud povoleno): Propaguje konfiguraci do všech submodulů (výchozí: hloubka 1)
 5. **Kontrola synchronizace**: Ověří, že aplikovaný profil odpovídá skutečnému git config
 
 ### Kontrola synchronizace
 
-Porovnává vybraný profil se skutečnými hodnotami `git config --local` (`user.name`, `user.email`, `user.signingkey`) a při zjištění nesouladu zobrazí varování ve stavovém řádku.
+Porovnává vybraný profil se skutečnými hodnotami konfigurace Git (`user.name`, `user.email` a u podepisujícího profilu `gpg.format`, `user.signingkey`, `commit.gpgsign`) a při zjištění nesouladu zobrazí varování ve stavovém řádku. U profilu bez podpisového klíče se za nesoulad považují i hodnoty podpisu, které rozšíření zapsalo a nevrátilo.
 
 **Kdy se kontrola spouští:**
 

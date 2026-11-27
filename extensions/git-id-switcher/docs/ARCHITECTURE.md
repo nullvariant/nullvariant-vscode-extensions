@@ -136,11 +136,13 @@ try {
 }
 
 // removeAllIdentityKeys
-.map(identity =>
-  removeSshKey(identity.sshKeyPath!).catch(() => {
+.map(async (identity) => {
+  try {
+    await removeSshKey(identity.sshKeyPath!);
+  } catch {
     // Ignore individual errors
-  })
-)
+  }
+})
 ```
 
 **This is correct.** SSH key removal is best-effort cleanup. The key may:
@@ -150,6 +152,34 @@ try {
 - Belong to a different agent
 
 Surfacing these errors would confuse users with irrelevant messages.
+
+### Signing Config: Three Keys as One Group
+
+`core/signingPlan.ts` treats `gpg.format`, `user.signingkey` and `commit.gpgsign` as one group. The extension puts back the values it found only when all three still hold what it wrote; if any one was changed by hand, all three are left alone.
+
+**Do not restore the keys one by one.** Restoring only the keys that still match would leave the signing method and the key taken from different sources (for example `gpg.format ssh` from the extension with a GPG key ID written by the user).
+
+### A Failed Read Is Never "Not Set"
+
+`core/localGitConfig.ts` reads a value as one of three kinds: a value, absent (`git config --get` exits 1), or an error. Values are read with `-z`: the value is exactly what comes before the NUL git ends it with (a value can end with a space, `\r` or a newline), and output that is not one NUL-terminated value is an error. A read is also an error when git printed anything on standard error (it warns and goes on when it cannot read a config file) and when the value holds U+FFFD (bytes that are not UTF-8: writing such a value back would write another value). Other git output loses only the one `\n` git adds after it. An error is never treated as absent:
+
+- The switch stops before writing anything if a value cannot be read
+- Sync Check reports the state as unknown, never as synced
+- A record that has to be rebuilt after a failed rollback from values that cannot be read is dropped, so those values are never removed automatically
+
+`git config --unset` exits 5 both when the key is not set and when several lines match it; the port reads the key again and reports success only when it is not set.
+
+Treating a failed read as "not set" would record the wrong value to put back and could remove the user's own settings later.
+
+### Signing Keys From User Settings Only
+
+`identity/signingKeySource.ts` replaces `gpgKeyId` and `sshSigningKeyPath` of each identity with the values of the identity in the user settings (`inspect().globalValue`) that has the same `id`, `name` and `email`, and drops them if there is none. The `identities` setting can also come from a workspace's `.vscode/settings.json`; the signing key must not be chosen by a repository. Matching the `id` alone is not enough: a workspace could take the `id` of one of the user's identities and pair its signing key with another name and email. A different value, or a user identity with the same `id` but another name or email, is logged and not used.
+
+The fields other than the signing fields are validated first, then the identity is rebuilt without any signing field and the user's signing fields are copied into it as they are, of whatever type (a number is not turned into "not set"), then the identity is validated as a whole. User signing keys that are invalid, or both `gpgKeyId` and `sshSigningKeyPath`, make the identity invalid: it is skipped, never applied without signing. A value in the workspace's signing fields, of any type, is never validated nor kept, so it cannot make an identity invalid either.
+
+The identity screens write the user settings, so `identity/identityConfig.ts` starts every write (add, edit, delete, reorder) from the identities in the user settings (or the default, when the user has none), never from the merged configuration: writing the merged value back would move a workspace's identities, signing keys included, into the user settings. The screens also list, confirm and reload from the same validated user identities (`getManagedIdentities()`), so the identity shown is the one changed. An identity defined only in workspace settings is not edited from the screens. The screens list an ID once, so when the user settings hold several entries with the same ID, deleting, editing or moving it is refused: the entry the user confirmed cannot be told from the others.
+
+**Do not read signing keys from the merged configuration, and do not write the merged configuration back.**
 
 ### Binary Path Cache with TTL
 
@@ -259,6 +289,9 @@ These rules actively prevent dangerous patterns:
 | `secureExec.ts`            | Safe command execution with timeout   |
 | `securityLogger.ts`        | Structured security event logging     |
 | `commandAllowlist.ts`      | Allowed commands for secureExec       |
+| `gitConfigRules.ts`        | Per-key rules for `git config` args   |
+| `sshKeygenRules.ts`        | The three accepted `ssh-keygen` forms |
+| `drivePathValidator.ts`    | Windows drive path (`C:/`) checks     |
 | `binaryResolver.ts`        | Absolute binary path resolution       |
 | `pathNormalizer.ts`        | Path normalization with security      |
 | `pathSymlinkResolver.ts`   | Symlink detection (TOCTOU mitigation) |
@@ -291,19 +324,92 @@ Several validation functions exist. The path check stays next to the ssh-agent
 calls in `sshAgent.ts`; the checks on the key file itself live together in
 `keyFileValidator.ts`:
 
-| Function                            | File                  | Purpose                                                                                       |
-| ----------------------------------- | --------------------- | --------------------------------------------------------------------------------------------- |
-| `validateKeyPathOrThrow()`          | `sshAgent.ts`         | Path format and security validation                                                           |
-| `validateKeyFileType()`             | `keyFileValidator.ts` | Resolved target must be a regular file (not directory/device); symlinks are resolved upstream |
-| `validateKeyFileSize()`             | `keyFileValidator.ts` | Size limits for DoS protection                                                                |
-| `validateKeyFilePermissions()`      | `keyFileValidator.ts` | Unix only - no group/others access                                                            |
-| `validateKeyFileBeforeAddToAgent()` | `keyFileValidator.ts` | Orchestrates all validations + format check                                                   |
+| Function                            | File                  | Purpose                                                                                                 |
+| ----------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `expandKeyPathOrThrow()`            | `sshAgent.ts`         | Path format and security validation                                                                     |
+| `validateKeyFileType()`             | `keyFileValidator.ts` | Resolved target must be a regular file (not directory/device); symlinks are resolved upstream           |
+| `validateKeyFileSize()`             | `keyFileValidator.ts` | Size limits for DoS protection                                                                          |
+| `findInsecurePermission()`          | `keyFileValidator.ts` | Unix only - the permission rules of a private and a public key file (shared with the signing key check) |
+| `validateKeyFilePermissions()`      | `keyFileValidator.ts` | Unix only - no group/others access                                                                      |
+| `validateKeyFileBeforeAddToAgent()` | `keyFileValidator.ts` | Orchestrates all validations + format check                                                             |
 
 **Do not merge** these functions. Separation enables:
 
 - Granular error messages
 - Independent testing
 - Clear failure attribution
+
+Key paths are accepted outside `~/.ssh/`: an absolute path, a path starting with `~/` (never `~user`), or a Windows drive path (`C:\` or `C:/`). One prefix rule (`validators/common.ts` `hasKeyPathPrefix()`) is used by the settings schema, the identity form and the checks before a key is used; a drive path is accepted when a key is used on Windows only, where it is read with the Windows path rules. The path checks (traversal, control characters, shell metacharacters, symlink resolution) and the file checks above are what keep a path safe, not the directory it is in.
+
+### Authentication Key and Signing Key
+
+| Field               | Used by                        | ssh-agent                                   | Accepted file                                                                     |
+| ------------------- | ------------------------------ | ------------------------------------------- | --------------------------------------------------------------------------------- |
+| `sshKeyPath`        | SSH (push, pull) via ssh-agent | Added and removed when `autoSwitchSshKey`   | Private key                                                                       |
+| `sshSigningKeyPath` | Git, as `user.signingkey`      | Never added; Git reads it or finds it there | Private key without a passphrase, or public key whose private key is in ssh-agent |
+
+`ssh/signingKeyCheck.ts` checks an SSH signing key before git is told to use it, by the result, not by predicting what OpenSSH will do:
+
+1. The path must be absolute on the platform the extension runs on (a drive path such as `C:/...` is not on POSIX), and the key file a regular file of at most 1 MiB
+2. The key file and the `.pub` file next to it, if there is one, must be owned by the current user or root (Unix)
+3. If the key file and the `.pub` file next to it have the same size, modification time, permissions and owner as at the last check that passed (kept in the VS Code global state, `gitIdSwitcher.checkedSigningKeys`, as keys belong to the user), the check is done
+4. The permissions (Unix), by the rules of `keyFileValidator.ts` (`findInsecurePermission()`): a key file named `.pub` must not be writable by group or others nor executable; any other key file is taken as a private key and must not be accessible by group or others nor executable. The `.pub` file next to it, if there is one, follows the public key rules
+5. The public key the setting names: `ssh-keygen -y -P ''` of a private key (never asking for a passphrase), or else the file read as one public key line
+6. The key signs a fixed test text on standard input as git signs a commit (`ssh-keygen -Y sign -n git -f <path>`, the value written to `user.signingkey`), with `SSH_ASKPASS_REQUIRE=never` (no askpass program) and a 30 second timeout (a hardware key may wait for a touch; a prompt on a terminal the extension host has is stopped by it)
+7. The public key in the signature must be the one from step 5; otherwise OpenSSH signed with another key (a stale `.pub` file next to the private key, whose key is in ssh-agent), and the switch stops
+
+A private key with a passphrase has no public key that step 5 can read: it is not accepted, and its `.pub` file (with the key in ssh-agent) is. Checking only when the files changed keeps a hardware key from asking for a touch on every switch; what this leaves open is listed in the threat model (`docs/THREAT_MODEL.md`, Limits).
+
+| File                  | Single Responsibility                                                                         |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| `signingKeyCheck.ts`  | The signing key check above (behind dependencies; the real ones in the module)                |
+| `keyFileValidator.ts` | Checks of an authentication key file before `ssh-add`; the key file permission rules both use |
+| `sshAgent.ts`         | Adds and removes the authentication key in ssh-agent                                          |
+
+### Commit Signing Config (`src/core/`)
+
+| File                        | Single Responsibility                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `signingPlan.ts`            | Pure plan: which `--local` operations a switch needs, from the current values, the record, and the next identity               |
+| `repositoryConfigWriter.ts` | Write an identity to one repository (root or submodule): write, keep the record, put values back on a failed write; its errors |
+| `signingRecordStore.ts`     | Record of what the extension found and wrote, per repository, in the VS Code workspace state (`gitIdSwitcher.signingRecords`)  |
+| `localGitConfig.ts`         | Read and write `--local` git config of one repository through the allowlist; tells "not set" from a failed read                |
+| `repositoryCheck.ts`        | Whether the workspace folder is in a work tree, outside any repository, or that cannot be told                                 |
+| `mementoPort.ts`            | The part of VS Code's Memento the record stores use                                                                            |
+| `serialRunner.ts`           | Runs identity switches one at a time                                                                                           |
+
+Keys written on switch, all with `git config --local`:
+
+| Key               | Written when                      | Value                                                                                         |
+| ----------------- | --------------------------------- | --------------------------------------------------------------------------------------------- |
+| `user.name`       | Always                            | `name` (with `icon` if `includeIconInGitConfig`)                                              |
+| `user.email`      | Always                            | `email`                                                                                       |
+| `gpg.format`      | `gpgKeyId` or `sshSigningKeyPath` | `openpgp` for `gpgKeyId`, `ssh` for `sshSigningKeyPath`                                       |
+| `user.signingkey` | `gpgKeyId` or `sshSigningKeyPath` | The GPG key ID, or the SSH key path with `~/` expanded and normalized (symlinks not resolved) |
+| `commit.gpgsign`  | `gpgKeyId` or `sshSigningKeyPath` | `true`                                                                                        |
+
+For an identity without a signing key, the three signing keys are put back to the values recorded before the extension wrote them (unset if they were not set), in the order `commit.gpgsign`, `user.signingkey`, `gpg.format`. Without a record, or when any of the three was changed by hand, nothing is put back.
+
+`applyIdentityToRepository()` works in this order:
+
+1. Read every value first; stop if any read fails (nothing is written, and the record is kept)
+2. Plan; stop if a current value could not be written back later (it would be lost by a later restore)
+3. Write `user.name`, `user.email`, then the signing operations
+4. On success, store the new record; if that fails, git config stays written and the switch warns that the values will not be put back for another identity (this is not a failed write). On a failed write, put back the earlier writes in reverse order and keep the old record; if putting back is not complete, rebuild the record from the values found in the repository: the record (new or old) that matches all three signing values, or no record when they are a mix, so they are treated as the user's
+
+At startup, in the same queue as the switches, records of repositories that are gone (the folder, or its `.git` entry) are removed, and so is stored data that is not a record. A repository that cannot be told present or gone keeps its record.
+
+Sync Check reports leftover signing values in the repository root and, with submodule support on, in each submodule that has a record. For a signing identity it also checks that the three signing keys are in the repository's `--local` config. A switch moves the switch generation on when it starts and when it ends, and a Sync Check started outside the switch queue (window focus, a settings change) shows its result only if the identity it checked is still current and the generation has not moved meanwhile.
+
+In `services/switcher.ts`, a switch is queued by identity ID. When its turn comes, the identity is read again from the validated settings, and it is applied also when it is the current identity (values changed by hand since are written again; an unchanged signing key is not checked again, see above). The repository check tells three answers apart: in a work tree (git config is written), outside any repository (the switch goes on without git config), and not known (the switch stops, and the previous identity stays). `git rev-parse --is-inside-work-tree` must print `true` or `false`; its exit 128 counts as "outside" only when `GIT_DIR`, `GIT_WORK_TREE` and `GIT_COMMON_DIR` are not set (an empty value counts as set) and no `.git` entry exists in the folder or above it. Submodules are listed from the repository root; a listing that failed, a line of it that cannot be read (such as a submodule with merge conflicts, `U`), or submodules that could not be written, leave the switch successful for the root and are shown as a warning. A submodule that is not initialized is left out on purpose.
+
+Limitations (the threat model lists all of them, `docs/THREAT_MODEL.md`, Limits):
+
+- `user.name` and `user.email` have no `unset` in the allowlist, so a name or email that was not set before a failed switch stays written, and the error says that some values could not be put back
+- A record that cannot be saved fails the switch like a failed write: without it the values could not be put back for another identity, so they are put back now
+- Each key is read once before the writes. Another process (a terminal, another VS Code window) changing git config during a switch is out of the threat scope: its change can be overwritten, also by a rollback
+- The record lives in the VS Code workspace state, so it belongs to the workspace that wrote it. Values written while the repository was open in another workspace, or by a version that kept no record, are treated as the user's and are not put back
+- Values in `--global` or system config are never written or put back; an identity without a signing key leaves signing to them
 
 ---
 
@@ -388,7 +494,7 @@ These exist because:
 
 `ssh/sshAgent.ts` has limited test coverage due to:
 
-- External dependency (ssh-agent process)
+- External dependency (ssh-agent process, VS Code API)
 - Platform-specific behavior (macOS Keychain integration)
 - Transient state management
 
@@ -494,11 +600,11 @@ These patterns are **not allowed** in this codebase:
 
 ### Terminology
 
-| Term     | Meaning                                 | Example                  |
-| -------- | --------------------------------------- | ------------------------ |
-| `valid`  | Format/structure is correct             | `isValidEmail()`         |
-| `secure` | Resistant to security attacks           | `validatePathSecurity()` |
-| `safe`   | Safe for specific context (e.g., shell) | `isShellSafePath()`      |
+| Term     | Meaning                                              | Example                  |
+| -------- | ---------------------------------------------------- | ------------------------ |
+| `valid`  | Format/structure is correct                          | `isValidEmail()`         |
+| `secure` | Resistant to security attacks                        | `validatePathSecurity()` |
+| `safe`   | Safe for specific context (e.g., a command argument) | `validatePathSafety()`   |
 
 For detailed documentation and examples, see the module comment in `validators/common.ts`.
 
@@ -565,6 +671,25 @@ User Action
 3. **No shell**: `execFile()` bypasses shell interpretation
 4. **Timeout**: Prevents hanging processes (DoS protection)
 
+### `git config` Argument Rules
+
+`git config` arguments are not checked token by token. `security/gitConfigRules.ts` reads them as one grammar and checks them against one rule table (the length and path checks that apply to every argument run first):
+
+| Form                     | Operation | Scope option              |
+| ------------------------ | --------- | ------------------------- |
+| `-z --get <key>`         | get       | (none: all scopes merged) |
+| `-z --local --get <key>` | get       | `--local`                 |
+| `--local <key> <value>`  | set       | `--local`                 |
+| `--local --unset <key>`  | unset     | `--local`                 |
+
+Any other form is rejected, including every `--global` form, a write without a scope, and a read without `-z` (its value would end with the newline git adds). The rule table holds, for each key (`user.name`, `user.email`, `user.signingkey`, `commit.gpgsign`, `gpg.format`), the operations it allows, the scope option each may use, and the values it may be set to. Only the three signing keys can be unset; `user.name` and `user.email` have no `unset`. The value rules: `commit.gpgsign`: `true` or `false`; `gpg.format`: `openpgp` or `ssh`; `user.signingkey`: a GPG key ID, or a key path that is absolute, starts with `~/`, or is a Windows drive path (`C:/` or `C:\`, what `~/` expands to on Windows). The same value rule decides whether a value found in a repository can be written back later; a switch stops if it cannot.
+
+---
+
+### `ssh-keygen` Argument Rules
+
+`security/sshKeygenRules.ts` accepts three forms only: `-lf <absolute path>` (the fingerprint of a key file), `-y -P '' -f <absolute path>` (the public key of a private key file; with the empty passphrase it never asks for one) and `-Y sign -n git -f <absolute path>` (sign standard input in the `git` namespace and print the signature). None of them writes a file. Only the signing form takes standard input, and only the fixed test text of the signing key check; every other command takes none. Every other option is rejected. The path checks of every argument, Windows drive paths included, run first, as for the other commands.
+
 ---
 
 ## File Size Rationale
@@ -601,6 +726,14 @@ src/
 │   ├── constants.ts               # Shared constants (security limits)
 │   ├── errors.ts                  # Custom error types
 │   ├── gitConfig.ts               # Git config read/write
+│   ├── localGitConfig.ts          # --local git config of one repository
+│   ├── repositoryCheck.ts         # In a work tree, outside, or not known
+│   ├── signingPlan.ts             # Commit signing plan (pure)
+│   ├── repositoryConfigWriter.ts  # Write an identity to one repository
+│   ├── signingRecordStore.ts      # Record of the signing config written
+│   ├── mementoPort.ts             # The part of VS Code's Memento the stores use
+│   ├── serialRunner.ts            # Runs identity switches one at a time
+│   ├── syncChecker.ts             # Profile vs git config comparison
 │   ├── vscodeLoader.ts            # VS Code API loader
 │   ├── workspaceTrust.ts          # Workspace trust integration
 │   ├── configChangeDetector.ts    # Config change watcher
@@ -615,6 +748,9 @@ src/
 │   ├── pathUtils.ts               # SSH key path utilities
 │   ├── secureExec.ts              # Safe command execution with timeout
 │   ├── commandAllowlist.ts        # Allowed commands for secureExec
+│   ├── gitConfigRules.ts          # Per-key rules for git config arguments
+│   ├── sshKeygenRules.ts          # The accepted ssh-keygen forms and standard input
+│   ├── drivePathValidator.ts      # Windows drive path checks
 │   ├── binaryResolver.ts          # Absolute binary path resolution
 │   ├── flagValidator.ts           # Command-line flag validation
 │   ├── securityLogger.ts          # Structured security audit logging
@@ -622,6 +758,7 @@ src/
 ├── identity/                      # Identity management
 │   ├── identity.ts                # Identity type and display helpers
 │   ├── identityConfig.ts          # Reading/writing identities in settings
+│   ├── signingKeySource.ts        # Signing keys from user settings only
 │   ├── identityFields.ts          # Editable field definitions for the form
 │   ├── configSchema.ts            # JSON schema validation
 │   └── inputValidator.ts          # Identity input validation
@@ -637,6 +774,7 @@ src/
 │   └── fileLogWriter.ts           # File-based log writer
 ├── ssh/                           # SSH key management
 │   ├── sshAgent.ts                # SSH key add/remove/list
+│   ├── signingKeyCheck.ts         # Has the signing key sign, as git would
 │   └── keyFileValidator.ts        # Key file checks before ssh-add
 ├── services/                      # Business logic
 │   ├── detection.ts               # Identity auto-detection from git
@@ -696,14 +834,15 @@ This extension follows the principle of least privilege. The following table doc
 
 ### Granted Capabilities
 
-| Capability            | Mechanism                         | Purpose                                                    |
-| --------------------- | --------------------------------- | ---------------------------------------------------------- |
-| Read/write Git config | `git config` via `secureExec`     | Set user.name, user.email, user.signingkey, commit.gpgsign |
-| SSH agent management  | `ssh-add` via `secureExec`        | Load/unload SSH keys when switching identity               |
-| SSH key inspection    | `ssh-keygen -lf` via `secureExec` | Validate key format and fingerprint                        |
-| File system read      | Node.js `fs` (validated paths)    | Read SSH key files, write log files                        |
-| VS Code settings      | Configuration API                 | Store identity definitions                                 |
-| Status bar            | StatusBarItem API                 | Display current identity                                   |
+| Capability            | Mechanism                       | Purpose                                                                                                                             |
+| --------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Read/write Git config | `git config` via `secureExec`   | Set user.name, user.email, gpg.format, user.signingkey, commit.gpgsign (`--local` only)                                             |
+| SSH agent management  | `ssh-add` via `secureExec`      | Load/unload the authentication key (`sshKeyPath`) when switching identity                                                           |
+| SSH key inspection    | `ssh-keygen` via `secureExec`   | Key fingerprint (`-lf`); the signing key check: its public key (`-y -P ''`) and a signature of a fixed test text (`-Y sign -n git`) |
+| File system read      | Node.js `fs` (validated paths)  | Read SSH key files, write log files                                                                                                 |
+| VS Code settings      | Configuration API               | Store identity definitions; signing keys from user settings only                                                                    |
+| VS Code state         | Memento API (workspace, global) | Record of the signing config written (workspace); signing keys that passed the check (global)                                       |
+| Status bar            | StatusBarItem API               | Display current identity                                                                                                            |
 
 ### Explicitly Denied Capabilities
 

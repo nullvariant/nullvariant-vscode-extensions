@@ -49,7 +49,7 @@ Il existe de nombreux outils de changement de profil Git, mais **Git ID Switcher
 - **Sync Check** : Détection en temps réel des écarts entre le profil et la configuration git, avec avertissement dans la barre d'état
 - **Support des sous-modules** : Propagez automatiquement le profil aux sous-modules Git
 - **Gestion des clés SSH** : Basculez automatiquement les clés SSH dans ssh-agent
-- **Support de signature GPG** : Configurez la clé GPG pour signer les commits (optionnel)
+- **Support de signature des commits** : Signez les commits avec une clé GPG ou une clé SSH (optionnel)
 - **Info-bulles enrichies** : Informations détaillées avec description et hôte SSH
 - **Multi-plateforme** : Fonctionne sur macOS, Linux et Windows
 - **Multilingue** : Supporte 17 langues
@@ -235,6 +235,37 @@ Remarque : Le 4e profil (`client-b`) utilise un nom abrégé et le 5e (`oss`) un
 
 ---
 
+## Signature des commits avec une clé SSH
+
+Git peut signer les commits avec une clé SSH au lieu d'une clé GPG. Définissez `sshSigningKeyPath` sur le profil dans vos **paramètres utilisateur** (`settings.json`) :
+
+```json
+{
+  "gitIdSwitcher.identities": [
+    {
+      "id": "work-main",
+      "name": "Camille Dupont",
+      "email": "camille.dupont@techcorp.example.com",
+      "sshKeyPath": "~/.ssh/id_ed25519_work",
+      "sshHost": "github-work",
+      "sshSigningKeyPath": "~/.ssh/id_ed25519_signing"
+    }
+  ]
+}
+```
+
+- `sshSigningKeyPath` est la clé privée, ou la clé publique (`.pub`) si la clé privée est dans ssh-agent
+- `gpgKeyId` et `sshSigningKeyPath` ne peuvent pas être définis tous les deux sur un même profil
+- Les clés de signature (`gpgKeyId`, `sshSigningKeyPath`) sont lues uniquement depuis les paramètres utilisateur, depuis le profil ayant les mêmes `id`, `name` et `email`. Les valeurs du `.vscode/settings.json` d'un espace de travail ne sont pas utilisées, et les écrans de profil n'enregistrent que dans les paramètres utilisateur
+- Les chemins de clé peuvent se trouver hors de `~/.ssh/`, sous forme de chemin absolu ou de chemin commençant par `~/`. Sous Windows, un chemin de lecteur comme `C:\Users\...` est aussi accepté. Avant que git utilise la clé, l'extension lui fait signer un court texte de test comme git signe un commit (`ssh-keygen -Y sign`), sans lancer de programme askpass et avec une limite de 30 secondes. Si elle ne peut pas signer, ou si une autre clé signe (par exemple à cause d'un ancien fichier `.pub` à côté de la clé privée), le changement s'arrête. La vérification n'est refaite que lorsque le fichier de la clé ou le fichier `.pub` voisin change ; une clé matérielle ne demande donc un contact qu'à ce moment-là. Une clé privée protégée par une phrase secrète ne peut pas être vérifiée ainsi : définissez `sshSigningKeyPath` sur son fichier de clé publique (`.pub`) et ajoutez la clé à ssh-agent
+- Sous Unix, le fichier de la clé de signature et le fichier `.pub` à côté doivent avoir les permissions d'une clé, comme pour la clé d'authentification : une clé privée ne doit pas être accessible au groupe ni aux autres, une clé publique ne doit pas être modifiable par eux, et aucune ne doit être exécutable. Sinon, le changement s'arrête
+- Au changement, l'extension écrit `gpg.format`, `user.signingkey` et `commit.gpgsign` avec `git config --local`. Passer à un profil sans clé de signature remet ces trois valeurs à leurs valeurs précédentes, seulement si les trois contiennent encore ce que l'extension a écrit ; si vous en avez modifié une à la main, les trois restent intactes
+- La clé de signature n'est pas ajoutée à ssh-agent : `autoSwitchSshKey` ne change que la clé d'authentification (`sshKeyPath`)
+
+Enregistrez la clé publique sur GitHub comme **clé de signature** (Signing Key), séparément de la clé d'authentification, pour que vos commits apparaissent comme vérifiés.
+
+---
+
 ## Gestion des profils
 
 Cliquez sur la barre d'état → sélectionnez « Gestion des profils » en bas de la liste pour ouvrir l'interface de gestion.
@@ -261,17 +292,20 @@ Vous pouvez également supprimer un profil via la palette de commandes avec `Git
 
 ### Propriétés du profil
 
-| Propriété     | Requis | Description                                                            |
-| ------------- | ------ | ---------------------------------------------------------------------- |
-| `id`          | ✅     | Identifiant unique (ex : `"personal"`, `"work"`)                       |
-| `name`        | ✅     | Git user.name — affiché dans les commits                               |
-| `email`       | ✅     | Git user.email — affiché dans les commits                              |
-| `icon`        |        | Emoji affiché dans la barre d'état (ex : `"🏠"`). Un seul emoji        |
-| `service`     |        | Nom du service (ex : `"GitHub"`, `"GitLab"`). Utilisé pour l'affichage |
-| `description` |        | Courte description affichée dans le sélecteur et l'info-bulle          |
-| `sshKeyPath`  |        | Chemin vers la clé SSH privée (ex : `"~/.ssh/id_ed25519_work"`)        |
-| `sshHost`     |        | Alias d'hôte SSH (ex : `"github-work"`)                                |
-| `gpgKeyId`    |        | ID de clé GPG pour la signature des commits                            |
+| Propriété           | Requis | Description                                                                                                        |
+| ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------ |
+| `id`                | ✅     | Identifiant unique (ex : `"personal"`, `"work"`)                                                                   |
+| `name`              | ✅     | Git user.name — affiché dans les commits                                                                           |
+| `email`             | ✅     | Git user.email — affiché dans les commits                                                                          |
+| `icon`              |        | Emoji affiché dans la barre d'état (ex : `"🏠"`). Un seul emoji                                                    |
+| `service`           |        | Nom du service (ex : `"GitHub"`, `"GitLab"`). Utilisé pour l'affichage                                             |
+| `description`       |        | Courte description affichée dans le sélecteur et l'info-bulle                                                      |
+| `sshKeyPath`        |        | Chemin vers la clé SSH privée d'authentification (ex : `"~/.ssh/id_ed25519_work"`)                                 |
+| `sshHost`           |        | Alias d'hôte SSH (ex : `"github-work"`)                                                                            |
+| `gpgKeyId`          |        | ID de clé GPG pour la signature des commits. Incompatible avec `sshSigningKeyPath`                                 |
+| `sshSigningKeyPath` |        | Chemin vers la clé SSH de signature des commits (ex : `"~/.ssh/id_ed25519_signing"`). Incompatible avec `gpgKeyId` |
+
+Les clés de signature (`gpgKeyId`, `sshSigningKeyPath`) sont lues uniquement depuis les paramètres utilisateur.
 
 #### Limitations d'affichage
 
@@ -280,24 +314,24 @@ Vous pouvez également supprimer un profil via la palette de commandes avec `Git
 
 ### Paramètres globaux
 
-| Paramètre                                  | Par défaut    | Description                                                                                              |
-| ------------------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------- |
-| `gitIdSwitcher.identities`                 | Voir exemples | Liste des configurations de profils                                                                      |
-| `gitIdSwitcher.defaultIdentity`            | Voir exemples | ID du profil par défaut                                                                                  |
-| `gitIdSwitcher.autoSwitchSshKey`           | `true`        | Changer automatiquement la clé SSH lors du changement de profil                                          |
-| `gitIdSwitcher.showNotifications`          | `true`        | Afficher une notification lors du changement de profil                                                   |
-| `gitIdSwitcher.applyToSubmodules`          | `true`        | Propager le profil aux sous-modules Git                                                                  |
-| `gitIdSwitcher.submoduleDepth`             | `1`           | Profondeur max pour les sous-modules imbriqués (1-5)                                                     |
-| `gitIdSwitcher.includeIconInGitConfig`     | `false`       | Inclure l'emoji icône dans le Git config `user.name`                                                     |
-| `gitIdSwitcher.syncCheck.enabled`          | `true`        | Vérifier si le profil sélectionné correspond à la configuration git réelle                               |
-| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`        | Exécuter le sync check lorsque la fenêtre de l'éditeur retrouve le focus                                 |
-| `gitIdSwitcher.logging.fileEnabled`        | `false`       | Enregistrer le journal d'audit dans un fichier (changements de profil, opérations SSH, etc.)             |
-| `gitIdSwitcher.logging.filePath`           | `""`          | Chemin du fichier journal (ex : `~/.git-id-switcher/security.log`). Vide = emplacement par défaut        |
-| `gitIdSwitcher.logging.maxFileSize`        | `10485760`    | Taille max du fichier avant rotation (octets, 1 Mo–100 Mo)                                               |
-| `gitIdSwitcher.logging.maxFiles`           | `5`           | Nombre max de fichiers journaux en rotation (1-20)                                                       |
-| `gitIdSwitcher.logging.redactAllSensitive` | `false`       | Lorsqu'activé, toutes les valeurs sont masquées dans les journaux (confidentialité maximale)             |
-| `gitIdSwitcher.logging.level`              | `"INFO"`      | Niveau de journalisation (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Enregistre le niveau et au-delà |
-| `gitIdSwitcher.commandTimeouts`            | `{}`          | Timeout personnalisé par commande (ms, 1 s–5 min). Ex : `{"git": 15000, "ssh-add": 10000}`               |
+| Paramètre                                  | Par défaut    | Description                                                                                                      |
+| ------------------------------------------ | ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `gitIdSwitcher.identities`                 | Voir exemples | Liste des configurations de profils                                                                              |
+| `gitIdSwitcher.defaultIdentity`            | Voir exemples | ID du profil par défaut                                                                                          |
+| `gitIdSwitcher.autoSwitchSshKey`           | `true`        | Changer automatiquement la clé SSH d'authentification (`sshKeyPath`) dans ssh-agent lors du changement de profil |
+| `gitIdSwitcher.showNotifications`          | `true`        | Afficher une notification lors du changement de profil                                                           |
+| `gitIdSwitcher.applyToSubmodules`          | `true`        | Propager le profil aux sous-modules Git                                                                          |
+| `gitIdSwitcher.submoduleDepth`             | `1`           | Profondeur max pour les sous-modules imbriqués (1-5)                                                             |
+| `gitIdSwitcher.includeIconInGitConfig`     | `false`       | Inclure l'emoji icône dans le Git config `user.name`                                                             |
+| `gitIdSwitcher.syncCheck.enabled`          | `true`        | Vérifier si le profil sélectionné correspond à la configuration git réelle                                       |
+| `gitIdSwitcher.syncCheck.onFocusReturn`    | `true`        | Exécuter le sync check lorsque la fenêtre de l'éditeur retrouve le focus                                         |
+| `gitIdSwitcher.logging.fileEnabled`        | `false`       | Enregistrer le journal d'audit dans un fichier (changements de profil, opérations SSH, etc.)                     |
+| `gitIdSwitcher.logging.filePath`           | `""`          | Chemin du fichier journal (ex : `~/.git-id-switcher/security.log`). Vide = emplacement par défaut                |
+| `gitIdSwitcher.logging.maxFileSize`        | `10485760`    | Taille max du fichier avant rotation (octets, 1 Mo–100 Mo)                                                       |
+| `gitIdSwitcher.logging.maxFiles`           | `5`           | Nombre max de fichiers journaux en rotation (1-20)                                                               |
+| `gitIdSwitcher.logging.redactAllSensitive` | `false`       | Lorsqu'activé, toutes les valeurs sont masquées dans les journaux (confidentialité maximale)                     |
+| `gitIdSwitcher.logging.level`              | `"INFO"`      | Niveau de journalisation (`DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`). Enregistre le niveau et au-delà         |
+| `gitIdSwitcher.commandTimeouts`            | `{}`          | Timeout personnalisé par commande (ms, 1 s–5 min). Ex : `{"git": 15000, "ssh-add": 10000}`                       |
 
 #### À propos de `includeIconInGitConfig`
 
@@ -345,13 +379,13 @@ Lors du changement de profil, l'extension effectue (dans l'ordre) :
 
 1. **Git Config** (toujours) : Définit `git config --local user.name` et `user.email`
 2. **Clé SSH** (si `sshKeyPath` défini) : Supprime les autres clés de ssh-agent, ajoute celle sélectionnée
-3. **Clé GPG** (si `gpgKeyId` défini) : Définit `git config --local user.signingkey` et active la signature
+3. **Signature des commits** (si `gpgKeyId` ou `sshSigningKeyPath` défini) : Définit avec `git config --local` `gpg.format` (`openpgp` ou `ssh`), `user.signingkey` et `commit.gpgsign` à `true`. Passage à un profil sans clé de signature : voir [Signature des commits avec une clé SSH](#signature-des-commits-avec-une-clé-ssh)
 4. **Sous-modules** (si activé) : Propage la configuration à tous les sous-modules (par défaut : profondeur 1)
 5. **Sync Check** : Vérifie que le profil appliqué correspond à la configuration git réelle
 
 ### Sync Check
 
-Compare le profil sélectionné aux valeurs réelles de `git config --local` (`user.name`, `user.email`, `user.signingkey`) et affiche un avertissement dans la barre d'état lorsqu'un écart est détecté.
+Compare le profil sélectionné aux valeurs réelles de la configuration Git (`user.name`, `user.email` et, pour un profil qui signe, `gpg.format`, `user.signingkey`, `commit.gpgsign`) et affiche un avertissement dans la barre d'état lorsqu'un écart est détecté. Pour un profil sans clé de signature, les valeurs de signature écrites par l'extension et non remises comptent aussi comme un écart.
 
 **Quand les vérifications s'exécutent :**
 

@@ -107,7 +107,8 @@ export default [
     },
   },
   {
-    files: ["**/*.test.ts"],
+    // Test helpers (fixtures, test data) follow the same rules as the tests
+    files: ["**/*.test.ts", "**/test/helpers/*.ts"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
